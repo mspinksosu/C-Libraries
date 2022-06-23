@@ -1,0 +1,393 @@
+Version 3.2 HI-TECH Software Intermediate Code
+[v F68 `(v ~T0 @X0 0 tf ]
+"56 Source/Buffer.h
+[s S2 `*uc 1 `uc 1 `uc 1 `uc 1 ]
+[n S2 . buffer size head tail ]
+"48
+[s S1 `uc 1 `uc 1 `uc 1 `S2 1 ]
+[n S1 Buffer count overflow enableOverwrite private ]
+"101
+[v _Buffer_InitWithOverwrite `(v ~T0 @X0 0 ef4`*S1`*uc`uc`uc ]
+[v F65 `(v ~T0 @X0 0 tf ]
+[; ;stdint.h: 13: typedef signed char int8_t;
+[; ;stdint.h: 20: typedef signed int int16_t;
+[; ;stdint.h: 28: typedef signed short long int int24_t;
+[; ;stdint.h: 36: typedef signed long int int32_t;
+[; ;stdint.h: 43: typedef unsigned char uint8_t;
+[; ;stdint.h: 49: typedef unsigned int uint16_t;
+[; ;stdint.h: 56: typedef unsigned short long int uint24_t;
+[; ;stdint.h: 63: typedef unsigned long int uint32_t;
+[; ;stdint.h: 71: typedef signed char int_least8_t;
+[; ;stdint.h: 78: typedef signed int int_least16_t;
+[; ;stdint.h: 90: typedef signed short long int int_least24_t;
+[; ;stdint.h: 98: typedef signed long int int_least32_t;
+[; ;stdint.h: 105: typedef unsigned char uint_least8_t;
+[; ;stdint.h: 111: typedef unsigned int uint_least16_t;
+[; ;stdint.h: 121: typedef unsigned short long int uint_least24_t;
+[; ;stdint.h: 128: typedef unsigned long int uint_least32_t;
+[; ;stdint.h: 137: typedef signed char int_fast8_t;
+[; ;stdint.h: 144: typedef signed int int_fast16_t;
+[; ;stdint.h: 156: typedef signed short long int int_fast24_t;
+[; ;stdint.h: 164: typedef signed long int int_fast32_t;
+[; ;stdint.h: 171: typedef unsigned char uint_fast8_t;
+[; ;stdint.h: 177: typedef unsigned int uint_fast16_t;
+[; ;stdint.h: 187: typedef unsigned short long int uint_fast24_t;
+[; ;stdint.h: 194: typedef unsigned long int uint_fast32_t;
+[; ;stdint.h: 200: typedef int32_t intmax_t;
+[; ;stdint.h: 205: typedef uint32_t uintmax_t;
+[; ;stdint.h: 210: typedef int16_t intptr_t;
+[; ;stdint.h: 215: typedef uint16_t uintptr_t;
+[; ;stdbool.h: 12: typedef unsigned char bool;
+[; ;Buffer.h: 44: typedef struct Buffer Buffer;
+[; ;Buffer.h: 48: struct Buffer
+[; ;Buffer.h: 49: {
+[; ;Buffer.h: 51: uint8_t count;
+[; ;Buffer.h: 52: bool overflow;
+[; ;Buffer.h: 53: bool enableOverwrite;
+[; ;Buffer.h: 55: struct
+[; ;Buffer.h: 56: {
+[; ;Buffer.h: 58: uint8_t *buffer;
+[; ;Buffer.h: 59: uint8_t size;
+[; ;Buffer.h: 60: uint8_t head;
+[; ;Buffer.h: 61: uint8_t tail;
+[; ;Buffer.h: 62: } private;
+[; ;Buffer.h: 65: };
+[; ;Buffer.h: 83: void Buffer_Init(Buffer *self, uint8_t *arrayIn, uint8_t arrayInSize);
+[; ;Buffer.h: 101: void Buffer_InitWithOverwrite(Buffer *self, uint8_t *arrayIn, uint8_t arrayInSize, bool overwrite);
+[; ;Buffer.h: 112: void Buffer_WriteChar(Buffer *self, uint8_t receivedChar);
+[; ;Buffer.h: 121: uint8_t Buffer_ReadChar(Buffer*);
+[; ;Buffer.h: 130: uint8_t Buffer_GetCount(Buffer*);
+[; ;Buffer.h: 139: bool Buffer_IsFull(Buffer*);
+[; ;Buffer.h: 148: bool Buffer_IsNotEmpty(Buffer*);
+[; ;Buffer.h: 160: bool Buffer_DidOverflow(Buffer*);
+[; ;Buffer.h: 173: void Buffer_SetOverflowCallback(void (*Function)(void));
+"29 Source/Buffer.c
+[v _Buffer_OverflowCallback `*F68 ~T0 @X0 1 e ]
+[; ;Buffer.c: 29: void (*Buffer_OverflowCallback)(void);
+"33
+[v _Buffer_Init `(v ~T0 @X0 1 ef3`*S1`*uc`uc ]
+"34
+{
+[; ;Buffer.c: 33: void Buffer_Init(Buffer *self, uint8_t *arrayIn, uint8_t arrayInSize)
+[; ;Buffer.c: 34: {
+[e :U _Buffer_Init ]
+"33
+[v _self `*S1 ~T0 @X0 1 r1 ]
+[v _arrayIn `*uc ~T0 @X0 1 r2 ]
+[v _arrayInSize `uc ~T0 @X0 1 r3 ]
+"34
+[f ]
+[; ;Buffer.c: 35: Buffer_InitWithOverwrite(self, arrayIn, arrayInSize, 0);
+"35
+[e ( _Buffer_InitWithOverwrite (4 , , , _self _arrayIn _arrayInSize -> -> 0 `i `uc ]
+[; ;Buffer.c: 36: }
+"36
+[e :UE 3 ]
+}
+"38
+[v _Buffer_InitWithOverwrite `(v ~T0 @X0 1 ef4`*S1`*uc`uc`uc ]
+"39
+{
+[; ;Buffer.c: 38: void Buffer_InitWithOverwrite(Buffer *self, uint8_t *arrayIn, uint8_t arrayInSize, bool overwrite)
+[; ;Buffer.c: 39: {
+[e :U _Buffer_InitWithOverwrite ]
+"38
+[v _self `*S1 ~T0 @X0 1 r1 ]
+[v _arrayIn `*uc ~T0 @X0 1 r2 ]
+[v _arrayInSize `uc ~T0 @X0 1 r3 ]
+[v _overwrite `uc ~T0 @X0 1 r4 ]
+"39
+[f ]
+[; ;Buffer.c: 40: self->private.buffer = arrayIn;
+"40
+[e = . . *U _self 3 0 _arrayIn ]
+[; ;Buffer.c: 41: self->private.size = arrayInSize;
+"41
+[e = . . *U _self 3 1 _arrayInSize ]
+[; ;Buffer.c: 42: self->enableOverwrite = overwrite;
+"42
+[e = . *U _self 2 _overwrite ]
+[; ;Buffer.c: 43: self->count = 0;
+"43
+[e = . *U _self 0 -> -> 0 `i `uc ]
+[; ;Buffer.c: 44: }
+"44
+[e :UE 4 ]
+}
+"56
+[v _Buffer_WriteChar `(v ~T0 @X0 1 ef2`*S1`uc ]
+"57
+{
+[; ;Buffer.c: 56: void Buffer_WriteChar(Buffer *self, uint8_t receivedChar)
+[; ;Buffer.c: 57: {
+[e :U _Buffer_WriteChar ]
+"56
+[v _self `*S1 ~T0 @X0 1 r1 ]
+[v _receivedChar `uc ~T0 @X0 1 r2 ]
+"57
+[f ]
+"58
+[v _tempHead `uc ~T0 @X0 1 a ]
+[; ;Buffer.c: 58: uint8_t tempHead = self->private.head == (self->private.size - 1) ? 0 : self->private.head + 1;
+[e = _tempHead -> ? == -> . . *U _self 3 2 `i - -> . . *U _self 3 1 `i -> 1 `i : -> 0 `i + -> . . *U _self 3 2 `i -> 1 `i `uc ]
+[; ;Buffer.c: 60: if(tempHead != self->private.tail)
+"60
+[e $ ! != -> _tempHead `i -> . . *U _self 3 3 `i 6  ]
+[; ;Buffer.c: 61: {
+"61
+{
+[; ;Buffer.c: 63: self->private.buffer[self->private.head] = receivedChar;
+"63
+[e = *U + . . *U _self 3 0 * -> . . *U _self 3 2 `ux -> -> # *U . . *U _self 3 0 `ui `ux _receivedChar ]
+[; ;Buffer.c: 64: self->private.head = tempHead;
+"64
+[e = . . *U _self 3 2 _tempHead ]
+[; ;Buffer.c: 65: self->count++;
+"65
+[e ++ . *U _self 0 -> -> 1 `i `uc ]
+"66
+}
+[; ;Buffer.c: 66: }
+[e $U 7  ]
+"67
+[e :U 6 ]
+[; ;Buffer.c: 67: else if(self->enableOverwrite)
+[e $ ! != -> . *U _self 2 `i -> -> -> 0 `i `uc `i 8  ]
+[; ;Buffer.c: 68: {
+"68
+{
+[; ;Buffer.c: 70: self->private.buffer[self->private.head] = receivedChar;
+"70
+[e = *U + . . *U _self 3 0 * -> . . *U _self 3 2 `ux -> -> # *U . . *U _self 3 0 `ui `ux _receivedChar ]
+[; ;Buffer.c: 71: self->private.head = tempHead;
+"71
+[e = . . *U _self 3 2 _tempHead ]
+[; ;Buffer.c: 72: self->private.tail == (self->private.size - 1) ? 0 : self->private.tail + 1;
+"72
+[e ? == -> . . *U _self 3 3 `i - -> . . *U _self 3 1 `i -> 1 `i : -> 0 `i + -> . . *U _self 3 3 `i -> 1 `i ]
+[; ;Buffer.c: 73: self->overflow = 1;
+"73
+[e = . *U _self 1 -> -> 1 `i `uc ]
+"74
+}
+[; ;Buffer.c: 74: }
+[e $U 9  ]
+"75
+[e :U 8 ]
+[; ;Buffer.c: 75: else
+[; ;Buffer.c: 76: {
+"76
+{
+[; ;Buffer.c: 78: if(self->overflow == 0)
+"78
+[e $ ! == -> . *U _self 1 `i -> 0 `i 10  ]
+[; ;Buffer.c: 79: {
+"79
+{
+[; ;Buffer.c: 81: self->private.buffer[self->private.head] = receivedChar;
+"81
+[e = *U + . . *U _self 3 0 * -> . . *U _self 3 2 `ux -> -> # *U . . *U _self 3 0 `ui `ux _receivedChar ]
+"82
+}
+[e :U 10 ]
+[; ;Buffer.c: 82: }
+[; ;Buffer.c: 84: self->overflow = 1;
+"84
+[e = . *U _self 1 -> -> 1 `i `uc ]
+[; ;Buffer.c: 86: if(Buffer_OverflowCallback)
+"86
+[e $ ! != _Buffer_OverflowCallback -> -> 0 `i `*F68 11  ]
+[; ;Buffer.c: 87: {
+"87
+{
+[; ;Buffer.c: 88: Buffer_OverflowCallback;
+"88
+[e _Buffer_OverflowCallback ]
+"89
+}
+[e :U 11 ]
+"90
+}
+[e :U 9 ]
+[e :U 7 ]
+[; ;Buffer.c: 89: }
+[; ;Buffer.c: 90: }
+[; ;Buffer.c: 91: }
+"91
+[e :UE 5 ]
+}
+"97
+[v _Buffer_ReadChar `(uc ~T0 @X0 1 ef1`*S1 ]
+"98
+{
+[; ;Buffer.c: 97: uint8_t Buffer_ReadChar(Buffer *self)
+[; ;Buffer.c: 98: {
+[e :U _Buffer_ReadChar ]
+"97
+[v _self `*S1 ~T0 @X0 1 r1 ]
+"98
+[f ]
+"99
+[v _dataToReturn `uc ~T0 @X0 1 a ]
+[; ;Buffer.c: 99: uint8_t dataToReturn = 0;
+[e = _dataToReturn -> -> 0 `i `uc ]
+[; ;Buffer.c: 101: if(self->private.head != self->private.tail)
+"101
+[e $ ! != -> . . *U _self 3 2 `i -> . . *U _self 3 3 `i 13  ]
+[; ;Buffer.c: 102: {
+"102
+{
+[; ;Buffer.c: 104: dataToReturn = self->private.buffer[self->private.tail];
+"104
+[e = _dataToReturn *U + . . *U _self 3 0 * -> . . *U _self 3 3 `ux -> -> # *U . . *U _self 3 0 `ui `ux ]
+[; ;Buffer.c: 105: self->private.tail == (self->private.size - 1) ? 0 : self->private.tail + 1;
+"105
+[e ? == -> . . *U _self 3 3 `i - -> . . *U _self 3 1 `i -> 1 `i : -> 0 `i + -> . . *U _self 3 3 `i -> 1 `i ]
+[; ;Buffer.c: 106: self->count--;
+"106
+[e -- . *U _self 0 -> -> 1 `i `uc ]
+[; ;Buffer.c: 107: self->overflow = 0;
+"107
+[e = . *U _self 1 -> -> 0 `i `uc ]
+"108
+}
+[e :U 13 ]
+[; ;Buffer.c: 108: }
+[; ;Buffer.c: 109: return dataToReturn;
+"109
+[e ) _dataToReturn ]
+[e $UE 12  ]
+[; ;Buffer.c: 110: }
+"110
+[e :UE 12 ]
+}
+"115
+[v _Buffer_GetCount `(uc ~T0 @X0 1 ef1`*S1 ]
+"116
+{
+[; ;Buffer.c: 115: uint8_t Buffer_GetCount(Buffer *self)
+[; ;Buffer.c: 116: {
+[e :U _Buffer_GetCount ]
+"115
+[v _self `*S1 ~T0 @X0 1 r1 ]
+"116
+[f ]
+[; ;Buffer.c: 121: return self->count;
+"121
+[e ) . *U _self 0 ]
+[e $UE 14  ]
+[; ;Buffer.c: 122: }
+"122
+[e :UE 14 ]
+}
+"127
+[v _Buffer_IsFull `(uc ~T0 @X0 1 ef1`*S1 ]
+"128
+{
+[; ;Buffer.c: 127: bool Buffer_IsFull(Buffer *self)
+[; ;Buffer.c: 128: {
+[e :U _Buffer_IsFull ]
+"127
+[v _self `*S1 ~T0 @X0 1 r1 ]
+"128
+[f ]
+"129
+[v _tempHead `uc ~T0 @X0 1 a ]
+[; ;Buffer.c: 129: uint8_t tempHead = self->private.head == (self->private.size - 1) ? 0 : self->private.head + 1;
+[e = _tempHead -> ? == -> . . *U _self 3 2 `i - -> . . *U _self 3 1 `i -> 1 `i : -> 0 `i + -> . . *U _self 3 2 `i -> 1 `i `uc ]
+[; ;Buffer.c: 131: if(tempHead == self->private.tail)
+"131
+[e $ ! == -> _tempHead `i -> . . *U _self 3 3 `i 16  ]
+[; ;Buffer.c: 132: return 1;
+"132
+[e ) -> -> 1 `i `uc ]
+[e $UE 15  ]
+[e $U 17  ]
+"133
+[e :U 16 ]
+[; ;Buffer.c: 133: else
+[; ;Buffer.c: 134: return 0;
+"134
+[e ) -> -> 0 `i `uc ]
+[e $UE 15  ]
+[e :U 17 ]
+[; ;Buffer.c: 135: }
+"135
+[e :UE 15 ]
+}
+"140
+[v _Buffer_IsNotEmpty `(uc ~T0 @X0 1 ef1`*S1 ]
+"141
+{
+[; ;Buffer.c: 140: bool Buffer_IsNotEmpty(Buffer *self)
+[; ;Buffer.c: 141: {
+[e :U _Buffer_IsNotEmpty ]
+"140
+[v _self `*S1 ~T0 @X0 1 r1 ]
+"141
+[f ]
+[; ;Buffer.c: 142: if(self->count != 0)
+"142
+[e $ ! != -> . *U _self 0 `i -> 0 `i 19  ]
+[; ;Buffer.c: 143: return 1;
+"143
+[e ) -> -> 1 `i `uc ]
+[e $UE 18  ]
+[e $U 20  ]
+"144
+[e :U 19 ]
+[; ;Buffer.c: 144: else
+[; ;Buffer.c: 145: return 0;
+"145
+[e ) -> -> 0 `i `uc ]
+[e $UE 18  ]
+[e :U 20 ]
+[; ;Buffer.c: 146: }
+"146
+[e :UE 18 ]
+}
+"150
+[v _Buffer_DidOverflow `(uc ~T0 @X0 1 ef1`*S1 ]
+"151
+{
+[; ;Buffer.c: 150: bool Buffer_DidOverflow(Buffer *self)
+[; ;Buffer.c: 151: {
+[e :U _Buffer_DidOverflow ]
+"150
+[v _self `*S1 ~T0 @X0 1 r1 ]
+"151
+[f ]
+"153
+[v _temp `uc ~T0 @X0 1 a ]
+[; ;Buffer.c: 153: bool temp = self->overflow;
+[e = _temp . *U _self 1 ]
+[; ;Buffer.c: 154: self->overflow = 0;
+"154
+[e = . *U _self 1 -> -> 0 `i `uc ]
+[; ;Buffer.c: 155: return temp;
+"155
+[e ) _temp ]
+[e $UE 21  ]
+[; ;Buffer.c: 156: }
+"156
+[e :UE 21 ]
+}
+"160
+[v _Buffer_SetOverflowCallback `(v ~T0 @X0 1 ef1`*F65 ]
+"161
+{
+[; ;Buffer.c: 160: void Buffer_SetOverflowCallback(void (*Function)(void))
+[; ;Buffer.c: 161: {
+[e :U _Buffer_SetOverflowCallback ]
+[v F89 `(v ~T0 @X0 0 tf ]
+"160
+[v _Function `*F89 ~T0 @X0 1 r1 ]
+"161
+[f ]
+[; ;Buffer.c: 162: Buffer_OverflowCallback = Function;
+"162
+[e = _Buffer_OverflowCallback _Function ]
+[; ;Buffer.c: 163: }
+"163
+[e :UE 22 ]
+}

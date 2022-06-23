@@ -1,0 +1,271 @@
+
+# 1 "Source/Buffer.c"
+
+# 13 "C:\Program Files\Microchip\xc8\v1.37\include\stdint.h"
+typedef signed char int8_t;
+
+# 20
+typedef signed int int16_t;
+
+# 28
+typedef signed short long int int24_t;
+
+# 36
+typedef signed long int int32_t;
+
+# 43
+typedef unsigned char uint8_t;
+
+# 49
+typedef unsigned int uint16_t;
+
+# 56
+typedef unsigned short long int uint24_t;
+
+# 63
+typedef unsigned long int uint32_t;
+
+# 71
+typedef signed char int_least8_t;
+
+# 78
+typedef signed int int_least16_t;
+
+# 90
+typedef signed short long int int_least24_t;
+
+# 98
+typedef signed long int int_least32_t;
+
+# 105
+typedef unsigned char uint_least8_t;
+
+# 111
+typedef unsigned int uint_least16_t;
+
+# 121
+typedef unsigned short long int uint_least24_t;
+
+# 128
+typedef unsigned long int uint_least32_t;
+
+# 137
+typedef signed char int_fast8_t;
+
+# 144
+typedef signed int int_fast16_t;
+
+# 156
+typedef signed short long int int_fast24_t;
+
+# 164
+typedef signed long int int_fast32_t;
+
+# 171
+typedef unsigned char uint_fast8_t;
+
+# 177
+typedef unsigned int uint_fast16_t;
+
+# 187
+typedef unsigned short long int uint_fast24_t;
+
+# 194
+typedef unsigned long int uint_fast32_t;
+
+# 200
+typedef int32_t intmax_t;
+
+
+
+
+typedef uint32_t uintmax_t;
+
+
+
+
+typedef int16_t intptr_t;
+
+
+
+
+typedef uint16_t uintptr_t;
+
+# 12 "C:\Program Files\Microchip\xc8\v1.37\include\stdbool.h"
+typedef unsigned char bool;
+
+# 44 "Source/Buffer.h"
+typedef struct Buffer Buffer;
+
+# 48
+struct Buffer
+{
+
+uint8_t count;
+bool overflow;
+bool enableOverwrite;
+
+struct
+{
+
+uint8_t *buffer;
+uint8_t size;
+uint8_t head;
+uint8_t tail;
+} private;
+
+# 65
+};
+
+# 83
+void Buffer_Init(Buffer *self, uint8_t *arrayIn, uint8_t arrayInSize);
+
+# 101
+void Buffer_InitWithOverwrite(Buffer *self, uint8_t *arrayIn, uint8_t arrayInSize, bool overwrite);
+
+# 112
+void Buffer_WriteChar(Buffer *self, uint8_t receivedChar);
+
+# 121
+uint8_t Buffer_ReadChar(Buffer*);
+
+# 130
+uint8_t Buffer_GetCount(Buffer*);
+
+# 139
+bool Buffer_IsFull(Buffer*);
+
+# 148
+bool Buffer_IsNotEmpty(Buffer*);
+
+# 160
+bool Buffer_DidOverflow(Buffer*);
+
+# 173
+void Buffer_SetOverflowCallback(void (*Function)(void));
+
+# 29 "Source/Buffer.c"
+void (*Buffer_OverflowCallback)(void);
+
+
+
+void Buffer_Init(Buffer *self, uint8_t *arrayIn, uint8_t arrayInSize)
+{
+Buffer_InitWithOverwrite(self, arrayIn, arrayInSize, 0);
+}
+
+void Buffer_InitWithOverwrite(Buffer *self, uint8_t *arrayIn, uint8_t arrayInSize, bool overwrite)
+{
+self->private.buffer = arrayIn;
+self->private.size = arrayInSize;
+self->enableOverwrite = overwrite;
+self->count = 0;
+}
+
+# 56
+void Buffer_WriteChar(Buffer *self, uint8_t receivedChar)
+{
+uint8_t tempHead = self->private.head == (self->private.size - 1) ? 0 : self->private.head + 1;
+
+if(tempHead != self->private.tail)
+{
+
+self->private.buffer[self->private.head] = receivedChar;
+self->private.head = tempHead;
+self->count++;
+}
+else if(self->enableOverwrite)
+{
+
+self->private.buffer[self->private.head] = receivedChar;
+self->private.head = tempHead;
+self->private.tail == (self->private.size - 1) ? 0 : self->private.tail + 1;
+self->overflow = 1;
+}
+else
+{
+
+if(self->overflow == 0)
+{
+
+self->private.buffer[self->private.head] = receivedChar;
+}
+
+self->overflow = 1;
+
+if(Buffer_OverflowCallback)
+{
+Buffer_OverflowCallback;
+}
+}
+}
+
+# 97
+uint8_t Buffer_ReadChar(Buffer *self)
+{
+uint8_t dataToReturn = 0;
+
+if(self->private.head != self->private.tail)
+{
+
+dataToReturn = self->private.buffer[self->private.tail];
+self->private.tail == (self->private.size - 1) ? 0 : self->private.tail + 1;
+self->count--;
+self->overflow = 0;
+}
+return dataToReturn;
+}
+
+
+
+
+uint8_t Buffer_GetCount(Buffer *self)
+{
+
+
+
+
+return self->count;
+}
+
+
+
+
+bool Buffer_IsFull(Buffer *self)
+{
+uint8_t tempHead = self->private.head == (self->private.size - 1) ? 0 : self->private.head + 1;
+
+if(tempHead == self->private.tail)
+return 1;
+else
+return 0;
+}
+
+
+
+
+bool Buffer_IsNotEmpty(Buffer *self)
+{
+if(self->count != 0)
+return 1;
+else
+return 0;
+}
+
+
+
+bool Buffer_DidOverflow(Buffer *self)
+{
+
+bool temp = self->overflow;
+self->overflow = 0;
+return temp;
+}
+
+
+
+void Buffer_SetOverflowCallback(void (*Function)(void))
+{
+Buffer_OverflowCallback = Function;
+}
+

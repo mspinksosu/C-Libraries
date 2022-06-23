@@ -1,0 +1,15 @@
+{
+    "cSpell.words": [
+        "Spinks"
+    ],
+    "files.associations": {
+        "type_traits": "c",
+        "gpio_stm32g0.h": "c",
+        "adc_manager_stm32g0.h": "c",
+        "igpio.h": "c",
+        "stdint.h": "c",
+        "stm32g0xx_ll_usart.h": "c",
+        "compare": "c",
+        "stddef.h": "c"
+    }
+}

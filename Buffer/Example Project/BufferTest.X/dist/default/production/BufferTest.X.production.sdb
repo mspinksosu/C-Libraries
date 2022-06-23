@@ -1,0 +1,382 @@
+[p LITE_MODE AUTOSTATIC PIC14 PIC14E ]
+[d version 1.1 ]
+[d edition pro ]
+[d chip 16LF18855 ]
+[d frameptr 6 ]
+"62 C:\Program Files\Microchip\xc8\v1.37\sources\common\float.c
+[v ___ftpack __ftpack `(f  1 e 3 0 ]
+"86 C:\Program Files\Microchip\xc8\v1.37\sources\common\ftadd.c
+[v ___ftadd __ftadd `(f  1 e 3 0 ]
+"6 C:\Program Files\Microchip\xc8\v1.37\sources\pic\eeprom.c
+[v _eecpymem eecpymem `(v  1 e 1 0 ]
+"39
+[v _memcpyee memcpyee `(v  1 e 1 0 ]
+"4 C:\Users\maspin\MPLABXProjects\BufferTest.X\mcc_generated_files/eusart.c
+[v _EUSART_Initialize EUSART_Initialize `(v  1 e 1 0 ]
+"18 C:\Users\maspin\MPLABXProjects\BufferTest.X\mcc_generated_files/interrupt_manager.c
+[v _INTERRUPT_InterruptManager INTERRUPT_InterruptManager `II(v  1 e 1 0 ]
+"35
+[v _Set_EUSART_Transmit_ISR Set_EUSART_Transmit_ISR `(v  1 e 1 0 ]
+"40
+[v _Set_EUSART_Receive_ISR Set_EUSART_Receive_ISR `(v  1 e 1 0 ]
+"94 C:\Users\maspin\MPLABXProjects\BufferTest.X\mcc_generated_files/mcc.c
+[v _OSCILLATOR_Initialize OSCILLATOR_Initialize `(v  1 e 1 0 ]
+"50 C:\Users\maspin\MPLABXProjects\BufferTest.X\mcc_generated_files/pin_manager.c
+[v _PIN_MANAGER_Initialize PIN_MANAGER_Initialize `(v  1 e 1 0 ]
+"33 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/Buffer.c
+[v _Buffer_Init Buffer_Init `(v  1 e 1 0 ]
+"38
+[v _Buffer_InitWithOverwrite Buffer_InitWithOverwrite `(v  1 e 1 0 ]
+"56
+[v _Buffer_WriteChar Buffer_WriteChar `(v  1 e 1 0 ]
+[v i1_Buffer_WriteChar Buffer_WriteChar `(v  1 e 1 0 ]
+"97
+[v _Buffer_ReadChar Buffer_ReadChar `(uc  1 e 1 0 ]
+[v i1_Buffer_ReadChar Buffer_ReadChar `(uc  1 e 1 0 ]
+"127
+[v _Buffer_IsFull Buffer_IsFull `(uc  1 e 1 0 ]
+"140
+[v _Buffer_IsNotEmpty Buffer_IsNotEmpty `(uc  1 e 1 0 ]
+[v i1_Buffer_IsNotEmpty Buffer_IsNotEmpty `(uc  1 e 1 0 ]
+"39 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/main.c
+[v _main main `(v  1 e 1 0 ]
+"93
+[v _UARTReceiveInterrupt UARTReceiveInterrupt `(v  1 e 1 0 ]
+"101
+[v _UARTTransmitFinished UARTTransmitFinished `(v  1 e 1 0 ]
+"126
+[v _TransmitChar TransmitChar `(v  1 e 1 0 ]
+"71 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/UART.c
+[v _UARTTransmitChar UARTTransmitChar `(v  1 e 1 0 ]
+"81
+[v _UARTTransmitEnable UARTTransmitEnable `(v  1 e 1 0 ]
+"86
+[v _UARTTransmitDisable UARTTransmitDisable `(v  1 e 1 0 ]
+[v i1_UARTTransmitDisable UARTTransmitDisable `(v  1 e 1 0 ]
+"112
+[v _UARTGetReceivedChar UARTGetReceivedChar `(uc  1 e 1 0 ]
+[s S175 . 1 `uc 1 INTEDG 1 0 :1:0 
+`uc 1 . 1 0 :5:1 
+`uc 1 PEIE 1 0 :1:6 
+`uc 1 GIE 1 0 :1:7 
+]
+"350 C:\Program Files\Microchip\xc8\v1.37\include\pic16lf18855.h
+[u S180 . 1 `S175 1 . 1 0 ]
+[v _INTCONbits INTCONbits `VES180  1 e 1 @11 ]
+"572
+[v _TRISA TRISA `VEuc  1 e 1 @17 ]
+"633
+[v _TRISB TRISB `VEuc  1 e 1 @18 ]
+"694
+[v _TRISC TRISC `VEuc  1 e 1 @19 ]
+"755
+[v _LATA LATA `VEuc  1 e 1 @22 ]
+"816
+[v _LATB LATB `VEuc  1 e 1 @23 ]
+"877
+[v _LATC LATC `VEuc  1 e 1 @24 ]
+"3416
+[v _RC1REG RC1REG `VEuc  1 e 1 @281 ]
+"3469
+[v _TX1REG TX1REG `VEuc  1 e 1 @282 ]
+"3528
+[v _SP1BRGL SP1BRGL `VEuc  1 e 1 @283 ]
+"3597
+[v _SP1BRGH SP1BRGH `VEuc  1 e 1 @284 ]
+"3650
+[v _RC1STA RC1STA `VEuc  1 e 1 @285 ]
+"3829
+[v _TX1STA TX1STA `VEuc  1 e 1 @286 ]
+"4008
+[v _BAUD1CON BAUD1CON `VEuc  1 e 1 @287 ]
+[s S57 . 1 `uc 1 SSP1IF 1 0 :1:0 
+`uc 1 BCL1IF 1 0 :1:1 
+`uc 1 SSP2IF 1 0 :1:2 
+`uc 1 BCL2IF 1 0 :1:3 
+`uc 1 TXIF 1 0 :1:4 
+`uc 1 RCIF 1 0 :1:5 
+]
+"18224
+[u S64 . 1 `S57 1 . 1 0 ]
+[v _PIR3bits PIR3bits `VES64  1 e 1 @1807 ]
+[s S40 . 1 `uc 1 SSP1IE 1 0 :1:0 
+`uc 1 BCL1IE 1 0 :1:1 
+`uc 1 SSP2IE 1 0 :1:2 
+`uc 1 BCL2IE 1 0 :1:3 
+`uc 1 TXIE 1 0 :1:4 
+`uc 1 RCIE 1 0 :1:5 
+]
+"18637
+[u S47 . 1 `S40 1 . 1 0 ]
+[v _PIE3bits PIE3bits `VES47  1 e 1 @1817 ]
+"20228
+[v _OSCCON1 OSCCON1 `VEuc  1 e 1 @2189 ]
+"20366
+[v _OSCCON3 OSCCON3 `VEuc  1 e 1 @2191 ]
+"20461
+[v _OSCEN OSCEN `VEuc  1 e 1 @2193 ]
+"20511
+[v _OSCTUNE OSCTUNE `VEuc  1 e 1 @2194 ]
+"20568
+[v _OSCFRQ OSCFRQ `VEuc  1 e 1 @2195 ]
+"26599
+[v _PPSLOCK PPSLOCK `VEuc  1 e 1 @3727 ]
+[s S115 . 1 `uc 1 PPSLOCKED 1 0 :1:0 
+]
+"26609
+[u S117 . 1 `S115 1 . 1 0 ]
+[v _PPSLOCKbits PPSLOCKbits `VES117  1 e 1 @3727 ]
+[s S123 . 1 `uc 1 RXPPS0 1 0 :1:0 
+`uc 1 RXPPS1 1 0 :1:1 
+`uc 1 RXPPS2 1 0 :1:2 
+`uc 1 RXPPS3 1 0 :1:3 
+`uc 1 RXPPS4 1 0 :1:4 
+]
+"28508
+[s S129 . 1 `uc 1 RXPPS 1 0 :5:0 
+]
+[u S131 . 1 `S123 1 . 1 0 `S129 1 . 1 0 ]
+[v _RXPPSbits RXPPSbits `VES131  1 e 1 @3787 ]
+"29181
+[v _RB4PPS RB4PPS `VEuc  1 e 1 @3868 ]
+"29671
+[v _RC6PPS RC6PPS `VEuc  1 e 1 @3878 ]
+"29769
+[v _ANSELA ANSELA `VEuc  1 e 1 @3896 ]
+"29830
+[v _WPUA WPUA `VEuc  1 e 1 @3897 ]
+"30379
+[v _ANSELB ANSELB `VEuc  1 e 1 @3907 ]
+"30440
+[v _WPUB WPUB `VEuc  1 e 1 @3908 ]
+"30989
+[v _ANSELC ANSELC `VEuc  1 e 1 @3918 ]
+"31050
+[v _WPUC WPUC `VEuc  1 e 1 @3919 ]
+"31599
+[v _WPUE WPUE `VEuc  1 e 1 @3941 ]
+"33376
+"33376
+[v _GIE GIE `VEb  1 e 0 @95 ]
+"15 C:\Users\maspin\MPLABXProjects\BufferTest.X\mcc_generated_files/interrupt_manager.c
+[v _EUSART_Transmit_ISR EUSART_Transmit_ISR `*.37(v  1 e 2 0 ]
+"16
+[v _EUSART_Receive_ISR EUSART_Receive_ISR `*.37(v  1 e 2 0 ]
+"29 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/Buffer.c
+[v _Buffer_OverflowCallback Buffer_OverflowCallback `*.37(v  1 e 2 0 ]
+"30 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/main.c
+[v _rxArray rxArray `[32]uc  1 e 32 0 ]
+"31
+[v _txArray txArray `[32]uc  1 e 32 0 ]
+[s S165 . 4 `*.4uc 1 buffer 1 0 `uc 1 size 1 1 `uc 1 head 1 2 `uc 1 tail 1 3 ]
+"34
+[s S170 Buffer 7 `uc 1 count 1 0 `uc 1 overflow 1 1 `uc 1 enableOverwrite 1 2 `S165 1 private 4 3 ]
+[v _rxBuffer rxBuffer `S170  1 e 7 0 ]
+"35
+[v _txBuffer txBuffer `S170  1 e 7 0 ]
+"26 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/UART.c
+[v _UARTTransmitFinishedCallback UARTTransmitFinishedCallback `*.37(v  1 e 2 0 ]
+"27
+[v _UARTReceiveInterruptCallback UARTReceiveInterruptCallback `*.37(v  1 e 2 0 ]
+"39 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/main.c
+[v _main main `(v  1 e 1 0 ]
+{
+"50
+[v main@receivedData receivedData `uc  1 a 1 12 ]
+"83
+} 0
+"126
+[v _TransmitChar TransmitChar `(v  1 e 1 0 ]
+{
+[v TransmitChar@dataToSend dataToSend `uc  1 a 1 wreg ]
+[v TransmitChar@dataToSend dataToSend `uc  1 a 1 wreg ]
+"135
+[v TransmitChar@dataToSend dataToSend `uc  1 a 1 8 ]
+"144
+} 0
+"81 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/UART.c
+[v _UARTTransmitEnable UARTTransmitEnable `(v  1 e 1 0 ]
+{
+"84
+} 0
+"86
+[v _UARTTransmitDisable UARTTransmitDisable `(v  1 e 1 0 ]
+{
+"89
+} 0
+"56 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/Buffer.c
+[v _Buffer_WriteChar Buffer_WriteChar `(v  1 e 1 0 ]
+{
+[s S165 . 4 `*.4uc 1 buffer 1 0 `uc 1 size 1 1 `uc 1 head 1 2 `uc 1 tail 1 3 ]
+[s S170 Buffer 7 `uc 1 count 1 0 `uc 1 overflow 1 1 `uc 1 enableOverwrite 1 2 `S165 1 private 4 3 ]
+[v Buffer_WriteChar@self self `*.4S170  1 a 1 wreg ]
+"58
+[v Buffer_WriteChar@tempHead tempHead `uc  1 a 1 5 ]
+"56
+[v Buffer_WriteChar@self self `*.4S170  1 a 1 wreg ]
+[v Buffer_WriteChar@receivedChar receivedChar `uc  1 p 1 0 ]
+"58
+"56
+[v Buffer_WriteChar@self self `*.4S170  1 a 1 6 ]
+"91
+} 0
+"127
+[v _Buffer_IsFull Buffer_IsFull `(uc  1 e 1 0 ]
+{
+[s S165 . 4 `*.4uc 1 buffer 1 0 `uc 1 size 1 1 `uc 1 head 1 2 `uc 1 tail 1 3 ]
+[s S170 Buffer 7 `uc 1 count 1 0 `uc 1 overflow 1 1 `uc 1 enableOverwrite 1 2 `S165 1 private 4 3 ]
+[v Buffer_IsFull@self self `*.4S170  1 a 1 wreg ]
+"129
+[v Buffer_IsFull@tempHead tempHead `uc  1 a 1 4 ]
+"127
+[v Buffer_IsFull@self self `*.4S170  1 a 1 wreg ]
+"129
+"127
+[v Buffer_IsFull@self self `*.4S170  1 a 1 5 ]
+"135
+} 0
+"35 C:\Users\maspin\MPLABXProjects\BufferTest.X\mcc_generated_files/interrupt_manager.c
+[v _Set_EUSART_Transmit_ISR Set_EUSART_Transmit_ISR `(v  1 e 1 0 ]
+{
+[v Set_EUSART_Transmit_ISR@Function Function `*.37(v  1 p 2 0 ]
+"38
+} 0
+"40
+[v _Set_EUSART_Receive_ISR Set_EUSART_Receive_ISR `(v  1 e 1 0 ]
+{
+[v Set_EUSART_Receive_ISR@Function Function `*.37(v  1 p 2 0 ]
+"43
+} 0
+"97 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/Buffer.c
+[v _Buffer_ReadChar Buffer_ReadChar `(uc  1 e 1 0 ]
+{
+[s S165 . 4 `*.4uc 1 buffer 1 0 `uc 1 size 1 1 `uc 1 head 1 2 `uc 1 tail 1 3 ]
+[s S170 Buffer 7 `uc 1 count 1 0 `uc 1 overflow 1 1 `uc 1 enableOverwrite 1 2 `S165 1 private 4 3 ]
+[v Buffer_ReadChar@self self `*.4S170  1 a 1 wreg ]
+"99
+[v Buffer_ReadChar@dataToReturn dataToReturn `uc  1 a 1 2 ]
+"97
+[v Buffer_ReadChar@self self `*.4S170  1 a 1 wreg ]
+"99
+"97
+[v Buffer_ReadChar@self self `*.4S170  1 a 1 3 ]
+"110
+} 0
+"140
+[v _Buffer_IsNotEmpty Buffer_IsNotEmpty `(uc  1 e 1 0 ]
+{
+[s S165 . 4 `*.4uc 1 buffer 1 0 `uc 1 size 1 1 `uc 1 head 1 2 `uc 1 tail 1 3 ]
+[s S170 Buffer 7 `uc 1 count 1 0 `uc 1 overflow 1 1 `uc 1 enableOverwrite 1 2 `S165 1 private 4 3 ]
+[v Buffer_IsNotEmpty@self self `*.4S170  1 a 1 wreg ]
+[v Buffer_IsNotEmpty@self self `*.4S170  1 a 1 wreg ]
+"142
+"140
+[v Buffer_IsNotEmpty@self self `*.4S170  1 a 1 0 ]
+"146
+} 0
+"33
+[v _Buffer_Init Buffer_Init `(v  1 e 1 0 ]
+{
+[s S165 . 4 `*.4uc 1 buffer 1 0 `uc 1 size 1 1 `uc 1 head 1 2 `uc 1 tail 1 3 ]
+[s S170 Buffer 7 `uc 1 count 1 0 `uc 1 overflow 1 1 `uc 1 enableOverwrite 1 2 `S165 1 private 4 3 ]
+[v Buffer_Init@self self `*.4S170  1 a 1 wreg ]
+[v Buffer_Init@self self `*.4S170  1 a 1 wreg ]
+[v Buffer_Init@arrayIn arrayIn `*.4uc  1 p 1 5 ]
+[v Buffer_Init@arrayInSize arrayInSize `uc  1 p 1 6 ]
+"35
+"33
+[v Buffer_Init@self self `*.4S170  1 a 1 9 ]
+"36
+} 0
+"38
+[v _Buffer_InitWithOverwrite Buffer_InitWithOverwrite `(v  1 e 1 0 ]
+{
+[s S165 . 4 `*.4uc 1 buffer 1 0 `uc 1 size 1 1 `uc 1 head 1 2 `uc 1 tail 1 3 ]
+[s S170 Buffer 7 `uc 1 count 1 0 `uc 1 overflow 1 1 `uc 1 enableOverwrite 1 2 `S165 1 private 4 3 ]
+[v Buffer_InitWithOverwrite@self self `*.4S170  1 a 1 wreg ]
+[v Buffer_InitWithOverwrite@self self `*.4S170  1 a 1 wreg ]
+[v Buffer_InitWithOverwrite@arrayIn arrayIn `*.4uc  1 p 1 0 ]
+[v Buffer_InitWithOverwrite@arrayInSize arrayInSize `uc  1 p 1 1 ]
+[v Buffer_InitWithOverwrite@overwrite overwrite `uc  1 p 1 2 ]
+"40
+"38
+[v Buffer_InitWithOverwrite@self self `*.4S170  1 a 1 4 ]
+"44
+} 0
+"18 C:\Users\maspin\MPLABXProjects\BufferTest.X\mcc_generated_files/interrupt_manager.c
+[v _INTERRUPT_InterruptManager INTERRUPT_InterruptManager `II(v  1 e 1 0 ]
+{
+"33
+} 0
+"101 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/main.c
+[v _UARTTransmitFinished UARTTransmitFinished `(v  1 e 1 0 ]
+{
+"103
+[v UARTTransmitFinished@dataToSend dataToSend `uc  1 a 1 5 ]
+"115
+} 0
+"86 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/UART.c
+[v i1_UARTTransmitDisable UARTTransmitDisable `(v  1 e 1 0 ]
+{
+"89
+} 0
+"97 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/Buffer.c
+[v i1_Buffer_ReadChar Buffer_ReadChar `(uc  1 e 1 0 ]
+{
+[s S165 . 4 `*.4uc 1 buffer 1 0 `uc 1 size 1 1 `uc 1 head 1 2 `uc 1 tail 1 3 ]
+[s S170 Buffer 7 `uc 1 count 1 0 `uc 1 overflow 1 1 `uc 1 enableOverwrite 1 2 `S165 1 private 4 3 ]
+[v i1Buffer_ReadChar@self self `*.4S170  1 a 1 wreg ]
+[v i1Buffer_ReadChar@dataToReturn Buffer_ReadChar `uc  1 a 1 2 ]
+[v i1Buffer_ReadChar@self self `*.4S170  1 a 1 wreg ]
+"99
+"97
+[v i1Buffer_ReadChar@self self `*.4S170  1 a 1 3 ]
+"110
+} 0
+"140
+[v i1_Buffer_IsNotEmpty Buffer_IsNotEmpty `(uc  1 e 1 0 ]
+{
+[s S165 . 4 `*.4uc 1 buffer 1 0 `uc 1 size 1 1 `uc 1 head 1 2 `uc 1 tail 1 3 ]
+[s S170 Buffer 7 `uc 1 count 1 0 `uc 1 overflow 1 1 `uc 1 enableOverwrite 1 2 `S165 1 private 4 3 ]
+[v i1Buffer_IsNotEmpty@self self `*.4S170  1 a 1 wreg ]
+[v i1Buffer_IsNotEmpty@self self `*.4S170  1 a 1 wreg ]
+"142
+"140
+[v i1Buffer_IsNotEmpty@self self `*.4S170  1 a 1 0 ]
+"146
+} 0
+"71 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/UART.c
+[v _UARTTransmitChar UARTTransmitChar `(v  1 e 1 0 ]
+{
+[v UARTTransmitChar@data data `uc  1 a 1 wreg ]
+[v UARTTransmitChar@data data `uc  1 a 1 wreg ]
+"75
+[v UARTTransmitChar@data data `uc  1 a 1 0 ]
+"79
+} 0
+"93 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/main.c
+[v _UARTReceiveInterrupt UARTReceiveInterrupt `(v  1 e 1 0 ]
+{
+"95
+[v UARTReceiveInterrupt@receivedChar receivedChar `uc  1 a 1 8 ]
+"97
+} 0
+"56 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/Buffer.c
+[v i1_Buffer_WriteChar Buffer_WriteChar `(v  1 e 1 0 ]
+{
+[s S165 . 4 `*.4uc 1 buffer 1 0 `uc 1 size 1 1 `uc 1 head 1 2 `uc 1 tail 1 3 ]
+[s S170 Buffer 7 `uc 1 count 1 0 `uc 1 overflow 1 1 `uc 1 enableOverwrite 1 2 `S165 1 private 4 3 ]
+[v i1Buffer_WriteChar@self self `*.4S170  1 a 1 wreg ]
+[v i1Buffer_WriteChar@tempHead Buffer_WriteChar `uc  1 a 1 5 ]
+[v i1Buffer_WriteChar@self self `*.4S170  1 a 1 wreg ]
+[v i1Buffer_WriteChar@receivedChar receivedChar `uc  1 p 1 0 ]
+"58
+"56
+[v i1Buffer_WriteChar@self self `*.4S170  1 a 1 6 ]
+"91
+} 0
+"112 C:\Users\maspin\MPLABXProjects\BufferTest.X\Source/UART.c
+[v _UARTGetReceivedChar UARTGetReceivedChar `(uc  1 e 1 0 ]
+{
+"115
+} 0
