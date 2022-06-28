@@ -36,7 +36,7 @@ typedef enum ButtonStateTag
     BUTTON_UP = 0,
     BUTTON_DEBOUNCE_PRESS,
     BUTTON_DOWN,
-    BUTTON_DEBOUNCE_RELEASE,   
+    BUTTON_DEBOUNCE_RELEASE,
 } ButtonState;
 
 typedef enum ButtonTypeTag
@@ -93,7 +93,7 @@ typedef struct DigitalButtonTag
 } DigitalButton;
 
 /** 
- * Description of struct members: TODO
+ * Description of struct members:
  * 
  * pressDebouncePeriod  the number of ticks to debounce the button press
  * 

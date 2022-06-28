@@ -39,7 +39,7 @@
  *      There are multiple types of events available to you. When you check for 
  * an event, the flag for that event is not automatically cleared. This is for 
  * you to decide how to handle it. Normally, I clear the flag right after 
- * checking for an event, but there may be times when you don't want to do that. 
+ * checking for an event, but there may be times when you don't want to do that.
  * Functions have been provided for you to check for events and clear flags.
  * 
  *      For the most part, the only events you really need to use are the short 
