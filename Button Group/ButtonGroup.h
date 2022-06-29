@@ -53,8 +53,6 @@ typedef struct ButtonGroupTag
 
 void BG_Init(ButtonGroup *self, uint16_t debounceMs, uint16_t tickMs);
 
-// -----------------------------------------------------------------------------
-
 void BG_Tick(ButtonGroup *self);
 
 void BG_UpdateButtonValue(ButtonGroup *self, uint8_t index, bool isPressed);
