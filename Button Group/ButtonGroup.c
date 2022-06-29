@@ -18,7 +18,7 @@
  * 
  *      This version of the debounce code is based on an alogrithm that has
  * around for many years. It uses a very simple counter to act as integrator.
- * When the integrator reaches either 0 or the maximum the output state is
+ * When the integrator reaches either 0 or the maximum, the output state is
  * changed.
  * 
  *      I took this simple approach and added a few extra steps. At the end I
