@@ -25,7 +25,7 @@
  * check the previous state of the output to determine rising and falling 
  * transitions (pressed or released). I also added my usual object oriented
  * approach that I use for all of my C libraries. Every function uses a pointer
- * called self as it's first argument. This is the pointer to the Button Group 
+ * called self as its first argument. This is the pointer to the Button Group 
  * object you are currently using. 
  * 
  *      To create a group of buttons, initialize the object with the debounce
