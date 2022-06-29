@@ -3,9 +3,9 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 3/10/22    Original creation (G0 implementation)
+ * @date 3/12/22    Original creation (G0 implementation)
  * @date 6/13/22    Ported settings for F1
- * @date 6/20/22    9-bit, parity, and Tx interrupt options
+ * @date 6/19/22    9-bit, parity, and Tx interrupt options
  * 
  * @file UART1_STM32F1.c
  * 

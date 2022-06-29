@@ -5,8 +5,8 @@
  * 
  * @date 12/2/14   Original creation
  * @date 2/4/22    Modified
- * @date 3/9/22    Changed to use function table and match new interface
- * @date 6/13/22   Changed compute baud rate function
+ * @date 3/5/22    Changed to use function table and match new interface
+ * @date 6/12/22   Changed compute baud rate function
  * 
  * @file UART2.h
  * 
