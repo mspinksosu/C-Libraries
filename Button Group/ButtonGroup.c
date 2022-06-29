@@ -43,10 +43,11 @@
  * 
  * #define NUM_BUTTON_GROUPS    (TOTAL_BUTTONS / 8 + 1)
  * 
- * Here are some other useful macros:
+ * Here are some more useful macros:
  * 
  * #define InputGroup(x) (x >> 3) // divide by 8
  * #define InputBit(x) (x & 0x07) // mod 8
+ * #define ButtonArrayDecode(array, x) array[InputGroup(x)], InputBit(x)
  * 
  * Example Usage:
  *      ButtonGroup oneButtonGroup;
@@ -66,7 +67,10 @@
  * 
  *      for(i=0; i<NUM_BUTTON_GROUPS; i++) {
  *          BG_Tick(&arrayOfButtons[i]); } // update all of the button groups
- *
+ *      
+ *      if(BG_GetPress(ButtonArrayDecode(&arrayOfButtons, INPUT20)))
+ *      { .... }
+ * 
  ******************************************************************************/
 
 #include "ButtonGroup.h"
