@@ -259,7 +259,7 @@ void BG_ClearReleaseFlag(ButtonGroup *self, uint8_t index)
 uint8_t BG_GetButtonOutput(ButtonGroup *self, uint8_t index)
 {
     if(index > 7)
-        return;
+        return 0;
         
     if(self->output & (1 << index))
         return 1;
