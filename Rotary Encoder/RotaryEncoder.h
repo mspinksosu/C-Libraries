@@ -5,19 +5,27 @@
  * 
  * @date 10/2/16    Original Creation
  * @date 2/21/22    Added Doxygen
+ * @date 7/2/22     Redesigned to add different encoders and debouncing
  * 
  * @file RotaryEncoder.h
  * 
  * @details
- *      Functions for a generic rotary encoder with switch. This is a
- *      quadrature rotary encoder with the number of pulses per revolution
- *      equal to half the detents. This is the most common type of rotary
- *      encoder.
+ *      A library that handles the basic quadrature rotary encoder. Quadrature 
+ * rotary encoders have two traits that define them. The number of pulses per 
+ * revolution (PPR) and the number of detents. Our goal is to generate a change 
+ * in the output every time the knob moves one "click" or detent. To do that, 
+ * you must know how many PPR and how many detents.
  * 
- *      One phase of the rotary encoder should have both rising and falling
- *      edge interrupts enabled. It will look at a rising or falling edge
- *      on channel A and compare it to channel B to determine the direction 
- *      that the encoder was rotated.
+ *      To create a rotary encoder you need to know the type. This is the
+ * number of pulses per revolution (PPR) and the number of detents. If you
+ * don't know, I will just assume that it is "1/2 cycle per detent"
+ * 
+ *      You also need the debounce time in milliseconds and the expected update 
+ * rate in milliseconds (how often you call the tick function). If you are 
+ * debouncing using an RC filter, use 0 as the debounce time. For the tick rate, 
+ * you should be updating the rotary encoder fairly quickly. If you update it 
+ * too slow, it may feel sluggish. Most datasheets I've looked at recommend a 
+ * 5 ms debounce time. The maximum available debounce time is 255 ms.
  * 
  * ****************************************************************************/
 
@@ -26,6 +34,7 @@
 
 // ***** Includes **************************************************************
 
+#include <stdint.h>
 #include <stdbool.h>
 
 // ***** Defines ***************************************************************
@@ -33,20 +42,44 @@
 
 // ***** Global Variables ******************************************************
 
+typedef enum RotaryEncoderTypeTag
+{
+    RE_HALF_CYCLE_PER_DETENT = 0,
+    RE_FULL_CYCLE_PER_DETENT,
+    RE_QUARTER_CYCLE_PER_DETENT,
+} RotaryEncoderType;
+
+typedef struct RotaryEncoderTag
+{
+    RotaryEncoderType type;
+    uint8_t debouncePeriod;
+    uint8_t phaseAIntegrator;
+    uint8_t phaseBIntegrator;
+
+    uint8_t output;
+    
+    union {
+        struct {
+            unsigned clockwise        :1;
+            unsigned counterClockwise :1;
+        } directionEvent;
+    } flags;
+} RotaryEncoder;
+
 
 // ***** Function Prototypes ***************************************************
 
-void RE_RotateInterrupt(bool AisHigh, bool BisHigh);
+void RE_Init(RotaryEncoder *self, uint16_t debounceMs, uint16_t tickMs);
 
-void RE_SwitchInterrupt(bool isPressed);
+void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debounceMs, uint16_t tickMs);
 
-bool RE_GetClockwise(void);
+void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh);
 
-bool RE_GetCounterClockwise(void);
+bool RE_GetClockwise(RotaryEncoder *self);
 
-bool RE_GetSwitchPress(void);
+bool RE_GetCounterClockwise(RotaryEncoder *self);
 
-bool RE_GetSwitchRelease(void);
+
 
 #endif	/* ROTARYENCODER_H */
 

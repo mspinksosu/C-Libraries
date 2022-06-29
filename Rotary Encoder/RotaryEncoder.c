@@ -5,23 +5,37 @@
  * 
  * @date 10/2/16    Original Creation
  * @date 2/21/22    Added Doxygen
+ * @date 7/2/22     Redesigned to add different encoders and debouncing
  * 
  * @file RotaryEncoder.h
  * 
  * @details
- *      Functions for a generic rotary encoder with switch. This is a
- *      quadrature rotary encoder with the number of pulses per revolution
- *      equal to half the detents. This is the most common type of rotary
- *      encoder.
- *       
- *      One phase of the rotary encoder should have both rising and falling
- *      edge interrupts enabled. It will look at a rising or falling edge
- *      on channel A and compare it to channel B to determine the direction 
- *      that the encoder was rotated.
+ *      A library that handles the basic quadrature rotary encoder. Quadrature 
+ * rotary encoders have two traits that define them. The number of pulses per 
+ * revolution (PPR) and the number of detents. Our goal is to generate a change 
+ * in the output every time the knob moves one "click" or detent. To do that, 
+ * you must know how many PPR and how many detents.
  * 
- *      The flags for the getters are cleared automatically when called.
+ *      By far, the most common type of rotary encoder is one that has half
+ * the number of detents as PPR. We refer to this is a "1/2 cycle per detent" 
+ * rotary encoder. There are also rotary encoders that have the same number of
+ * PPR as detents. These are "1 cycle per detent" rotary encoders. 
  * 
- *      TODO Expand to accept the other kind of rotary encoder later.
+ *      The simplest way to decode these types of rotary encoders is to look at 
+ * the rising and falling edge of one phase and then check the other phase. 
+ * There are also "1/4 cycle per detent" rotary encoders. For this type, both 
+ * phases have to monitored for rising and falling edges.
+ * 
+ *      To create a rotary encoder you need the debounce time in milliseconds
+ * and the expected update rate in milliseconds (how often you call the tick
+ * function). If you are debouncing using an RC filter, use 0 as the debounce 
+ * time. For the tick rate, you should be updating the rotary encoder fairly
+ * quickly. If you update it too slow, it may feel sluggish. Most datasheets 
+ * I've looked at recommend a 5 ms debounce time. The maximum available 
+ * debounce time is 255 ms.
+ * 
+ *      The flags for the get clockwise and get counter clockwise functions are
+ * cleared automatically whenever they are called.
  * 
  * ****************************************************************************/
 
@@ -35,107 +49,175 @@
 
 // ***** Global Variables ******************************************************
 
-bool isClockwise, isCounterClockwise, isSwitchPress, isSwitchRelease;
+/* The previous value of the phases is shifted left and combined with the
+current state. Using this, we can determine which direction we are going. The
+value of the output will look like: 0000baba. The index of the table 
+corresponds to these values */
+static uint8_t rotaryLookupTable[] = 
+{
+
+}
 
 /***************************************************************************//**
- * @brief Rotate Interrupt
+ * @brief Initialize a Rotary Encoder object (half cycle type)
  * 
- * To be called upon to process an event from the rotary encoder
+ * Initializes a rotary encoder of the most common type
+ * 
+ * @param self  pointer to the Rotary Encoder that you are using
+ * 
+ * @param debounceMs  the debounce time in milliseconds
+ * 
+ * @param tickMs  how often you plan to call the RE Tick function
+ */
+void RE_Init(RotaryEncoder *self, uint16_t debounceMs, uint16_t tickMs)
+{
+    RE_InitWithType(self, RE_HALF_CYCLE_PER_DETENT, debounceMs, tickMs);
+}
+
+/***************************************************************************//**
+ * @brief Initialize a Rotary Encoder object
+ * 
+ * @param self  pointer to the Rotary Encoder that you are using
+ * 
+ * @param debounceMs  the debounce time in milliseconds
+ * 
+ * @param tickMs  how often you plan to call the RE Tick function
+ */
+void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debounceMs, uint16_t tickMs)
+{
+    self->type = type;
+    uint16_t debouncePeriod;
+    
+    if(tickMs != 0)
+    {
+        debouncePeriod = debounceMs / tickMs;
+    }
+
+    /* If you are using an RC filter to debounce, the debounce period should be
+    zero. However, this type of debouncing algorithm requires a non-zero number 
+    for its minimum. This will simply toggle the output every time the input 
+    changes. For the maximum, I limit it to 8-bits. If your rotary encoder needs
+    more than 255 ms to debounce, you've got some serious issues. */
+    if(debouncePeriod == 0)
+        self->debouncePeriod = 1;
+    else if(debouncePeriod > 255)
+        debouncePeriod = 255;
+    
+    self->debouncePeriod = (uint8_t)debouncePeriod;
+}
+
+/***************************************************************************//**
+ * @brief Update the value of phases of the Rotary Encoder
+ * 
+ * This function must be called up periodically at the rate that you specified
+ * when you initialized the Rotary Encoder object. If you're rotary encoder
+ * happens to be going the opposite direction as the events generated, just 
+ * invert the inputs to this function.
  * 
  * @param AisHigh boolean for phase A of the rotary encoder
  *  
  * @param BisHigh boolean for phase B of the rotary encoder
  */
-void RE_RotateInterrupt(bool AisHigh, bool BisHigh)
+void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh)
 {
-    // Phase A is enabled for rising and falling interrupts.
-    // Look for a rising edge on channel A and check channel B.
-    // Then look for a falling edge on channel A and check channel B.
-    
-    if(AisHigh) // rising edge on phase A
+    /* First update the inputs */
+    if(AisHigh)
     {
-        if(BisHigh)
-            isCounterClockwise = true;
+        if(self->phaseAIntegrator < self->debouncePeriod)
+        {
+            self->phaseAIntegrator++;
+        }
         else
-            isClockwise = true;
+        {
+            /* Prevent from going over maximum value */
+            self->phaseAIntegrator = self->debouncePeriod;
+        }
     }
-    else // falling edge on phase A
+    else if(self->phaseAIntegrator > 0)
     {
-        if(BisHigh)
-            isClockwise = true;
-        else
-            isCounterClockwise = true;
+        /* Phase A low */
+        self->phaseAIntegrator--;
     }
-}
 
-/***************************************************************************//**
- * @brief Switch Interrupt
- * 
- * To be called upon to process an event from the rotary encoder
- * 
- * @param isPressed boolean. true = switch pressed, false = release
- */
-void RE_SwitchInterrupt(bool isPressed)
-{
-    // There are two flags, one for press and one for release. They will be
-    // processed separately.
-    isSwitchPress = isPressed;
-    isSwitchRelease = !isPressed;
+    if(BisHigh)
+    {
+        if(self->phaseBIntegrator < self->debouncePeriod)
+        {
+            self->phaseBIntegrator++;
+        }
+        else
+        {
+            /* Prevent from going over maximum value */
+            self->phaseBIntegrator = self->debouncePeriod;
+        }
+    }
+    else if(self->phaseBIntegrator > 0)
+    {
+        /* Phase B low */
+        self->phaseBIntegrator--;
+    }
+
+    /* Update the integrator outputs. Shift the outputs left. This will allow
+    output from the previous state and the current state together. Phase A will 
+    be encoded as bit 0, and and phase B as bit 1. 
+    So the byte will look like: 0000baba */
+    self->output = (self->output << 2) & 0x0F;
+
+    if(self->phaseAIntegrator == 0)
+    {
+        self->output &= ~0x01; // clear phase A (bit 0)
+    }
+    else if(self->phaseAIntegrator >= self->debouncePeriod)
+    {
+        self->output |= 0x01; // set phase A (bit 0)
+    }
+    
+    if(self->phaseBIntegrator == 0)
+    {
+        self->output &= ~0x02; // clear phase B (bit 1)
+    }
+    else if(self->phaseBIntegrator >= self->debouncePeriod)
+    {
+        self->output |= 0x02; // set phase B (bit 1)
+    }
+
+    /* Decode the phases */
+
 }
 
 /***************************************************************************//**
  * @brief Get Clockwise Event
  * 
- * @param none
+ * @param self  pointer to the Rotary Encoder that you are using
  * 
  * @return true if the there was one full clockwise click of the rotary encoder.
  */
-bool RE_GetClockwise()
+bool RE_GetClockwise(RotaryEncoder *self)
 {
-    bool temp = isClockwise;
-    isClockwise = false;
-    return temp;
+    bool retVal = false;
+
+    if(self->flags.directionEvent.clockwise)
+        retVal = true;
+    
+    self->flags.directionEvent.clockwise = 0;
+    return retVal;
 }
 
 /***************************************************************************//**
  * @brief Get Counter Clockwise Event
  * 
- * @param none
+ * @param self  pointer to the Rotary Encoder that you are using
  * 
  * @return true if the there was one full counter-clockwise click of the rotary 
  * encoder
  */
-bool RE_GetCounterClockwise()
+bool RE_GetCounterClockwise(RotaryEncoder *self)
 {
-    bool temp = isCounterClockwise;
-    isCounterClockwise = false;
-    return temp;
-}
+    bool retVal = false;
 
-/***************************************************************************//**
- * @brief Get Switch Press Event
- * 
- * @param none
- * 
- * @return true = the switch was pressed
- */
-bool RE_GetSwitchPress()
-{
-    bool temp = isSwitchPress;
-    isSwitchPress = false;
-    return temp;
-}
-
-/***************************************************************************//**
- * @brief Get Switch Release Event
- * 
- * @param none
- * 
- * @return true = the switch was released
- */
-bool RE_GetSwitchRelease()
-{
-    bool temp = isSwitchRelease;
-    isSwitchRelease = false;
-    return temp;
+    if(self->flags.directionEvent.counterClockwise)
+        retVal = true;
+    
+    self->flags.directionEvent.counterClockwise = 0;
+    return retVal;
 }
