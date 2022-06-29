@@ -5,7 +5,7 @@
  * 
  * @date 6/25/22     Original creation
  * 
- * @file Button_Group.h
+ * @file ButtonGroup.h
  * 
  * @details
  *      A stripped down version of my original button library with less
