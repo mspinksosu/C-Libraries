@@ -13,7 +13,8 @@
  * grouped in eight. There are no analog button options, no long press feature,
  * and the debounce length is used for both the press and release. This library 
  * can also be used for things like inserting connectors or switches. Anything 
- * that requires debouncing. 
+ * that requires debouncing. This library is most useful if you have a large 
+ * number of inputs that need debouncing.
  * 
  ******************************************************************************/
 
@@ -50,7 +51,7 @@ typedef struct ButtonGroupTag
 
 // ***** Function Prototypes ***************************************************
 
-void ButtonGroup_Init(ButtonGroup *self, uint16_t debounceMs, uint16_t tickMs);
+void BG_Init(ButtonGroup *self, uint16_t debounceMs, uint16_t tickMs);
 
 // -----------------------------------------------------------------------------
 

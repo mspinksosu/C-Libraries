@@ -13,7 +13,20 @@
  * grouped in eight. There are no analog button options, no long press feature,
  * and the debounce length is used for both the press and release. This library 
  * can also be used for things like inserting connectors or switches. Anything 
- * that requires debouncing. 
+ * that requires debouncing. This library is most useful if you have a large 
+ * number of inputs that need debouncing.
+ * 
+ *      This version of the debounce code is based on an alogrithm that has
+ * around for many years. It uses a very simple counter to act as integrator.
+ * When the integrator reaches either 0 or the maximum the output state is
+ * changed.
+ * 
+ *      I took this simple approach and added a few extra steps. At the end I
+ * check the previous state of the output to determine rising and falling 
+ * transitions (pressed or released). I also added my usual object oriented
+ * approach that I use for all of my C libraries. Every function uses a pointer
+ * called self as it's first argument. This is the pointer to the Button Group 
+ * object you are currently using. 
  * 
  *      To create a group of buttons, initialize the object with the debounce
  * time and the sample rate in milliseconds.
@@ -23,7 +36,36 @@
  * Normally, I clear the flag right after checking for an event, but there may 
  * be times when you don't want to do that.
  * 
- * Example Code:
+ * If you have a large list of inputs you can use some preprocessor macros to 
+ * help manage your inputs and their indexes. You can use an enum with the last
+ * value being "TOTAL". By doing this, you can make an array of Button Group
+ * objects. Example:
+ * 
+ * #define NUM_BUTTON_GROUPS    (TOTAL_BUTTONS / 8 + 1)
+ * 
+ * Here are some other useful macros:
+ * 
+ * #define InputGroup(x) (x >> 3) // divide by 8
+ * #define InputBit(x) (x & 0x07) // mod 8
+ * 
+ * Example Usage:
+ *      ButtonGroup oneButtonGroup;
+ *      ButtonGroup arrayOfButtons[NUM_BUTTON_GROUPS];
+ *      
+ *      BG_Init(&oneButtonGroup, DEBOUNCE_MS, TICK_MS);
+ * 
+ *      for(i=0; i<NUM_BUTTON_GROUPS; i++) {
+ *          BG_Init(&arrayOfButtons[i], DEBOUNCE_MS, TICKS_MS); }
+ * 
+ *      BG_UpdateButtonValue(&oneButtonGroup, INPUT1, true); // pressed
+ *      
+ *      BG_UpdateButtonValue(&arrayOfButtons[InputGroup(INPUT20)], 
+ *          InputBit(INPUT20), true);
+ * 
+ *      BG_Tick(&oneButtonGroup);
+ * 
+ *      for(i=0; i<NUM_BUTTON_GROUPS; i++) {
+ *          BG_Tick(&arrayOfButtons[i]); } // update all of the button groups
  *
  ******************************************************************************/
 
