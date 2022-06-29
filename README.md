@@ -13,16 +13,15 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
 - [x] Buffer: Complete!
 - [x] Button: Refactor! Ready to test!
   - [x] Added analog button
+- [x] Button Group: New library! Ready to test!
 - [ ] Comparator: New library! Ready to test!
   - [x] doxygen
 - [ ] GPIO: Redesign!
   - [x] STM32 implementation finished! Testing in progress
+  - [x] Refactored STM32 G0 to get rid of ST library dependancy
   - [ ] Update doxygen 
   - [ ] PIC32 implementation in progress
 - [ ] I2C: Old PIC32 library. Working. Needs updating
-- [ ] Map Function: 99% done! 
-  - [x] Added linear interpolation
-  - [ ] Test linear with various inputs
 - [ ] Rotary Encoder: Old PIC16 library. Working. Need updating
   - [ ] Add different type of rotary encoder
 - [ ] SPI: Not started yet
@@ -31,6 +30,8 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
 - [ ] UART: Complete rebuild! Ready to test!
     - [x] PIC16 implementation finished! Testing in progress
     - [x] STM32 implementation finished! Testing in progress
+    - [x] Added options for flow control and interrupts
+    - [x] STM32 F1 implementation added and tested
     - [ ] Update doxygen
 
 ---

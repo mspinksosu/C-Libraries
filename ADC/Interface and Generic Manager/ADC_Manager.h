@@ -3,7 +3,7 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 2/14/22  Original creation
+ * @date 2/13/22  Original creation
  * @date 2/24/22  Added functions for enable and disable
  * 
  * @file ADC_Manager.h

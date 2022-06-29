@@ -1,11 +1,11 @@
 /***************************************************************************//**
- * @brief Button Library (Light) Header File
+ * @brief Button Group Library Header File
  * 
  * @author  Matthew Spinks
  * 
- * @date 6/28/22     Original creation
+ * @date 6/25/22     Original creation
  * 
- * @file Button_Light.h
+ * @file Button_Group.h
  * 
  * @details
  *      A stripped down version of my original button library with less
@@ -17,8 +17,8 @@
  * 
  ******************************************************************************/
 
-#ifndef BUTTON_LIGHT_H
-#define	BUTTON_LIGHT_H
+#ifndef BUTTON_GROUP_H
+#define	BUTTON_GROUP_H
 
 // ***** Includes **************************************************************
 
@@ -34,17 +34,7 @@
 typedef struct ButtonGroupTag
 {
     uint16_t debouncePeriod;
-    //uint16_t debounceCounter;
-    
     uint16_t integrator[8];
-    // int16_t integrator1;
-    // int16_t integrator2;
-    // int16_t integrator3;
-    // int16_t integrator4;
-    // int16_t integrator5;
-    // int16_t integrator6;
-    // int16_t integrator7;
-    // int16_t integrator8;
 
     uint8_t input;
     uint8_t output;
@@ -66,16 +56,19 @@ void ButtonGroup_Init(ButtonGroup *self, uint16_t debounceMs, uint16_t tickMs);
 
 void BG_Tick(ButtonGroup *self);
 
-void BG_SetButtonValue(ButtonGroup *self, uint8_t index, bool isPressed);
+void BG_UpdateButtonValue(ButtonGroup *self, uint8_t index, bool isPressed);
 
 bool BG_GetPress(ButtonGroup *self, uint8_t index);
 
 void BG_ClearPressFlag(ButtonGroup *self, uint8_t index);
 
+bool BG_GetRelease(ButtonGroup *self, uint8_t index);
+
+void BG_ClearReleaseFlag(ButtonGroup *self, uint8_t index);
+
 uint8_t BG_GetButtonOutput(ButtonGroup *self, uint8_t index);
 
 uint8_t BG_GetButtonGroupOutput(ButtonGroup *self);
 
-// TODO Button Released
 
-#endif	/* BUTTON_LIGHT_H */
+#endif	/* BUTTON_GROUP_H */

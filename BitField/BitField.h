@@ -3,7 +3,7 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 5/12/22  Original creation
+ * @date 5/14/22  Original creation
  * 
  * @file BitField.h
  * 

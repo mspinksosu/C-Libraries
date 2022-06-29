@@ -4,7 +4,7 @@
  * @author Matthew Spinks
  * 
  * @date 2/19/22  Original creation
- * @date 2/24/22  Added function pointers for enable and disable
+ * @date 2/26/22  Added function pointers for enable and disable
  * 
  * @file ADC_Manager_STM32G0_DMA.c
  * 

@@ -3,7 +3,7 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 2/15/22  Original creation
+ * @date 2/13/22  Original creation
  * @date 2/19/22  Modified to use array for initialization
  * 
  * @file ADC_Manager.c
