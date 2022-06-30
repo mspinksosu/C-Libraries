@@ -61,6 +61,8 @@ void Timer_InitMs(Timer *self, uint16_t periodMs, uint16_t tickMs)
 {
     if(tickMs != 0)
         self->period = periodMs / tickMs;
+
+    self->flags.all = 0;
 }
 
 /***************************************************************************//**

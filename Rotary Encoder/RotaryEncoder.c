@@ -120,6 +120,11 @@ void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debou
         debouncePeriod = 255;
     
     self->debouncePeriod = (uint8_t)debouncePeriod;
+    self->phaseAIntegrator = 0;
+    self->phaseBIntegrator = 0;
+    self->state = 0;
+    self->output = 0;
+    self->flags.all = 0;
 }
 
 /***************************************************************************//**
@@ -225,9 +230,9 @@ void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh)
     if((self->output & self->typeMask) == 0)
     {
         if(goClockwise)
-            self->flags.directionEvent.clockwise = 1;
+            self->flags.clockwise = 1;
         else
-            self->flags.directionEvent.counterClockwise = 1;
+            self->flags.counterClockwise = 1;
     }
 }
 
@@ -242,10 +247,10 @@ bool RE_GetClockwise(RotaryEncoder *self)
 {
     bool retVal = false;
 
-    if(self->flags.directionEvent.clockwise)
+    if(self->flags.clockwise)
         retVal = true;
     
-    self->flags.directionEvent.clockwise = 0;
+    self->flags.clockwise = 0;
     return retVal;
 }
 
@@ -261,9 +266,9 @@ bool RE_GetCounterClockwise(RotaryEncoder *self)
 {
     bool retVal = false;
 
-    if(self->flags.directionEvent.counterClockwise)
+    if(self->flags.counterClockwise)
         retVal = true;
     
-    self->flags.directionEvent.counterClockwise = 0;
+    self->flags.counterClockwise = 0;
     return retVal;
 }

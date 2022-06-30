@@ -103,6 +103,11 @@ void BG_Init(ButtonGroup *self, uint16_t debounceMs, uint16_t tickMs)
     {
         self->debouncePeriod = 1;
     }
+
+    self->output = 0;
+    self->previousOutput = 0;
+    self->pressed = 0;
+    self->released = 0;
 }
 
 /***************************************************************************//**

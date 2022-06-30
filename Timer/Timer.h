@@ -51,6 +51,7 @@ struct Timer
             unsigned expired    :1;
             unsigned            :0; // fill to nearest byte
         };
+        uint8_t all;
     } flags;
 };
 

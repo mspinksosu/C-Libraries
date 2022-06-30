@@ -67,7 +67,9 @@ typedef struct RotaryEncoderTag
         struct {
             unsigned clockwise        :1;
             unsigned counterClockwise :1;
-        } directionEvent;
+            unsigned                  :0;
+        };
+        uint8_t all;
     } flags;
 } RotaryEncoder;
 
