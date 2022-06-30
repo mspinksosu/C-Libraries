@@ -51,12 +51,13 @@ typedef enum RotaryEncoderTypeTag
 
 typedef struct RotaryEncoderTag
 {
-    RotaryEncoderType type;
+    uint8_t typeMask;
     uint8_t debouncePeriod;
     uint8_t phaseAIntegrator;
     uint8_t phaseBIntegrator;
 
-    uint8_t output;
+    uint8_t state;
+    int8_t output;
     
     union {
         struct {

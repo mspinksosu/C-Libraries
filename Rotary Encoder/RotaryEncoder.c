@@ -51,12 +51,12 @@
 
 /* The previous value of the phases is shifted left and combined with the
 current state. Using this, we can determine which direction we are going. The
-value of the output will look like: 0000baba. The index of the table 
-corresponds to these values */
-static uint8_t rotaryLookupTable[] = 
-{
-
-}
+value of the output will look like this: 0000baba. The index of the table 
+corresponds to these values. A postive number indicates a clockwise transition
+and a negative number indicates a counter clockwise transition. A zero means
+there was no transition, or that it is invalid. */
+static int8_t rotaryLookupTable[] = { 0, 1, -1, 0, -1, 0, 0, 1,
+                                      1, 0, 0, -1, 0, -1, 1, 0 };
 
 /***************************************************************************//**
  * @brief Initialize a Rotary Encoder object (half cycle type)
@@ -85,9 +85,25 @@ void RE_Init(RotaryEncoder *self, uint16_t debounceMs, uint16_t tickMs)
  */
 void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debounceMs, uint16_t tickMs)
 {
-    self->type = type;
     uint16_t debouncePeriod;
     
+    /* The rotary encoder type mask will tell us how often we need to change
+    the output depending on the type of rotary encoder. There will be a state
+    change every 1/4 cycle. But the detent will only be at either every 1/4,
+    1/2, or full cycle */
+    switch(type)
+    {
+        case RE_HALF_CYCLE_PER_DETENT:
+            self->typeMask = 0x01; // multiples of two
+            break;
+        case RE_FULL_CYCLE_PER_DETENT:
+            self->typeMask = 0x03; // multiples of four
+            break;
+        default:
+            self->typeMask = 0; // RE_QUARTER_CYCLE_PER_DETENT
+            break;
+    }
+
     if(tickMs != 0)
     {
         debouncePeriod = debounceMs / tickMs;
@@ -110,9 +126,9 @@ void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debou
  * @brief Update the value of phases of the Rotary Encoder
  * 
  * This function must be called up periodically at the rate that you specified
- * when you initialized the Rotary Encoder object. If you're rotary encoder
+ * when you initialized the Rotary Encoder object. If your rotary encoder
  * happens to be going the opposite direction as the events generated, just 
- * invert the inputs to this function.
+ * invert the inputs to this function when you call it.
  * 
  * @param AisHigh boolean for phase A of the rotary encoder
  *  
@@ -157,32 +173,62 @@ void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh)
         self->phaseBIntegrator--;
     }
 
-    /* Update the integrator outputs. Shift the outputs left. This will allow
-    output from the previous state and the current state together. Phase A will 
-    be encoded as bit 0, and and phase B as bit 1. 
-    So the byte will look like: 0000baba */
-    self->output = (self->output << 2) & 0x0F;
+    /* Update the integrator outputs. Shifting the previous state left will 
+    allow us to see the output from the previous state and the current state 
+    together. Phase A will be encoded as bit 0, and and phase B as bit 1. 
+    So the byte will look like this: 0000baba */
+    self->state = ((self->state << 2) | self->state) & 0x0F;
 
+    /* Update the outputs */
     if(self->phaseAIntegrator == 0)
     {
-        self->output &= ~0x01; // clear phase A (bit 0)
+        self->state &= ~0x01; // clear phase A (bit 0)
     }
     else if(self->phaseAIntegrator >= self->debouncePeriod)
     {
-        self->output |= 0x01; // set phase A (bit 0)
+        self->state |= 0x01; // set phase A (bit 0)
     }
     
     if(self->phaseBIntegrator == 0)
     {
-        self->output &= ~0x02; // clear phase B (bit 1)
+        self->state &= ~0x02; // clear phase B (bit 1)
     }
     else if(self->phaseBIntegrator >= self->debouncePeriod)
     {
-        self->output |= 0x02; // set phase B (bit 1)
+        self->state |= 0x02; // set phase B (bit 1)
     }
+    
+    /* Decode the output using the state table. A state transition will occur
+    every quarter cycle. A postive number indicates a clockwise transition
+    and a negative number indicates a counter clockwise transition. A zero 
+    means there was no transition, or that it is invalid. */
+    int8_t newOutput = rotaryLookupTable[self->state];
+    bool goClockwise;
 
-    /* Decode the phases */
-
+    /* Detect direction reversal. A -1 to +1 or +1 to -1 changes the sign and
+    resets the count */
+    if(self->output != newOutput && self->output + newOutput == 0)
+    {
+        self->output = newOutput;
+    }
+    else
+    {
+        self->output += newOutput;
+    }
+    
+    if(self->output > 0)
+        goClockwise = true;
+    
+    /* The typemask will cause an event to occur every quarter, half, or full
+    cycle depending on the type of rotary encoder. It is based on modulo
+    division. */
+    if((self->output & self->typeMask) == 0)
+    {
+        if(goClockwise)
+            self->flags.directionEvent.clockwise = 1;
+        else
+            self->flags.directionEvent.counterClockwise = 1;
+    }
 }
 
 /***************************************************************************//**

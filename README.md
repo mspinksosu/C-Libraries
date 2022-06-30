@@ -22,8 +22,8 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
   - [ ] Update doxygen 
   - [ ] PIC32 implementation in progress
 - [ ] I2C: Old PIC32 library. Working. Needs updating
-- [ ] Rotary Encoder: Old PIC16 library. Working. Need updating
-  - [ ] Add different type of rotary encoder
+- [x] Rotary Encoder: Redesigned! Needs testing
+  - [x] Add different types of rotary encoder
 - [ ] SPI: Not started yet
 - [x] Switch: Complete!
 - [x] Timer: Complete!

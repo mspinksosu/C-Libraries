@@ -115,7 +115,7 @@ void BG_Init(ButtonGroup *self, uint16_t debounceMs, uint16_t tickMs)
  */
 void BG_Tick(ButtonGroup *self)
 {
-    /* Update inputs */
+    /* Update the inputs */
     for(uint8_t i = 0; i <= 7; i++)
     {
         if(self->input & (1 << i))
@@ -136,7 +136,8 @@ void BG_Tick(ButtonGroup *self)
         }
     }
 
-    /* Update outputs */
+    /* Update the outputs. The output only changes if the integrator hits the 
+    minimum or maximum value */
     for(uint8_t i = 0; i <= 7; i++)
     {
         if(self->integrator[i] == 0)
