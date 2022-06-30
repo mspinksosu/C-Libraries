@@ -17,7 +17,7 @@
  * you must know how many PPR and how many detents.
  * 
  *      By far, the most common type of rotary encoder is one that has half
- * the number of detents as PPR. We refer to this is a "1/2 cycle per detent" 
+ * the number of detents as PPR. We refer to this as a "1/2 cycle per detent" 
  * rotary encoder. There are also rotary encoders that have the same number of
  * PPR as detents. These are "1 cycle per detent" rotary encoders. 
  * 
