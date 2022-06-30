@@ -115,6 +115,7 @@ void Button_Analog_Create(AnalogButton *self, Button *base, uint16_t lowThreshol
     self->super->type = BUTTON_ANALOG;
     self->super->tickMs = tickMs;
     self->super->length = BUTTON_SHORT_PRESS;
+    self->super->flags.all = 0;
 
     if(lowThreshold > highThreshold)
     {
@@ -154,6 +155,7 @@ void Button_Digital_Create(DigitalButton *self, Button *base, uint16_t pressDebo
     self->super->type = BUTTON_DIGITAL;
     self->super->tickMs = tickMs;
     self->super->length = BUTTON_SHORT_PRESS;
+    self->super->flags.all = 0;
 
     if(tickMs != 0)
     {

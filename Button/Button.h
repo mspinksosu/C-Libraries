@@ -74,6 +74,7 @@ typedef struct ButtonTag
             unsigned buttonUpEvent      :1;
             unsigned                    :0; // fill to nearest byte
         };
+        uint8_t all;
     } flags;
 } Button;
 
