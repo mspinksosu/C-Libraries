@@ -18,21 +18,21 @@
  * 
  *      By far, the most common type of rotary encoder is one that has half
  * the number of detents as PPR. We refer to this as a "1/2 cycle per detent" 
- * rotary encoder. There are also rotary encoders that have the same number of
- * PPR as detents. These are "1 cycle per detent" rotary encoders. 
- * 
- *      The simplest way to decode these types of rotary encoders is to look at 
- * the rising and falling edge of one phase and then check the other phase. 
- * There are also "1/4 cycle per detent" rotary encoders. For this type, both 
- * phases have to monitored for rising and falling edges.
+ * rotary encoder. Meaning the knobs stops on a detent halfway through the 
+ * quadrature output cycle. There are also rotary encoders that have the same 
+ * number of PPR as detents ("full cycle per detent") and even 1/4 cycle per 
+ * detent rotary encoders. This last one has a detent on every state change in 
+ * the cycle. 
  * 
  *      To create a rotary encoder you need the debounce time in milliseconds
  * and the expected update rate in milliseconds (how often you call the tick
  * function). If you are debouncing using an RC filter, use 0 as the debounce 
  * time. For the tick rate, you should be updating the rotary encoder fairly
  * quickly. If you update it too slow, it may feel sluggish. Most datasheets 
- * I've looked at recommend a 5 ms debounce time. The maximum available 
- * debounce time is 255 ms.
+ * I've looked at recommend a 5 ms debounce time. If you're debouncing using 
+ * software, you'll probably want to update it around that fast. If you are 
+ * using RC filters, you can probably get away with going a little slower. The
+ * maximum available debounce time is 255 ms.
  * 
  *      The flags for the get clockwise and get counter clockwise functions are
  * cleared automatically whenever they are called.

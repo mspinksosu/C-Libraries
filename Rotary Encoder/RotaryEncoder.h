@@ -18,14 +18,18 @@
  * 
  *      To create a rotary encoder you need to know the type. This is the
  * number of pulses per revolution (PPR) and the number of detents. If you
- * don't know, I will just assume that it is "1/2 cycle per detent"
+ * don't know, just assume that it is "1/2 cycle per detent" which is the most 
+ * common type.
  * 
  *      You also need the debounce time in milliseconds and the expected update 
  * rate in milliseconds (how often you call the tick function). If you are 
  * debouncing using an RC filter, use 0 as the debounce time. For the tick rate, 
  * you should be updating the rotary encoder fairly quickly. If you update it 
  * too slow, it may feel sluggish. Most datasheets I've looked at recommend a 
- * 5 ms debounce time. The maximum available debounce time is 255 ms.
+ * 5 ms debounce time. If you're debouncing using software, you'll probably
+ * want to update it around that fast. If you are using RC filters, you can
+ * probably get away with going a little slower. The maximum available debounce 
+ * time is 255 ms.
  * 
  * ****************************************************************************/
 
