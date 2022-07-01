@@ -42,11 +42,11 @@
  * checking for an event, but there may be times when you don't want to do that.
  * Functions have been provided for you to check for events and clear flags.
  * 
- *      For the most part, the only events you really need to use are the short 
- * press and long press events. However, I've also included button up and 
- * button down events. This is useful in certain situations. Like for example, 
- * you need to register a button down event in order to wake up a display, but 
- * don't necessarily want to do the short press event.
+ *      Normally, you would only ever use the short press and long press events.
+ * However, I've also included button up and button down events. This is useful
+ * in certain situations. Like for example, you need to register a button down 
+ * event in order to wake up a display, but don't necessarily want to do the 
+ * short press event.
  * 
  * Example Code:
  *      Button PushButton;
@@ -284,7 +284,7 @@ void Button_ClearLongPressFlag(Button *self)
  * 
  * @param self  pointer to the Button that you are using
  * 
- * @return true if there was a long press event
+ * @return true if there was a button down event
  */
 bool Button_GetButtonDownEvent(Button *self)
 {
@@ -301,7 +301,7 @@ bool Button_GetButtonDownEvent(Button *self)
  * 
  * @param self  pointer to the Button that you are using
  * 
- * @return true if there was a long press event
+ * @return true if there was a button up event
  */
 bool Button_GetButtonUpEvent(Button *self)
 {
