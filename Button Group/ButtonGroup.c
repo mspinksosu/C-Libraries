@@ -36,6 +36,11 @@
  * Normally, I clear the flag right after checking for an event, but there may 
  * be times when you don't want to do that.
  * 
+ *      Normally you would only use the press and release evnets. However, I've 
+ * also included button up and button down events. This is useful in certain 
+ * situations. Like for example, you need to register a button down event in 
+ * order to wake up a display, but don't necessarily want to do the press event.
+ * 
  * If you have a large list of inputs you can use some preprocessor macros to 
  * help manage your inputs and their indexes. You can use an enum with the last
  * value being "TOTAL". By doing this, you can make an array of Button Group
@@ -125,6 +130,9 @@ void BG_Tick(ButtonGroup *self)
     {
         if(self->input & (1 << i))
         {
+            /* Button up and down events do not incorporate any debouncing */
+            self->buttonDown |= (1 << i);
+
             if(self->integrator[i] < self->debouncePeriod)
             {
                 self->integrator[i]++;
@@ -135,9 +143,12 @@ void BG_Tick(ButtonGroup *self)
                 self->integrator[i] = self->debouncePeriod;
             }
         }
-        else if(self->integrator[i] > 0)
+        else 
         {
-            self->integrator[i]--;
+            self->buttonUp |= (1 << i);
+
+            if(self->integrator[i] > 0)
+                self->integrator[i]--;
         }
     }
 
@@ -255,6 +266,80 @@ void BG_ClearReleaseFlag(ButtonGroup *self, uint8_t index)
         return;
 
     self->released &= ~(1 << index);
+}
+
+/***************************************************************************//**
+ * @brief Check if there was a button down event.
+ * 
+ * Button up and down events do not incorporate any debouncing.
+ * 
+ * @param self  pointer to the Button Group that you are using
+ * 
+ * @param index  button index 0 - 7
+ * 
+ * @return true if there was a button down event
+ */
+bool BG_GetButtonDownEvent(ButtonGroup *self, uint8_t index)
+{
+    if(index > 7)
+        return false;
+
+    if(self->buttonDown & (1 << index))
+        return true;
+    else
+        return false;
+}
+
+/***************************************************************************//**
+ * @brief Check if there was a button up event.
+ * 
+ * Button up and down events do not incorporate any debouncing.
+ * 
+ * @param self  pointer to the Button Group that you are using
+ * 
+ * @param index  button index 0 - 7
+ * 
+ * @return true if there was a button up event
+ */
+bool BG_GetButtonUpEvent(ButtonGroup *self, uint8_t index)
+{
+    if(index > 7)
+        return false;
+
+    if(self->buttonUp & (1 << index))
+        return true;
+    else
+        return false;
+}
+
+/***************************************************************************//**
+ * @brief Clear the button down event flag.
+ * 
+ * @param self  pointer to the Button Group that you are using
+ * 
+ * @param index  button index 0 - 7
+ */
+void BG_ClearButtonDownFlag(ButtonGroup *self, uint8_t index)
+{
+    if(index > 7)
+        return;
+
+    self->buttonDown &= ~(1 << index);
+}
+
+/***************************************************************************//**
+ * @brief Clear the button up event flag.
+ * 
+ * @param self  pointer to the Button Group that you are using
+ * 
+ * @param index  button index 0 - 7
+ */
+void BG_ClearButtonUpFlag(ButtonGroup *self, uint8_t index)
+{
+    if(index > 7)
+        return;
+
+    self->buttonUp &= ~(1 << index);
 }
 
 /***************************************************************************//**
