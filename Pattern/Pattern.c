@@ -49,6 +49,9 @@ void Pattern_InitMs(Pattern *self, PatternState *arrayOfStates, uint8_t numOfSta
     if(tickMs != 0)
         self->tickMs = tickMs;
 
+    /* The pattern will always start at index 0, so be sure to pass a pointer
+    to the first element in the array */
+
     /* Preload the first count? */
     //self->period =  self->patternArray[self->index].timeInMs / self->tickMs;
 }
