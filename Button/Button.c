@@ -187,9 +187,9 @@ void Button_SetLongPressMs(Button *self, uint16_t longPressMs)
     /* In case you accidentally initialize the long press period to zero or
      a value less than one tick */
     if(self->longPressPeriod == 0)
-        self->type = BUTTON_SHORT_PRESS;
+        self->length = BUTTON_SHORT_PRESS;
     else
-        self->type = BUTTON_LONG_PRESS;
+        self->length = BUTTON_LONG_PRESS;
     
     /* Reset the button state */
     self->state = BUTTON_UP;
@@ -407,7 +407,7 @@ static void AnalogButton_Tick(AnalogButton *self, uint16_t value)
             break;
         case BUTTON_DOWN:
             // Update the long press timer
-            if(value >= self->highThreshold && self->super->type == BUTTON_LONG_PRESS)
+            if(value >= self->highThreshold && self->super->length == BUTTON_LONG_PRESS)
             {
                 if(self->super->longPressCounter < self->super->longPressPeriod)
                 {
@@ -421,7 +421,7 @@ static void AnalogButton_Tick(AnalogButton *self, uint16_t value)
             // Check for the button release
             if(value < self->highThreshold)
             {
-                if(self->super->type == BUTTON_LONG_PRESS)
+                if(self->super->length == BUTTON_LONG_PRESS)
                 {
                     // If the button is a long press type, the short press
                     // event should happen on the release if the button
@@ -469,7 +469,7 @@ static void DigitalButton_Tick(DigitalButton *self, bool isPressed)
                 {
                     // If the debounce period is zero, we assume that 
                     // debouncing is being done via hardware
-                    if(self->super->type == BUTTON_SHORT_PRESS)
+                    if(self->super->length == BUTTON_SHORT_PRESS)
                     {
                         self->super->flags.shortPress = 1;
                         
@@ -494,7 +494,7 @@ static void DigitalButton_Tick(DigitalButton *self, bool isPressed)
                 if(isPressed)
                 {
                     // Button debounced successfully
-                    if(self->super->type == BUTTON_SHORT_PRESS)
+                    if(self->super->length == BUTTON_SHORT_PRESS)
                     {
                         // We are finished.
                         self->super->flags.shortPress = 1;
@@ -515,7 +515,7 @@ static void DigitalButton_Tick(DigitalButton *self, bool isPressed)
             break;
         case BUTTON_DOWN:
             // Update the long press timer
-            if(isPressed && self->super->type == BUTTON_LONG_PRESS)
+            if(isPressed && self->super->length == BUTTON_LONG_PRESS)
             {
                 if(self->super->longPressCounter < self->super->longPressPeriod)
                 {
@@ -533,7 +533,7 @@ static void DigitalButton_Tick(DigitalButton *self, bool isPressed)
                 {
                     // If the debounce period is zero, we assume that 
                     // debouncing is being done via hardware
-                    if(self->super->type == BUTTON_LONG_PRESS)
+                    if(self->super->length == BUTTON_LONG_PRESS)
                     {
                         // If the button is a long press type, the short press
                         // event should happen on the release if the button
@@ -561,7 +561,7 @@ static void DigitalButton_Tick(DigitalButton *self, bool isPressed)
                 if(!isPressed)
                 {
                     // Button debounced successfully
-                    if(self->super->type == BUTTON_LONG_PRESS)
+                    if(self->super->length == BUTTON_LONG_PRESS)
                     {
                         // If the button is a long press type, the short press
                         // event should happen on the release if the button
