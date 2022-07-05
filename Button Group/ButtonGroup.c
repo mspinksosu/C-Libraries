@@ -130,9 +130,6 @@ void BG_Tick(ButtonGroup *self)
     {
         if(self->input & (1 << i))
         {
-            /* Button up and down events do not incorporate any debouncing */
-            self->buttonDown |= (1 << i);
-
             if(self->integrator[i] < self->debouncePeriod)
             {
                 self->integrator[i]++;
@@ -145,12 +142,17 @@ void BG_Tick(ButtonGroup *self)
         }
         else 
         {
-            self->buttonUp |= (1 << i);
-
             if(self->integrator[i] > 0)
                 self->integrator[i]--;
         }
     }
+
+    /* Check inputs for button up and down events. Button up and down events 
+    do not incorporate any debouncing */
+    uint8_t inputChange = (self->previousInput ^ self->input);
+    self->buttonDown |= (self->input & inputChange);
+    self->buttonUp |= (~(self->input) & inputChange);
+    self->previousInput = self->input;
 
     /* Update the outputs. The output only changes if the integrator hits the 
     minimum or maximum value */

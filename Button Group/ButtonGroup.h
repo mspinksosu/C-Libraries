@@ -39,6 +39,7 @@ typedef struct ButtonGroupTag
 
     uint8_t input;
     uint8_t output;
+    uint8_t previousInput; // TODO is this needed for button events
     uint8_t previousOutput;
     uint8_t pressed;
     uint8_t released;
