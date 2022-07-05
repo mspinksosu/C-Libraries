@@ -36,9 +36,9 @@ typedef void (*PatterCallbackFunc)(Pattern *patternContext);
 struct Pattern
 {
     PatternState *patternArray;
-    uint8_t sizeOfArray;
+    uint8_t numOfStates;
     PatternState *nextPatternArray; // TODO test atomic load 
-    uint8_t sizeOfNextArray;
+    uint8_t nextNumOfStates;
 
     uint16_t tickMs;
     uint16_t count;
@@ -70,11 +70,11 @@ struct Pattern
 
 // ***** Function Prototypes ***************************************************
 
-void Pattern_InitMs(Pattern *self, PatternState *arrayOfStates, uint8_t sizeOfArray, uint16_t tickMs);
+void Pattern_InitMs(Pattern *self, PatternState *arrayOfStates, uint8_t numOfStates, uint16_t tickMs);
 
-void Pattern_Load(Pattern *self, PatternState *arrayOfStates, uint8_t sizeOfArray);
+void Pattern_Load(Pattern *self, PatternState *arrayOfStates, uint8_t numOfStates);
 
-void Pattern_LoadAtomic(Pattern *self, PatternState *arrayOfStates, uint8_t sizeOfArray);
+void Pattern_LoadAtomic(Pattern *self, PatternState *arrayOfStates, uint8_t numOfStates);
 
 void Pattern_Start(Pattern *self);
 
@@ -83,6 +83,8 @@ void Pattern_StopAtomic(Pattern *self);
 void Pattern_Stop(Pattern *self);
 
 void Pattern_Tick(Pattern *self);
+
+uint8_t Pattern_GetOutput(Pattern *self);
 
 bool Pattern_IsRunning(Pattern *self);
 

@@ -27,12 +27,12 @@
  * 
  * @param self 
  * @param arrayOfStates 
- * @param sizeOfArray 
+ * @param numOfStates 
  * @param tickMs 
  */
-void Pattern_InitMs(Pattern *self, PatternState *arrayOfStates, uint8_t sizeOfArray, uint16_t tickMs)
+void Pattern_InitMs(Pattern *self, PatternState *arrayOfStates, uint8_t numOfStates, uint16_t tickMs)
 {
-    if(sizeOfArray == 0)
+    if(numOfStates == 0)
         return;
 
     /* The count for a given state is calculated by dividing the period in 
@@ -40,7 +40,7 @@ void Pattern_InitMs(Pattern *self, PatternState *arrayOfStates, uint8_t sizeOfAr
     than the period, it will be set to 1. I will also set the tick value to
     1 if you accidentally set it to zero. */
     self->patternArray = arrayOfStates;
-    self->sizeOfArray = sizeOfArray;
+    self->numOfStates = numOfStates;
     self->count = 0;
     self->index = 0;
     self->flags.all = 0;
@@ -53,9 +53,9 @@ void Pattern_InitMs(Pattern *self, PatternState *arrayOfStates, uint8_t sizeOfAr
     //self->period =  self->patternArray[self->index].timeInMs / self->tickMs;
 }
 
-void Pattern_Load(Pattern *self, PatternState *arrayOfStates, uint8_t sizeOfArray)
+void Pattern_Load(Pattern *self, PatternState *arrayOfStates, uint8_t numOfStates)
 {
-    if(sizeOfArray == 0)
+    if(numOfStates == 0)
         return;
 
     /* Force pattern restart */
@@ -64,7 +64,7 @@ void Pattern_Load(Pattern *self, PatternState *arrayOfStates, uint8_t sizeOfArra
     self->flags.finished = 0;
     self->flags.loadAtomic = 0;
     self->patternArray = arrayOfStates;
-    self->sizeOfArray = sizeOfArray;
+    self->numOfStates = numOfStates;
     self->count = 0;
     self->index = 0;
 
@@ -73,14 +73,14 @@ void Pattern_Load(Pattern *self, PatternState *arrayOfStates, uint8_t sizeOfArra
     self->flags.start = 1;
 }
 
-void Pattern_LoadAtomic(Pattern *self, PatternState *arrayOfStates, uint8_t sizeOfArray)
+void Pattern_LoadAtomic(Pattern *self, PatternState *arrayOfStates, uint8_t numOfStates)
 {
-    if(sizeOfArray == 0)
+    if(numOfStates == 0)
         return;
 
     self->flags.loadAtomic = 1;
     self->nextPatternArray = arrayOfStates;
-    self->sizeOfNextArray = sizeOfArray;
+    self->nextNumOfStates = numOfStates;
 }
 
 void Pattern_Start(Pattern *self)
@@ -97,6 +97,11 @@ void Pattern_Stop(Pattern *self)
 {
     self->flags.start = 0;
     self->flags.active = 0;
+}
+
+uint8_t Pattern_GetOutput(Pattern *self)
+{
+    return self->output;
 }
 
 void Pattern_Tick(Pattern *self)
@@ -125,7 +130,7 @@ void Pattern_Tick(Pattern *self)
         if(self->count == 0)
         {
             /* Check if we are done */
-            if(self->index + 1 == self->sizeOfArray)
+            if(self->index + 1 == self->numOfStates)
             {
                 /* We finished the pattern */
                 self->flags.finished = 1;
@@ -138,7 +143,7 @@ void Pattern_Tick(Pattern *self)
                     /* Load the next pattern */
                     self->flags.loadAtomic = 0;
                     self->patternArray = self->nextPatternArray;
-                    self->sizeOfArray = self->sizeOfNextArray;
+                    self->numOfStates = self->nextNumOfStates;
                 }
 
                 if(self->flags.stopWhenFinished == 0)
