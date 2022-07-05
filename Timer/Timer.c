@@ -46,7 +46,7 @@
 
 
 /***************************************************************************//**
- * @brief Initializes a Timer object.
+ * @brief Initialize a Timer object.
  * 
  * If you accidentally set the period to a value less than one tick, the timer
  * will never run.
