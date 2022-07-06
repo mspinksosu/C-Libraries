@@ -144,20 +144,6 @@ void Pattern_Stop(Pattern *self)
 }
 
 /***************************************************************************//**
- * @brief Get the current output of the pattern
- * 
- * The output can be used for up to 8 GPIO or anything else you want
- * 
- * @param self  pointer to the Pattern you are using
- * 
- * @return uint8_t  the output
- */
-uint8_t Pattern_GetOutput(Pattern *self)
-{
-    return self->output;
-}
-
-/***************************************************************************//**
  * @brief Update the pattern
  * 
  * Once the pattern reaches the size that you specify it will go back to index
@@ -227,6 +213,62 @@ void Pattern_Tick(Pattern *self)
             }
         }
     }
+}
+
+/***************************************************************************//**
+ * @brief Get the current output of the pattern
+ * 
+ * The output can be used for up to 8 GPIO or anything else you want
+ * 
+ * @param self  pointer to the Pattern you are using
+ * 
+ * @return uint8_t  the output
+ */
+uint8_t Pattern_GetOutput(Pattern *self)
+{
+    return self->output;
+}
+
+/***************************************************************************//**
+ * @brief Check if the pattern is running
+ * 
+ * @param self  pointer to the Pattern that you are using
+ *
+ * @return  true if the pattern is running
+ */
+bool Pattern_IsRunning(Pattern *self)
+{
+    if(self->flags.active)
+        return true;
+    else
+        return false;
+}
+
+/***************************************************************************//**
+ * @brief Check if the pattern is finished
+ * 
+ * This flag is not cleared automatically.
+ * 
+ * @param self  pointer to the Pattern that you are using
+ *
+ * @return  true if pattern is finished
+ */
+bool Pattern_IsFinished(Pattern *self)
+{
+    if(self->flags.finished)
+        return true;
+    else
+        return false;
+}
+
+/***************************************************************************//**
+ * @brief Clear the pattern finished flag
+ * 
+ * @param self  pointer to the Pattern that you are using
+ */
+void Pattern_ClearFlag(Pattern *self)
+{
+    self->flags.finished = 0;
 }
 
 /***************************************************************************//**
