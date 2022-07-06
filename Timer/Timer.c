@@ -174,7 +174,9 @@ bool Timer_IsRunning(Timer *self)
 }
 
 /***************************************************************************//**
- * @brief Check if timer is finished. This flag is not cleared automatically.
+ * @brief Check if timer is finished. 
+ * 
+ * This flag is not cleared automatically.
  * 
  * @param self  pointer to the Timer that you are using
  *
@@ -199,12 +201,11 @@ void Timer_ClearFlag(Timer *self)
 }
 
 /***************************************************************************//**
- * @brief A function pointer that is called when the timer finishes.
+ * @brief Set a function to be called when the timer finishes.
  * 
  * The function prototype must have a pointer to a Timer as its argument. 
  * The context is so that multiple callbacks can be serviced by the same 
  * function if desired.
- * See description at top of file.
  * 
  * @param self  pointer to the Timer that you are using
  * 
