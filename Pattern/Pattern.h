@@ -92,7 +92,7 @@ bool Pattern_IsFinished(Pattern *self);
 
 void Pattern_ClearFlag(Pattern *self);
 
-void Pattern_SetFinishedCallback(Pattern *self);
+void Pattern_SetFinishedCallback(Pattern *self, PatterCallbackFunc Function);
 
 
 #endif  /* PATTERN_H */
