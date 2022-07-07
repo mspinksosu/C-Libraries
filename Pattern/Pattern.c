@@ -115,11 +115,15 @@ void Pattern_LoadAtomic(Pattern *self, PatternState *arrayOfStates, uint8_t numO
 /***************************************************************************//**
  * @brief Start the pattern
  * 
+ * The start function always takes precedence of stop atomic. If you want to
+ * display a pattern once, call start and then stop atomic.
+ * 
  * @param self  pointer to the Pattern you are using
  */
 void Pattern_Start(Pattern *self)
 {
     self->flags.start = 1;
+    self->flags.stopWhenFinished = 0;
 }
 
 /***************************************************************************//**
@@ -202,7 +206,10 @@ void Pattern_Tick(Pattern *self)
                 }
 
                 if(self->flags.stopWhenFinished)
+                {
+                    self->flags.stopWhenFinished = 0;
                     self->flags.active = 0;
+                }
                 else
                     self->flags.start = 1;
             }
