@@ -201,10 +201,10 @@ void Pattern_Tick(Pattern *self)
                     self->numOfStates = self->nextNumOfStates;
                 }
 
-                if(self->flags.stopWhenFinished == 0)
-                {
+                if(self->flags.stopWhenFinished)
+                    self->flags.active = 0;
+                else
                     self->flags.start = 1;
-                }
             }
             else
             {
