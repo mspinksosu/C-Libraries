@@ -68,11 +68,11 @@ typedef struct ButtonTag
     // bit field for button events
     union {
         struct {
-            unsigned buttonDownEvent    :1;
             unsigned shortPress         :1;
             unsigned longPress          :1;
+            unsigned buttonDownEvent    :1;
             unsigned buttonUpEvent      :1;
-            unsigned                    :0; // fill to nearest byte
+            unsigned                    :4;
         };
         uint8_t all;
     } flags;
@@ -112,13 +112,14 @@ typedef struct DigitalButtonTag
  * 
  * buttonLength either short press type or long press type
  * 
- * buttonDownEvent  the button has been pushed down
- * 
- * shortPress  the button has been pushed, debounced, and released
+ * shortPress  the button has been pushed, debounced (and released) For a long 
+ *             press type button, the short press occurs on release
  * 
  * longPress  the button has been held down for a certain period of time
  * 
- * buttonUpEvent  the button has been released
+ * buttonDownEvent  the button has been pushed and debounced
+ * 
+ * buttonUpEvent  the button has been released and debounced
  * 
  */
 

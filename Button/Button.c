@@ -43,10 +43,13 @@
  * Functions have been provided for you to check for events and clear flags.
  * 
  *      Normally, you would only ever use the short press and long press events.
- * However, I've also included button up and button down events. This is useful
- * in certain situations. Like for example, you need to register a button down 
- * event in order to wake up a display, but don't necessarily want to do the 
- * short press event.
+ * However, I've also included up and down events. The difference is that the 
+ * short-press event behavior changes dependent on the button type. The up and 
+ * down events always occur after debouncing a press or release and do not 
+ * change. These can be useful depending on the situation. Like for example, 
+ * you need to register a button down event in order to wake up a display, but 
+ * need to ignore the normal short press action. Or if you need to do something
+ * during the time the button is being held down and the long press event.
  * 
  * Example Code:
  *      Button PushButton;
@@ -224,8 +227,10 @@ void Button_Tick(Button *self, uint16_t value)
 /***************************************************************************//**
  * @brief Check if there has been a short press event.
  * 
- * Button short and long press events incorporate debouncing, meaning that the
- * event is only triggered if the button is debounced successfully.
+ * The short press event changes depending on the button type. If the button is
+ * a short-press type, the event occurs after debouncing the release. If the 
+ * button is a long-press type, the short press occurs on the release if the 
+ * button is released before the long press timer expires. 
  * 
  * @param self  pointer to the Button that you are using
  * 
@@ -242,8 +247,8 @@ bool Button_GetShortPress(Button *self)
 /***************************************************************************//**
  * @brief Check if there has been a long press event.
  * 
- * Button short and long press events incorporate debouncing, meaning that the
- * event is only triggered if the button is debounced successfully.
+ * The long press event occurs when the button has been pressed, debounced,
+ * and held for a period of time. The release is ignored.
  * 
  * @param self  pointer to the Button that you are using
  * 
@@ -260,7 +265,7 @@ bool Button_GetLongPress(Button *self)
 /***************************************************************************//**
  * @brief Clear the short press event flag.
  * 
- * @param self  pointer to the Button that you are using.
+ * @param self  pointer to the Button that you are using
  */
 void Button_ClearShortPressFlag(Button *self)
 {
@@ -270,7 +275,7 @@ void Button_ClearShortPressFlag(Button *self)
 /***************************************************************************//**
  * @brief Clear the long press event flag.
  * 
- * @param self  pointer to the Button that you are using.
+ * @param self  pointer to the Button that you are using
  */
 void Button_ClearLongPressFlag(Button *self)
 {
@@ -280,7 +285,8 @@ void Button_ClearLongPressFlag(Button *self)
 /***************************************************************************//**
  * @brief Check if there was a button down event.
  * 
- * Button up and down events do not incorporate any debouncing.
+ * Unlike the short-press event, the down event always occurs anytime a button 
+ * is pressed and debounced.
  * 
  * @param self  pointer to the Button that you are using
  * 
@@ -297,7 +303,7 @@ bool Button_GetButtonDownEvent(Button *self)
 /***************************************************************************//**
  * @brief Check if there was a button up event.
  * 
- * Button up and down events do not incorporate any debouncing.
+ * The up event always occurs anytime a button is released and debounced.
  * 
  * @param self  pointer to the Button that you are using
  * 
@@ -472,10 +478,10 @@ static void DigitalButton_Tick(DigitalButton *self, bool isPressed)
                     if(self->super->length == BUTTON_SHORT_PRESS)
                     {
                         self->super->flags.shortPress = 1;
-                        
                         // TODO callback function
                     }
                     self->super->flags.buttonDownEvent = 1;
+                    self->super->flags.anyPress = 1;
                     self->super->state = BUTTON_DOWN;
                     self->super->longPressCounter = 0;
                 }
@@ -498,7 +504,6 @@ static void DigitalButton_Tick(DigitalButton *self, bool isPressed)
                     {
                         // We are finished.
                         self->super->flags.shortPress = 1;
-                        
                         // TODO callback function
                     }
                     self->super->flags.buttonDownEvent = 1;
