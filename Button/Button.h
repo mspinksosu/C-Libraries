@@ -133,6 +133,8 @@ void Button_Digital_Create(DigitalButton *self, Button *base, uint16_t pressDebo
 
 // -----------------------------------------------------------------------------
 
+void Button_InitMs(Button *self, uint16_t longPressMs);
+
 void Button_SetLongPressMs(Button *self, uint16_t longPressMs);
 
 void Button_Tick(Button *self, uint16_t value);

@@ -33,8 +33,11 @@
  * time, the long press event fires. If you let go of it before the long press 
  * period expires, it performs the normal short press action. 
  * 
- *      To create a long press button call the set long press function after 
- * creating your button and give it the long press length in milliseconds.
+ *      To create a long press button, call the init function with the long 
+ * press length in milliseconds. Set it to zero if not needed. To change the
+ * long press length of a button later, use the set long press function. It 
+ * would be best to make sure your button is in a known state before changing 
+ * the long press time though.
  * 
  *      There are multiple types of events available to you. When you check for 
  * an event, the flag for that event is not automatically cleared. This is for 
@@ -55,7 +58,7 @@
  *      Button PushButton;
  *      DigitalButton digitalPushButton;
  *      Button_Digital_Create(&digitalPushButton, &PushButton, 20, 20, 10);
- *      Button_SetLongPressMs(3000);
+ *      Button_InitMs(&PushButton, 3000);
  *      uint16_t buttonIsPressed = getGPIOValue();
  *      Button_Tick(&PushButton, buttonIsPressed);
  *
@@ -68,6 +71,8 @@
 
 // ***** Function Prototypes ***************************************************
 
+static void AnalogButton_Init(AnalogButton *self, uint16_t longPressMs);
+static void DigitalButton_Init(DigitalButton *self, uint16_t longPressMs);
 static void AnalogButton_Tick(AnalogButton *self, uint16_t value);
 static void DigitalButton_Tick(DigitalButton *self, bool isPressed);
 
@@ -173,7 +178,40 @@ void Button_Digital_Create(DigitalButton *self, Button *base, uint16_t pressDebo
 }
 
 /***************************************************************************//**
+ * @brief Initialize a button
+ * 
+ * If long press is zero or less than the debounce time, the button will be
+ * considered a short press type
+ * 
+ * @param self  pointer to the Button that you are using
+ * 
+ * @param longPressMs  long press period (in ms). Zero if not needed
+ */
+void Button_InitMs(Button *self, uint16_t longPressMs)
+{
+    if(self->instance != NULL)
+    {
+        if(self->type == BUTTON_ANALOG)
+        {
+            AnalogButton_Init(self->instance, longPressMs);
+        }
+        else if(self->type == BUTTON_DIGITAL)
+        {
+            DigitalButton_Init(self->instance, longPressMs);
+        }
+    }
+
+    /* Reset the button state */
+    self->state = BUTTON_UP;
+}
+
+/***************************************************************************//**
  * @brief Sets the long press feature of a button
+ * 
+ * Does not alter the state of the button. This is useful when you have a long
+ * press button and you need to alter the long press time for example turning 
+ * on vs turning off. You should make sure your button is in a known state when
+ * calling this function
  * 
  * @param self  pointer to the Button that you are using
  * 
@@ -182,20 +220,17 @@ void Button_Digital_Create(DigitalButton *self, Button *base, uint16_t pressDebo
  */
 void Button_SetLongPressMs(Button *self, uint16_t longPressMs)
 {
-    if(self->tickMs != 0)
+    if(self->instance != NULL)
     {
-        self->longPressPeriod = longPressMs / self->tickMs;
+        if(self->type == BUTTON_ANALOG)
+        {
+            AnalogButton_Init(self->instance, longPressMs);
+        }
+        else if(self->type == BUTTON_DIGITAL)
+        {
+            DigitalButton_Init(self->instance, longPressMs);
+        }
     }
-    
-    /* In case you accidentally initialize the long press period to zero or
-     a value less than one tick */
-    if(self->longPressPeriod == 0)
-        self->length = BUTTON_SHORT_PRESS;
-    else
-        self->length = BUTTON_LONG_PRESS;
-    
-    /* Reset the button state */
-    self->state = BUTTON_UP;
 }
 
 /***************************************************************************//**
@@ -214,13 +249,16 @@ void Button_SetLongPressMs(Button *self, uint16_t longPressMs)
  */
 void Button_Tick(Button *self, uint16_t value)
 {   
-    if(self->type == BUTTON_ANALOG)
+    if(self->instance != NULL)
     {
-        AnalogButton_Tick(self->instance, value);
-    }
-    else if(self->type == BUTTON_DIGITAL)
-    {
-        DigitalButton_Tick(self->instance, value);
+        if(self->type == BUTTON_ANALOG)
+        {
+            AnalogButton_Tick(self->instance, value);
+        }
+        else if(self->type == BUTTON_DIGITAL)
+        {
+            DigitalButton_Tick(self->instance, value);
+        }
     }
 }
 
@@ -378,6 +416,59 @@ ButtonLength Button_GetLength(Button *self)
 // ***** Local Functions *****************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
+
+/***************************************************************************//**
+ * @brief Initialize an Analog Button
+ * 
+ * If long press is zero or less than the debounce time, the button will be
+ * considered a short press type
+ * 
+ * @param self  pointer to the Button that you are using
+ * 
+ * @param longPressMs  long press period (in ms). Zero if not needed
+ */
+static void AnalogButton_Init(AnalogButton *self, uint16_t longPressMs)
+{
+    if(self->super->tickMs != 0)
+    {
+        self->super->longPressPeriod = longPressMs / self->super->tickMs;
+    }
+    
+    /* In case you accidentally initialize the long press period to zero or
+     a value less than one tick */
+    if(self->super->longPressPeriod == 0)
+        self->super->length = BUTTON_SHORT_PRESS;
+    else
+        self->super->length = BUTTON_LONG_PRESS;
+}
+
+/***************************************************************************//**
+ * @brief Initialize a Digital Button
+ * 
+ * If long press is zero or less than the debounce time, the button will be
+ * considered a short press type
+ * 
+ * @param self  pointer to the Button that you are using
+ * 
+ * @param longPressMs  long press period (in ms). Zero if not needed
+ */
+static void DigitalButton_Init(DigitalButton *self, uint16_t longPressMs)
+{
+    if(self->super->tickMs != 0)
+    {
+        self->super->longPressPeriod = longPressMs / self->super->tickMs;
+    }
+    
+    /* In case you accidentally initialize the long press period to less than
+    the short press period */
+    if(self->super->longPressPeriod <= (self->pressDebouncePeriod + 
+                                        self->releaseDebouncePeriod))
+    {
+        self->super->length = BUTTON_SHORT_PRESS;
+    }
+    else
+        self->super->length = BUTTON_LONG_PRESS;
+}
 
 /***************************************************************************//**
  * @brief Update the Analog Button with its current status.
