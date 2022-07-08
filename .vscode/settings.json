@@ -12,6 +12,7 @@
         "compare": "c",
         "stddef.h": "c",
         "xstddef": "c",
-        "xtr1common": "c"
+        "xtr1common": "c",
+        "button.h": "c"
     }
 }
