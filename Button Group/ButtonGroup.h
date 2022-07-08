@@ -39,12 +39,9 @@ typedef struct ButtonGroupTag
 
     uint8_t input;
     uint8_t output;
-    uint8_t previousInput; // TODO is this needed for button events
     uint8_t previousOutput;
     uint8_t pressed;
     uint8_t released;
-    uint8_t buttonDown;
-    uint8_t buttonUp;
 } ButtonGroup;
 
 /** 
@@ -67,14 +64,6 @@ void BG_ClearPressFlag(ButtonGroup *self, uint8_t index);
 bool BG_GetRelease(ButtonGroup *self, uint8_t index);
 
 void BG_ClearReleaseFlag(ButtonGroup *self, uint8_t index);
-
-bool BG_GetButtonDownEvent(ButtonGroup *self, uint8_t index);
-
-bool BG_GetButtonUpEvent(ButtonGroup *self, uint8_t index);
-
-void BG_ClearButtonDownFlag(ButtonGroup *self, uint8_t index);
-
-void BG_ClearButtonUpFlag(ButtonGroup *self, uint8_t index);
 
 uint8_t BG_GetButtonOutput(ButtonGroup *self, uint8_t index);
 
