@@ -3,7 +3,7 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 7/11/22  Original creation
+ * @date 7/10/22  Original creation
  * 
  * @file LED_Patterns.h
  * 
@@ -32,7 +32,7 @@
 #include "Pattern.h"
 
 /* Remember to leave the semicolon off of the end of these defines. Also, I
-choose to make the last state an off state of some sort even for patterns that
+like to make the last state an off state of some sort even for patterns that
 loop. That way when I stop one, it's always in a known state. For these 
 patterns I was using a tick rate of 8 ms, but the times don't have to be exact.
 (for example, a lot of times I'll just put 250 ms instead 256 ms) */
@@ -52,14 +52,14 @@ patterns I was using a tick rate of 8 ms, but the times don't have to be exact.
                              {.output = 1, .timeInMs = 32},\
                              {.output = 0, .timeInMs = 872}}
 
-// flash both red and green at the same time
-#define RED_GRN_FLASH_SIZE  2
-#define RED_GRN_FLASH_PATT  {{.output = 0x03, .timeInMs = 250},\
+// flash both LED's at the same time
+#define TWO_LED_FLASH_SIZE  2
+#define TWO_LED_FLASH_PATT  {{.output = 0x03, .timeInMs = 250},\
                              {.output = 0x00, .timeInMs = 250}}
 
-// alternate flashing red and green
-#define RED_GRN_ALT_SIZE    3
-#define RED_GRN_ALT_PATT    {{.output = 0x01, .timeInMs = 250},\
+// alternate flashing LED's
+#define TWO_LED_ALT_SIZE    3
+#define TWO_LED_ALT_PATT    {{.output = 0x01, .timeInMs = 250},\
                              {.output = 0x02, .timeInMs = 250},\
                              {.output = 0x00, .timeInMs = 8}} // a small, un-noticeable, end state
 

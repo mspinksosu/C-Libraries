@@ -93,7 +93,7 @@ void Pattern_Load(Pattern *self, PatternState *arrayOfStates, uint8_t numOfState
  * @brief  Load a new pattern after the current one finishes
  * 
  * Ready the next pattern and set a flag. When the current pattern finishes,
- * the new pattern is loaded. Normally, the pattern is running when this
+ * the new pattern is loaded. Normally the pattern is running when this
  * function is called.
  * 
  * @param self  pointer to the Pattern you are using
@@ -115,8 +115,11 @@ void Pattern_LoadAtomic(Pattern *self, PatternState *arrayOfStates, uint8_t numO
 /***************************************************************************//**
  * @brief Start the pattern
  * 
- * The start function always takes precedence of stop atomic. If you want to
- * display a pattern once, call start and then stop atomic.
+ * The start function always takes precedence over stop atomic. If you want to
+ * display a pattern once, call start and then stop atomic. The start function
+ * will not restart the pattern for you either. This can useful when switching
+ * back and forth between patterns. If you need to restart from index zero
+ * use Pattern_Load.
  * 
  * @param self  pointer to the Pattern you are using
  */
