@@ -481,7 +481,6 @@ static void DigitalButton_Tick(DigitalButton *self, bool isPressed)
                         // TODO callback function
                     }
                     self->super->flags.buttonDownEvent = 1;
-                    self->super->flags.anyPress = 1;
                     self->super->state = BUTTON_DOWN;
                     self->super->longPressCounter = 0;
                 }
