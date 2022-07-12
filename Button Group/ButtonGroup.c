@@ -283,7 +283,7 @@ uint8_t BG_GetButtonOutput(ButtonGroup *self, uint8_t index)
  * 
  * @param self  pointer to the Button Group that you are using
  * 
- * @return uint8_t  the output of all 8 buttons
+ * @return uint8_t  the output of all 8 buttons, 0 = not pressed, 1 = pressed
  */
 uint8_t BG_GetButtonGroupOutput(ButtonGroup *self)
 {
