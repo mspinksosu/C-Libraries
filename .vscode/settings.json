@@ -13,6 +13,7 @@
         "stddef.h": "c",
         "xstddef": "c",
         "xtr1common": "c",
-        "button.h": "c"
+        "button.h": "c",
+        "iadc.h": "c"
     }
 }
