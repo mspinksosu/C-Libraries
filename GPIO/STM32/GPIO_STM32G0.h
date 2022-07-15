@@ -69,16 +69,12 @@ uint16_t GPIO_STM32_ReadPin(GPIO_STM32 *self);
 
 bool GPIO_STM32_ReadBool(GPIO_STM32 *self);
 
-void GPIO_SetType(GPIO_STM32 *self, GPIOType type);
+void GPIO_STM32_SetType(GPIO_STM32 *self, GPIOType type);
 
-GPIOType GPIO_GetType(GPIO_STM32 *self);
+GPIOType GPIO_STM32_GetType(GPIO_STM32 *self);
 
-void GPIO_SetDirection(GPIO_STM32 *self, GPIODirection direction);
+void GPIO_STM32_SetPullType(GPIO_STM32 *self, GPIOPull pullType);
 
-GPIODirection GPIO_GetDirection(GPIO_STM32 *self);
-
-void GPIO_SetPullType(GPIO_STM32 *self, GPIOPull pullType);
-
-GPIOPull GPIO_GetPullType(GPIO_STM32 *self);
+GPIOPull GPIO_STM32_GetPullType(GPIO_STM32 *self);
 
 #endif  /* GPIO_STM32G0_H */

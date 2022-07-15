@@ -64,8 +64,6 @@ static GPIO_Interface GPIOFunctionTable = {
     .GPIO_ReadBool = (bool (*)(void *))GPIO_STM32_ReadBool,
     .GPIO_SetType = (void (*)(void *, GPIOType))GPIO_STM32_SetType,
     .GPIO_GetType = (GPIOType (*)(void *))GPIO_STM32_GetType,
-    .GPIO_SetDirection = (void (*)(void *, GPIODirection))GPIO_STM32_SetDirection,
-    .GPIO_GetDirection = (GPIODirection (*)(void *))GPIO_STM32_GetDirection,
     .GPIO_SetPull = (void (*)(void *, GPIOPull))GPIO_STM32_SetPull,
     .GPIO_GetPull = (GPIOPull (*)(void *))GPIO_STM32_GetPull,
     // Add the rest of the functions listed in the interface
@@ -384,7 +382,7 @@ bool GPIO_STM32_ReadBool(GPIO_STM32 *self)
  * 
  * @param type  the type of pin, analog input, digital output, etc.
  */
-GPIO_STM32_SetType(GPIO_STM32 *self, GPIOType type)
+void GPIO_STM32_SetType(GPIO_STM32 *self, GPIOType type)
 {
     if(self->st_port == NULL)
         return;
@@ -455,7 +453,7 @@ GPIOType GPIO_STM32_GetType(GPIO_STM32 *self)
  * 
  * @param pullType 
  */
-GPIO_STM32_SetPull(GPIO_STM32 *self, GPIOPull pullType)
+void GPIO_STM32_SetPull(GPIO_STM32 *self, GPIOPull pullType)
 {
     if(self->st_port == NULL)
         return;
