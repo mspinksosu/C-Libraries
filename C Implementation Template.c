@@ -18,10 +18,6 @@
 // ***** Defines ***************************************************************
 
 
-// ***** Function Prototypes ***************************************************
-
-/* Put static function prototypes here */
-
 // ***** Global Variables ******************************************************
 
 /*  The sub class must implement the functions provided in the interface. In 
@@ -35,6 +31,11 @@ static Foo_Interface FooFunctionTable = {
     .Foo_SetValue = (void (*)(void *, uint16_t))Foo_MCU1_SetValue,
     // Add the rest of the functions listed in the interface
 };
+
+// ***** Function Prototypes ***************************************************
+
+/* Put static function prototypes here */
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
