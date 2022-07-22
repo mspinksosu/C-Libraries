@@ -9,18 +9,12 @@
  * @file GPIO_STM32G0.c
  * 
  * @details
- * 
- * GPIO_STM32_InitAllPins declares and initializes the pin objects at the same 
- * time. There are two struct objects, the base class and the sub class. The 
- * base class struct contains generic properities and will be made external. 
- * Access to pins will be done using this variable and the functions in the 
- * interface IGPIO.h.
- * 
- * The second struct holds the processor specific parameters needed for 
- * initialization. I've decided to put the port in the processor specific
- * section, because different processors may have different ways to define 
- * a port. After declaring and initializing the two types, a call to the 
- * STM32_CreatePin function will link them together.
+ *      There are two sub classes with this library. One that extends the GPIO
+ * pin to give access to the STM32 port, and the other which extends the 
+ * GPIOInitType to gain access to the alternate pin functions. The GPIOInitType
+ * does not have to be preserved in memory. You can create a GPIOInitType 
+ * inside an init function to use for all pin initialization. Once the function
+ * is finished, that variable is destroyed.
  * 
  * The GPIOInterface or function table tells the interface what functions to 
  * call. When we create the function table, we are initializing its members 
@@ -30,26 +24,43 @@
  * Since there is only ever going to be one interface for the GPIO driver, 
  * the interface for the GPIO driver is static. In order to set the function
  * table, call the GPIO_SetDriverInterface and give it a pointer to this
- * function table
+ * function table.
  * 
- * Remember that calls to the base functions are done with the GPIO type, so
- * only the base class object needs to be external. Then the function table 
- * will call the appropriate sub class function and give it the sub class
- * object.
+ * The base class and sub class are connected together by calling the Create
+ * functions. This step should be done using the sub classes Create functions. 
+ * Using the sub class Create function sets the appropriate pointers and adds 
+ * some type safety by including the sub class in the function signature.
+ * 
+ * When using the GPIO interface functions, calls to the base functions are 
+ * done with the GPIO type. If you need access to the pins from anywhere 
+ * besides where the pins were declared, you can make just the base type 
+ * external. The function table will call the appropriate sub class function 
+ * and give it the sub class object. All you would need is the base class GPIO
+ * variable and IGPIO.h Doing it this way will hide the sub class away and 
+ * removes the need to include those files, which would otherwise create a 
+ * processor specific dependancy.
  * 
  * Example Code:
  *      GPIO_DriverSetInterface(&GPIOFunctionTable);
- *      extern GPIO Pin1;
- *      GPIO_STM32 _Pin1;
- *      GPIO_STM32_InitAllPins(); // Pin 1 set to digital output
- *      GPIO_Set(&Pin1); // set output high
- *      GPIO_SetType(&Pin1, GPIO_TYPE_ANALOG); // ready pin for sleep
- *      GPIO_SetDirection(&Pin1, GPIO_DIR_INPUT); // ready pin for sleep
+ *      GPIO pin1;
+ *      GPIO_STM32 _pin1; // extends pin 1
+ *      GPIOInitType init;
+ *      GPIOInitType_STM32 _init // extends GPIO init type
+ *      init.type = GPIO_TYPE_DIGITAL_OUTPUT;
+ *      _init.alternate = 2; // STM32 alternate pin function
+ *      GPIO_STM32_CreateInitType(&init, &_init); // connect sub and base class
+ *      GPIO_STM32_Create(&pin1, &myMcuPin1); // connect sub and base class
+ *      GPIO_InitPin(&pin1, &_pin1);
+ *      GPIO_Set(&pin1); // set output high
+ *      GPIO_SetType(&pin1, GPIO_TYPE_ANALOG); // ready pin for sleep
  * 
  ******************************************************************************/
 
-#include <stddef.h>
+#include <stddef.h> // needed for NULL
 #include "GPIO_STM32G0.h"
+
+// ***** Defines ***************************************************************
+
 
 // ***** Global Variables ******************************************************
 
@@ -76,67 +87,9 @@ static GPIO_Interface GPIOFunctionTable = {
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// ***** Initialization Pin Structs ******************************************//
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-/* Declare GPIO pins starting here. Each GPIO variable should have a 
-matching extern declaration in a header file. Only the GPIO variable needs to
-be made extern. Use a memorable name. This is the object you will use for 
-library function calls. */
-//------------------------------------------------------------------------------
-
-GPIO pin1, pin2;
-GPIO_STM32 _pin1, _pin2;
-
-//------------------------------------------------------------------------------
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
 // ***** Non-Interface Functions *********************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************//**
- * @brief Initialize all pins
- * 
- * Each pin has to be declared as a global variable. However, only the base
- * class GPIO needs to be extern. Anything that needs to access these pins
- * will include the header file which has the extern declaration. 
- */
-void GPIO_STM32_InitAllPins(void)
-{
-    GPIOInitType init;
-    GPIOInitType_STM32 stm32Init;
-
-    /* Processor specific properties. Can be changed for each individual pin
-    before calling the GPIO init function */
-    stm32Init.speed = 0;
-    stm32Init.alternate = 0;
-
-    /* This part only needs to be done once */
-    GPIO_STM32_CreateInitType(&stm32Init, &init);
-
-// ----- Add your pins --------------------------------------------------
-    
-    /* Set the generic property for the pin first, then the processor specific 
-    pin properties. Next, set any generic init properties and processor 
-    specific init properties. Lastly call the pin create and init functions. */
-    pin1.pinNumber = 6;
-    _pin1.st_port = GPIOC;
-    init.type = GPIO_TYPE_DIGITAL_OUTPUT;
-    init.pull = GPIO_PULL_NONE;
-    GPIO_STM32_Create(&_pin1, &pin1);
-    GPIO_InitPin(&pin1, &init);
-    
-    pin2.pinNumber = 15;
-    _pin2.st_port = GPIOA;
-    init.type = GPIO_TYPE_DIGITAL_OUTPUT;
-    init.pull = GPIO_PULL_NONE;
-    GPIO_STM32_Create(&_pin2, &pin2);
-    GPIO_InitPin(&pin2, &init);
-
-}
 
 /***************************************************************************//**
  * @brief Set up the GPIO pin and call the constructor

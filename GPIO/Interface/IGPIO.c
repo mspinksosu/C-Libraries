@@ -9,43 +9,52 @@
  * 
  * @details
  *      An interface for a GPIO library to be used with different processors.
+ * 
  * There are two types of objects. One that holds the properties needed for the
  * pin, called GPIO and the other that holds the parameters needed to
  * initialize the pin called GPIOInitType. I did this so that all of the pin's
  * parameters don't have to be stored in memory. If you desire, you can hold 
  * everything together in an array with both structs. Then loop through the 
  * array and initialize each element. It is convienent, but takes up more 
- * memory. Alternatively, you can have one init type object. Set its type, 
- * direction, and pull-up type for each pin and then call it together with each
- * pin object.
+ * memory. Alternatively, you can declare an init type object inside your init
+ * function. Set its type, direction, and pull-up type for each pin and then 
+ * call it together with each pin object. Once the init function is finished,
+ * the init type variable is destroyed and memory is freed.
+ * 
+ * I've decided to not include the port in the base class and instead left it
+ * up to the sub class. This because different processors may have different 
+ * ways to define a port.
  * 
  * After creating a sub class, it needs to be connected to the base class by
- * using the MF_Create function. The best way to do this is call this function
- * from the sub class's create function. This makes so the user doesn't need to
- * deal with messing around with void pointers, and removes one more step from
- * their process. The void pointer is used point to an instance of the subclass 
- * object. Otherwise, the user would have to do some ugly typecasting.
+ * using the Create functions. By using a void pointer to point to an instance 
+ * of the subclass object, we remove the need for the user to have to do some 
+ * ugly typecasting on every single function call. However, the best way to do 
+ * this step is to call this function from the sub class's create function. 
+ * This makes so the user doesn't need to deal with messing around with void 
+ * pointers, and makes the function call a little more type-safe.
  * 
  * Libraries that use this interface must implement the functions listed in the
- * interface, or function table. For this library, I am only ever going to use 
- * one interface for the GPIO driver. So I am going to make the function table 
- * static. In order to set the function table, call the GPIO_SetDriverInterface 
+ * interface, or function table. Since, there should only ever be one single
+ * GPIO driver per processor, I am going to make the function table static. 
+ * In order to set the function table, call the GPIO_SetDriverInterface 
  * and give it the function table for your processor specific code.
  * 
  * The functions here will use the base class object type. The functions in the
  * sub class will use the sub class object type. When the user calls a function
- * here, the function table, along with the object determine which function to
- * call and what sub class to give to the function.
+ * here, the function table, along with the object, will determine which 
+ * function to call and what sub class to give to the function.
  * 
  * Example Code:
  *      GPIO_DriverSetInterface(&MCU1_GPIOInterface);
  *      GPIO pin1;
  *      GPIO_MCU1 myMcuPin1; // extends GPIO pin
  *      GPIOInitType init;
- *      init.type = GPIO_TYPE_DIGITAL;
- *      init.direction = GPIO_DIR_OUTPUT;
+ *      GPIOInitType_MCU1 myMcuInit // extends GPIO init type
+ *      init.type = GPIO_TYPE_DIGITAL_OUTPUT;
  *      init.pull = GPIO_PULL_NONE;
- *      GPIO_Create(&pin1, &myMcuPin1); // connect sub class and base class
+ *      myMcuInit.extendedClassMember = 1;
+ *      GPIO_MCU1_CreateInitType(&init, &myMcuInit); // connect sub and base
+ *      GPIO_MCU1_Create(&pin1, &myMcuPin1); // connect sub class and base
  *      GPIO_InitPin(&pin1, &init);
  *      GPIO_Set(&pin1); // set output high
  *      GPIO_SetType(&pin1, GPIO_TYPE_ANALOG); // ready pin for sleep
