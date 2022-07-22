@@ -22,7 +22,7 @@
  *      
  * ****************************************************************************/
 
-#include <stddef.h>
+#include <stddef.h> // needed for NULL
 #include "UART1.h"
 
 /* Include processor specific header files here */
