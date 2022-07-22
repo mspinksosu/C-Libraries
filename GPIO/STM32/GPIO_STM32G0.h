@@ -8,7 +8,15 @@
  * @file GPIO_STM32G0.h
  * 
  * @details
- *      A library that handles basic features of a pin
+ *      A library that handles basic features of a pin. This is an extension
+ * of both the GPIO pin and GPIOInitType for the STM32 processor. The sub
+ * classes need a pointer to the base class in order to access those variables.
+ * 
+ * The base class and sub class are connected together by calling the Create
+ * functions. The Create functions will set the pointer to the base class and
+ * then call the base class Create function. Using this sub class Create
+ * function adds some type safety by including the sub class in the function
+ * signature.
  * 
  ******************************************************************************/
 
@@ -17,13 +25,16 @@
 
 #include "IGPIO.h"
 
-/* Include processor specific header files here */
+/* Include processor specific header files here if needed */
 #include "stm32g071xx.h"
 
 // ***** Defines ***************************************************************
 
 
 // ***** Global Variables ******************************************************
+
+/* Class specific variables */
+extern GPIO_Interface GPIOFunctionTable;
 
 /* Create your processor specific class. */
 typedef struct GPIO_STM32Tag
@@ -47,7 +58,7 @@ typedef struct GPIOInitType_STM32Tag
 
 // ----- Non-Interface Functions -----------------------------------------------
 
-void GPIO_STM32_InitAllPins(void);
+//void GPIO_STM32_InitAllPins(void);
 
 void GPIO_STM32_Create(GPIO_STM32 *self, GPIO *base);
 
