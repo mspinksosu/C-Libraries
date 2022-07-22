@@ -33,10 +33,9 @@
 
 // ***** Global Variables ******************************************************
 
-/* Class specific variables */
 extern GPIO_Interface GPIOFunctionTable;
 
-/* Create your processor specific class. */
+/* Processor specific class */
 typedef struct GPIO_STM32Tag
 {
     GPIO *super; // include the base class first

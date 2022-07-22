@@ -8,7 +8,7 @@
  * @date 3/3/22    Redesigned to use function table. Also added new parameters
  * @date 6/13/22   Changed compute baud rate function and flow control
  * 
- * @file UART.h
+ * @file IUART.h
  * 
  * @details
  *      TODO 

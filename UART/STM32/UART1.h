@@ -25,7 +25,6 @@
 
 // ***** Global Variables ******************************************************
 
-/* Class specific variables */
 extern UART_Interface UART1_FunctionTable;
 
 /** 
