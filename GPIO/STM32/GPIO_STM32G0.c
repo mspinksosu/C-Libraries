@@ -65,7 +65,7 @@
 // ***** Global Variables ******************************************************
 
 /* Create the function table */
-static GPIO_Interface GPIOFunctionTable = {
+GPIO_Interface GPIOFunctionTable = {
     .GPIO_InitPin = (void (*)(void *, void *))GPIO_STM32_InitPin,
     .GPIO_SetPin = (void (*)(void *))GPIO_STM32_SetPin,
     .GPIO_ClearPin = (void (*)(void *))GPIO_STM32_ClearPin,
