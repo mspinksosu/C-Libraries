@@ -45,9 +45,9 @@ typedef struct ADC_ChannelTag
 void ADC_InitPeripheral(void);
 
 /***************************************************************************//**
- * @brief Initialize the ADC with a timer to allow for non-blocking use
+ * @brief Initialize a timer to allow for non-blocking use
  * 
- * Calls the ADC init function. Requires you to call the ADC tick function 
+ * Using non-blocking mode requires you to call the ADC_Tick function 
  * periodically in order to upate the timer. The timer will check ongoing
  * conversions and perform a callback if needed
  * 
@@ -55,7 +55,13 @@ void ADC_InitPeripheral(void);
  * 
  * @param tickRateMs  how often you plan to call the tick function
  */
-void ADC_InitPeripheralNonBlocking(uint16_t sampleTimeMs, uint16_t tickRateMs);
+void ADC_UseNonBlockingMode(uint16_t sampleTimeMs, uint16_t tickRateMs);
+
+/***************************************************************************//**
+ * @brief Disable non-blocking mode (blocking mode is the default)
+ * 
+ */
+void ADC_UseBlockingMode(void);
 
 /***************************************************************************//**
  * @brief Initialize an ADC channel object

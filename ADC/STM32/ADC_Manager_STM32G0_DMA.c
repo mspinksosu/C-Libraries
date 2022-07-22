@@ -20,6 +20,10 @@
 
 #include "ADC_Manager.h"
 
+/* Include processor specific header files here */
+#include "stm32g071xx.h"
+#include "stm32g0xx_ll_adc.h"
+
 // ***** Defines ***************************************************************
 
 #define ADC_MANAGE_SAMPLE_MS            5

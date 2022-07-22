@@ -18,7 +18,7 @@
 
 #include "IFoo.h"
 
-/* Include processor specific header files here */
+/* Include processor specific header files here if needed */
 #include "mcu1_gpio.h"
 
 // ***** Defines ***************************************************************

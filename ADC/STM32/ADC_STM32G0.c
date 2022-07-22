@@ -21,34 +21,33 @@
 // ***** Defines ***************************************************************
 
 
+// ***** Global Variables ******************************************************
+
+static bool useNonBlocking = false, restoreSettingsAfterFinish = false;
+static ADC_Channel *currentChannel;
+static uint16_t periodInTicks, adcCounter;
+static uint32_t configReg1, chanSelReg;
+
+static union {
+        struct {
+            unsigned start      :1;
+            unsigned active     :1;
+            unsigned expired    :1;
+            unsigned            :0; // fill to nearest byte
+            };
+        } adcFlags;
+
+// local function pointers
+static void (*ADC_SampleFinishedCallbackFunc)(ADC_Channel *context);
+static void (*ADC_EnableFinishedCallbackFunc)(void);
+static void (*ADC_DisableFinishedCallbackFunc)(void);
+
 // ***** Function Prototypes ***************************************************
 
 /* Put static functions here */
 static void ADC_STM32G0_SaveRegisterSettings(void);
 static void ADC_STM32G0_RestoreRegisterSettings(void);
 
-// ***** Global Variables ******************************************************
-
-static bool useNonBlocking = false, restoreSettingsAfterFinish = false,
-    initialized = false;
-static ADC_Channel *currentChannel;
-static uint16_t periodInTicks, adcCounter;
-static uint32_t configReg1, chanSelReg;
-
-static union {
-            struct {
-                unsigned start      :1;
-                unsigned active     :1;
-                unsigned expired    :1;
-                unsigned            :0; // fill to nearest byte
-                };
-            } adcFlags;
-
-// local function pointers
-static void (*ADC_SampleFinishedCallbackFunc)(ADC_Channel *context);
-static void (*ADC_EnableFinishedCallbackFunc)(void);
-static void (*ADC_DisableFinishedCallbackFunc)(void);
-    
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Interface Functions *************************************************//
@@ -61,9 +60,6 @@ static void (*ADC_DisableFinishedCallbackFunc)(void);
  */
 void ADC_InitPeripheral(void)
 {
-    if(!initialized)
-    {
-        initialized = true;
         LL_ADC_InitTypeDef ADC_InitStruct = {0};
         LL_ADC_REG_InitTypeDef ADC_REG_InitStruct = {0};
 
@@ -109,13 +105,12 @@ void ADC_InitPeripheral(void)
         {
             wait_loop_index--;
         }
-    }
 }
 
 /***************************************************************************//**
- * @brief Initialize the ADC with a timer to allow for non-blocking use
+ * @brief Initialize a timer to allow for non-blocking use
  * 
- * Calls the ADC init function. Requires you to call the ADC tick function 
+ * Using non-blocking mode requires you to call the ADC_Tick function 
  * periodically in order to upate the timer. The timer will check ongoing
  * conversions and perform a callback if needed
  * 
@@ -123,7 +118,7 @@ void ADC_InitPeripheral(void)
  * 
  * @param tickRateMs  how often you plan to call the tick function
  */
-void ADC_InitPeripheralNonBlocking(uint16_t sampleTimeMs, uint16_t tickRateMs)
+void ADC_UseNonBlockingMode(uint16_t sampleTimeMs, uint16_t tickRateMs)
 {
     if(tickRateMs != 0)
         periodInTicks = sampleTimeMs / tickRateMs;
@@ -131,7 +126,15 @@ void ADC_InitPeripheralNonBlocking(uint16_t sampleTimeMs, uint16_t tickRateMs)
         periodInTicks = 1;
 
     useNonBlocking = true;
-    ADC_InitPeripheral();
+}
+
+/***************************************************************************//**
+ * @brief Disable non-blocking mode (blocking mode is the default)
+ * 
+ */
+void ADC_UseBlockingMode(void)
+{
+    useNonBlocking = false;
 }
 
 /***************************************************************************//**
