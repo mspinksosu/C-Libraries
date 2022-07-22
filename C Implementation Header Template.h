@@ -13,8 +13,8 @@
  * 
  ******************************************************************************/
 
-#ifndef FOO_H
-#define FOO_H
+#ifndef FOO_MCU1_H
+#define FOO_MCU1_H
 
 #include "IFoo.h"
 
@@ -26,7 +26,9 @@
 
 // ***** Global Variables ******************************************************
 
-/* Create your processor specific class. */
+/* If you need to extend the base class, then declare your processor specific
+class here. Your processor specific functions should all use this type in place 
+of the base class type. */
 typedef struct Foo_MCU1Tag
 {
     Foo *super; // include the base class first
@@ -37,9 +39,11 @@ typedef struct Foo_MCU1Tag
 
 // ***** Function Prototypes ***************************************************
 
-void Foo_MCU1_Init(Foo *self, uint16_t data);
+// ----- Non-Interface Functions -----------------------------------------------
 
-void Foo_MCU1_ProcessorSpecificFunc(void);
+void Foo_MCU1_Init(Foo_MCU1 *self, uint16_t data);
+
+void Foo_MCU1_ProcessorSpecificNonInterfaceFunc(void);
 
 // ----- Interface Functions ---------------------------------------------------
 
@@ -49,4 +53,4 @@ uint16_t Foo_MCU1_GetValue(Foo_MCU1 *self);
 
 void Foo_MCU1_SetValue(Foo_MCU1 *self, uint16_t data);
 
-#endif  /* FOO_H */
+#endif  /* FOO_MCU1_H */

@@ -6,15 +6,15 @@
  * @date 12/2/14  Original creation
  * @date 2/4/22   Modified
  * 
- * @file Foo.h
+ * @file IFoo.h
  * 
  * @details
  *      TODO
  * 
  ******************************************************************************/
 
-#ifndef FOO_H
-#define FOO_H
+#ifndef IFOO_H
+#define IFOO_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -73,4 +73,4 @@ uint16_t Foo_GetValue(Foo *self);
 
 void Foo_SetValue(Foo *self, uint16_t data);
 
-#endif  /* FOO_H */
+#endif  /* IFOO_H */
