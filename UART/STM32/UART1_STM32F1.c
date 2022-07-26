@@ -69,6 +69,7 @@ static bool use9Bit = false, useRxInterrupt = false, useTxInterrupt = false;
 static UARTFlowControl flowControl = UART_FLOW_NONE;
 static UARTStopBits stopBits = UART_ONE_P;
 static UARTParity parity = UART_NO_PARITY;
+static bool lockTx = false;
 
 // local function pointers
 static void (*TransmitFinishedCallback)(void);
@@ -293,6 +294,10 @@ void UART1_ReceiveDisable(void)
  */
 void UART1_TransmitFinishedEvent(void)
 {
+    /* Lock the transmitter. This will prevent recursive calls in case the user
+    calls transmit function from within the callback. */
+    lockTx = true;
+
     /* Disable transmit interrupt here */
     UART1_ADDR->CR1 &= ~USART_CR1_TXEIE;
 
@@ -300,6 +305,17 @@ void UART1_TransmitFinishedEvent(void)
     {
         TransmitFinishedCallback();
     }
+
+    /* If the user did happen to call the transmit function from the callback,
+    we will know by checking the transmit register empty flag. The transmit
+    register empty flag is cleared when the TDR register is written to. */
+    if(!(UART1_ADDR->SR & USART_SR_TXE))
+    {
+        /* Enable transmit interrupt here */
+        if(useTxInterrupt)
+            UART1_ADDR->CR1 |= USART_CR1_TXEIE;
+    }
+    lockTx = false;
 }
 
 /***************************************************************************//**
@@ -317,9 +333,15 @@ void UART1_TransmitByte(uint8_t data)
     }
     UART1_ADDR->DR = data;
 
-    /* Enable transmit interrupt here if needed */
-    if(useTxInterrupt)
-        UART1_ADDR->CR1 |= USART_CR1_TXEIE;
+    /* Prevent recursive function calls if the user calls the transmit function
+    from the transmit interrupt callback. This will let the function finish 
+    and the interrupt will be enabled after the callback is over. */
+    if(lockTx == false)
+    {
+        /* Enable transmit interrupt here if needed */
+        if(useTxInterrupt)
+            UART1_ADDR->CR1 |= USART_CR1_TXEIE;
+    }
 }
 
 /***************************************************************************//**
