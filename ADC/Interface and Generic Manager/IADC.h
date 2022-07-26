@@ -58,7 +58,7 @@ void ADC_InitPeripheral(void);
 void ADC_UseNonBlockingMode(uint16_t sampleTimeMs, uint16_t tickRateMs);
 
 /***************************************************************************//**
- * @brief Disable non-blocking mode (blocking mode is the default)
+ * @brief Disable non-blocking mode
  * 
  */
 void ADC_UseBlockingMode(void);
@@ -82,7 +82,7 @@ void ADC_InitChannel(ADC_Channel *self, uint8_t channelNumber);
 void ADC_TakeSample(ADC_Channel *self);
 
 /***************************************************************************//**
- * @brief Check if the ADC is busy
+ * @brief Check if the ADC is busy taking a sample
  * 
  * @return  true if busy
  */

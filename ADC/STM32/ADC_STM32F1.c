@@ -1,11 +1,11 @@
 /***************************************************************************//**
- * @brief ADC Library Implementation (STM32G0)
+ * @brief ADC Library Implementation (STM32F1)
  * 
  * @author Matthew Spinks
  * 
- * @date 2/19/22  Original creation
+ * @date 7/24/22  Original creation (ported from G0 code)
  * 
- * @file ADC_STM32G0.c
+ * @file ADC_STM32F1.c
  * 
  * @details
  *      TODO
@@ -15,8 +15,7 @@
 #include "IADC.h"
 
 /* Include processor specific header files here */
-#include "stm32g071xx.h"
-#include "stm32g0xx_ll_adc.h"
+
 
 // ***** Defines ***************************************************************
 
@@ -45,8 +44,7 @@ static void (*ADC_DisableFinishedCallbackFunc)(void);
 // ***** Function Prototypes ***************************************************
 
 /* Put static functions here */
-static void ADC_STM32G0_SaveRegisterSettings(void);
-static void ADC_STM32G0_RestoreRegisterSettings(void);
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -129,7 +127,7 @@ void ADC_UseNonBlockingMode(uint16_t sampleTimeMs, uint16_t tickRateMs)
 }
 
 /***************************************************************************//**
- * @brief Disable non-blocking mode (blocking mode is the default)
+ * @brief Disable non-blocking mode
  * 
  */
 void ADC_UseBlockingMode(void)
@@ -152,8 +150,7 @@ void ADC_InitChannel(ADC_Channel *self, uint8_t channelNumber)
 /***************************************************************************//**
  * @brief Start an ADC conversion
  * 
- * Automatically saves DMA settings if DMA is enabled. Loads the channel, and 
- * performs either a blocking, or non-blocking conversion depending on settings.
+ * Load the channel given by the ADC_Channel object and start the conversion
  * 
  * @param self  pointer to the ADC channel object you are using
  */
@@ -162,23 +159,9 @@ void ADC_TakeSample(ADC_Channel *self)
     /* TODO do I want to stop if there is a conversion going on? */
     if(adcFlags.start == 0 && adcFlags.active == 0)
     {
-        /* If you have DMA or something else set up, you need to set the ADC 
-        disable callback function to pause the DMA sequence appropriately,
-        because I'm about to stop it */
-        if(LL_ADC_REG_GetDMATransfer != LL_ADC_REG_DMA_TRANSFER_NONE)
-        {
-            ADC_STM32G0_SaveRegisterSettings();
-            ADC_Disable(); // includes callback function
-            LL_ADC_REG_SetDMATransfer(ADC1, LL_ADC_REG_DMA_TRANSFER_NONE);
-            LL_ADC_REG_SetTriggerSource(ADC1,LL_ADC_REG_TRIG_SOFTWARE);
-            restoreSettingsAfterFinish = true;
-        }
-
         /* Load the channel to start the conversion */
         currentChannel = self;
 
-        /* To convert a single channel with the STM32, you must program
-        a sequence with a length of 1. Ref Man: 15.3.10 */
         ADC1->CHSELR = (1 << currentChannel->channelNumber);
 
         /* Enable the ADC if necessary */
@@ -220,7 +203,7 @@ void ADC_TakeSample(ADC_Channel *self)
 }
 
 /***************************************************************************//**
- * @brief Check if the ADC is busy
+ * @brief Check if the ADC is busy taking a sample
  * 
  * @return  true if busy
  */
@@ -409,32 +392,6 @@ void ADC_SetEnableFinishedCallbackFunc(void (*Function)(void))
 void ADC_SetDisableFinishedCallbackFunc(void (*Function)(void))
 {
     ADC_DisableFinishedCallbackFunc = Function;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// ***** Static Functions ****************************************************//
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************//**
- * @brief Store the settings for the ADC and channels
- * 
- */
-static void ADC_STM32G0_SaveRegisterSettings(void)
-{
-    configReg1 = ADC1->CFGR1;
-    chanSelReg = ADC1->CHSELR;
-}
-
-/***************************************************************************//**
- * @brief Restore the settings for the ADC and channels
- * 
- */
-static void ADC_STM32G0_RestoreRegisterSettings(void)
-{
-    ADC1->CFGR1 = configReg1;
-    ADC1->CHSELR = chanSelReg;
 }
 
 /*
