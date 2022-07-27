@@ -309,6 +309,19 @@ void UART_TransmitDisable(UART *self)
  * @brief 
  * 
  * @param self 
+ */
+void UART_TransmitFinishedCheck(UART *self)
+{
+    if(self->interface->UART_TransmitFinishedCheck != NULL)
+    {
+        (self->interface->UART_TransmitFinishedCheck)();
+    }
+}
+
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
  * 
  * @param Function 
  */

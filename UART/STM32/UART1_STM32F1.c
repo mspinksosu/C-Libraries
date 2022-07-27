@@ -59,6 +59,7 @@ UART_Interface UART1_FunctionTable = {
     .UART_IsTransmitRegisterEmpty = UART1_IsTransmitRegisterEmpty,
     .UART_TransmitEnable = UART1_TransmitEnable,
     .UART_TransmitDisable = UART1_TransmitDisable,
+    .UART_TransmitFinishedCheck = UART1_TransmitFinishedCheck,
     .UART_SetTransmitFinishedCallback = UART1_SetTransmitFinishedCallback,
     .UART_SetReceivedDataCallback = UART1_SetReceivedDataCallback,
     .UART_SetIsCTSPinLowFunc = UART1_SetIsCTSPinLowFunc,
@@ -69,7 +70,7 @@ static bool use9Bit = false, useRxInterrupt = false, useTxInterrupt = false;
 static UARTFlowControl flowControl = UART_FLOW_NONE;
 static UARTStopBits stopBits = UART_ONE_P;
 static UARTParity parity = UART_NO_PARITY;
-static bool lockTx = false;
+static bool lockTxFinishedEvent = false, txFinishedEventPending = false;
 
 // local function pointers
 static void (*TransmitFinishedCallback)(void);
@@ -294,9 +295,15 @@ void UART1_ReceiveDisable(void)
  */
 void UART1_TransmitFinishedEvent(void)
 {
-    /* Lock the transmitter. This will prevent recursive calls in case the user
-    calls transmit function from within the callback. */
-    lockTx = true;
+    /* This will prevent recursive calls if we call transmit byte function 
+    from within the transmit interrupt callback. This requires the process
+    function to be called to catch the txFinishedEventPending flag. */
+    if(lockTxFinishedEvent == true)
+    {
+        txFinishedEventPending = true;
+        return;
+    }
+    lockTxFinishedEvent = true;
 
     /* Disable transmit interrupt here */
     UART1_ADDR->CR1 &= ~USART_CR1_TXEIE;
@@ -305,17 +312,7 @@ void UART1_TransmitFinishedEvent(void)
     {
         TransmitFinishedCallback();
     }
-
-    /* If the user did happen to call the transmit function from the callback,
-    we will know by checking the transmit register empty flag. The transmit
-    register empty flag is cleared when the TDR register is written to. */
-    if(!(UART1_ADDR->SR & USART_SR_TXE))
-    {
-        /* Enable transmit interrupt here */
-        if(useTxInterrupt)
-            UART1_ADDR->CR1 |= USART_CR1_TXEIE;
-    }
-    lockTx = false;
+    lockTxFinishedEvent = false;
 }
 
 /***************************************************************************//**
@@ -333,15 +330,9 @@ void UART1_TransmitByte(uint8_t data)
     }
     UART1_ADDR->DR = data;
 
-    /* Prevent recursive function calls if the user calls the transmit function
-    from the transmit interrupt callback. This will let the function finish 
-    and the interrupt will be enabled after the callback is over. */
-    if(lockTx == false)
-    {
-        /* Enable transmit interrupt here if needed */
-        if(useTxInterrupt)
-            UART1_ADDR->CR1 |= USART_CR1_TXEIE;
-    }
+    /* Enable transmit interrupt here if needed */
+    if(useTxInterrupt)
+        UART1_ADDR->CR1 |= USART_CR1_TXEIE;
 }
 
 /***************************************************************************//**
@@ -387,6 +378,26 @@ void UART1_TransmitEnable(void)
 void UART1_TransmitDisable(void)
 {
     UART1_ADDR->CR1 &= ~USART_CR1_TE;
+}
+
+/***************************************************************************//**
+ * @brief Checks for pending transmit finished events
+ * 
+ * Because the transmit finished callback is called within the interrupt, if
+ * the user wants to transmit another byte, the transmit finished interrupt
+ * will almost certainly fire before the current callback is done. This can
+ * lead to multiple recursive function calls. Call this function in a loop 
+ * continously and it will check for a pending interrupt for you. This will
+ * let the stack unwind. Note that this is really only an issue if you are 
+ * using interrupts to transmit.
+ */
+void UART1_TransmitFinishedCheck(void)
+{
+    if(txFinishedEventPending && !lockTxFinishedEvent)
+    {
+        txFinishedEventPending = false;
+        UART1_TransmitFinishedEvent();
+    }
 }
 
 /***************************************************************************//**
