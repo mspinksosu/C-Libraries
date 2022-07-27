@@ -310,11 +310,11 @@ void UART_TransmitDisable(UART *self)
  * 
  * @param self 
  */
-void UART_TransmitFinishedCheck(UART *self)
+void UART_PendingEventHandler(UART *self)
 {
-    if(self->interface->UART_TransmitFinishedCheck != NULL)
+    if(self->interface->UART_PendingEventHandler != NULL)
     {
-        (self->interface->UART_TransmitFinishedCheck)();
+        (self->interface->UART_PendingEventHandler)();
     }
 }
 

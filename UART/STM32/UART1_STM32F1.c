@@ -59,7 +59,7 @@ UART_Interface UART1_FunctionTable = {
     .UART_IsTransmitRegisterEmpty = UART1_IsTransmitRegisterEmpty,
     .UART_TransmitEnable = UART1_TransmitEnable,
     .UART_TransmitDisable = UART1_TransmitDisable,
-    .UART_TransmitFinishedCheck = UART1_TransmitFinishedCheck,
+    .UART_PendingEventHandler = UART1_PendingEventHandler,
     .UART_SetTransmitFinishedCallback = UART1_SetTransmitFinishedCallback,
     .UART_SetReceivedDataCallback = UART1_SetReceivedDataCallback,
     .UART_SetIsCTSPinLowFunc = UART1_SetIsCTSPinLowFunc,
@@ -391,7 +391,7 @@ void UART1_TransmitDisable(void)
  * let the stack unwind. Note that this is really only an issue if you are 
  * using interrupts to transmit.
  */
-void UART1_TransmitFinishedCheck(void)
+void UART1_PendingEventHandler(void)
 {
     if(txFinishedEventPending && !lockTxFinishedEvent)
     {

@@ -63,7 +63,7 @@ void UART1_TransmitEnable(void);
 
 void UART1_TransmitDisable(void);
 
-void UART1_TransmitFinishedCheck(void); // TODO experiment
+void UART1_PendingEventHandler(void); // TODO experiment
 
 void UART1_SetTransmitFinishedCallback(void (*Function)(void));
 

@@ -69,7 +69,7 @@ typedef struct UART_InterfaceTag
     bool (*UART_IsTransmitRegisterEmpty)(void);
     void (*UART_TransmitEnable)(void);
     void (*UART_TransmitDisable)(void);
-    void (*UART_TransmitFinishedCheck)(void);
+    void (*UART_PendingEventHandler)(void);
     void (*UART_SetTransmitFinishedCallback)(void (*Function)(void));
     //void (*UART_SetReceivedDataCallback)(void (*Function)(void));
     void (*UART_SetReceivedDataCallback)(void (*Function)(uint8_t (*CallToGetData)(void)));
@@ -139,7 +139,7 @@ void UART_TransmitEnable(UART *self);
 
 void UART_TransmitDisable(UART *self);
 
-void UART_TransmitFinishedCheck(UART *self);
+void UART_PendingEventHandler(UART *self);
 
 void UART_SetTransmitFinishedCallback(UART *self, void (*Function)(void));
 
