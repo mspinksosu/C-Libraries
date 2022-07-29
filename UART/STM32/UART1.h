@@ -25,7 +25,7 @@
 
 // ***** Global Variables ******************************************************
 
-extern UART_Interface UART1_FunctionTable;
+extern UARTInterface UART1_FunctionTable;
 
 /** 
  * Description of struct

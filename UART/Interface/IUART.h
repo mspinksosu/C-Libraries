@@ -52,7 +52,7 @@ typedef enum UARTFlowControlTag
 } UARTFlowControl;
 
 /* Create the function table */
-typedef struct UART_InterfaceTag
+typedef struct UARTInterfaceTag
 {
     /*  These are the functions that will be called. You will create your own
     interface object for your class that will have these function signatures.
@@ -75,11 +75,11 @@ typedef struct UART_InterfaceTag
     void (*UART_SetReceivedDataCallback)(void (*Function)(uint8_t (*CallToGetData)(void)));
     void (*UART_SetIsCTSPinLowFunc)(bool (*Function)(void));
     void (*UART_SetRTSPinFunc)(void (*Function)(bool));
-} UART_Interface;
+} UARTInterface;
 
 typedef struct UARTTag
 {   
-    UART_Interface *interface;
+    UARTInterface *interface;
     /* Add any more necessary base class members here */
 } UART;
 
@@ -104,7 +104,7 @@ typedef struct UARTInitTypeTag
 
 // ----- Non-Interface Functions -----------------------------------------------
 
-void UART_Create(UART *self, UART_Interface *interface);
+void UART_Create(UART *self, UARTInterface *interface);
 
 void UART_SetInitTypeToDefaultParams(UARTInitType *params);
 

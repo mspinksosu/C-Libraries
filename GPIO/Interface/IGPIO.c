@@ -71,7 +71,7 @@
 
 // ***** Global Variables ******************************************************
 
-static GPIO_Interface *interface;
+static GPIOInterface *interface;
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -88,7 +88,7 @@ static GPIO_Interface *interface;
  * 
  * @param thisInterface  the function table you want to use
  */
-void GPIO_DriverSetInterface(GPIO_Interface *thisInterface)
+void GPIO_DriverSetInterface(GPIOInterface *thisInterface)
 {
     interface = thisInterface;
 }

@@ -26,7 +26,7 @@
 // ***** Global Variables ******************************************************
 
 /* Class specific variables */
-extern UART_Interface UART2_FunctionTable;
+extern UARTInterface UART2_FunctionTable;
 
 /** 
  * Description of struct

@@ -21,7 +21,7 @@
  * variables. This is why a void pointer is used. After creating the sub class, 
  * the void pointer will be changed to point to it. 
  * 
- * The GPIO_Interface or function table tells the interface what functions to 
+ * The GPIOInterface or function table tells the interface what functions to 
  * call. When we create the function table, we are initializing its members 
  * (which are function pointers) the our local functions. Typecasting is 
  * necessary.
@@ -45,7 +45,7 @@
 
 // ***** Global Variables ******************************************************
 
-typedef struct GPIO_InterfaceTag
+typedef struct GPIOInterfaceTag
 {
     /*  These are the functions that will be called. You will create your own
     interface object for your class that will have these function signatures 
@@ -63,7 +63,7 @@ typedef struct GPIO_InterfaceTag
     void (*GPIO_SetPull)(void *instance, GPIOPull);
     GPIOPull (*GPIO_GetPull)(void *instance);
     // Add more functions below
-} GPIO_Interface;
+} GPIOInterface;
 
 typedef enum GPIOTypeTag
 {
@@ -95,7 +95,7 @@ typedef struct GPIOInitTypeTag
 } GPIOInitType;
 
 /**
- * GPIO_Interface This is the table of functions that need to be implemented
+ * GPIOInterface This is the table of functions that need to be implemented
  * 
  * GPIO         The base class pin object
  * 
@@ -121,7 +121,7 @@ typedef struct GPIOInitTypeTag
 
 // ----- Non-Interface Functions -----------------------------------------------
 
-void GPIO_DriverSetInterface(GPIO_Interface *thisInterface);
+void GPIO_DriverSetInterface(GPIOInterface *thisInterface);
 
 void GPIO_Create(GPIO *self, void *instanceOfSubClass);
 

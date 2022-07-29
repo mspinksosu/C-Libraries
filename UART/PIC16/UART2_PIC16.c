@@ -61,7 +61,7 @@ static inline uint32_t UART2_ComputeBRGValue(uint32_t desiredBaudRate, float clk
 // ***** Global Variables ******************************************************
 
 /* Assign functions to the interface */
-UART_Interface UART2_FunctionTable = {
+UARTInterface UART2_FunctionTable = {
     .UART_ComputeBRGValue = UART1_ComputeBRGValue,
     .UART_Init = UART2_Init,
     .UART_ReceivedDataEvent = UART2_ReceivedDataEvent,

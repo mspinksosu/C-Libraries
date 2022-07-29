@@ -46,7 +46,7 @@
 // ***** Global Variables ******************************************************
 
 /* Assign functions to the interface */
-UART_Interface UART1_FunctionTable = {
+UARTInterface UART1_FunctionTable = {
     .UART_ComputeBRGValue = UART1_ComputeBRGValue,
     .UART_Init = (void (*)(void *))UART1_Init,
     .UART_ReceivedDataEvent = UART1_ReceivedDataEvent,

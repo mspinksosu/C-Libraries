@@ -33,7 +33,7 @@
 
 // ***** Global Variables ******************************************************
 
-extern GPIO_Interface GPIOFunctionTable;
+extern GPIOInterface GPIOFunctionTable;
 
 /* Processor specific class */
 typedef struct GPIO_STM32Tag

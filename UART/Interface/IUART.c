@@ -47,16 +47,16 @@
 /***************************************************************************//**
  * @brief Combine the object and function table 
  * 
- * The UART_Interface is a list of functions for your UART. When you create a
+ * The UARTInterface is a list of functions for your UART. When you create a
  * a UART implementation, you implement each of the functions listed in the 
  * interface and also assign them to one of the function pointers in the 
- * UART_Interface object.
+ * UARTInterface object.
  * 
  * @param self  
  * 
  * @param interface 
  */
-void UART_Create(UART *self, UART_Interface *interface)
+void UART_Create(UART *self, UARTInterface *interface)
 {
     self->interface = interface;
 }
