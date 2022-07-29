@@ -30,7 +30,7 @@ with the GPIO library. Only the GPIO type needs to be external. Each external
 variable will need a matching declaration and initialization. This will be done 
 in your processor specific GPIO implementation. */
 
-// ----- Declare GPIO pins starting here. Declare as extern  -------------------
+// ----- Declare GPIO pins here. Declare as extern  ----------------------------
 
 extern GPIO pin1, pin2;
 

@@ -57,7 +57,7 @@ void GPIO_Manager_InitAllPins(void)
     GPIO_STM32_CreateInitType(&_init, &init);
 
 // ----- Add your pins --------------------------------------------------
-    
+
     /* Set the generic property for the pin first, then the processor specific 
     pin properties. Next, set any generic init properties and processor 
     specific init properties. Lastly call the pin create and init functions. */
