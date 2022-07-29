@@ -4,7 +4,8 @@
  * @author Matthew Spinks
  * 
  * @date 2/13/22  Original creation
- * @date 2/19/22  Modified to use array for initialization
+ * @date 2/19/22  Modified initialization routine
+ * @date 7/23/22  Modified for interface updates
  * 
  * @file ADC_Manager.c
  * 
@@ -22,22 +23,15 @@
 
 // ***** Global Variables ******************************************************
 
-static ADC_Channel_Entry *ptrToLast = NULL;
-static ADC_Channel_Entry *currentChannel = NULL;
+static ADCChannelEntry *ptrToLast = NULL;
+static ADCChannelEntry *currentChannel = NULL;
 static bool adcManagerEnabled;
-
-typedef struct ADC_Channel_FullTag
-{
-    ADC_Channel **ptrToChannel;
-    ADC_Channel adcChannel;
-    ADC_Channel_Entry entry;
-} ADC_Channel_Full;
 
 // ***** Function Prototypes ***************************************************
 
 /* Put static function prototypes here */
-static void ADC_Manager_ChannelPush(ADC_Channel_Entry *self, ADC_Channel *newChannel);
-static void ADC_Manager_InsertChannelAfter(ADC_Channel_Entry *entryToInsert, ADC_Channel_Entry *prev, ADC_Channel *newChannel);
+static void ADC_Manager_ChannelPush(ADCChannelEntry *self, ADCChannel *newChannel);
+static void ADC_Manager_InsertChannelAfter(ADCChannelEntry *entryToInsert, ADCChannelEntry *prev, ADCChannel *newChannel);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -45,32 +39,19 @@ static void ADC_Manager_InsertChannelAfter(ADC_Channel_Entry *entryToInsert, ADC
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/* Declare pointers for adc channels starting here. Each variable should have a 
-matching extern declaration in a header file. Use a memorable name. This is the 
-pointer you will use for library function calls. Also, don't forget to set the 
-corresponding GPIO to analog. */
+/* Declare ADC channels and entries starting here. Each ADC Channel variable 
+should have a matching extern declaration in a header file. Only the ADCChannel
+variable needs to be made extern. The entry variable is only for use by the 
+manager. Use a memorable name. You will call ADC_Get8bit or ADC_Get16Bit with 
+this object to get its value. Also, don't forget to set the corresponding GPIO 
+pin to analog. */
 //------------------------------------------------------------------------------
 
-// ADC_Channel pot = {.channelNumber = 4};
-// ADC_ChannelEntry _pot;
-//
-ADC_Channel *analogPin1;
+ADCChannel analogInput1, analogInput2;
+ADCChannelEntry _analogInput1, _analogInput2;
 
-//------------------------------------------------------------------------------
-
-/* Initialize your channels here. Set each channel's pointer member to the 
-external pointer that you wish to use for it */
-static ADC_Channel_Full ChannelArray[] = {
-{   .ptrToChannel = &analogPin1,
-    .adcChannel.channelNumber = 4} /*,
-    
-{   .ptrToChannel = &analogPin2,
-    .adcChannel.channelNumber = 5},*/ };
-                           
 // -----------------------------------------------------------------------------
 
-// TODO experiment
-static uint8_t numChannels = (sizeof(ChannelArray)/sizeof(ChannelArray[0]));
 
 /***************************************************************************//**
  * @brief 
@@ -81,24 +62,19 @@ static uint8_t numChannels = (sizeof(ChannelArray)/sizeof(ChannelArray[0]));
  */
 void ADC_Manager_Init(uint16_t sampleTimeMs, uint16_t tickRateMs)
 {
-// ----- Add your channels to the list -----------------------------------------
-      
-    // ADC_Manager_AddChannel(&potEntry, &potADC);
+    analogInput1.channelNumber = 4;
+    analogInput2.channelNumber = 5;
 
-    for(uint8_t i = 0; i < numChannels; i++)
-    {
-        if(ChannelArray[i].ptrToChannel != NULL)
-        {
-            *(ChannelArray[i].ptrToChannel) = &(ChannelArray[i].adcChannel);
-            ADC_Manager_AddChannel(&(ChannelArray[i].entry), &(ChannelArray[i].adcChannel));
-        }
-    }
+// ----- Add your channels to the manager --------------------------------------
+
+    ADC_Manager_AddChannel(&_analogInput1, &analogInput1);
+    ADC_Manager_AddChannel(&_analogInput2, &analogInput2);
 
 // -----------------------------------------------------------------------------
-    
-    /* Initialize the ADC peripheral */
-    ADC_InitPeripheralNonBlocking(sampleTimeMs, tickRateMs);
 
+    /* Initialize the ADC peripheral */
+    ADC_UseNonBlockingMode(sampleTimeMs, tickRateMs);
+    ADC_InitPeripheral();
     ADC_Manager_Enable();
 }
 
@@ -109,7 +85,7 @@ void ADC_Manager_Init(uint16_t sampleTimeMs, uint16_t tickRateMs)
  * 
  * @param newChannel  
  */
-void ADC_Manager_AddChannel(ADC_Channel_Entry *self, ADC_Channel *newChannel)
+void ADC_Manager_AddChannel(ADCChannelEntry *self, ADCChannel *newChannel)
 {
     if(ptrToLast == NULL)
     {
@@ -176,7 +152,7 @@ void ADC_Manager_Disable(void)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-static void ADC_Manager_ChannelPush(ADC_Channel_Entry *self, ADC_Channel *newChannel)
+static void ADC_Manager_ChannelPush(ADCChannelEntry *self, ADCChannel *newChannel)
 {
     /* Store the new data */
     self->channel = newChannel;
@@ -189,7 +165,7 @@ static void ADC_Manager_ChannelPush(ADC_Channel_Entry *self, ADC_Channel *newCha
     ptrToLast->next = self;
 }
 
-static void ADC_Manager_InsertChannelAfter(ADC_Channel_Entry *entryToInsert, ADC_Channel_Entry *prev, ADC_Channel *newChannel)
+static void ADC_Manager_InsertChannelAfter(ADCChannelEntry *entryToInsert, ADCChannelEntry *prev, ADCChannel *newChannel)
 {
     if(prev == NULL || entryToInsert == NULL)
     {

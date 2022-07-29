@@ -1,10 +1,11 @@
 /***************************************************************************//**
- * @brief ADC Manager Header
+ * @brief ADC Manager Header (Non-Processor Specific)
  * 
  * @author Matthew Spinks
  * 
  * @date 2/13/22  Original creation
  * @date 2/24/22  Added functions for enable and disable
+ * @date 7/23/22  Modified for interface updates
  * 
  * @file ADC_Manager.h
  * 
@@ -26,24 +27,25 @@
 
 // ***** Global Variables ******************************************************
 
-typedef struct ADC_Channel_EntryTag
+typedef struct ADCChannelEntryTag
 {
-    ADC_Channel *channel;
-    ADC_Channel_Entry *next;
-} ADC_Channel_Entry;
+    ADCChannel *channel;
+    ADCChannelEntry *next;
+} ADCChannelEntry;
 
-/** 
- * Description of struct TODO
- * 
- * member1      description of variable member1
- * 
- */
+/* Any file that includes this header can access the values of these channels
+by calling ADC_Get8Bit or ADC_Get16Bit. */
+
+// ----- Declare ADC channels here. Declare as extern --------------------------
+
+extern ADCChannel analogInput1, analogInput2;
+
 
 // ***** Function Prototypes ***************************************************
 
-void ADC_Manager_Init(  uint16_t sampleTimeMs, uint16_t tickRateMs);
+void ADC_Manager_Init(uint16_t sampleTimeMs, uint16_t tickRateMs);
 
-void ADC_Manager_AddChannel(ADC_Channel_Entry *self, ADC_Channel *newChannel);
+void ADC_Manager_AddChannel(ADCChannelEntry *self, ADCChannel *newChannel);
 
 void ADC_Manager_Tick(void);
 

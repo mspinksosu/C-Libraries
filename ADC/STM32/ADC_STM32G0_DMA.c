@@ -4,6 +4,7 @@
  * @author Matthew Spinks
  * 
  * @date 2/19/22  Original creation
+ * @date 7/23/22  Interface updates
  * 
  * @file ADC_STM32G0_DMA.c
  * 
@@ -24,7 +25,7 @@
 // ***** Global Variables ******************************************************
 
 static bool useNonBlocking = false, restoreSettingsAfterFinish = false;
-static ADC_Channel *currentChannel;
+static ADCChannel *currentChannel;
 static uint16_t periodInTicks, adcCounter;
 static uint32_t configReg1, chanSelReg;
 
@@ -38,7 +39,7 @@ static union {
         } adcFlags;
 
 // local function pointers
-static void (*ADC_SampleFinishedCallbackFunc)(ADC_Channel *context);
+static void (*ADC_SampleFinishedCallbackFunc)(ADCChannel *context);
 static void (*ADC_EnableFinishedCallbackFunc)(void);
 static void (*ADC_DisableFinishedCallbackFunc)(void);
 
@@ -144,7 +145,7 @@ void ADC_UseBlockingMode(void)
  * 
  * @param channelNumber  the channel number for this MCU
  */
-void ADC_InitChannel(ADC_Channel *self, uint8_t channelNumber)
+void ADC_InitChannel(ADCChannel *self, uint8_t channelNumber)
 {
     self->channelNumber = channelNumber;
 }
@@ -153,12 +154,12 @@ void ADC_InitChannel(ADC_Channel *self, uint8_t channelNumber)
  * @brief Start an ADC conversion
  * 
  * Automatically saves DMA settings if DMA is enabled. Loads the channel given 
- * by the ADC_Channel object and performs either a blocking, or non-blocking 
+ * by the ADCChannel object and performs either a blocking, or non-blocking 
  * conversion.
  * 
  * @param self  pointer to the ADC channel object you are using
  */
-void ADC_TakeSample(ADC_Channel *self)
+void ADC_TakeSample(ADCChannel *self)
 {   
     /* TODO do I want to stop if there is a conversion going on? */
     if(adcFlags.start == 0 && adcFlags.active == 0)
@@ -236,9 +237,9 @@ bool ADC_IsBusy(void)
 /***************************************************************************//**
  * @brief Get the channel the ADC is currently processing
  * 
- * @return ADC_Channel*  pointer to the current ADC channel
+ * @return ADCChannel*  pointer to the current ADC channel
  */
-ADC_Channel *ADC_GetCurrentChannel(void)
+ADCChannel *ADC_GetCurrentChannel(void)
 {
     return currentChannel;
 }
@@ -260,7 +261,7 @@ uint8_t ADC_GetCurrentChannelNumber(void)
  * 
  * @return uint16_t  left-justified result
  */
-uint16_t ADC_Get16Bit(ADC_Channel *self)
+uint16_t ADC_Get16Bit(ADCChannel *self)
 {
     return self->adcValue;
 }
@@ -272,7 +273,7 @@ uint16_t ADC_Get16Bit(ADC_Channel *self)
  * 
  * @return uint8_t  8-bit result
  */
-uint8_t ADC_Get8Bit(ADC_Channel *self)
+uint8_t ADC_Get8Bit(ADCChannel *self)
 {
     return (uint8_t)((self->adcValue) >> 8);
 }
@@ -381,9 +382,9 @@ bool ADC_IsEnabled(void)
  * The context is so that multiple callbacks can be serviced by the same
  * function if desired.
  * 
- * @param CallbackFunc format: void SomeFunction(ADC_Channel *context)
+ * @param CallbackFunc format: void SomeFunction(ADCChannel *context)
  */
-void ADC_SetSampleFinishedCallbackFunc(void (*CallbackFunc)(ADC_Channel *context))
+void ADC_SetSampleFinishedCallbackFunc(void (*CallbackFunc)(ADCChannel *context))
 {
     ADC_SampleFinishedCallbackFunc = CallbackFunc;
 }

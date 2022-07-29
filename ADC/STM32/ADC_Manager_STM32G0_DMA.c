@@ -34,23 +34,23 @@
 // ***** Global Variables ******************************************************
 
 static uint8_t numChannelsInList, loopCount = 0;
-static ADC_Channel_Entry *ptrToLast = NULL;      // linked list
-static ADC_Channel_Entry *currentChannel = NULL; // index for linked list
+static ADCChannelEntry *ptrToLast = NULL;      // linked list
+static ADCChannelEntry *currentChannel = NULL; // index for linked list
 static uint32_t dmaChannelSelection = 0;    // for the channel select register
 static uint16_t DMAArray[ADC_MANAGE_NUM_CHANNELS * ADC_MANAGE_SAMPLES_PER_CHANNEL];
 
-typedef struct ADC_Channel_FullTag
+typedef struct ADCChannelFullTag
 {
-    ADC_Channel **ptrToChannel;
-    ADC_Channel adcChannel;
-    ADC_Channel_Entry entry;
-} ADC_Channel_Full;
+    ADCChannel **ptrToChannel;
+    ADCChannel adcChannel;
+    ADCChannelEntry entry;
+} ADCChannelFull;
 
 // ***** Function Prototypes ***************************************************
 
 /* Put static function prototypes here */
-static void ADC_Manager_ChannelPush(ADC_Channel_Entry *self, ADC_Channel *newChannel);
-static void ADC_Manager_InsertChannelAfter(ADC_Channel_Entry *entryToInsert, ADC_Channel_Entry *prev, ADC_Channel *newChannel);
+static void ADC_Manager_ChannelPush(ADCChannelEntry *self, ADCChannel *newChannel);
+static void ADC_Manager_InsertChannelAfter(ADCChannelEntry *entryToInsert, ADCChannelEntry *prev, ADCChannel *newChannel);
 static uint32_t ADC_Manager_AverageDMAArrayValues(uint8_t channel);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -61,18 +61,17 @@ static uint32_t ADC_Manager_AverageDMAArrayValues(uint8_t channel);
 
 /* Declare pointers for adc channels starting here. Each variable should have a 
 matching extern declaration in a header file. Use a memorable name. This is the 
-pointer you will use for library function calls. Also, don't forget to set the 
-corresponding GPIO to analog. */
+pointer you will use for library function calls. */
 //------------------------------------------------------------------------------
 
-ADC_Channel *vrefInternal, *tempInternal, *vbatInternal;
+ADCChannel *vrefInternal, *tempInternal, *vbatInternal;
 
 // -----------------------------------------------------------------------------
 
 /* Initialize the channel array here. Set each channel's pointer member to the 
 external pointer that you wish to use for it. Be sure to match the array size
 with the number of channels you have */
-static ADC_Channel_Full ChannelArray[ADC_MANAGE_NUM_CHANNELS] = {
+static ADCChannelFull ChannelArray[ADC_MANAGE_NUM_CHANNELS] = {
 {   .ptrToChannel = &vrefInternal,
     .adcChannel.channelNumber = 12},
      
@@ -83,7 +82,6 @@ static ADC_Channel_Full ChannelArray[ADC_MANAGE_NUM_CHANNELS] = {
     .adcChannel.channelNumber = 14}};
                            
 // -----------------------------------------------------------------------------
-
 
 
 /***************************************************************************//**
@@ -150,7 +148,7 @@ void ADC_Manager_Init(uint16_t sampleTimeMs, uint16_t tickRateMs)
  * @param self 
  * @param newChannel 
  */
-void ADC_Manager_AddChannel(ADC_Channel_Entry *self, ADC_Channel *newChannel)
+void ADC_Manager_AddChannel(ADCChannelEntry *self, ADCChannel *newChannel)
 {
     if(ptrToLast == NULL)
     {
@@ -171,7 +169,7 @@ void ADC_Manager_AddChannel(ADC_Channel_Entry *self, ADC_Channel *newChannel)
         sorted by channel number. */
 
         /* tempHead = beginning of list */
-        ADC_Channel_Entry *tempHead = ptrToLast->next;
+        ADCChannelEntry *tempHead = ptrToLast->next;
 
         if(newChannel->channelNumber <= tempHead->channel->channelNumber)
         {
@@ -179,7 +177,7 @@ void ADC_Manager_AddChannel(ADC_Channel_Entry *self, ADC_Channel *newChannel)
         }
         else
         {
-            ADC_Channel_Entry *peekNext;
+            ADCChannelEntry *peekNext;
             
             /* Look for where to insert new data */
             while(tempHead != ptrToLast)
@@ -290,7 +288,7 @@ void ADC_Manager_Disable(void)
  * @param self 
  * @param newChannel 
  */
-static void ADC_Manager_ChannelPush(ADC_Channel_Entry *self, ADC_Channel *newChannel)
+static void ADC_Manager_ChannelPush(ADCChannelEntry *self, ADCChannel *newChannel)
 {
     /* Store the new data */
     self->channel = newChannel;
@@ -310,7 +308,7 @@ static void ADC_Manager_ChannelPush(ADC_Channel_Entry *self, ADC_Channel *newCha
  * @param prev 
  * @param newChannel 
  */
-static void ADC_Manager_InsertChannelAfter(ADC_Channel_Entry *entryToInsert, ADC_Channel_Entry *prev, ADC_Channel *newChannel)
+static void ADC_Manager_InsertChannelAfter(ADCChannelEntry *entryToInsert, ADCChannelEntry *prev, ADCChannel *newChannel)
 {
     if(prev == NULL || entryToInsert == NULL)
     {

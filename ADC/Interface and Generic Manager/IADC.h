@@ -5,6 +5,7 @@
  * 
  * @date 2/11/22  Original creation
  * @date 2/24/22  Added function callbacks for enable and disable
+ * @date 7/23/22  Made blocking and non-blocking options independent
  * 
  * @file IADC.h
  * 
@@ -24,11 +25,11 @@
 
 // ***** Global Variables ******************************************************
 
-typedef struct ADC_ChannelTag
+typedef struct ADCChannelTag
 {
     uint8_t channelNumber;
     uint16_t adcValue;
-} ADC_Channel;
+} ADCChannel;
 
 /** 
  * value            The ADC value for that channel
@@ -70,16 +71,16 @@ void ADC_UseBlockingMode(void);
  * 
  * @param channelNumber  the channel number for this MCU
  */
-void ADC_InitChannel(ADC_Channel *self, uint8_t channelNumber);
+void ADC_InitChannel(ADCChannel *self, uint8_t channelNumber);
 
 /***************************************************************************//**
  * @brief Start an ADC conversion
  * 
- * Load the channel given by the ADC_Channel object and start the conversion
+ * Load the channel given by the ADCChannel object and start the conversion
  * 
  * @param self  pointer to the ADC channel object you are using
  */
-void ADC_TakeSample(ADC_Channel *self);
+void ADC_TakeSample(ADCChannel *self);
 
 /***************************************************************************//**
  * @brief Check if the ADC is busy taking a sample
@@ -91,9 +92,9 @@ bool ADC_IsBusy(void);
 /***************************************************************************//**
  * @brief Get the channel the ADC is currently processing
  * 
- * @return ADC_Channel*  pointer to the current ADC channel
+ * @return ADCChannel*  pointer to the current ADC channel
  */
-ADC_Channel *ADC_GetCurrentChannel(void);
+ADCChannel *ADC_GetCurrentChannel(void);
 
 /***************************************************************************//**
  * @brief Get the channel number the ADC is currently processing
@@ -109,7 +110,7 @@ uint8_t ADC_GetCurrentChannelNumber(void);
  * 
  * @return uint16_t  left-justified result
  */
-uint16_t ADC_Get16Bit(ADC_Channel *self);
+uint16_t ADC_Get16Bit(ADCChannel *self);
 
 /***************************************************************************//**
  * @brief Get the 8 bit value for a channel
@@ -118,7 +119,7 @@ uint16_t ADC_Get16Bit(ADC_Channel *self);
  * 
  * @return uint8_t  8-bit result
  */
-uint8_t ADC_Get8Bit(ADC_Channel *self);
+uint8_t ADC_Get8Bit(ADCChannel *self);
 
 /***************************************************************************//**
  * @brief Enable the ADC peripheral
@@ -154,9 +155,9 @@ bool ADC_IsEnabled(void);
  * The context is so that multiple callbacks can be serviced by the same
  * function if desired.
  * 
- * @param CallbackFunc format: void SomeFunction(ADC_Channel *context)
+ * @param CallbackFunc format: void SomeFunction(ADCChannel *context)
  */
-void ADC_SetSampleFinishedCallbackFunc(void (*CallbackFunc)(ADC_Channel *context));
+void ADC_SetSampleFinishedCallbackFunc(void (*CallbackFunc)(ADCChannel *context));
 
 /***************************************************************************//**
  * @brief A function pointer that is called after the ADC is enabled
