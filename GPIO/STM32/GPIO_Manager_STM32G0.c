@@ -9,14 +9,15 @@
  * @file GPIO_Manager_STM32G0.c
  * 
  * @details
- *     TODO I removed the initialization function that was in the GPIO library 
- * and put it here. Code in the GPIO library should only be concerned with pins. 
+ *     I removed the initialization function that was in the GPIO library and 
+ * put it here. Code in the GPIO library should only be concerned with pins. 
  * It shouldn't care how the user initializes all their pins. This gives more 
- * flexibility with how we decided to handle pin organization.
+ * flexibility with how we decide to handle pin organization.
  * 
  ******************************************************************************/
 
 #include "GPIO_Manager.h"
+#include "GPIO_STM32G0.h"
 
 // ***** Defines ***************************************************************
 
@@ -40,20 +41,20 @@ GPIO_STM32 _pin1, _pin2;
  * 
  * Each pin has to be declared as a global variable. However, only the base
  * class GPIO needs to be extern. Anything that needs to access these pins
- * will include the header file which has the extern declaration. 
+ * will include the header file which has the extern declaration.
  */
 void GPIO_Manager_InitAllPins(void)
 {
     GPIOInitType init;
-    GPIOInitType_STM32 stm32Init;
+    GPIOInitType_STM32 _init;
 
     /* Processor specific properties. Can be changed for each individual pin
     before calling the GPIO init function */
-    stm32Init.speed = 0;
-    stm32Init.alternate = 0;
+    _init.speed = 0;
+    _init.alternate = 0;
 
     /* This part only needs to be done once */
-    GPIO_STM32_CreateInitType(&stm32Init, &init);
+    GPIO_STM32_CreateInitType(&_init, &init);
 
 // ----- Add your pins --------------------------------------------------
     
@@ -64,6 +65,7 @@ void GPIO_Manager_InitAllPins(void)
     _pin1.st_port = GPIOC;
     init.type = GPIO_TYPE_DIGITAL_OUTPUT;
     init.pull = GPIO_PULL_NONE;
+    _init.alternate = 0;
     GPIO_STM32_Create(&_pin1, &pin1);
     GPIO_InitPin(&pin1, &init);
     
@@ -71,6 +73,7 @@ void GPIO_Manager_InitAllPins(void)
     _pin2.st_port = GPIOA;
     init.type = GPIO_TYPE_DIGITAL_OUTPUT;
     init.pull = GPIO_PULL_NONE;
+    _init.speed = 0;
     GPIO_STM32_Create(&_pin2, &pin2);
     GPIO_InitPin(&pin2, &init);
 
