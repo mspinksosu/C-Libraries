@@ -70,7 +70,8 @@ static bool use9Bit = false, useRxInterrupt = false, useTxInterrupt = false;
 static UARTFlowControl flowControl = UART_FLOW_NONE;
 static UARTStopBits stopBits = UART_ONE_P;
 static UARTParity parity = UART_NO_PARITY;
-static bool lockTxFinishedEvent = false, txFinishedEventPending = false;
+static bool lockTxFinishedEvent = false, txFinishedEventPending = false,
+    lockRxReceivedEvent = false;
 
 // local function pointers
 static void (*TransmitFinishedCallback)(void);
@@ -212,6 +213,14 @@ void UART1_Init(UARTInitType *params)
  */
 void UART1_ReceivedDataEvent(void)
 {
+    if(lockRxReceivedEvent == true)
+    {
+        /* Prevent the possibility of another interrupt from somehow calling us 
+        while we're in a callback */
+        return;
+    }
+    lockRxReceivedEvent = true;
+
     /* RTS is asserted (low) whenever we are ready to receive data. It is 
     deasserted (high) when the receive register is full. */
     if(flowControl == UART_FLOW_CALLBACKS && SetRTSPin != NULL)
@@ -223,6 +232,7 @@ void UART1_ReceivedDataEvent(void)
     {
         ReceivedDataCallback(UART1_GetReceivedByte);
     }
+    lockRxReceivedEvent = false;
 }
 
 /***************************************************************************//**
