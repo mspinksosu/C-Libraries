@@ -189,15 +189,15 @@ void ADC_TakeSample(ADCChannel *self)
             currentChannel->adcValue = LL_ADC_REG_ReadConversionData12(ADC1);
             adcFlags.start = 0;
             adcFlags.active = 0;
-            if(restoreSettingsAfterFinish)
-            {
-                restoreSettingsAfterFinish = false;
-                /* If you had some sort of DMA transfer or something set up,
-                it had to be paused. Set up the enable callback function to 
-                re-enable anything you had going before. */
-                ADC_STM32G0_RestoreRegisterSettings();
-                ADC_Enable();
-            }
+            // if(restoreSettingsAfterFinish)
+            // {
+            //     restoreSettingsAfterFinish = false;
+            //     /* If you had some sort of DMA transfer or something set up,
+            //     it had to be paused. Set up the enable callback function to 
+            //     re-enable anything you had going before. */
+            //     ADC_STM32G0_RestoreRegisterSettings();
+            //     ADC_Enable();
+            // }
         }
     }
 }
