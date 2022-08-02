@@ -71,7 +71,6 @@ typedef struct UARTInterfaceTag
     void (*UART_TransmitDisable)(void);
     void (*UART_PendingEventHandler)(void);
     void (*UART_SetTransmitFinishedCallback)(void (*Function)(void));
-    //void (*UART_SetReceivedDataCallback)(void (*Function)(void));
     void (*UART_SetReceivedDataCallback)(void (*Function)(uint8_t (*CallToGetData)(void)));
     void (*UART_SetIsCTSPinLowFunc)(bool (*Function)(void));
     void (*UART_SetRTSPinFunc)(void (*Function)(bool));
@@ -143,15 +142,10 @@ void UART_PendingEventHandler(UART *self);
 
 void UART_SetTransmitFinishedCallback(UART *self, void (*Function)(void));
 
-//void UART_SetReceivedDataCallback(UART *self, void (*Function)(void));
+void UART_SetReceivedDataCallback(UART *self, void (*Function)(uint8_t (*CallToGetData)(void)));
 
 void UART_SetIsCTSPinLowFunc(UART *self, bool (*Function)(void));
 
 void UART_SetRTSPinFunc(UART *self, void (*Function)(bool setPinHigh));
-
-/* TODO Experiment. I heard you liked function pointers, so I put a function 
-pointer inside your function pointer. Now you don't need to worry about where 
-the data is coming from or going to. */
-void UART_SetReceivedDataCallback(UART *self, void (*Function)(uint8_t (*CallToGetData)(void)));
 
 #endif  /* IUART_H */

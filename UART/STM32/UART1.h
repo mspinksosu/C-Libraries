@@ -67,15 +67,10 @@ void UART1_PendingEventHandler(void); // TODO experiment
 
 void UART1_SetTransmitFinishedCallback(void (*Function)(void));
 
-//void UART1_SetReceivedDataCallback(void (*Function)(void));
+void UART1_SetReceivedDataCallback(void (*Function)(uint8_t (*CallToGetData)(void)));
 
 void UART1_SetIsCTSPinLowFunc(bool (*Function)(void));
 
 void UART1_SetRTSPinFunc(void (*Function)(bool setPinHigh));
-
-/* TODO Experiment. I heard you liked function pointers, so I put a function 
-pointer inside your function pointer. Now you don't need to worry about where 
-the data is coming from or going to. */
-void UART1_SetReceivedDataCallback(void (*Function)(uint8_t (*CallToGetData)(void)));
 
 #endif  /* UART1_H */

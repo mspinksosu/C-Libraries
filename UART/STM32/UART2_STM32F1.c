@@ -3,8 +3,8 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 3/10/22    Original creation (G0 implementation)
- * @date 6/12/22    Ported settings for F1
+ * @date 3/12/22    Original creation (G0 implementation)
+ * @date 6/13/22    Ported settings for F1
  * @date 6/19/22    9-bit, parity, and Tx interrupt options
  * 
  * @file UART2_STM32F1.c
@@ -69,6 +69,8 @@ static bool use9Bit = false, useRxInterrupt = false, useTxInterrupt = false;
 static UARTFlowControl flowControl = UART_FLOW_NONE;
 static UARTStopBits stopBits = UART_ONE_P;
 static UARTParity parity = UART_NO_PARITY;
+static bool lockTxFinishedEvent = false, txFinishedEventPending = false,
+    lockRxReceivedEvent = false;
 
 // local function pointers
 static void (*TransmitFinishedCallback)(void);
@@ -210,6 +212,14 @@ void UART2_Init(UARTInitType *params)
  */
 void UART2_ReceivedDataEvent(void)
 {
+    if(lockRxReceivedEvent == true)
+    {
+        /* Prevent the possibility of another interrupt from somehow calling us 
+        while we're in a callback */
+        return;
+    }
+    lockRxReceivedEvent = true;
+
     /* RTS is asserted (low) whenever we are ready to receive data. It is 
     deasserted (high) when the receive register is full. */
     if(flowControl == UART_FLOW_CALLBACKS && SetRTSPin != NULL)
@@ -221,6 +231,7 @@ void UART2_ReceivedDataEvent(void)
     {
         ReceivedDataCallback(UART2_GetReceivedByte);
     }
+    lockRxReceivedEvent = false;
 }
 
 /***************************************************************************//**
@@ -293,6 +304,16 @@ void UART2_ReceiveDisable(void)
  */
 void UART2_TransmitFinishedEvent(void)
 {
+    /* This will prevent recursive calls if we call transmit byte function 
+    from within the transmit interrupt callback. This requires the process
+    function to be called to catch the txFinishedEventPending flag. */
+    if(lockTxFinishedEvent == true)
+    {
+        txFinishedEventPending = true;
+        return;
+    }
+    lockTxFinishedEvent = true;
+
     /* Disable transmit interrupt here */
     UART2_ADDR->CR1 &= ~USART_CR1_TXEIE;
 
@@ -300,6 +321,7 @@ void UART2_TransmitFinishedEvent(void)
     {
         TransmitFinishedCallback();
     }
+    lockTxFinishedEvent = false;
 }
 
 /***************************************************************************//**
@@ -365,6 +387,26 @@ void UART2_TransmitEnable(void)
 void UART2_TransmitDisable(void)
 {
     UART2_ADDR->CR1 &= ~USART_CR1_TE;
+}
+
+/***************************************************************************//**
+ * @brief Checks for pending transmit finished events
+ * 
+ * Because the transmit finished callback is called within the interrupt, if
+ * the user wants to transmit another byte, the transmit finished interrupt
+ * will almost certainly fire before the current callback is done. This can
+ * lead to multiple recursive function calls. Call this function in a loop 
+ * continously and it will check for a pending interrupt for you. This will
+ * let the stack unwind. Note that this is really only an issue if you are 
+ * using interrupts to transmit.
+ */
+void UART2_PendingEventHandler(void)
+{
+    if(txFinishedEventPending && !lockTxFinishedEvent)
+    {
+        txFinishedEventPending = false;
+        UART2_TransmitFinishedEvent();
+    }
 }
 
 /***************************************************************************//**
