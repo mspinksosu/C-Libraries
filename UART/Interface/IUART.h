@@ -3,10 +3,12 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 12/1/15   Original creation
+ * @date 12/1/14   Original creation
  * @date 2/4/22    Changed to interface. Added Doxygen
  * @date 3/3/22    Redesigned to use function table. Also added new parameters
  * @date 6/13/22   Changed compute baud rate function and flow control
+ * @date 6/25/22   Changed received callback to include a function pointer
+ * @date 7/31/22   Added handler for pending transmit interrupt
  * 
  * @file IUART.h
  * 

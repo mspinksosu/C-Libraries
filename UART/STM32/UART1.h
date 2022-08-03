@@ -7,6 +7,8 @@
  * @date 2/4/22    Modified
  * @date 3/5/22    Changed to use function table and match new interface
  * @date 6/12/22   Changed compute baud rate function
+ * @date 6/25/22   Changed received callback function prototype
+ * @date 7/31/22   Added handler for pending transmit interrupt
  * 
  * @file UART1.h
  * 
