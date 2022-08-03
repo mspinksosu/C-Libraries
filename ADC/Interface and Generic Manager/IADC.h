@@ -46,11 +46,12 @@ typedef struct ADCChannelTag
 void ADC_InitPeripheral(void);
 
 /***************************************************************************//**
- * @brief Initialize a timer to allow for non-blocking use
+ * @brief Initialize a timer to allow for non-blocking use (default)
  * 
- * Using non-blocking mode requires you to call the ADC_Tick function 
- * periodically in order to upate the timer. The timer will check ongoing
- * conversions and perform a callback if needed
+ * Non-blocking will be set by default. Using non-blocking mode will require 
+ * you to call the ADC_Tick function periodically in order to upate the timer. 
+ * The timer will check ongoing conversions and perform a callback if needed.
+ * Otherwise, you can always just poll the ADC_IsBusy function.
  * 
  * @param sampleTimeMs  the amount of time to wait for a sample to finish
  * 
@@ -61,6 +62,7 @@ void ADC_UseNonBlockingMode(uint16_t sampleTimeMs, uint16_t tickRateMs);
 /***************************************************************************//**
  * @brief Disable non-blocking mode
  * 
+ * This will insert a while loop which will wait until the sample is done
  */
 void ADC_UseBlockingMode(void);
 
@@ -90,7 +92,7 @@ void ADC_TakeSample(ADCChannel *self);
 bool ADC_IsBusy(void);
 
 /***************************************************************************//**
- * @brief Get the channel the ADC is currently processing
+ * @brief Get the channel object the ADC is currently processing
  * 
  * @return ADCChannel*  pointer to the current ADC channel
  */
@@ -98,6 +100,9 @@ ADCChannel *ADC_GetCurrentChannel(void);
 
 /***************************************************************************//**
  * @brief Get the channel number the ADC is currently processing
+ * 
+ * This is the actual channel in the hardware. It should be given by the
+ * channelNumber member.
  * 
  * @return uint8_t  ADC channel number
  */
@@ -136,9 +141,9 @@ void ADC_Disable(void);
 /***************************************************************************//**
  * @brief Update the ADC conversion timers
  * 
- * You must call this function periodically. The update rate is determined by 
- * using the non-blocking ADC initialization function. The timer will check 
- * ongoing conversions and perform a callback if needed
+ * You must call this function periodically. The update rate is set when you
+ * call the UseNonBlockingMode function. The timer will check ongoing 
+ * conversions and perform a callback if needed
  */
 void ADC_Tick(void);
 

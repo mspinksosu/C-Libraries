@@ -216,7 +216,7 @@ bool ADC_IsBusy(void)
 }
 
 /***************************************************************************//**
- * @brief Get the channel the ADC is currently processing
+ * @brief Get the channel object the ADC is currently processing
  * 
  * @return ADCChannel*  pointer to the current ADC channel
  */
@@ -227,6 +227,9 @@ ADCChannel *ADC_GetCurrentChannel(void)
 
 /***************************************************************************//**
  * @brief Get the channel number the ADC is currently processing
+ * 
+ * This is the actual channel in the hardware. It should be given by the
+ * channelNumber member.
  * 
  * @return uint8_t  ADC channel number
  */
@@ -300,9 +303,9 @@ void ADC_Disable(void)
 /***************************************************************************//**
  * @brief Update the ADC conversion timers
  * 
- * You must call this function periodically. The update rate is determined by 
- * using the non-blocking ADC initialization function. The timer will check 
- * ongoing conversions and perform a callback if needed
+ * You must call this function periodically. The update rate is set when you
+ * call the UseNonBlockingMode function. The timer will check ongoing 
+ * conversions and perform a callback if needed
  */
 void ADC_Tick(void)
 {
