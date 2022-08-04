@@ -9,7 +9,9 @@
  * @file ADC_Manager_STM32G0_DMA.c
  * 
  * @details
- *      TODO Add more words
+ *      This is a special version of the ADC_Manager that incorporates the DMA
+ * controller of the G0 processor to store results in the DMAArray variable.
+ * This file replaces ADC_Manager.c.
  * 
  * The use of an array with all the parts combined will allow the user to 
  * declare and initialize everything here in this file without need to call the 
