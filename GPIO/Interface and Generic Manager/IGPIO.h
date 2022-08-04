@@ -11,11 +11,7 @@
  *      An interface for a GPIO library to be used with different processors.
  * There are two types of objects. One that holds the properties needed for the
  * pin, called GPIO and the other that holds the parameters needed to
- * initialize the pin called GPIOInitType. I did this so that all of the pin's
- * parameters don't have to be stored in memory. If you desire, you can use
- * one init type during initialization, change it's parameters, and call it
- * with the init functions. Once the init function is finished, the init type 
- * variable is destroyed and memory is freed.
+ * initialize the pin called GPIOInitType.
  * 
  * A base class must contain at minimum, a pointer to the interface and a void 
  * pointer called "instance". In this particular case, the MCU will never have
@@ -28,9 +24,9 @@
  * call. When we create the function table, we are initializing its members 
  * (which are function pointers) the our local functions. The function pointers
  * listed in the table will use void pointers for the base class objects. In
- * the implementation, the function signatures will use the sub class objects.
- * Setting the functions in the implementation to the function pointers in the
- * table will require typecasting.
+ * the implementation, the functions will use the sub class objects. Setting 
+ * the functions in the implementation to the function pointers in the table 
+ * will require typecasting.
  * 
  * After creating a sub class, it needs to be connected to the base class by
  * using the Create functions. By using a void pointer to point to an instance 
@@ -38,7 +34,7 @@
  * ugly typecasting on every single function call. I think the best way to do 
  * this step is to call this function from a sub class create function. Make a 
  * function in your implementation called "create" that uses your sub class 
- * type and the base class type as arguments. This function is not listed
+ * type and the base class type as arguments. This function will not be listed
  * in the function table. From within that function, call the base class create 
  * function to finish setting the void pointer. The reason I prefer this method 
  * is it makes the process a little more type-safe by having the base class
@@ -50,6 +46,25 @@
  * would need is the base class GPIO variable and IGPIO.h Doing it this way 
  * will hide the sub class away and removes the need to include those files, 
  * which would otherwise create a processor specific dependancy.
+ * 
+ * In the example below, there are two init type objects. These do not have to
+ * be kept in memory. They can be declared as local variables and used for each
+ * pin's initialization.
+ * 
+ * Example Code:
+ *      GPIO_DriverSetInterface(&MCU1_GPIOInterface);
+ *      GPIO led1;
+ *      GPIO_MCU1 myMcuLED1; // extends GPIO pin
+ *      GPIOInitType init;
+ *      GPIOInitType_MCU1 myMcuInit // extends GPIO init type
+ *      init.type = GPIO_TYPE_DIGITAL_OUTPUT;
+ *      init.pull = GPIO_PULL_NONE;
+ *      myMcuInit.extendedClassMember = 1;
+ *      GPIO_MCU1_CreateInitType(&init, &myMcuInit); // connect sub and base
+ *      GPIO_MCU1_Create(&led1, &myMcuLED1); // connect sub class and base
+ *      GPIO_InitPin(&led1, &init);
+ *      GPIO_Set(&led1); // set output high
+ *      GPIO_SetType(&led1, GPIO_TYPE_ANALOG); // ready pin for sleep
  * 
  ******************************************************************************/
 
@@ -138,38 +153,182 @@ typedef struct GPIOInitTypeTag
 
 // ***** Function Prototypes ***************************************************
 
-// ----- Non-Interface Functions -----------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Non-Interface Functions *********************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
+/***************************************************************************//**
+ * @brief Set the interface for this GPIO driver
+ * 
+ * Because there is usually only one GPIO driver per processor, there doesn't
+ * need to be a pointer to the interface in each GPIO object. For this library
+ * the interface will be static.
+ * 
+ * @param thisInterface  the function table you want to use
+ */
 void GPIO_DriverSetInterface(GPIOInterface *thisInterface);
 
+/***************************************************************************//**
+ * @brief Combine the base class and sub class
+ * 
+ * Links the instance pointer in the base class to the sub class. Because of 
+ * the void pointer, my preferred method is to call this function from the sub
+ * class constructor. I created a sub class constructor that needs an instance 
+ * of the sub class and base class. This makes the create function more type
+ * safe.
+ * 
+ * @param self  pointer to the GPIO you are using
+ * 
+ * @param instanceOfSubClass  the child object that implements the GPIO
+ * 
+ */
 void GPIO_Create(GPIO *self, void *instanceOfSubClass);
 
+/***************************************************************************//**
+ * @brief Combine the base class and sub class
+ * 
+ * Links the instance pointer in the base class to the sub class. Because of 
+ * the void pointer, my preferred method is to call this function from the sub
+ * class constructor. I created a sub class constructor that needs an instance 
+ * of the sub class and base class. This makes the create function more type
+ * safe.
+ * 
+ * @param params  pointer to the GPIOInit type you are using
+ * 
+ * @param instanceOfSubClass  the child object that implements the GPIOInit
+ */
 void GPIO_CreateInitType(GPIOInitType *params, void *instanceOfSubClass);
 
+/***************************************************************************//**
+ * @brief Set pointer to analog value
+ * 
+ * This is useful for mapping analog pins. The calling function doesn't need to
+ * know which analog channel a pin is, just the name of the pin. Therefore, 
+ * calling functions between two different processors can remain the same.
+ * 
+ * @param self  pointer to the GPIO you are using
+ * 
+ * @param ptr  pointer to the analog value
+ */
 void GPIO_SetPointerToAnalogValue(GPIO *self, uint16_t *ptr);
 
-// ----- Interface Functions ---------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Interface Functions *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
+/***************************************************************************//**
+ * @brief Initialize a GPIO object
+ * 
+ * Set the necessary registers for your MCU
+ * 
+ * @param self  pointer to the GPIO you are using
+ * 
+ * @param params  pointer to the GPIOInit type you are using
+ */
 void GPIO_InitPin(GPIO *self, GPIOInitType *params);
 
+/***************************************************************************//**
+ * @brief Set a pin high
+ * 
+ * @param self  pointer to the GPIO you are using
+ */
 void GPIO_SetPin(GPIO *self);
 
+/***************************************************************************//**
+ * @brief Clear a pin
+ * 
+ * @param self  pointer to the GPIO you are using
+ */
 void GPIO_ClearPin(GPIO *self);
 
+/***************************************************************************//**
+ * @brief Invert a pin's value
+ * 
+ * @param self  pointer to the GPIO you are using
+ */
 void GPIO_InvertPin(GPIO *self);
 
+/***************************************************************************//**
+ * @brief Write a value to a pin
+ * 
+ * @param self  pointer to the GPIO you are using
+ * 
+ * @param setPinHigh  true = high, false = low
+ */
 void GPIO_WritePin(GPIO *self, bool setPinHigh);
 
+/***************************************************************************//**
+ * @brief Read the value of a pin
+ * 
+ * If the pin is analog and the pointer is set, it will return the analog value.
+ * Otherwise, return either a 1 or 0. Works with boolean logic.
+ * 
+ * @param self  pointer to the GPIO you are using
+ * 
+ * @return uint16_t  adc reading if analog, if digital 0 = low, 1 = high
+ */
 uint16_t GPIO_ReadPin(GPIO *self);
 
+/***************************************************************************//**
+ * @brief Read the boolean value of a pin
+ * 
+ * An alternative to the ReadPin function. If the pin is digital, then return 
+ * either true or false
+ * 
+ * @param self  pointer to the GPIO you are using
+ * 
+ * @return true if digital and pin is high, otherwise false
+ */
 bool GPIO_ReadBool(GPIO *self);
 
+/***************************************************************************//**
+ * @brief Set the pin type
+ * 
+ * Set the pin's asscociated registers
+ * 
+ * @param self  pointer to the GPIO you are using
+ * 
+ * @param type  GPIO_TYPE_ANALOG, GPIO_TYPE_DIGITAL_INPUT, 
+ *              GPIO_TYPE_DIGITAL_OUTPUT, GPIO_TYPE_OPEN_DRAIN
+ */
 void GPIO_SetType(GPIO *self, GPIOType type);
 
+/***************************************************************************//**
+ * @brief Get the type of pin
+ * 
+ * Read the pin's asscociated registers and determine the pin type
+ * 
+ * @param self  pointer to the GPIO you are using
+ * 
+ * @return GPIOType  GPIO_TYPE_ANALOG, GPIO_TYPE_DIGITAL_INPUT, 
+ *                   GPIO_TYPE_DIGITAL_OUTPUT, GPIO_TYPE_OPEN_DRAIN
+ */
 GPIOType GPIO_GetType(GPIO *self);
 
+/***************************************************************************//**
+ * @brief Set the pull up resistors
+ * 
+ * Set the pin's asscociated registers
+ * 
+ * @param self  pointer to the GPIO you are using
+ * 
+ * @param pullType  GPIO_PULL_UP, GPIO_PULL_DOWN, or GPIO_PULL_NONE
+ */
 void GPIO_SetPull(GPIO *self, GPIOPull pullType);
 
+/***************************************************************************//**
+ * @brief Get the pull up resistors if any
+ * 
+ * Read the pin's associated registers and determine the pull up type
+ * 
+ * @param self  pointer to the GPIO you are using
+ * 
+ * @return GPIOPull  GPIO_PULL_UP, GPIO_PULL_DOWN, or GPIO_PULL_NONE
+ */
 GPIOPull GPIO_GetPull(GPIO *self);
 
 

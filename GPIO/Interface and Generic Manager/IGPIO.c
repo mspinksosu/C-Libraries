@@ -21,12 +21,12 @@
 // ***** Defines ***************************************************************
 
 
-// ***** Function Prototypes ***************************************************
-
-
 // ***** Global Variables ******************************************************
 
 static GPIOInterface *interface;
+
+// ***** Function Prototypes ***************************************************
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -39,15 +39,21 @@ void GPIO_DriverSetInterface(GPIOInterface *thisInterface)
     interface = thisInterface;
 }
 
+// *****************************************************************************
+
 void GPIO_Create(GPIO *self, void *instanceOfSubClass)
 {
     self->instance = instanceOfSubClass;
 }
 
+// *****************************************************************************
+
 void GPIO_CreateInitType(GPIOInitType *params, void *instanceOfSubClass)
 {
     params->instance = instanceOfSubClass;
 }
+
+// *****************************************************************************
 
 void GPIO_SetPointerToAnalogValue(GPIO *self, uint16_t *ptr)
 {
@@ -60,7 +66,6 @@ void GPIO_SetPointerToAnalogValue(GPIO *self, uint16_t *ptr)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-
 void GPIO_InitPin(GPIO *self, GPIOInitType *params)
 {
     if(interface->GPIO_InitPin != NULL && self->instance != NULL 
@@ -70,6 +75,7 @@ void GPIO_InitPin(GPIO *self, GPIOInitType *params)
     }
 }
 
+// *****************************************************************************
 
 void GPIO_SetPin(GPIO *self)
 {
@@ -79,6 +85,7 @@ void GPIO_SetPin(GPIO *self)
     }
 }
 
+// *****************************************************************************
 
 void GPIO_ClearPin(GPIO *self)
 {
@@ -88,6 +95,7 @@ void GPIO_ClearPin(GPIO *self)
     }
 }
 
+// *****************************************************************************
 
 void GPIO_InvertPin(GPIO *self)
 {
@@ -97,6 +105,7 @@ void GPIO_InvertPin(GPIO *self)
     }
 }
 
+// *****************************************************************************
 
 void GPIO_WritePin(GPIO *self, bool setPinHigh)
 {
@@ -106,6 +115,7 @@ void GPIO_WritePin(GPIO *self, bool setPinHigh)
     }
 }
 
+// *****************************************************************************
 
 uint16_t GPIO_ReadPin(GPIO *self)
 {
@@ -119,6 +129,7 @@ uint16_t GPIO_ReadPin(GPIO *self)
     }
 }
 
+// *****************************************************************************
 
 bool GPIO_ReadBool(GPIO *self)
 {
@@ -132,6 +143,7 @@ bool GPIO_ReadBool(GPIO *self)
     }
 }
 
+// *****************************************************************************
 
 void GPIO_SetType(GPIO *self, GPIOType type)
 {
@@ -141,6 +153,7 @@ void GPIO_SetType(GPIO *self, GPIOType type)
     }
 }
 
+// *****************************************************************************
 
 GPIOType GPIO_GetType(GPIO *self)
 {
@@ -154,6 +167,7 @@ GPIOType GPIO_GetType(GPIO *self)
     }
 }
 
+// *****************************************************************************
 
 void GPIO_SetPull(GPIO *self, GPIOPull pullType)
 {
@@ -163,6 +177,7 @@ void GPIO_SetPull(GPIO *self, GPIOPull pullType)
     }
 }
 
+// *****************************************************************************
 
 GPIOPull GPIO_GetPull(GPIO *self)
 {

@@ -8,15 +8,46 @@
  * @file GPIO_STM32G0.h
  * 
  * @details
- *      A library that handles basic features of a pin. This is an extension
- * of both the GPIO pin and GPIOInitType for the STM32 processor. The sub
- * classes need a pointer to the base class in order to access those variables.
+ *      A GPIO library for STM32G0 that implements the IGPIO interface. There 
+ * are two sub classes in this library. One that extends the GPIO pin to give 
+ * access to the STM32 port, and the other which extends the GPIOInitType to 
+ * gain access to the alternate pin functions. The sub classes contain a 
+ * pointer to the base class in order to access those variables.
  * 
- * The base class and sub class are connected together by calling the Create
- * functions. The Create functions will set the pointer to the base class and
- * then call the base class Create function. Using this sub class Create
- * function adds some type safety by including the sub class in the function
- * signature.
+ * The external interface variable, GPIOFunctionTable is declared and defined
+ * in the .c file. This header file needs to be included wherever the 
+ * initialization takes place. However, it is only needed for this intial step. 
+ * It is not needed to perform operations on the pins. Any file needing access 
+ * to pins can include the IGPIO and use the interface. This removes the need
+ * to have processor specific dependancies anywhere else. The GPIO objects will
+ * need to be made extern for any other file to use them.
+ * 
+ * There are two sub class create functions which are not included as part of
+ * the interface. The base class and sub class are connected together by 
+ * calling these functions. The Create functions will set the pointer to the 
+ * base class and then call the base class Create function. Using these sub 
+ * class create functions adds some type safety by including the sub class in 
+ * the function signature.
+ * 
+ * Refer to the GPIO interface for description of what each of the other
+ * functions should do.
+ * 
+ * In the example below, the variables "init" and "_init" can be made local
+ * and modified for each pin's initialization.
+ * 
+ * Example Code:
+ *      GPIO_DriverSetInterface(&GPIOFunctionTable);
+ *      GPIO led1;
+ *      GPIO_STM32 _led1; // extends led 1
+ *      GPIOInitType init;
+ *      GPIOInitType_STM32 _init // extends GPIO init type
+ *      init.type = GPIO_TYPE_DIGITAL_OUTPUT;
+ *      _init.alternate = 2; // STM32 alternate pin function
+ *      GPIO_STM32_CreateInitType(&init, &_init); // connect sub and base class
+ *      GPIO_STM32_Create(&led1, &myMcuPin1); // connect sub and base class
+ *      GPIO_InitPin(&led1, &_led1);
+ *      GPIO_Set(&led1); // set output high
+ *      GPIO_SetType(&led1, GPIO_TYPE_ANALOG); // ready pin for sleep
  * 
  ******************************************************************************/
 
@@ -38,7 +69,7 @@ extern GPIOInterface GPIOFunctionTable;
 /* Processor specific class */
 typedef struct GPIO_STM32Tag
 {
-    GPIO *super; // include the base class first
+    GPIO *super;
     
     /* Add any processor specific variables you need here */
     GPIO_TypeDef *st_port;
@@ -46,7 +77,7 @@ typedef struct GPIO_STM32Tag
 
 typedef struct GPIOInitType_STM32Tag
 {
-    GPIOInitType *super; // include the base class first
+    GPIOInitType *super;
 
     /* Add any processor specific variables you need here */
     uint32_t speed;
@@ -55,13 +86,21 @@ typedef struct GPIOInitType_STM32Tag
 
 // ***** Function Prototypes ***************************************************
 
-// ----- Non-Interface Functions -----------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Non-Interface Functions *********************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 void GPIO_STM32_Create(GPIO_STM32 *self, GPIO *base);
 
 void GPIO_STM32_CreateInitType(GPIOInitType_STM32 *self, GPIOInitType *base);
 
-// ----- Interface Functions ---------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Interface Functions *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 void GPIO_STM32_InitPin(GPIO_STM32 *self, GPIOInitType_STM32 *params);
 

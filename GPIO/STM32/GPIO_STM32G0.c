@@ -9,35 +9,13 @@
  * @file GPIO_STM32G0.c
  * 
  * @details
- *      There are two sub classes with this library. One that extends the GPIO
- * pin to give access to the STM32 port, and the other which extends the 
- * GPIOInitType to gain access to the alternate pin functions. The GPIOInitType
- * does not have to be preserved in memory. You can create a GPIOInitType 
- * inside an init function to use for all pin initialization. Once the function
- * is finished, that variable is destroyed.
+ *      A GPIO library that implements the STM32 GPIO functions which in turn, 
+ * conform to the IGPIO interface. 
  * 
  * The GPIOInterface or function table tells the interface what functions to 
- * call. When we create the function table, we are initializing its members 
- * (which are function pointers) the our local functions. Typecasting is 
- * necessary.
- * 
- * The base class and sub class are connected together by calling the Create
- * functions. These sub class create functions will then call the interface's
- * create function and set the void pointer for you so you don't have to.
- * 
- * Example Code:
- *      GPIO_DriverSetInterface(&GPIOFunctionTable);
- *      GPIO led1;
- *      GPIO_STM32 _led1; // extends led 1
- *      GPIOInitType init;
- *      GPIOInitType_STM32 _init // extends GPIO init type
- *      init.type = GPIO_TYPE_DIGITAL_OUTPUT;
- *      _init.alternate = 2; // STM32 alternate pin function
- *      GPIO_STM32_CreateInitType(&init, &_init); // connect sub and base class
- *      GPIO_STM32_Create(&led1, &myMcuPin1); // connect sub and base class
- *      GPIO_InitPin(&led1, &_led1);
- *      GPIO_Set(&led1); // set output high
- *      GPIO_SetType(&led1, GPIO_TYPE_ANALOG); // ready pin for sleep
+ * call. We declare and define the function table in one step, setting its 
+ * members (which are function pointers) the our local functions. Typecasting 
+ * is necessary.
  * 
  ******************************************************************************/
 
@@ -76,34 +54,20 @@ GPIOInterface GPIOFunctionTable = {
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/***************************************************************************//**
- * @brief Set up the GPIO pin and call the constructor
- * 
- * This connects the base class GPIO with the sub class GPIO
- * 
- * @param stm32Pin  pointer to the STM32 GPIO you are using
- *  
- * @param base  pointer to the base object you are inheriting from
- */
 void GPIO_STM32_Create(GPIO_STM32 *stm32Pin, GPIO *base)
 {
-    /* Set the pointer to parent class and then call the base class
-    constructor */
+    /* Connect our subclass type to the base class, then call the base class
+    constructor to connect the base class to us. */
     stm32Pin->super = base;
     GPIO_Create(base, stm32Pin);
 }
 
-/***************************************************************************//**
- * @brief Set up the GPIO Init type and call the constructor
- * 
- * This connects the base class GPIO with the sub class GPIO
- * 
- * @param stm32Params  pointer to the STM32 GPIO Init type you are using
- *  
- * @param base  pointer to the base object you are inheriting from
- */
+// *****************************************************************************
+
 void GPIO_STM32_CreateInitType(GPIOInitType_STM32 *stm32Params, GPIOInitType *base)
 {
+    /* Connect our subclass type to the base class, then call the base class
+    constructor to connect the base class to us. */
     stm32Params->super = base;
     GPIO_CreateInitType(base, stm32Params);
 }
@@ -114,13 +78,6 @@ void GPIO_STM32_CreateInitType(GPIOInitType_STM32 *stm32Params, GPIOInitType *ba
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/***************************************************************************//**
- * @brief Initialize necessary registers for this MCU
- * 
- * @param self  pointer to the STM32 GPIO you are using
- * 
- * @param params  pointer to the STM32 GPIO Init type you are using
- */
 void GPIO_STM32_InitPin(GPIO_STM32 *self, GPIOInitType_STM32 *params)
 {
     if(self->st_port == NULL)
@@ -191,11 +148,8 @@ void GPIO_STM32_InitPin(GPIO_STM32 *self, GPIOInitType_STM32 *params)
     }
 }
 
-/***************************************************************************//**
- * @brief Set a pin high
- * 
- * @param self  pointer to the STM32 GPIO you are using
- */
+// *****************************************************************************
+
 void GPIO_STM32_SetPin(GPIO_STM32 *self)
 {
     /* For the BSRR register, the lower 16 bits set the pins. The upper 16 bits
@@ -204,11 +158,8 @@ void GPIO_STM32_SetPin(GPIO_STM32 *self)
         self->st_port->BSRR = (1UL << (self->super->pinNumber));
 }
 
-/***************************************************************************//**
- * @brief Clear a pin
- * 
- * @param self  pointer to the STM32 GPIO you are using
- */
+// *****************************************************************************
+
 void GPIO_STM32_ClearPin(GPIO_STM32 *self)
 {
     /* The lower 16 bits of the BRR register reset the pins. Zero writes are
@@ -217,11 +168,8 @@ void GPIO_STM32_ClearPin(GPIO_STM32 *self)
         self->st_port->BRR = (1UL << (self->super->pinNumber));
 }
 
-/***************************************************************************//**
- * @brief Invert a pin's value
- * 
- * @param self  pointer to the STM32 GPIO you are using
- */
+// *****************************************************************************
+
 void GPIO_STM32_InvertPin(GPIO_STM32 *self)
 {
     /* The BSRR register cannot be read. We have to read ODR to get the current
@@ -245,13 +193,8 @@ void GPIO_STM32_InvertPin(GPIO_STM32 *self)
     }
 }
 
-/***************************************************************************//**
- * @brief Write a value to a pin
- * 
- * @param self  pointer to the STM32 GPIO you are using
- * 
- * @param setPinHigh  true = high, false = low
- */
+// *****************************************************************************
+
 void GPIO_STM32_WritePin(GPIO_STM32 *self, bool setPinHigh)
 {
     if(setPinHigh)
@@ -260,16 +203,8 @@ void GPIO_STM32_WritePin(GPIO_STM32 *self, bool setPinHigh)
         GPIO_STM32_ClearPin(self);
 }
 
-/***************************************************************************//**
- * @brief Read the value of a pin
- * 
- * If the pin is analog, it should return the analog value if available.
- * Otherwise, return either a 1 or 0. Works with boolean logic also.
- * 
- * @param self  pointer to the STM32 GPIO you are using
- * 
- * @return uint16_t  adc reading if analog, if digital 0 = low, 1 = high
- */
+// *****************************************************************************
+
 uint16_t GPIO_STM32_ReadPin(GPIO_STM32 *self)
 {
     uint16_t retValue = 0;
@@ -294,16 +229,8 @@ uint16_t GPIO_STM32_ReadPin(GPIO_STM32 *self)
     return retValue;
 }
 
-/***************************************************************************//**
- * @brief Read the boolean value of a pin
- * 
- * An alternative to the ReadPin function. If the pin is digital, then return 
- * either true or false
- * 
- * @param self  pointer to the GPIO you are using
- * 
- * @return true if digital and pin is high, otherwise false
- */
+// *****************************************************************************
+
 bool GPIO_STM32_ReadBool(GPIO_STM32 *self)
 {
     bool retValue = false;
@@ -316,13 +243,8 @@ bool GPIO_STM32_ReadBool(GPIO_STM32 *self)
     return retValue;
 }
 
-/***************************************************************************//**
- * @brief Set the pin type
- * 
- * @param self  pointer to the GPIO you are using
- * 
- * @param type  the type of pin, analog input, digital output, etc.
- */
+// *****************************************************************************
+
 void GPIO_STM32_SetType(GPIO_STM32 *self, GPIOType type)
 {
     if(self->st_port == NULL)
@@ -353,13 +275,8 @@ void GPIO_STM32_SetType(GPIO_STM32 *self, GPIOType type)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * 
- * @return GPIOType 
- */
+// *****************************************************************************
+
 GPIOType GPIO_STM32_GetType(GPIO_STM32 *self)
 {
     GPIOType retVal = GPIO_TYPE_ANALOG; // reset value
@@ -389,13 +306,8 @@ GPIOType GPIO_STM32_GetType(GPIO_STM32 *self)
     return retVal;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * 
- * @param pullType 
- */
+// *****************************************************************************
+
 void GPIO_STM32_SetPull(GPIO_STM32 *self, GPIOPull pullType)
 {
     if(self->st_port == NULL)
@@ -409,13 +321,8 @@ void GPIO_STM32_SetPull(GPIO_STM32 *self, GPIOPull pullType)
         self->st_port->PUPDR |= (2UL << (self->super->pinNumber * 2));
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * 
- * @return GPIOPull 
- */
+// *****************************************************************************
+
 GPIOPull GPIO_STM32_GetPull(GPIO_STM32 *self)
 {
     GPIOPull retVal = GPIO_PULL_NONE;
