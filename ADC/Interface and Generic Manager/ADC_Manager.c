@@ -7,7 +7,7 @@
  * @date 2/19/22  Modified initialization routine
  * @date 7/23/22  Modified for interface updates
  * 
- * @file ADC_Manager_Generic.c
+ * @file ADC_Manager.c
  * 
  * @details
  *      TODO
