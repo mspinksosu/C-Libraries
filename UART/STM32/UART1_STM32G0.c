@@ -92,20 +92,12 @@ static bool lockTxFinishedEvent = false, txFinishedEventPending = false,
 
 // local function pointers
 static void (*TransmitFinishedCallback)(void);
-//static void (*ReceivedDataCallback)(void);
 static void (*ReceivedDataCallback)(uint8_t (*CallToGetData)(void));
 static bool (*IsCTSPinLow)(void);
 static void (*SetRTSPin)(bool setHigh);
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param desiredBaudRate 
- * 
- * @param pclkInHz 
- * 
- * @return uint32_t 
- */
+// *****************************************************************************
+
 uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz)
 {
     if(desiredBaudRate == 0)
@@ -128,11 +120,8 @@ uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz)
     return uartDiv;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param params 
- */
+// *****************************************************************************
+
 void UART1_Init(UARTInitType *params)
 {
     if(params->BRGValue == 0)
@@ -219,10 +208,8 @@ void UART1_Init(UARTInitType *params)
     UART1_ADDR->CR1 |= USART_CR1_UE; // enable UART 
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void UART1_ReceivedDataEvent(void)
 {
     if(lockRxReceivedEvent == true)
@@ -247,11 +234,8 @@ void UART1_ReceivedDataEvent(void)
     lockRxReceivedEvent = false;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @return uint8_t 
- */
+// *****************************************************************************
+
 uint8_t UART1_GetReceivedByte(void)
 {
     uint8_t data = UART1_ADDR->DR;
@@ -266,11 +250,8 @@ uint8_t UART1_GetReceivedByte(void)
     return data;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @return true 
- */
+// *****************************************************************************
+
 bool UART1_IsReceiveRegisterFull(void)
 {
     bool rxFull = false;
@@ -293,28 +274,22 @@ bool UART1_IsReceiveRegisterFull(void)
     return rxFull;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void UART1_ReceiveEnable(void)
 {
     UART1_ADDR->CR1 |= USART_CR1_RE;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void UART1_ReceiveDisable(void)
 {
     UART1_ADDR->CR1 &= ~USART_CR1_RE;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void UART1_TransmitFinishedEvent(void)
 {
     /* This will prevent recursive calls if we call transmit byte function 
@@ -337,11 +312,8 @@ void UART1_TransmitFinishedEvent(void)
     lockTxFinishedEvent = false;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param data 
- */
+// *****************************************************************************
+
 void UART1_TransmitByte(uint8_t data)
 {
     /* Check if CTS is asserted (low) before transmitting. If so, send data */
@@ -357,11 +329,8 @@ void UART1_TransmitByte(uint8_t data)
         UART1_ADDR->CR1 |= USART_CR1_TXEIE_TXFNFIE;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @return true 
- */
+// *****************************************************************************
+
 bool UART1_IsTransmitRegisterEmpty(void)
 {
     bool txReady = false;
@@ -384,35 +353,22 @@ bool UART1_IsTransmitRegisterEmpty(void)
     return txReady;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void UART1_TransmitEnable(void)
 {
     UART1_ADDR->CR1 |= USART_CR1_TE;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void UART1_TransmitDisable(void)
 {
     UART1_ADDR->CR1 &= ~USART_CR1_TE;
 }
 
-/***************************************************************************//**
- * @brief Checks for pending transmit finished events
- * 
- * Because the transmit finished callback is called within the interrupt, if
- * the user wants to transmit another byte, the transmit finished interrupt
- * will almost certainly fire before the current callback is done. This can
- * lead to multiple recursive function calls. Call this function in a loop 
- * continously and it will check for a pending interrupt for you. This will
- * let the stack unwind. Note that this is really only an issue if you are 
- * using interrupts to transmit.
- */
+// *****************************************************************************
+
 void UART1_PendingEventHandler(void)
 {
     if(txFinishedEventPending && !lockTxFinishedEvent)
@@ -422,41 +378,29 @@ void UART1_PendingEventHandler(void)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param Function 
- */
+// *****************************************************************************
+
 void UART1_SetTransmitFinishedCallback(void (*Function)(void))
 {
     TransmitFinishedCallback = Function;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param Function 
- */
+// *****************************************************************************
+
 void UART1_SetReceivedDataCallback(void (*Function)(uint8_t (*CallToGetData)(void)))
 {
     ReceivedDataCallback = Function;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param Function 
- */
+// *****************************************************************************
+
 void UART1_SetIsCTSPinLowFunc(bool (*Function)(void))
 {
     IsCTSPinLow = Function;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param Function 
- */
+// *****************************************************************************
+
 void UART1_SetRTSPinFunc(void (*Function)(bool setPinHigh))
 {
     SetRTSPin = Function;

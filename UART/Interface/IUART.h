@@ -53,7 +53,6 @@ typedef enum UARTFlowControlTag
     UART_FLOW_SOFTWARE,
 } UARTFlowControl;
 
-/* Create the function table */
 typedef struct UARTInterfaceTag
 {
     /*  These are the functions that will be called. You will create your own
@@ -79,7 +78,7 @@ typedef struct UARTInterfaceTag
 } UARTInterface;
 
 typedef struct UARTTag
-{   
+{
     UARTInterface *interface;
     /* Add any more necessary base class members here */
 } UART;
@@ -103,51 +102,198 @@ typedef struct UARTInitTypeTag
 
 // ***** Function Prototypes ***************************************************
 
-// ----- Non-Interface Functions -----------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Non-Interface Functions *********************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
+/***************************************************************************//**
+ * @brief Combine the object and function table 
+ * 
+ * The UARTInterface is a list of functions for your UART. When you create a
+ * a UART implementation, you implement each of the functions listed in the 
+ * interface and also assign them to one of the function pointers in the 
+ * UARTInterface object.
+ * 
+ * @param self  
+ * @param interface 
+ */
 void UART_Create(UART *self, UARTInterface *interface);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param params 
+ */
 void UART_SetInitTypeToDefaultParams(UARTInitType *params);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param params 
+ * @param numStopBits 
+ * @param parityType 
+ * @param enable9Bit 
+ * @param flowControl 
+ * @param useRxInterrupt 
+ * @param useTxInterrupt 
+ */
 void UART_SetInitTypeParams(UARTInitType *params, UARTStopBits numStopBits, UARTParity parityType, 
     bool enable9Bit, UARTFlowControl flowControl, bool useRxInterrupt, bool useTxInterrupt);
 
+/***************************************************************************//**
+ * @brief Set the value for the baud rate generator
+ * 
+ * This is the value that gets loaded directly to the register, NOT the baud 
+ * rate.
+ * 
+ * @param params 
+ * @param BRGValue 
+ */
 void UART_SetInitBRGValue(UARTInitType *params, uint32_t BRGValue);
 
-// ----- Interface Functions ---------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Interface Functions *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self  
+ * @param desiredBaudRate  
+ * @param clkInHz  
+ * @return uint32_t  
+ */
 uint32_t UART_ComputeBRGValue(UART *self, uint32_t desiredBaudRate, uint32_t clkInHz);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param params 
+ */
 void UART_Init(UART *self, UARTInitType *params);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ */
 void UART_ReceivedDataEvent(UART *self);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @return uint8_t 
+ */
 uint8_t UART_GetReceivedByte(UART *self);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @return true 
+ */
 bool UART_IsReceiveRegisterFull(UART *self);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ */
 void UART_ReceiveEnable(UART *self);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ */
 void UART_ReceiveDisable(UART *self);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ */
 void UART_TransmitFinishedEvent(UART *self);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param dataToSend 
+ */
 void UART_TransmitByte(UART *self, uint8_t dataToSend);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @return true 
+ */
 bool UART_IsTransmitRegisterEmpty(UART *self);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ */
 void UART_TransmitEnable(UART *self);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ */
 void UART_TransmitDisable(UART *self);
 
+/***************************************************************************//**
+ * @brief Checks for pending transmit finished events
+ * 
+ * Because the transmit finished callback is called within the interrupt, if
+ * the user wants to transmit another byte, the transmit finished interrupt
+ * will almost certainly fire before the current callback is done. This can
+ * lead to multiple recursive function calls. Call this function in a loop 
+ * continously and it will check for a pending interrupt for you. This will
+ * let the stack unwind. Note that this is really only an issue if you are 
+ * using interrupts to transmit.
+ */
 void UART_PendingEventHandler(UART *self);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param Function 
+ */
 void UART_SetTransmitFinishedCallback(UART *self, void (*Function)(void));
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param Function 
+ */
 void UART_SetReceivedDataCallback(UART *self, void (*Function)(uint8_t (*CallToGetData)(void)));
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param Function 
+ */
 void UART_SetIsCTSPinLowFunc(UART *self, bool (*Function)(void));
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param Function 
+ */
 void UART_SetRTSPinFunc(UART *self, void (*Function)(bool setPinHigh));
 
 #endif  /* IUART_H */

@@ -35,10 +35,11 @@
 // ***** Defines ***************************************************************
 
 
+// ***** Global Variables ******************************************************
+
+
 // ***** Function Prototypes ***************************************************
 
-
-// ***** Global Variables ******************************************************
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -46,28 +47,13 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/***************************************************************************//**
- * @brief Combine the object and function table 
- * 
- * The UARTInterface is a list of functions for your UART. When you create a
- * a UART implementation, you implement each of the functions listed in the 
- * interface and also assign them to one of the function pointers in the 
- * UARTInterface object.
- * 
- * @param self  
- * 
- * @param interface 
- */
 void UART_Create(UART *self, UARTInterface *interface)
 {
     self->interface = interface;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param params  
- */
+// *****************************************************************************
+
 void UART_SetInitTypeToDefaultParams(UARTInitType *params)
 {
     params->stopBits = UART_ONE_P;
@@ -78,17 +64,8 @@ void UART_SetInitTypeToDefaultParams(UARTInitType *params)
     params->useTxInterrupt = false;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param params 
- * @param numStopBits 
- * @param parityType 
- * @param enable9Bit 
- * @param flowControl 
- * @param useRxInterrupt 
- * @param useTxInterrupt 
- */
+// *****************************************************************************
+
 void UART_SetInitTypeParams(UARTInitType *params, UARTStopBits numStopBits, UARTParity parityType, 
     bool enable9Bit, UARTFlowControl flowControl, bool useRxInterrupt, bool useTxInterrupt)
 {
@@ -100,16 +77,8 @@ void UART_SetInitTypeParams(UARTInitType *params, UARTStopBits numStopBits, UART
     params->useTxInterrupt = useTxInterrupt;
 }
 
-/***************************************************************************//**
- * @brief Set the value for the baud rate generator
- * 
- * This is the value that gets loaded directly to the register, NOT the baud 
- * rate.
- * 
- * @param params  
- * 
- * @param BRGValue  
- */
+// *****************************************************************************
+
 void UART_SetInitBRGValue(UARTInitType *params, uint32_t BRGValue)
 {
     params->BRGValue = BRGValue; 
@@ -121,17 +90,6 @@ void UART_SetInitBRGValue(UARTInitType *params, uint32_t BRGValue)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self  
- * 
- * @param desiredBaudRate  
- * 
- * @param clkInHz  
- * 
- * @return uint32_t  
- */
 uint32_t UART_ComputeBRGValue(UART *self, uint32_t desiredBaudRate, uint32_t clkInHz)
 {
     if(self->interface->UART_ComputeBRGValue != NULL)
@@ -144,11 +102,8 @@ uint32_t UART_ComputeBRGValue(UART *self, uint32_t desiredBaudRate, uint32_t clk
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self  
- */
+// *****************************************************************************
+
 void UART_Init(UART *self, UARTInitType *params)
 {
     if(self->interface->UART_Init != NULL && params != NULL)
@@ -157,11 +112,8 @@ void UART_Init(UART *self, UARTInitType *params)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self  
- */
+// *****************************************************************************
+
 void UART_ReceivedDataEvent(UART *self)
 {
     if(self->interface->UART_ReceivedDataEvent != NULL)
@@ -170,13 +122,8 @@ void UART_ReceivedDataEvent(UART *self)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self  
- * 
- * @return uint8_t  
- */
+// *****************************************************************************
+
 uint8_t UART_GetReceivedByte(UART *self)
 {   
     if(self->interface->UART_GetReceivedByte != NULL)
@@ -189,13 +136,8 @@ uint8_t UART_GetReceivedByte(UART *self)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self  
- * 
- * @return  
- */
+// *****************************************************************************
+
 bool UART_IsReceiveRegisterFull(UART *self)
 {
     if(self->interface->UART_IsReceiveRegisterFull != NULL)
@@ -208,11 +150,8 @@ bool UART_IsReceiveRegisterFull(UART *self)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- */
+// *****************************************************************************
+
 void UART_ReceiveEnable(UART *self)
 {
     if(self->interface->UART_ReceiveEnable != NULL)
@@ -221,11 +160,8 @@ void UART_ReceiveEnable(UART *self)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- */
+// *****************************************************************************
+
 void UART_ReceiveDisable(UART *self)
 {
     if(self->interface->UART_ReceiveDisable != NULL)
@@ -234,11 +170,8 @@ void UART_ReceiveDisable(UART *self)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- */
+// *****************************************************************************
+
 void UART_TransmitFinishedEvent(UART *self)
 {
     if(self->interface->UART_TransmitFinishedEvent != NULL)
@@ -247,13 +180,8 @@ void UART_TransmitFinishedEvent(UART *self)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * 
- * @param dataToSend 
- */
+// *****************************************************************************
+
 void UART_TransmitByte(UART *self, uint8_t dataToSend)
 {
     if(self->interface->UART_TransmitByte != NULL)
@@ -262,13 +190,8 @@ void UART_TransmitByte(UART *self, uint8_t dataToSend)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * 
- * @return true 
- */
+// *****************************************************************************
+
 bool UART_IsTransmitRegisterEmpty(UART *self)
 {
     if(self->interface->UART_IsTransmitRegisterEmpty != NULL)
@@ -281,11 +204,8 @@ bool UART_IsTransmitRegisterEmpty(UART *self)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- */
+// *****************************************************************************
+
 void UART_TransmitEnable(UART *self)
 {
     if(self->interface->UART_TransmitEnable != NULL)
@@ -294,11 +214,8 @@ void UART_TransmitEnable(UART *self)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- */
+// *****************************************************************************
+
 void UART_TransmitDisable(UART *self)
 {
     if(self->interface->UART_TransmitDisable != NULL)
@@ -307,11 +224,8 @@ void UART_TransmitDisable(UART *self)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- */
+// *****************************************************************************
+
 void UART_PendingEventHandler(UART *self)
 {
     if(self->interface->UART_PendingEventHandler != NULL)
@@ -320,13 +234,8 @@ void UART_PendingEventHandler(UART *self)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * 
- * @param Function 
- */
+// *****************************************************************************
+
 void UART_SetTransmitFinishedCallback(UART *self, void (*Function)(void))
 {
     if(self->interface->UART_SetTransmitFinishedCallback != NULL)
@@ -335,13 +244,8 @@ void UART_SetTransmitFinishedCallback(UART *self, void (*Function)(void))
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * 
- * @param Function 
- */
+// *****************************************************************************
+
 void UART_SetReceivedDataCallback(UART *self, void (*Function)(uint8_t (*CallToGetData)(void)))
 {
     if(self->interface->UART_SetReceivedDataCallback != NULL)
@@ -350,13 +254,8 @@ void UART_SetReceivedDataCallback(UART *self, void (*Function)(uint8_t (*CallToG
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * 
- * @param Function 
- */
+// *****************************************************************************
+
 void UART_SetIsCTSPinLowFunc(UART *self, bool (*Function)(void))
 {
     if(self->interface->UART_SetIsCTSPinLowFunc != NULL)
@@ -365,13 +264,8 @@ void UART_SetIsCTSPinLowFunc(UART *self, bool (*Function)(void))
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * 
- * @param Function 
- */
+// *****************************************************************************
+
 void UART_SetRTSPinFunc(UART *self, void (*Function)(bool))
 {
     if(self->interface->UART_SetRTSPinFunc != NULL)

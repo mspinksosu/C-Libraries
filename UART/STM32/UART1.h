@@ -13,7 +13,18 @@
  * @file UART1.h
  * 
  * @details
- *      TODO
+ *      Header for a UART peripheral that implements the IUART interface. 
+ * Each function here must be implemented. The external interface variable, 
+ * FunctionTable is declared and defined in the .c file for your implementation 
+ * as well. From there, you will set each one of its pointers to one of the 
+ * functions listed here.
+ * 
+ * Whichever file does the initalization for this UART will need to include 
+ * this header file to gain access to the function table. The implementation 
+ * can vary across different processors. All that matters is that the functions
+ * listed in the table point to the correct functions for your implementation.
+ * 
+ * See IUART.h for a description of what each function should do.
  * 
  ******************************************************************************/
 
@@ -27,16 +38,13 @@
 
 // ***** Global Variables ******************************************************
 
+/* Declare and define this variable in your implementation's .c file */
 extern UARTInterface UART1_FunctionTable;
 
-/** 
- * Description of struct
- * 
- * member1      description of variable member1
- * 
- */
 
 // ***** Function Prototypes ***************************************************
+
+// ----- Non-Interface Functions -----------------------------------------------
 
 
 // ----- Interface Functions ---------------------------------------------------
@@ -65,7 +73,7 @@ void UART1_TransmitEnable(void);
 
 void UART1_TransmitDisable(void);
 
-void UART1_PendingEventHandler(void); // TODO experiment
+void UART1_PendingEventHandler(void);
 
 void UART1_SetTransmitFinishedCallback(void (*Function)(void));
 
