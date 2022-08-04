@@ -227,10 +227,11 @@ void GPIO_STM32_InvertPin(GPIO_STM32 *self)
     /* The BSRR register cannot be read. We have to read ODR to get the current
     status of the pin instead */
     uint32_t pinMask = 1UL << (self->super->pinNumber);
-    uint32_t pinState = self->st_port->ODR & pinMask;
 
     if(self->st_port != NULL)
     {
+        uint32_t pinState = self->st_port->ODR & pinMask;
+
         /* The upper 16 bits reset the pin. The lower 16 bits set the pin.
         Zero writes are ignored completely. */
         if(pinState)
@@ -272,11 +273,13 @@ void GPIO_STM32_WritePin(GPIO_STM32 *self, bool setPinHigh)
 uint16_t GPIO_STM32_ReadPin(GPIO_STM32 *self)
 {
     uint16_t retValue = 0;
-    uint32_t modeMask = self->st_port->MODER & (3UL << (self->super->pinNumber * 2));
-    modeMask >>= (self->super->pinNumber * 2);
+    uint32_t modeMask;
 
     if(self->st_port != NULL)
     {
+        modeMask = self->st_port->MODER & (3UL << (self->super->pinNumber * 2));
+        modeMask >>= (self->super->pinNumber * 2);
+
         if(modeMask == 0)
         {
             // digital input
@@ -360,11 +363,13 @@ void GPIO_STM32_SetType(GPIO_STM32 *self, GPIOType type)
 GPIOType GPIO_STM32_GetType(GPIO_STM32 *self)
 {
     GPIOType retVal = GPIO_TYPE_ANALOG; // reset value
-    uint32_t modeMask = self->st_port->MODER & (3UL << (self->super->pinNumber * 2));
-    modeMask >>= (self->super->pinNumber * 2);
+    uint32_t modeMask;
 
     if(self->st_port != NULL)
     {
+        modeMask = self->st_port->MODER & (3UL << (self->super->pinNumber * 2));
+        modeMask >>= (self->super->pinNumber * 2);
+
        if(modeMask == 0)
        {
             retVal = GPIO_TYPE_DIGITAL_INPUT;
@@ -414,11 +419,13 @@ void GPIO_STM32_SetPull(GPIO_STM32 *self, GPIOPull pullType)
 GPIOPull GPIO_STM32_GetPull(GPIO_STM32 *self)
 {
     GPIOPull retVal = GPIO_PULL_NONE;
-    uint32_t pullMask = self->st_port->MODER & (3UL << (self->super->pinNumber * 2));
-    pullMask >>= (self->super->pinNumber * 2);
+    uint32_t pullMask;
 
     if(self->st_port != NULL)
     {
+        pullMask = self->st_port->MODER & (3UL << (self->super->pinNumber * 2));
+        pullMask >>= (self->super->pinNumber * 2);
+
         if(pullMask == 1)
         {
             retVal = GPIO_PULL_UP;

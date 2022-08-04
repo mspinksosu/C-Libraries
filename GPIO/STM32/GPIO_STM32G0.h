@@ -57,8 +57,6 @@ typedef struct GPIOInitType_STM32Tag
 
 // ----- Non-Interface Functions -----------------------------------------------
 
-//void GPIO_STM32_InitAllPins(void);
-
 void GPIO_STM32_Create(GPIO_STM32 *self, GPIO *base);
 
 void GPIO_STM32_CreateInitType(GPIOInitType_STM32 *self, GPIOInitType *base);
