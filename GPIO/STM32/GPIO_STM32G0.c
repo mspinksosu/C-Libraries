@@ -21,24 +21,9 @@
  * (which are function pointers) the our local functions. Typecasting is 
  * necessary.
  * 
- * Since there is only ever going to be one interface for the GPIO driver, 
- * the interface for the GPIO driver is static. In order to set the function
- * table, call the GPIO_SetDriverInterface and give it a pointer to this
- * function table.
- * 
  * The base class and sub class are connected together by calling the Create
- * functions. This step should be done using the sub classes Create functions. 
- * Using the sub class Create function sets the appropriate pointers and adds 
- * some type safety by including the sub class in the function signature.
- * 
- * When using the GPIO interface functions, calls to the base functions are 
- * done with the GPIO type. If you need access to the pins from anywhere 
- * besides where the pins were declared, you can make just the base type 
- * external. The function table will call the appropriate sub class function 
- * and give it the sub class object. All you would need is the base class GPIO
- * variable and IGPIO.h Doing it this way will hide the sub class away and 
- * removes the need to include those files, which would otherwise create a 
- * processor specific dependancy.
+ * functions. These sub class create functions will then call the interface's
+ * create function and set the void pointer for you so you don't have to.
  * 
  * Example Code:
  *      GPIO_DriverSetInterface(&GPIOFunctionTable);

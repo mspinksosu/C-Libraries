@@ -10,29 +10,6 @@
  * @details
  *      An interface for a GPIO library to be used with different processors.
  * 
- * There are two types of objects. One that holds the properties needed for the
- * pin, called GPIO and the other that holds the parameters needed to
- * initialize the pin called GPIOInitType. I did this so that all of the pin's
- * parameters don't have to be stored in memory. If you desire, you can hold 
- * everything together in an array with both structs. Then loop through the 
- * array and initialize each element. It is convienent, but takes up more 
- * memory. Alternatively, you can declare an init type object inside your init
- * function. Set its type, direction, and pull-up type for each pin and then 
- * call it together with each pin object. Once the init function is finished,
- * the init type variable is destroyed and memory is freed.
- * 
- * I've decided to not include the port in the base class and instead left it
- * up to the sub class. This because different processors may have different 
- * ways to define a port.
- * 
- * After creating a sub class, it needs to be connected to the base class by
- * using the Create functions. By using a void pointer to point to an instance 
- * of the subclass object, we remove the need for the user to have to do some 
- * ugly typecasting on every single function call. However, the best way to do 
- * this step is to call this function from the sub class's create function. 
- * This makes so the user doesn't need to deal with messing around with void 
- * pointers, and makes the function call a little more type-safe.
- * 
  * Libraries that use this interface must implement the functions listed in the
  * interface, or function table. Since, there should only ever be one single
  * GPIO driver per processor, I am going to make the function table static. 
@@ -41,8 +18,13 @@
  * 
  * The functions here will use the base class object type. The functions in the
  * sub class will use the sub class object type. When the user calls a function
- * here, the function table, along with the object, will determine which 
- * function to call and what sub class to give to the function.
+ * here, the function table, or interface, along with the base class object,
+ * will determine which function to call and what sub class to give to the 
+ * function.
+ * 
+ * In the example below, there are two init type objects. These do not have to
+ * be kept in memory. They can be declared as local variables and used for each
+ * pin's initialization.
  * 
  * Example Code:
  *      GPIO_DriverSetInterface(&MCU1_GPIOInterface);

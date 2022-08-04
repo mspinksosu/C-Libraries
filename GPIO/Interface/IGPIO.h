@@ -9,28 +9,47 @@
  * 
  * @details
  *      An interface for a GPIO library to be used with different processors.
- * There is a base class for all generic pin parameters such as pin number,
- * and an init class for other parameters such as type, direction, pull-up/down. 
- * The only thing not covered by the base class is the port. Different 
- * processors may have different ways to define a port, so I decided to put 
- * that with the processor specific properties, or sub class.
+ * There are two types of objects. One that holds the properties needed for the
+ * pin, called GPIO and the other that holds the parameters needed to
+ * initialize the pin called GPIOInitType. I did this so that all of the pin's
+ * parameters don't have to be stored in memory. If you desire, you can use
+ * one init type during initialization, change it's parameters, and call it
+ * with the init functions. Once the init function is finished, the init type 
+ * variable is destroyed and memory is freed.
  * 
- * A base class must contain at minimum, a pointer to the sub class's interface 
- * and a void pointer. The void pointer "instance" will point to whatever sub 
- * class object is created. Sub class types will need their own different 
- * variables. This is why a void pointer is used. After creating the sub class, 
- * the void pointer will be changed to point to it. 
+ * A base class must contain at minimum, a pointer to the interface and a void 
+ * pointer called "instance". In this particular case, the MCU will never have
+ * more than one GPIO interface, so I've ommitted the pointer to the interface.
+ * Sub class objects need their own variables which are not in the base class. 
+ * This is why the void pointer is used. After the base and sub class are 
+ * linked, the void pointer will be set to point to the sub class.
  * 
  * The GPIOInterface or function table tells the interface what functions to 
  * call. When we create the function table, we are initializing its members 
- * (which are function pointers) the our local functions. Typecasting is 
- * necessary.
+ * (which are function pointers) the our local functions. The function pointers
+ * listed in the table will use void pointers for the base class objects. In
+ * the implementation, the function signatures will use the sub class objects.
+ * Setting the functions in the implementation to the function pointers in the
+ * table will require typecasting.
  * 
- * The base class "Create" function links the base class with the sub class.
- * I prefer not to call this create function directly though. 
- * Instead I opt to call it from the sub class create function. This makes 
- * calling the base class create function a little more typesafe, by avoiding
- * accidentally setting the void pointer to something it's not supposed to be.
+ * After creating a sub class, it needs to be connected to the base class by
+ * using the Create functions. By using a void pointer to point to an instance 
+ * of the subclass object, we remove the need for the user to have to do some 
+ * ugly typecasting on every single function call. I think the best way to do 
+ * this step is to call this function from a sub class create function. Make a 
+ * function in your implementation called "create" that uses your sub class 
+ * type and the base class type as arguments. This function is not listed
+ * in the function table. From within that function, call the base class create 
+ * function to finish setting the void pointer. The reason I prefer this method 
+ * is it makes the process a little more type-safe by having the base class
+ * and sub class as arguments in the function signature.
+ * 
+ * If you need access to the pins from anywhere besides where the pins were 
+ * declared, you can make the base type external. The function table will call 
+ * the appropriate sub class function and give it the sub class object. All you 
+ * would need is the base class GPIO variable and IGPIO.h Doing it this way 
+ * will hide the sub class away and removes the need to include those files, 
+ * which would otherwise create a processor specific dependancy.
  * 
  ******************************************************************************/
 

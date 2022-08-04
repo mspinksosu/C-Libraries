@@ -13,6 +13,10 @@
  * It shouldn't care how the user initializes all their pins. This gives more 
  * flexibility with how we decide to handle pin organization.
  * 
+ * When using the GPIO interface functions, calls to the base functions are 
+ * done with the GPIO type. Other functions that may need external access to 
+ * the pins only need to use the base class object.
+ * 
  ******************************************************************************/
 
 #ifndef GPIO_MANAGER_H
@@ -28,7 +32,7 @@
 /* Any file that includes this header can have access to these objects to use 
 with the GPIO library. Only the GPIO type needs to be external. Each external 
 variable will need a matching declaration and initialization. This will be done 
-in your processor specific GPIO implementation. */
+in your processor specific GPIO Manager implementation. */
 
 // ----- Declare GPIO pins here. Declare as extern  ----------------------------
 
