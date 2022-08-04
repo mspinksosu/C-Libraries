@@ -28,18 +28,18 @@
  * 
  * Example Code:
  *      GPIO_DriverSetInterface(&MCU1_GPIOInterface);
- *      GPIO pin1;
- *      GPIO_MCU1 myMcuPin1; // extends GPIO pin
+ *      GPIO led1;
+ *      GPIO_MCU1 myMcuLED1; // extends GPIO pin
  *      GPIOInitType init;
  *      GPIOInitType_MCU1 myMcuInit // extends GPIO init type
  *      init.type = GPIO_TYPE_DIGITAL_OUTPUT;
  *      init.pull = GPIO_PULL_NONE;
  *      myMcuInit.extendedClassMember = 1;
  *      GPIO_MCU1_CreateInitType(&init, &myMcuInit); // connect sub and base
- *      GPIO_MCU1_Create(&pin1, &myMcuPin1); // connect sub class and base
- *      GPIO_InitPin(&pin1, &init);
- *      GPIO_Set(&pin1); // set output high
- *      GPIO_SetType(&pin1, GPIO_TYPE_ANALOG); // ready pin for sleep
+ *      GPIO_MCU1_Create(&led1, &myMcuLED1); // connect sub class and base
+ *      GPIO_InitPin(&led1, &init);
+ *      GPIO_Set(&led1); // set output high
+ *      GPIO_SetType(&led1, GPIO_TYPE_ANALOG); // ready pin for sleep
  * 
  ******************************************************************************/
 

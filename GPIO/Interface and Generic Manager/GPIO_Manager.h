@@ -36,7 +36,7 @@ in your processor specific GPIO Manager implementation. */
 
 // ----- Declare GPIO pins here. Declare as extern  ----------------------------
 
-extern GPIO pin1, pin2;
+extern GPIO led1, led2;
 
 
 // ***** Function Prototypes ***************************************************

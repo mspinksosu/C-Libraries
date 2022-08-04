@@ -27,17 +27,17 @@
  * 
  * Example Code:
  *      GPIO_DriverSetInterface(&GPIOFunctionTable);
- *      GPIO pin1;
- *      GPIO_STM32 _pin1; // extends pin 1
+ *      GPIO led1;
+ *      GPIO_STM32 _led1; // extends led 1
  *      GPIOInitType init;
  *      GPIOInitType_STM32 _init // extends GPIO init type
  *      init.type = GPIO_TYPE_DIGITAL_OUTPUT;
  *      _init.alternate = 2; // STM32 alternate pin function
  *      GPIO_STM32_CreateInitType(&init, &_init); // connect sub and base class
- *      GPIO_STM32_Create(&pin1, &myMcuPin1); // connect sub and base class
- *      GPIO_InitPin(&pin1, &_pin1);
- *      GPIO_Set(&pin1); // set output high
- *      GPIO_SetType(&pin1, GPIO_TYPE_ANALOG); // ready pin for sleep
+ *      GPIO_STM32_Create(&led1, &myMcuPin1); // connect sub and base class
+ *      GPIO_InitPin(&led1, &_led1);
+ *      GPIO_Set(&led1); // set output high
+ *      GPIO_SetType(&led1, GPIO_TYPE_ANALOG); // ready pin for sleep
  * 
  ******************************************************************************/
 

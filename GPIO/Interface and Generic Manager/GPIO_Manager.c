@@ -31,7 +31,7 @@ be made extern. Use a memorable name. This is the object you will use for
 library function calls. */
 //------------------------------------------------------------------------------
 
-GPIO pin1, pin2;
+GPIO led1, led2;
 
 /* If you have any GPIO sub classes, declare them here */
 
@@ -60,7 +60,6 @@ void GPIO_Manager_InitAllPins(void)
 
     /* Call your sub class create init type function. This part only needs to 
     be done once */
-    GPIO_STM32_CreateInitType(&_init, &init);
 
 // ----- Add your pins --------------------------------------------------
 
@@ -68,15 +67,14 @@ void GPIO_Manager_InitAllPins(void)
     pin properties. Next, set any generic init properties and processor 
     specific init properties. Then, call your subclass create function. 
     Finally, call the pin init function. */
-    pin1.pinNumber = 6;
+    led1.pinNumber = 6;
     init.type = GPIO_TYPE_DIGITAL_OUTPUT;
     init.pull = GPIO_PULL_NONE;
-    GPIO_InitPin(&pin1, &init);
+    GPIO_InitPin(&led1, &init);
     
-    pin2.pinNumber = 15;
+    led2.pinNumber = 15;
     init.type = GPIO_TYPE_DIGITAL_OUTPUT;
     init.pull = GPIO_PULL_NONE;
-    _init.speed = 0;
-    GPIO_InitPin(&pin2, &init);
+    GPIO_InitPin(&led2, &init);
 
 }

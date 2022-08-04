@@ -29,8 +29,8 @@ be made extern. Use a memorable name. This is the object you will use for
 library function calls. */
 //------------------------------------------------------------------------------
 
-GPIO pin1, pin2;
-GPIO_STM32 _pin1, _pin2;
+GPIO led1, led2;
+GPIO_STM32 _led1, _led2;
 
 //------------------------------------------------------------------------------
 
@@ -63,20 +63,20 @@ void GPIO_Manager_InitAllPins(void)
     pin properties. Next, set any generic init properties and processor 
     specific init properties. Then, call your subclass create function. 
     Finally, call the pin init function. */
-    pin1.pinNumber = 6;
-    _pin1.st_port = GPIOC;
+    led1.pinNumber = 6;
+    _led1.st_port = GPIOC;
     init.type = GPIO_TYPE_DIGITAL_OUTPUT;
     init.pull = GPIO_PULL_NONE;
     _init.alternate = 0;
-    GPIO_STM32_Create(&_pin1, &pin1);
-    GPIO_InitPin(&pin1, &init);
+    GPIO_STM32_Create(&_led1, &led1);
+    GPIO_InitPin(&led1, &init);
     
-    pin2.pinNumber = 15;
-    _pin2.st_port = GPIOA;
+    led2.pinNumber = 15;
+    _led2.st_port = GPIOA;
     init.type = GPIO_TYPE_DIGITAL_OUTPUT;
     init.pull = GPIO_PULL_NONE;
     _init.speed = 0;
-    GPIO_STM32_Create(&_pin2, &pin2);
-    GPIO_InitPin(&pin2, &init);
+    GPIO_STM32_Create(&_led2, &led2);
+    GPIO_InitPin(&led2, &init);
 
 }
