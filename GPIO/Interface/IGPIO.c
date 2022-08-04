@@ -105,7 +105,7 @@ void GPIO_Create(GPIO *self, void *instanceOfSubClass)
  * 
  * @param params  pointer to the GPIOInit type you are using
  * 
- * @param instanceOfSubClass  the child object that implements the GPIO Init
+ * @param instanceOfSubClass  the child object that implements the GPIOInit
  */
 void GPIO_CreateInitType(GPIOInitType *params, void *instanceOfSubClass)
 {
@@ -139,7 +139,7 @@ void GPIO_SetPointerToAnalogValue(GPIO *self, uint16_t *ptr)
  * 
  * @param self  pointer to the GPIO you are using
  * 
- * @param params  pointer to the GPIO Init type you are using
+ * @param params  pointer to the GPIOInit type you are using
  */
 void GPIO_InitPin(GPIO *self, GPIOInitType *params)
 {
@@ -255,7 +255,8 @@ bool GPIO_ReadBool(GPIO *self)
  * 
  * @param self  pointer to the GPIO you are using
  * 
- * @param type  GPIO_TYPE_ANALOG or GPIO_TYPE_DIGITAL
+ * @param type  GPIO_TYPE_ANALOG, GPIO_TYPE_DIGITAL_INPUT, 
+ *              GPIO_TYPE_DIGITAL_OUTPUT, GPIO_TYPE_OPEN_DRAIN
  */
 void GPIO_SetType(GPIO *self, GPIOType type)
 {
@@ -272,51 +273,14 @@ void GPIO_SetType(GPIO *self, GPIOType type)
  * 
  * @param self  pointer to the GPIO you are using
  * 
- * @return GPIOType  GPIO_TYPE_ANALOG or GPIO_TYPE_DIGITAL
+ * @return GPIOType  GPIO_TYPE_ANALOG, GPIO_TYPE_DIGITAL_INPUT, 
+ *                   GPIO_TYPE_DIGITAL_OUTPUT, GPIO_TYPE_OPEN_DRAIN
  */
 GPIOType GPIO_GetType(GPIO *self)
 {
     if(interface->GPIO_GetType != NULL && self->instance != NULL)
     {
         return (interface->GPIO_GetType)(self->instance);
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-/***************************************************************************//**
- * @brief Set the pin direction
- * 
- * Set the pin's asscociated registers
- * 
- * @param self  pointer to the GPIO you are using
- * 
- * @param direction  GPIO_DIR_INPUT, GPIO_DIR_OUTPUT, GPIO_DIR_OPEN_DRAIN
- */
-void GPIO_SetDirection(GPIO *self, GPIODirection direction)
-{
-    if(interface->GPIO_SetDirection != NULL && self->instance != NULL)
-    {
-        (interface->GPIO_SetDirection)(self->instance, direction);
-    }
-}
-
-/***************************************************************************//**
- * @brief Get the direction of the pin
- * 
- * Read the pin's associated registers and determine the pin direction
- * 
- * @param self  pointer to the GPIO you are using
- * 
- * @return GPIODirection  GPIO_DIR_INPUT, GPIO_DIR_OUTPUT, GPIO_DIR_OPEN_DRAIN
- */
-GPIODirection GPIO_GetDirection(GPIO *self)
-{
-    if(interface->GPIO_GetDirection != NULL && self->instance != NULL)
-    {
-        return (interface->GPIO_GetDirection)(self->instance);
     }
     else
     {
