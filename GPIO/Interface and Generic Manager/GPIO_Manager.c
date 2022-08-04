@@ -9,14 +9,16 @@
  * @file GPIO_Manager_STM32G0.c
  * 
  * @details
- *      This is a special version of the GPIO Manager that works with the 
- * STM32G0 implementation. It sets the function table, and initializes all of
- * the pins. This file replaces GPIO_Manager.c.
+ *     I removed the initialization function that was in the GPIO library and 
+ * put it here. Code in the GPIO library should only be concerned with pins. 
+ * It shouldn't care how the user initializes all their pins. This gives more 
+ * flexibility with how we decide to handle pin organization.
  * 
  ******************************************************************************/
 
 #include "GPIO_Manager.h"
-#include "GPIO_STM32G0.h"
+
+/* include your GPIO implementation here */
 
 // ***** Defines ***************************************************************
 
@@ -30,7 +32,8 @@ library function calls. */
 //------------------------------------------------------------------------------
 
 GPIO pin1, pin2;
-GPIO_STM32 _pin1, _pin2;
+
+/* If you have any GPIO sub classes, declare them here */
 
 //------------------------------------------------------------------------------
 
@@ -44,17 +47,19 @@ GPIO_STM32 _pin1, _pin2;
  */
 void GPIO_Manager_InitAllPins(void)
 {
-    GPIO_DriverSetInterface(&GPIOFunctionTable); // defined in GPIO_STM32G0.h
+    /* The function table is declared in your own GPIO implementation header
+    file and defined in your implementation .c file */
+    GPIO_DriverSetInterface(&GPIOFunctionTable);
 
     GPIOInitType init;
-    GPIOInitType_STM32 _init;
+
+    /* Declare any GPIOInitType subclasses here */
 
     /* Processor specific init properties can be changed for each individual 
     pin before calling the GPIO init function */
-    _init.speed = 0;
-    _init.alternate = 0;
 
-    /* This part only needs to be done once */
+    /* Call your sub class create init type function. This part only needs to 
+    be done once */
     GPIO_STM32_CreateInitType(&_init, &init);
 
 // ----- Add your pins --------------------------------------------------
@@ -64,19 +69,14 @@ void GPIO_Manager_InitAllPins(void)
     specific init properties. Then, call your subclass create function. 
     Finally, call the pin init function. */
     pin1.pinNumber = 6;
-    _pin1.st_port = GPIOC;
     init.type = GPIO_TYPE_DIGITAL_OUTPUT;
     init.pull = GPIO_PULL_NONE;
-    _init.alternate = 0;
-    GPIO_STM32_Create(&_pin1, &pin1);
     GPIO_InitPin(&pin1, &init);
     
     pin2.pinNumber = 15;
-    _pin2.st_port = GPIOA;
     init.type = GPIO_TYPE_DIGITAL_OUTPUT;
     init.pull = GPIO_PULL_NONE;
     _init.speed = 0;
-    GPIO_STM32_Create(&_pin2, &pin2);
     GPIO_InitPin(&pin2, &init);
 
 }
