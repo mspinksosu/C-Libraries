@@ -171,7 +171,6 @@ void Pattern_Tick(Pattern *self)
     /* Check if timer is ready to start */
     if(self->flags.start)
     {
-        /* Load the count and set the output */
         self->flags.start = 0;
         self->period =  self->patternArray[self->index].timeInMs / self->tickMs;
 
@@ -179,6 +178,7 @@ void Pattern_Tick(Pattern *self)
         if(self->period == 0)
             self->period = 1;
 
+        /* Load the count and set the output */
         self->count = self->period;
         self->output = self->patternArray[self->index].output;
         self->flags.active = 1;
