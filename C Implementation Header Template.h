@@ -37,6 +37,13 @@ typedef struct Foo_MCU1Tag
     
 } Foo_MCU1;
 
+/** 
+ * Description of struct
+ * 
+ * member1      description of variable member1
+ * 
+ */
+
 // ***** Function Prototypes ***************************************************
 
 // ----- Non-Interface Functions -----------------------------------------------
