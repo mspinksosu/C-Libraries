@@ -39,16 +39,15 @@ static void ADC_Manager_InsertChannelAfter(ADCChannelEntry *entryToInsert, ADCCh
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/* Declare ADC channels and entries starting here. Each ADC Channel variable 
-should have a matching extern declaration in a header file. Only the ADCChannel
-variable needs to be made extern. The entry variable is only for use by the 
-manager. Use a memorable name. You will call ADC_Get8bit or ADC_Get16Bit with 
-this object to get its value. Also, don't forget to set the corresponding GPIO 
-pin to analog. */
+/* Declare ADC channels and entries starting here. The entry variable is only 
+for use by the manager. Each ADCChannel object should have a matching extern 
+declaration in a header file. Use a memorable name. You will call ADC_Get8bit 
+or ADC_Get16Bit with this ADCChannel object to get its value. Also, don't 
+forget to set the corresponding GPIO pin to analog. */
 //------------------------------------------------------------------------------
 
 ADCChannel analogInput1, analogInput2;
-ADCChannelEntry _analogInput1, _analogInput2;
+ADCChannelEntry entry1, entry2;
 
 // -----------------------------------------------------------------------------
 
@@ -67,8 +66,8 @@ void ADC_Manager_Init(uint16_t sampleTimeMs, uint16_t tickRateMs)
 
 // ----- Add your channels to the manager --------------------------------------
 
-    ADC_Manager_AddChannel(&_analogInput1, &analogInput1);
-    ADC_Manager_AddChannel(&_analogInput2, &analogInput2);
+    ADC_Manager_AddChannel(&entry1, &analogInput1);
+    ADC_Manager_AddChannel(&entry2, &analogInput2);
 
 // -----------------------------------------------------------------------------
 
