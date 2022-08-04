@@ -10,41 +10,20 @@
  * @file RotaryEncoder.h
  * 
  * @details
- *      A library that handles the basic quadrature rotary encoder. Quadrature 
- * rotary encoders have two traits that define them. The number of pulses per 
- * revolution (PPR) and the number of detents. Our goal is to generate a change 
- * in the output every time the knob moves one "click" or detent. To do that, 
- * you must know how many PPR and how many detents.
+ *      A library that handles the basic quadrature rotary encoder. A flag is
+ * set every time the knob moves one "click" or detent either clockwise or 
+ * counterclockwise. You check for these events by calling the get clockwise 
+ * or counterclockwise functions. The flags for these functions are cleared 
+ * automatically whenever they are called.
  * 
- *      By far, the most common type of rotary encoder is one that has half
- * the number of detents as PPR. We refer to this as a "1/2 cycle per detent" 
- * rotary encoder. Meaning the knobs stops on a detent halfway through the 
- * quadrature output cycle. There are also rotary encoders that have the same 
- * number of PPR as detents ("full cycle per detent") and even 1/4 cycle per 
- * detent rotary encoders. This last one has a detent on every state change in 
- * the cycle. 
- * 
- *      To create a rotary encoder you need the debounce time in milliseconds
- * and the expected update rate in milliseconds (how often you call the tick
- * function). If you are debouncing using an RC filter, use 0 as the debounce 
- * time. For the tick rate, you should be updating the rotary encoder fairly
- * quickly. If you update it too slow, it may feel sluggish. Most datasheets 
- * I've looked at recommend a 5 ms debounce time. If you're debouncing using 
- * software, you'll probably want to update it around that fast. If you are 
- * using RC filters, you can probably get away with going a little slower. The
- * maximum available debounce time is 255 ms.
- * 
- *      The flags for the get clockwise and get counter clockwise functions are
- * cleared automatically whenever they are called.
+ *      This library uses a table to determine what state the rotary encoder is
+ * in. This is based on the value given by the update phases function.
  * 
  * ****************************************************************************/
 
 #include "RotaryEncoder.h"
 
 // ***** Defines ***************************************************************
-
-
-// ***** Function Prototypes ***************************************************
 
 
 // ***** Global Variables ******************************************************
@@ -54,35 +33,19 @@ current state. Using this, we can determine which direction we are going. The
 value of the output will look like this: 0000baba. The index of the table 
 corresponds to these values. A postive number indicates a clockwise transition
 and a negative number indicates a counter clockwise transition. A zero means
-there was no transition, or that it is invalid. */
+there was no transition, or that it was invalid. */
 static int8_t rotaryLookupTable[] = { 0, 1, -1, 0, -1, 0, 0, 1,
                                       1, 0, 0, -1, 0, -1, 1, 0 };
 
-/***************************************************************************//**
- * @brief Initialize a Rotary Encoder object (half cycle type)
- * 
- * Initializes a rotary encoder of the most common type
- * 
- * @param self  pointer to the Rotary Encoder that you are using
- * 
- * @param debounceMs  the debounce time in milliseconds
- * 
- * @param tickMs  how often you plan to call the RE Tick function
- */
+// *****************************************************************************
+
 void RE_Init(RotaryEncoder *self, uint16_t debounceMs, uint16_t tickMs)
 {
     RE_InitWithType(self, RE_HALF_CYCLE_PER_DETENT, debounceMs, tickMs);
 }
 
-/***************************************************************************//**
- * @brief Initialize a Rotary Encoder object
- * 
- * @param self  pointer to the Rotary Encoder that you are using
- * 
- * @param debounceMs  the debounce time in milliseconds
- * 
- * @param tickMs  how often you plan to call the RE Tick function
- */
+// *****************************************************************************
+
 void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debounceMs, uint16_t tickMs)
 {
     uint16_t debouncePeriod;
@@ -100,7 +63,7 @@ void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debou
             self->typeMask = 0x03; // multiples of four
             break;
         default:
-            self->typeMask = 0; // RE_QUARTER_CYCLE_PER_DETENT
+            self->typeMask = 0; // every state change (1/4 cycle per detent)
             break;
     }
 
@@ -111,7 +74,7 @@ void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debou
 
     /* If you are using an RC filter to debounce, the debounce period should be
     zero. However, this type of debouncing algorithm requires a non-zero number 
-    for its minimum. This will simply toggle the output every time the input 
+    for its minimum. Using 1 will simply toggle the output every time the input 
     changes. For the maximum, I limit it to 8-bits. If your rotary encoder needs
     more than 255 ms to debounce, you've got some serious issues. */
     if(debouncePeriod == 0)
@@ -127,18 +90,8 @@ void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debou
     self->flags.all = 0;
 }
 
-/***************************************************************************//**
- * @brief Update the value of phases of the Rotary Encoder
- * 
- * This function must be called up periodically at the rate that you specified
- * when you initialized the Rotary Encoder object. If your rotary encoder
- * happens to be going the opposite direction as the events generated, just 
- * invert the inputs to this function when you call it.
- * 
- * @param AisHigh boolean for phase A of the rotary encoder
- *  
- * @param BisHigh boolean for phase B of the rotary encoder
- */
+// *****************************************************************************
+
 void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh)
 {
     /* First update the inputs */
@@ -206,7 +159,7 @@ void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh)
     /* Decode the output using the state table. A state transition will occur
     every quarter cycle. A postive number indicates a clockwise transition
     and a negative number indicates a counter clockwise transition. A zero 
-    means there was no transition, or that it is invalid. */
+    means there was no transition, or that it was invalid. */
     int8_t newOutput = rotaryLookupTable[self->state];
     bool goClockwise;
 
@@ -236,13 +189,8 @@ void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh)
     }
 }
 
-/***************************************************************************//**
- * @brief Get Clockwise Event
- * 
- * @param self  pointer to the Rotary Encoder that you are using
- * 
- * @return true if the there was one full clockwise click of the rotary encoder.
- */
+// *****************************************************************************
+
 bool RE_GetClockwise(RotaryEncoder *self)
 {
     bool retVal = false;
@@ -254,14 +202,8 @@ bool RE_GetClockwise(RotaryEncoder *self)
     return retVal;
 }
 
-/***************************************************************************//**
- * @brief Get Counter Clockwise Event
- * 
- * @param self  pointer to the Rotary Encoder that you are using
- * 
- * @return true if the there was one full counter-clockwise click of the rotary 
- * encoder
- */
+// *****************************************************************************
+
 bool RE_GetCounterClockwise(RotaryEncoder *self)
 {
     bool retVal = false;
@@ -272,3 +214,7 @@ bool RE_GetCounterClockwise(RotaryEncoder *self)
     self->flags.counterClockwise = 0;
     return retVal;
 }
+
+/*
+ End of File
+ */

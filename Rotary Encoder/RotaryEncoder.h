@@ -10,26 +10,32 @@
  * @file RotaryEncoder.h
  * 
  * @details
- *      A library that handles the basic quadrature rotary encoder. Quadrature 
+ *      A library that handles a basic quadrature rotary encoder. Quadrature 
  * rotary encoders have two traits that define them. The number of pulses per 
  * revolution (PPR) and the number of detents. Our goal is to generate a change 
- * in the output every time the knob moves one "click" or detent. To do that, 
- * you must know how many PPR and how many detents.
+ * in the output every time the knob moves one "click" or detent. Then we 
+ * set a clockwise or counterclockwise event flag. To do all of this, you must
+ * first know how many PPR and how many detents you have.
  * 
- *      To create a rotary encoder you need to know the type. This is the
- * number of pulses per revolution (PPR) and the number of detents. If you
- * don't know, just assume that it is "1/2 cycle per detent" which is the most 
- * common type.
+ *      By far, the most common type of rotary encoder is one that has half
+ * the number of detents as PPR. We refer to this as a "1/2 cycle per detent" 
+ * rotary encoder. This means the knobs stops on a detent halfway through the 
+ * quadrature output cycle. There are also rotary encoders that have the same 
+ * number of PPR as detents ("full cycle per detent") and even 1/4 cycle per 
+ * detent rotary encoders. This last one has a detent on every state change in 
+ * the cycle. If you don't know what your rotary encoder is, it's probably the 
+ * 1/2 cycle per detent type.
  * 
  *      You also need the debounce time in milliseconds and the expected update 
- * rate in milliseconds (how often you call the tick function). If you are 
- * debouncing using an RC filter, use 0 as the debounce time. For the tick rate, 
- * you should be updating the rotary encoder fairly quickly. If you update it 
- * too slow, it may feel sluggish. Most datasheets I've looked at recommend a 
- * 5 ms debounce time. If you're debouncing using software, you'll probably
- * want to update it around that fast. If you are using RC filters, you can
- * probably get away with going a little slower. The maximum available debounce 
- * time is 255 ms.
+ * rate in milliseconds (how often you plan to call the tick function). If you 
+ * are debouncing using an RC filter, use 0 as the debounce time. For the tick 
+ * rate, you should be updating the rotary encoder fairly quickly. If you 
+ * update it too slow, it may feel sluggish. Most datasheets I've looked at 
+ * recommend a 5 ms debounce time. So if you're debouncing using software, 
+ * you'll probably want to call the update function at around that speed or 
+ * faster. If you are using RC filters to debounce, you can probably get away 
+ * with going slower. The maximum available debounce time for debouncing with 
+ * software is 255 ms.
  * 
  * ****************************************************************************/
 
@@ -73,20 +79,65 @@ typedef struct RotaryEncoderTag
     } flags;
 } RotaryEncoder;
 
-
 // ***** Function Prototypes ***************************************************
 
+/***************************************************************************//**
+ * @brief Initialize a Rotary Encoder object (half cycle type)
+ * 
+ * Initializes a rotary encoder of the most common type
+ * 
+ * @param self  pointer to the Rotary Encoder that you are using
+ * 
+ * @param debounceMs  the debounce time in milliseconds
+ * 
+ * @param tickMs  how often you plan to call the RE Tick function
+ */
 void RE_Init(RotaryEncoder *self, uint16_t debounceMs, uint16_t tickMs);
 
+/***************************************************************************//**
+ * @brief Initialize a Rotary Encoder object
+ * 
+ * @param self  pointer to the Rotary Encoder that you are using
+ * 
+ * @param debounceMs  the debounce time in milliseconds
+ * 
+ * @param tickMs  how often you plan to call the RE Tick function
+ */
 void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debounceMs, uint16_t tickMs);
 
+/***************************************************************************//**
+ * @brief Update the value of phases of the Rotary Encoder
+ * 
+ * This function must be called up periodically at the rate that you specified
+ * when you initialized the Rotary Encoder object. If your rotary encoder
+ * happens to be going the opposite direction as the events generated, just 
+ * invert the inputs to this function when you call it.
+ * 
+ * @param AisHigh boolean for phase A of the rotary encoder
+ *  
+ * @param BisHigh boolean for phase B of the rotary encoder
+ */
 void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh);
 
+/***************************************************************************//**
+ * @brief Get Clockwise Event
+ * 
+ * @param self  pointer to the Rotary Encoder that you are using
+ * 
+ * @return true if the there was one full clockwise click of the rotary encoder.
+ */
 bool RE_GetClockwise(RotaryEncoder *self);
 
+/***************************************************************************//**
+ * @brief Get Counter Clockwise Event
+ * 
+ * @param self  pointer to the Rotary Encoder that you are using
+ * 
+ * @return true if the there was one full counter-clockwise click of the rotary 
+ * encoder
+ */
 bool RE_GetCounterClockwise(RotaryEncoder *self);
 
 
-
-#endif	/* ROTARYENCODER_H */
+#endif  /* ROTARYENCODER_H */
 
