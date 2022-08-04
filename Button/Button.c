@@ -70,15 +70,15 @@
 // ***** Defines ***************************************************************
 
 
-// ***** Function Prototypes ***************************************************
+// ***** Global Variables ******************************************************
+
+
+// ***** Static Function Prototypes ********************************************
 
 static void AnalogButton_Init(AnalogButton *self, uint16_t longPressMs);
 static void DigitalButton_Init(DigitalButton *self, uint16_t longPressMs);
 static void AnalogButton_Tick(AnalogButton *self, uint16_t value);
 static void DigitalButton_Tick(DigitalButton *self, bool isPressed);
-
-// ***** Global Variables ******************************************************
-
 
 /***************************************************************************//**
  * @brief Creates a Button object

@@ -37,6 +37,9 @@ there was no transition, or that it was invalid. */
 static int8_t rotaryLookupTable[] = { 0, 1, -1, 0, -1, 0, 0, 1,
                                       1, 0, 0, -1, 0, -1, 1, 0 };
 
+// ***** Static Function Prototypes ********************************************
+
+
 // *****************************************************************************
 
 void RE_Init(RotaryEncoder *self, uint16_t debounceMs, uint16_t tickMs)
