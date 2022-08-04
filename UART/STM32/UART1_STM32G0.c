@@ -56,10 +56,6 @@ enum {
 
 static const uint8_t preLUT[16] = {0,2,4,6,8,10,12,16,32,64,128,256};
 
-// ***** Function Prototypes ***************************************************
-
-/* Put static function prototypes here */
-
 // ***** Global Variables ******************************************************
 
 /* Assign functions to the interface */
@@ -95,6 +91,11 @@ static void (*TransmitFinishedCallback)(void);
 static void (*ReceivedDataCallback)(uint8_t (*CallToGetData)(void));
 static bool (*IsCTSPinLow)(void);
 static void (*SetRTSPin)(bool setHigh);
+
+// ***** Function Prototypes ***************************************************
+
+/* Put static function prototypes here */
+
 
 // *****************************************************************************
 

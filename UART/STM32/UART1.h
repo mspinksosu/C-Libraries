@@ -13,7 +13,7 @@
  * @file UART1.h
  * 
  * @details
- *      Header for a UART peripheral that implements the IUART interface. 
+ *      A header for a UART peripheral that implements the IUART interface. 
  * Each function here must be implemented. The external interface variable, 
  * FunctionTable is declared and defined in the .c file for your implementation 
  * as well. From there, you will set each one of its pointers to one of the 
@@ -44,10 +44,18 @@ extern UARTInterface UART1_FunctionTable;
 
 // ***** Function Prototypes ***************************************************
 
-// ----- Non-Interface Functions -----------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Non-Interface Functions *********************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 
-// ----- Interface Functions ---------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Interface Functions *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz);
 

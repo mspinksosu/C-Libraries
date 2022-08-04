@@ -41,10 +41,6 @@
 #define UART1_CLK_REG       RCC->APB2ENR
 #define UART1_CLK_EN_MSK    RCC_APB2ENR_USART1EN
 
-// ***** Function Prototypes ***************************************************
-
-/* Put static function prototypes here */
-
 // ***** Global Variables ******************************************************
 
 /* Assign functions to the interface */
@@ -81,7 +77,16 @@ static void (*ReceivedDataCallback)(uint8_t (*CallToGetData)(void));
 static bool (*IsCTSPinLow)(void);
 static void (*SetRTSPin)(bool setHigh);
 
-// *****************************************************************************
+// ***** Function Prototypes ***************************************************
+
+/* Put static function prototypes here */
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Interface Functions *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz)
 {
