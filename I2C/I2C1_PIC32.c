@@ -152,7 +152,7 @@ static bool isBusBusy, prevBusBusy, currentAckStat, prevAckStat;
 static I2CObject I2C1_I2CObject;
 static I2CObject *ptrI2CSlave;
 
-// ***** Function Prototypes ***************************************************
+// ***** Static Function Prototypes ********************************************
 
 // states
 static void I2C1_FsmIdle(Event *e);

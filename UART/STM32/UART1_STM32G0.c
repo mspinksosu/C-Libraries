@@ -92,7 +92,7 @@ static void (*ReceivedDataCallback)(uint8_t (*CallToGetData)(void));
 static bool (*IsCTSPinLow)(void);
 static void (*SetRTSPin)(bool setHigh);
 
-// ***** Function Prototypes ***************************************************
+// ***** Static Function Prototypes ********************************************
 
 /* Put static function prototypes here */
 

@@ -48,7 +48,7 @@ typedef struct ADCChannelFullTag
     ADCChannelEntry entry;
 } ADCChannelFull;
 
-// ***** Function Prototypes ***************************************************
+// ***** Static Function Prototypes ********************************************
 
 /* Put static function prototypes here */
 static void ADC_Manager_ChannelPush(ADCChannelEntry *self, ADCChannel *newChannel);

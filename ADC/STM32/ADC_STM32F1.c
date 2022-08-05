@@ -41,7 +41,7 @@ static void (*ADC_SampleFinishedCallbackFunc)(ADCChannel *context);
 static void (*ADC_EnableFinishedCallbackFunc)(void);
 static void (*ADC_DisableFinishedCallbackFunc)(void);
 
-// ***** Function Prototypes ***************************************************
+// ***** Static Function Prototypes ********************************************
 
 /* Put static functions here */
 

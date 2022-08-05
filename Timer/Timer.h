@@ -56,7 +56,6 @@ initiated the callback. This is so that you can service multiple timer
 callbacks with the same function if you desire. */
 typedef void (*TimerCallbackFunc)(Timer *context);
 
-// Free timer (with bit field)
 struct Timer
 {
     uint16_t period;

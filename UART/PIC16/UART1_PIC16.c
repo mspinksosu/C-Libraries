@@ -51,7 +51,7 @@ baud. If you are unsure, check the reference manual. */
 #define UART1_RCxREG        RC1REG
 #define UART1_TXxREG        TX1REG
 
-// ***** Function Prototypes ***************************************************
+// ***** Static Function Prototypes ********************************************
 
 /* Put static function prototypes here */
 static inline uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, float clkInMHz)

@@ -27,7 +27,7 @@ static ADCChannelEntry *ptrToLast = NULL;
 static ADCChannelEntry *currentChannel = NULL;
 static bool adcManagerEnabled;
 
-// ***** Function Prototypes ***************************************************
+// ***** Static Function Prototypes ********************************************
 
 /* Put static function prototypes here */
 static void ADC_Manager_ChannelPush(ADCChannelEntry *self, ADCChannel *newChannel);
