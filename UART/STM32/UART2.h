@@ -42,12 +42,18 @@
 extern UARTInterface UART2_FunctionTable;
 
 
-// ***** Function Prototypes ***************************************************
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Non-Interface Functions *********************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
-// ----- Non-Interface Functions -----------------------------------------------
 
-
-// ----- Interface Functions ---------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Interface Functions *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 uint32_t UART2_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz);
 
@@ -73,7 +79,7 @@ void UART2_TransmitEnable(void);
 
 void UART2_TransmitDisable(void);
 
-void UART1_PendingEventHandler(void); // TODO experiment
+void UART1_PendingEventHandler(void);
 
 void UART2_SetTransmitFinishedCallback(void (*Function)(void));
 
