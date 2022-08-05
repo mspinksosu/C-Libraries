@@ -129,26 +129,26 @@ typedef struct GPIOInitTypeTag
 } GPIOInitType;
 
 /**
- * GPIOInterface This is the table of functions that need to be implemented
+ * GPIOInterface The table of functions that need to be implemented
  * 
- * GPIO         The base class pin object
+ * GPIO  The base class pin object
  * 
- * GPIOInitType    The base class init object
+ * GPIOInitType  The base class init object
  * 
- * instance     A pointer to the instance of the sub class being used. This
- *              will be set by means of the base class create function
+ * instance  A pointer to the instance of the sub class being used. This will 
+ *           be set by means of the base class create function
  * 
- * type         The type of pin, analog input, digital input, etc.
+ * type  The type of pin, analog input, digital input, etc.
  * 
- * pull         Internal pull-up / pull-down resistors. Default is none
+ * pull  Internal pull-up / pull-down resistors. Default is none
  * 
- * pinNumber    The pin number. Can be the pin number for the port (which needs
- *              to be implemented in the subclass) or just a number. How you
- *              choose to dereference it is up to you.
+ * pinNumber  The pin number. Can be the pin number for the port (which needs
+ *            to be implemented in the subclass) or just a number. How you
+ *            choose to dereference it is up to you.
  * 
- * ptrToAnalogValue An option to connect your pin to an ADC channel's value.
- *                  The read pin function will return this value if the pin
- *                  is an analog type
+ * ptrToAnalogValue  An option to connect your pin to an ADC channel's value.
+ *                   The read pin function will return this value if the pin
+ *                   is an analog type
  */
 
 ////////////////////////////////////////////////////////////////////////////////

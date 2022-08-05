@@ -85,7 +85,7 @@ typedef struct UARTTag
 
 typedef struct UARTInitTypeTag
 {
-    uint32_t BRGValue; // The raw value for the baud rate generator
+    uint32_t BRGValue;
     UARTStopBits stopBits;
     UARTParity parity;
     bool use9Bit; 
@@ -95,9 +95,35 @@ typedef struct UARTInitTypeTag
 } UARTInitType;
 
 /** 
- * Description of struct
+ * Description of struct members. You shouldn't really mess with any of these
+ * variables directly. That is why I made functions for you to use.
  * 
- * member1      description of variable member1
+ * UARTInterface  The table of functions that need to be implemented
+ * 
+ * BRGValue  The raw value that gets loaded into the baud rate generator 
+ *           register. (not the baud rate!) Varies based on the processor.
+ * 
+ * stopBits  Most UART's use one stop bit, but they don't have to.
+ * 
+ * parity  The parity type, none, even, or odd.
+ * 
+ * use9Bit  Use 9 bit addressing. The actual method varies based on the 
+ *          implementation.
+ * 
+ * flowControl  Hardware means the processor has some sort of dedicated flow
+ *              control setting for that peripheral that takes control of the
+ *              CTS and RTS pins. Callbacks allows the user make a simple 
+ *              function to set the CTS and RTS pins. Software sends a special
+ *              flow control message over the line.
+ * 
+ * useTxInterrupt  Enables or disables the transmit interrupt for you
+ *                 automatically. Place the TransmitFinishedEvent function 
+ *                 wherever that interrupt happens.
+ * 
+ * useRxInterrupt  Enables or disables the receive interrupt for you
+ *                 automatically. Place the ReceivedDataEvent function wherever 
+ *                 that interrupt happens. GetReceivedByte must still be called
+ *                 in order to get the data and clear the flag.
  */
 
 // ***** Function Prototypes ***************************************************
