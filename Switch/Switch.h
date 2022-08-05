@@ -88,6 +88,30 @@ typedef struct SwitchTag
     } flags;
 } Switch;
 
+/** 
+ * Description of struct members. You shouldn't really mess with any of these
+ * variables directly. That is why I made functions for you to use.
+ * 
+ * outputState  The current output of the switch, expressed as an enum
+ * 
+ * type  The type of switch. Normal or center-off type
+ * 
+ * debounceState  Used for the state machine
+ * 
+ * debouncePeriod  The number of ticks to debounce the switch input
+ * 
+ * debounceCounter  Counts the number of ticks for debouncing
+ * 
+ * switchChangedEvent  The output of the switch has changed
+ * 
+ * outputAOnEvent  This flag is set when output A changes from off to on
+ * 
+ * outputBOnEvent  This flag is set when output B changes from off to on
+ * 
+ * outputOffEvent  This flag is set when output changes from either A or B to 
+ *                 off. Only works if the center-off feature is turned on
+ */
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Function Prototypes *************************************************//

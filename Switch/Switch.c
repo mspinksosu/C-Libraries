@@ -255,3 +255,7 @@ static void DecodeOutput(Switch *self, SwitchState newState)
         }
     }
 }
+
+/*
+ End of File
+ */
