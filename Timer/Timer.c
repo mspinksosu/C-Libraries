@@ -43,9 +43,7 @@ void Timer_InitMs(Timer *self, uint16_t periodMs, uint16_t tickMs)
 void Timer_Start(Timer *self)
 {
     if(self->period != 0)
-    {
         self->flags.start = 1;
-    }
 }
 
 // *****************************************************************************
