@@ -59,11 +59,11 @@ struct Timer
  *  with the use of a function.
  * 
  * period   The period of the timer. When the count reaches this number, a flag
- *          will be set.
+ *          will be set
  * 
  * count    The current value of the timer
  * 
- * start    When this flag is set, the timer will begin counting down.
+ * start    When this flag is set, the timer will begin counting down
  *          The active bit will be set as well
  * 
  * active   This bit is 1 whenever the timer is running. Clear this bit to stop

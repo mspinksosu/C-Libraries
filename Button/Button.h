@@ -94,33 +94,45 @@ typedef struct DigitalButtonTag
 } DigitalButton;
 
 /** 
- * Description of struct members:
+ * Description of struct members. You shouldn't really mess with any of these
+ * variables directly. That is why I made functions for you to use.
  * 
- * pressDebouncePeriod  the number of ticks to debounce the button press
+ * instance  Pointer to the sub class AnalogButton or DigitalButton
  * 
- * releaseDebouncePeriod  the number of ticks to debounce the button release
+ * super  Pointer from the sub class to the base class Button
  * 
- * longPressPeriod  the number of ticks for the long press feature
+ * state  The state machine that handles debouncing
  * 
- * longPressCounter  counts the number of ticks for the long press feature
+ * type  Either analog or digital
  * 
- * debounceCounter  counts the number of ticks for debouncing
+ * length  Either short press type or long press type
  * 
- * buttonState  the state machine that handles debouncing
+ * longPressPeriod  The number of ticks for the long press feature
  * 
- * buttonType  either analog or digital
+ * longPressCounter  Counts the number of ticks for the long press feature
  * 
- * buttonLength either short press type or long press type
+ * tickMs  How often you call the tick function (in milliseconds)
  * 
- * shortPress  the button has been pushed, debounced (and released) For a long 
+ * shortPress  The button has been pushed, debounced (and released). For a long 
  *             press type button, the short press occurs on release
  * 
- * longPress  the button has been held down for a certain period of time
+ * longPress  The button has been held down for a certain period of time
  * 
- * buttonDownEvent  the button has been pushed and debounced
+ * buttonDownEvent  The button has been pushed and debounced
  * 
- * buttonUpEvent  the button has been released and debounced
+ * buttonUpEvent  The button has been released and debounced
  * 
+ * lowThreshold  If the analog button voltage goes from above the highThreshold
+ *               to below the lowThreshold the button was released
+ * 
+ * highThreshold  If the analog button voltage goes from below the lowThreshold
+ *                to above the highThreshold the button was pushed
+ * 
+ * pressDebouncePeriod  The number of ticks to debounce the button press
+ * 
+ * releaseDebouncePeriod  The number of ticks to debounce the button release
+ * 
+ * debounceCounter  Counts the number of ticks for debouncing
  */
 
 // ***** Function Prototypes ***************************************************
