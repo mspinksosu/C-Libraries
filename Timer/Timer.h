@@ -6,7 +6,6 @@
  * @date 1/17/19   Original creation
  * @date 10/1/21    Updated documention
  * @date 2/21/22    Added doxygen
- * @date 8/6/22     Updated doxygen
  * 
  * @file Timer.h
  * 
@@ -95,7 +94,11 @@ struct Timer
  *          count. You must clear this flag yourself
  */
 
-// ***** Function Prototypes ***************************************************
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Function Prototypes *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
  * @brief Initialize a Timer object.

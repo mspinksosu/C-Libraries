@@ -7,7 +7,6 @@
  * @date 10/1/21    Updated documention
  * @date 2/21/22    Added doxygen
  * @date 4/12/22    Refactored to create analog and digital button classes
- * @date 8/6/22     Updated doxygen
  * 
  * @file Button.h
  * 
@@ -191,7 +190,11 @@ typedef struct DigitalButtonTag
  * debounceCounter  Counts the number of ticks for debouncing
  */
 
-// ***** Function Prototypes ***************************************************
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Function Prototypes *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
  * @brief Creates an Analog Button object and links it to the base class
@@ -248,7 +251,7 @@ void Button_InitMs(Button *self, uint16_t longPressMs);
 
 
 /***************************************************************************//**
- * @brief Sets up the long press feature of a button
+ * @brief Change the long press time of a button
  * 
  * Calling this function again after initialization will not alter the state of 
  * the button. This is useful when you have a long press button and you need to 

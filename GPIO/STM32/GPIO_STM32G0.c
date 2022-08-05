@@ -43,7 +43,7 @@ GPIOInterface GPIOFunctionTable = {
     // Add the rest of the functions listed in the interface
 };
 
-// ***** Function Prototypes ***************************************************
+// ***** Static Function Prototypes ********************************************
 
 /* Put static function prototypes here */
 

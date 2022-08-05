@@ -7,7 +7,6 @@
  * @date 10/1/21    Updated documention
  * @date 2/21/22    Added doxygen
  * @date 4/12/22    Refactored to create analog and digital button classes
- * @date 8/6/22     Updated doxygen
  * 
  * @file Button.c
  * 
@@ -245,7 +244,7 @@ void Button_SetLongPressCallback(Button *self, ButtonCallbackFunc Function)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//                                                                            //  
+//                                                                            //
 // ***** Local Functions *****************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////

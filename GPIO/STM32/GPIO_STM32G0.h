@@ -84,8 +84,6 @@ typedef struct GPIOInitType_STM32Tag
     uint32_t alternate;
 } GPIOInitType_STM32;
 
-// ***** Function Prototypes ***************************************************
-
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Non-Interface Functions *********************************************//
