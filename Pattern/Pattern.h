@@ -31,7 +31,7 @@ typedef struct PatternStateTag
 
 typedef struct Pattern Pattern;
 
-typedef void (*PatterCallbackFunc)(Pattern *patternContext);
+typedef void (*PatternCallbackFunc)(Pattern *patternContext);
 
 struct Pattern
 {
@@ -46,7 +46,7 @@ struct Pattern
     uint8_t index;
     uint8_t output;
 
-    PatterCallbackFunc patternCallbackFunc;
+    PatternCallbackFunc patternCallbackFunc;
 
     union {
         struct {
@@ -62,13 +62,40 @@ struct Pattern
 };
 
 /** 
- * Description of struct members
+ * Description of struct members. You shouldn't really mess with any of these
+ * variables directly. That is why I made functions for you to use.
  * 
- * patternArray  pointer to an array of PatternState variables
+ * patternArray  Pointer to an array of PatternState variables
  * 
- * numOfStates  the number PatternState variables in the array
+ * numOfStates  The number PatternState variables in the array
  * 
+ * nextPatternArray  Pointer to the next pattern to load (atomic load)
  * 
+ * nextNumOfStates  The number of PatternState variables in the next array
+ * 
+ * tickMs  How often you call the tick function (in milliseconds)
+ * 
+ * count  Counts the number of ticks in each pattern state
+ * 
+ * period  The number of ticks to remain in a state
+ * 
+ * index  The position in the PatternState array
+ * 
+ * output  The output of the pattern at any time (can be up to 8-bits)
+ * 
+ * start  When this flag is set, the pattern begins
+ * 
+ * active  This bit is 1 whenever the pattern is running. Clear this bit to 
+ *         stop the pattern.
+ * 
+ * finished  This flag is set when the pattern reaches the last pattern in the
+ *           array. It is not cleared automatically
+ * 
+ * stopWhenFinished  Tells the pattern to stop at the end of the array, or to
+ *                   continue starting over at index 0.
+ * 
+ * loadAtomic  If this bit is set, when the pattern finishes the pattern
+ *             pointed to by nextPatternArray will be loaded.
  */
 
 // ***** Function Prototypes ***************************************************
@@ -213,7 +240,7 @@ void Pattern_ClearFlag(Pattern *self);
  * 
  * @param Function  format: void SomeFunction(Pattern *context)
  */
-void Pattern_SetFinishedCallback(Pattern *self, PatterCallbackFunc Function);
+void Pattern_SetFinishedCallback(Pattern *self, PatternCallbackFunc Function);
 
 
 #endif  /* PATTERN_H */

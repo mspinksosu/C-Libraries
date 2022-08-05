@@ -136,7 +136,9 @@ void Pattern_Tick(Pattern *self)
                 self->flags.finished = 1;
                 self->index = 0;
 
-                // TODO callback
+                /* Callback function with context */
+                if(self->patternCallbackFunc)
+                    self->patternCallbackFunc(self);
 
                 if(self->flags.loadAtomic)
                 {
@@ -199,7 +201,7 @@ void Pattern_ClearFlag(Pattern *self)
 
 // *****************************************************************************
 
-void Pattern_SetFinishedCallback(Pattern *self,PatterCallbackFunc Function)
+void Pattern_SetFinishedCallback(Pattern *self,PatternCallbackFunc Function)
 {
     self->patternCallbackFunc = Function;
 }
