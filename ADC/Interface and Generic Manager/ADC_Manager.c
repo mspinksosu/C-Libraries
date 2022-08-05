@@ -27,12 +27,6 @@ static ADCChannelEntry *ptrToLast = NULL;
 static ADCChannelEntry *currentChannel = NULL;
 static bool adcManagerEnabled;
 
-// ***** Static Function Prototypes ********************************************
-
-/* Put static function prototypes here */
-static void ADC_Manager_ChannelPush(ADCChannelEntry *self, ADCChannel *newChannel);
-static void ADC_Manager_InsertChannelAfter(ADCChannelEntry *entryToInsert, ADCChannelEntry *prev, ADCChannel *newChannel);
-
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Initialization ADC Channels *****************************************//
@@ -49,16 +43,15 @@ forget to set the corresponding GPIO pin to analog. */
 ADCChannel analogInput1, analogInput2;
 ADCChannelEntry entry1, entry2;
 
-// -----------------------------------------------------------------------------
 
+// ***** Static Function Prototypes ********************************************
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param sampleTimeMs  
- * 
- * @param tickRateMs  
- */
+/* Put static function prototypes here */
+static void ADC_Manager_ChannelPush(ADCChannelEntry *self, ADCChannel *newChannel);
+static void ADC_Manager_InsertChannelAfter(ADCChannelEntry *entryToInsert, ADCChannelEntry *prev, ADCChannel *newChannel);
+
+// *****************************************************************************
+
 void ADC_Manager_Init(uint16_t sampleTimeMs, uint16_t tickRateMs)
 {
     analogInput1.channelNumber = 4;
@@ -77,13 +70,8 @@ void ADC_Manager_Init(uint16_t sampleTimeMs, uint16_t tickRateMs)
     ADC_Manager_Enable();
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self  
- * 
- * @param newChannel  
- */
+// *****************************************************************************
+
 void ADC_Manager_AddChannel(ADCChannelEntry *self, ADCChannel *newChannel)
 {
     if(ptrToLast == NULL)
@@ -111,10 +99,8 @@ void ADC_Manager_AddChannel(ADCChannelEntry *self, ADCChannel *newChannel)
     ADC_InitChannel(newChannel, newChannel->channelNumber);
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void ADC_Manager_Tick(void)
 {
     ADC_Tick();
@@ -127,19 +113,15 @@ void ADC_Manager_Tick(void)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void ADC_Manager_Enable(void)
 {
     adcManagerEnabled = true;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void ADC_Manager_Disable(void)
 {
     adcManagerEnabled = false;
@@ -151,6 +133,13 @@ void ADC_Manager_Disable(void)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * 
+ * @param newChannel 
+ */
 static void ADC_Manager_ChannelPush(ADCChannelEntry *self, ADCChannel *newChannel)
 {
     /* Store the new data */
@@ -164,6 +153,15 @@ static void ADC_Manager_ChannelPush(ADCChannelEntry *self, ADCChannel *newChanne
     ptrToLast->next = self;
 }
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param entryToInsert 
+ * 
+ * @param prev 
+ * 
+ * @param newChannel 
+ */
 static void ADC_Manager_InsertChannelAfter(ADCChannelEntry *entryToInsert, ADCChannelEntry *prev, ADCChannel *newChannel)
 {
     if(prev == NULL || entryToInsert == NULL)

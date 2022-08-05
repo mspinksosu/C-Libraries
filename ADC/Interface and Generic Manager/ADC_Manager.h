@@ -41,16 +41,46 @@ by calling ADC_Get8Bit or ADC_Get16Bit. */
 extern ADCChannel analogInput1, analogInput2;
 
 
-// ***** Function Prototypes ***************************************************
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Function Prototypes *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param sampleTimeMs  
+ * 
+ * @param tickRateMs  
+ */
 void ADC_Manager_Init(uint16_t sampleTimeMs, uint16_t tickRateMs);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self  
+ * 
+ * @param newChannel  
+ */
 void ADC_Manager_AddChannel(ADCChannelEntry *self, ADCChannel *newChannel);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ */
 void ADC_Manager_Tick(void);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ */
 void ADC_Manager_Enable(void);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ */
 void ADC_Manager_Disable(void);
 
 #endif	/* ADC_MANAGER_H */

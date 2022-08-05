@@ -48,13 +48,6 @@ typedef struct ADCChannelFullTag
     ADCChannelEntry entry;
 } ADCChannelFull;
 
-// ***** Static Function Prototypes ********************************************
-
-/* Put static function prototypes here */
-static void ADC_Manager_ChannelPush(ADCChannelEntry *self, ADCChannel *newChannel);
-static void ADC_Manager_InsertChannelAfter(ADCChannelEntry *entryToInsert, ADCChannelEntry *prev, ADCChannel *newChannel);
-static uint32_t ADC_Manager_AverageDMAArrayValues(uint8_t channel);
-
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Initialization ADC Channels *****************************************//
@@ -83,15 +76,15 @@ static ADCChannelFull ChannelArray[ADC_MANAGE_NUM_CHANNELS] = {
 {   .ptrToChannel = &vbatInternal,
     .adcChannel.channelNumber = 14}};
                            
-// -----------------------------------------------------------------------------
+// ***** Static Function Prototypes ********************************************
 
+/* Put static function prototypes here */
+static void ADC_Manager_ChannelPush(ADCChannelEntry *self, ADCChannel *newChannel);
+static void ADC_Manager_InsertChannelAfter(ADCChannelEntry *entryToInsert, ADCChannelEntry *prev, ADCChannel *newChannel);
+static uint32_t ADC_Manager_AverageDMAArrayValues(uint8_t channel);
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param sampleTimeMs 
- * @param tickRateMs 
- */
+// *****************************************************************************
+
 void ADC_Manager_Init(uint16_t sampleTimeMs, uint16_t tickRateMs)
 {
     /* Initialize the ADC peripheral */
@@ -113,10 +106,7 @@ void ADC_Manager_Init(uint16_t sampleTimeMs, uint16_t tickRateMs)
     LL_DMA_SetPeriphSize(DMA1, LL_DMA_CHANNEL_1, LL_DMA_PDATAALIGN_HALFWORD);
     LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_1, LL_DMA_MDATAALIGN_HALFWORD);
 
-// ----- Add your channels to the list -----------------------------------------
-      
-    // ADC_Manager_AddChannel(&potEntry, &potADC);
-
+    /* Setup all the channels at once */
     for(uint8_t i = 0; i < ADC_MANAGE_NUM_CHANNELS; i++)
     {
         if(ChannelArray[i].ptrToChannel != NULL)
@@ -132,8 +122,6 @@ void ADC_Manager_Init(uint16_t sampleTimeMs, uint16_t tickRateMs)
     }
     ADC1->CHSELR = dmaChannelSelection;
 
-// -----------------------------------------------------------------------------
-    
     ADC_Manager_Enable(); /* Turn on the DMA */
 
     /* Set function callbacks. This needs to be done last. From now on, when 
@@ -144,12 +132,8 @@ void ADC_Manager_Init(uint16_t sampleTimeMs, uint16_t tickRateMs)
     ADC_SetDisableFinishedCallbackFunc(ADC_Manager_Disable);
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * @param newChannel 
- */
+// *****************************************************************************
+
 void ADC_Manager_AddChannel(ADCChannelEntry *self, ADCChannel *newChannel)
 {
     if(ptrToLast == NULL)
@@ -210,10 +194,8 @@ void ADC_Manager_AddChannel(ADCChannelEntry *self, ADCChannel *newChannel)
     ADC_InitChannel(newChannel, newChannel->channelNumber);
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void ADC_Manager_Tick(void)
 {
     /* Go round-robin through the list */
@@ -251,10 +233,8 @@ void ADC_Manager_Tick(void)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void ADC_Manager_Enable(void)
 {
     /* Re-enable DMA channel */
@@ -266,10 +246,8 @@ void ADC_Manager_Enable(void)
         ADC_Enable();
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void ADC_Manager_Disable(void)
 {
     /* Stop the DMA sequence */

@@ -37,7 +37,11 @@ typedef struct ADCChannelTag
  * channelNumber    The ADC channel number
  */
 
-// ***** Function Prototypes ***************************************************
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Function Prototypes *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
  * @brief Initialize necessary registers for this MCU
@@ -96,7 +100,7 @@ bool ADC_IsBusy(void);
  * 
  * @return ADCChannel*  pointer to the current ADC channel
  */
-ADCChannel *ADC_GetCurrentChannel(void);
+ADCChannel* ADC_GetCurrentChannel(void);
 
 /***************************************************************************//**
  * @brief Get the channel number the ADC is currently processing
@@ -182,4 +186,4 @@ void ADC_SetEnableFinishedCallbackFunc(void (*Function)(void));
  */
 void ADC_SetDisableFinishedCallbackFunc(void (*Function)(void));
 
-#endif	/* IADC_H */
+#endif /* IADC_H */

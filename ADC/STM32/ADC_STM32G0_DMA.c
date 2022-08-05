@@ -55,10 +55,6 @@ static void ADC_STM32G0_RestoreRegisterSettings(void);
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/***************************************************************************//**
- * @brief Initialize necessary registers for this MCU
- * 
- */
 void ADC_InitPeripheral(void)
 {
         LL_ADC_InitTypeDef ADC_InitStruct = {0};
@@ -108,18 +104,8 @@ void ADC_InitPeripheral(void)
         }
 }
 
-/***************************************************************************//**
- * @brief Initialize a timer to allow for non-blocking use (default)
- * 
- * Non-blocking will be set by default. Using non-blocking mode will require 
- * you to call the ADC_Tick function periodically in order to upate the timer. 
- * The timer will check ongoing conversions and perform a callback if needed.
- * Otherwise, you can always just poll the ADC_IsBusy function.
- * 
- * @param sampleTimeMs  the amount of time to wait for a sample to finish
- * 
- * @param tickRateMs  how often you plan to call the tick function
- */
+// *****************************************************************************
+
 void ADC_UseNonBlockingMode(uint16_t sampleTimeMs, uint16_t tickRateMs)
 {
     if(tickRateMs != 0)
@@ -130,37 +116,22 @@ void ADC_UseNonBlockingMode(uint16_t sampleTimeMs, uint16_t tickRateMs)
     useNonBlocking = true;
 }
 
-/***************************************************************************//**
- * @brief Disable non-blocking mode
- * 
- * This will insert a while loop which will wait until the sample is done
- */
+// *****************************************************************************
+
 void ADC_UseBlockingMode(void)
 {
     useNonBlocking = false;
 }
 
-/***************************************************************************//**
- * @brief Initialize an ADC channel object
- * 
- * @param self  pointer to the ADC channel object you are using
- * 
- * @param channelNumber  the channel number for this MCU
- */
+// *****************************************************************************
+
 void ADC_InitChannel(ADCChannel *self, uint8_t channelNumber)
 {
     self->channelNumber = channelNumber;
 }
 
-/***************************************************************************//**
- * @brief Start an ADC conversion
- * 
- * Automatically saves DMA settings if DMA is enabled. Loads the channel given 
- * by the ADCChannel object and performs either a blocking, or non-blocking 
- * conversion.
- * 
- * @param self  pointer to the ADC channel object you are using
- */
+// *****************************************************************************
+
 void ADC_TakeSample(ADCChannel *self)
 {   
     /* TODO do I want to stop if there is a conversion going on? */
@@ -168,7 +139,8 @@ void ADC_TakeSample(ADCChannel *self)
     {
         /* If you have DMA or something else set up, you need to set the ADC 
         disable callback function to pause the DMA sequence appropriately,
-        because I'm about to stop it */
+        because I'm about to stop it. I will save the DMA settings for you
+        though */
         if(LL_ADC_REG_GetDMATransfer != LL_ADC_REG_DMA_TRANSFER_NONE)
         {
             ADC_STM32G0_SaveRegisterSettings();
@@ -223,11 +195,8 @@ void ADC_TakeSample(ADCChannel *self)
     }
 }
 
-/***************************************************************************//**
- * @brief Check if the ADC is busy taking a sample
- * 
- * @return  true if busy
- */
+// *****************************************************************************
+
 bool ADC_IsBusy(void)
 {
     if(adcFlags.start && adcFlags.active)
@@ -236,57 +205,36 @@ bool ADC_IsBusy(void)
         return false;
 }
 
-/***************************************************************************//**
- * @brief Get the channel object the ADC is currently processing
- * 
- * @return ADCChannel*  pointer to the current ADC channel
- */
-ADCChannel *ADC_GetCurrentChannel(void)
+// *****************************************************************************
+
+ADCChannel* ADC_GetCurrentChannel(void)
 {
     return currentChannel;
 }
 
-/***************************************************************************//**
- * @brief Get the channel number the ADC is currently processing
- * 
- * This is the actual channel in the hardware. It should be given by the
- * channelNumber member.
- * 
- * @return uint8_t  ADC channel number
- */
+// *****************************************************************************
+
 uint8_t ADC_GetCurrentChannelNumber(void)
 {
     return currentChannel->channelNumber;
 }
 
-/***************************************************************************//**
- * @brief Get the 16 bit value (left-justified) for a channel
- * 
- * @param self  pointer to the ADC channel object you are using
- * 
- * @return uint16_t  left-justified result
- */
+// *****************************************************************************
+
 uint16_t ADC_Get16Bit(ADCChannel *self)
 {
     return self->adcValue;
 }
 
-/***************************************************************************//**
- * @brief Get the 8 bit value for a channel
- * 
- * @param self  pointer to the ADC channel object you are using
- * 
- * @return uint8_t  8-bit result
- */
+// *****************************************************************************
+
 uint8_t ADC_Get8Bit(ADCChannel *self)
 {
     return (uint8_t)((self->adcValue) >> 8);
 }
 
-/***************************************************************************//**
- * @brief Enable the ADC peripheral
- * 
- */
+// *****************************************************************************
+
 void ADC_Enable(void)
 {
     if(LL_ADC_IsActiveFlag_ADRDY(ADC1) == 0)
@@ -302,10 +250,8 @@ void ADC_Enable(void)
     }
 }
 
-/***************************************************************************//**
- * @brief Disable the ADC peripheral
- * 
- */
+// *****************************************************************************
+
 void ADC_Disable(void)
 {
     LL_ADC_REG_StopConversion(ADC1);
@@ -321,13 +267,8 @@ void ADC_Disable(void)
     }
 }
 
-/***************************************************************************//**
- * @brief Update the ADC conversion timers
- * 
- * You must call this function periodically. The update rate is set when you
- * call the UseNonBlockingMode function. The timer will check ongoing 
- * conversions and perform a callback if needed
- */
+// *****************************************************************************
+
 void ADC_Tick(void)
 {
     /* Start the conversion timer */
@@ -368,11 +309,8 @@ void ADC_Tick(void)
     }
 }
 
-/***************************************************************************//**
- * @brief Check if the ADC is enabled
- * 
- * @return true  if the ADC is enabled
- */
+// *****************************************************************************
+
 bool ADC_IsEnabled(void)
 {   
     if(LL_ADC_IsEnabled(ADC1) == 1) // ADC_CR.ADEN
@@ -381,38 +319,22 @@ bool ADC_IsEnabled(void)
         return false;
 }
 
-/***************************************************************************//**
- * @brief A function pointer that is called when a conversion is finished
- * 
- * The context is so that multiple callbacks can be serviced by the same
- * function if desired.
- * 
- * @param CallbackFunc format: void SomeFunction(ADCChannel *context)
- */
+// *****************************************************************************
+
 void ADC_SetSampleFinishedCallbackFunc(void (*CallbackFunc)(ADCChannel *context))
 {
     ADC_SampleFinishedCallbackFunc = CallbackFunc;
 }
 
-/***************************************************************************//**
- * @brief A function pointer that is called after the ADC is enabled
- * 
- * Useful for turning on or resetting DMA for example
- * 
- * @param Function  format: void SomeFunction(void)
- */
+// *****************************************************************************
+
 void ADC_SetEnableFinishedCallbackFunc(void (*Function)(void))
 {
     ADC_EnableFinishedCallbackFunc = Function;
 }
 
-/***************************************************************************//**
- * @brief A function pointer that is called after the ADC is disabled
- * 
- * Useful for turning off or resetting DMA for example
- * 
- * @param Function  format: void SomeFunction(void)
- */
+// *****************************************************************************
+
 void ADC_SetDisableFinishedCallbackFunc(void (*Function)(void))
 {
     ADC_DisableFinishedCallbackFunc = Function;
