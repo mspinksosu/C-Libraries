@@ -32,7 +32,7 @@ static Foo_Interface FooFunctionTable = {
     // Add the rest of the functions listed in the interface
 };
 
-// ***** Function Prototypes ***************************************************
+// ***** Static Function Prototypes ********************************************
 
 /* Put static function prototypes here */
 
@@ -43,13 +43,6 @@ static Foo_Interface FooFunctionTable = {
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/***************************************************************************//**
- * @brief Initialize your object
- * 
- * @param self 
- * @param base
- * @param data 
- */
 void Foo_MCU1_Init(Foo_MCU1 *self, Foo *base, uint16_t data)
 {
     self->super = base;
@@ -63,10 +56,8 @@ void Foo_MCU1_Init(Foo_MCU1 *self, Foo *base, uint16_t data)
     Foo_Create(base, self, &FooFunctionTable);
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void Foo_MCU1_ProcessorSpecificFunc(void)
 {
 
@@ -80,33 +71,20 @@ void Foo_MCU1_ProcessorSpecificFunc(void)
 
 /* Don't forget to add these functions to the function table */
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- */
 void Foo_MCU1_Func(Foo *self)
 {
 
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * @return uint16_t 
- */
+// *****************************************************************************
+
 uint16_t Foo_MCU1_GetValue(Foo *self)
 {
 
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * @param data 
- */
+// *****************************************************************************
+
 void Foo_MCU1_SetValue(Foo *self, uint16_t data)
 {
 

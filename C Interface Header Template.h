@@ -4,7 +4,7 @@
  * @author Matthew Spinks
  * 
  * @date 12/2/14  Original creation
- * @date 2/4/22   Modified
+ * @date 8/6/22   Modified
  * 
  * @file IFoo.h
  * 
@@ -61,16 +61,52 @@ typedef struct FooTag
  * 
  */
 
-// ***** Function Prototypes ***************************************************
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Non-Interface Functions *********************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
+/***************************************************************************//**
+ * @brief Combine the base class, sub class, and function table
+ * 
+ * This function shouldn't be called directly. It is preferred that it is 
+ * called from within the sub class constructor. This makes the function more 
+ * type safe with the use of the void pointer
+ * 
+ * @param self 
+ * @param instanceOfSubClass 
+ * @param interface 
+ */
 void Foo_Create(Foo *self, void *instanceOfSubclass, Foo_Interface *interface);
 
-// ----- Interface Functions ---------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Interface Functions *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ */
 void Foo_Func(Foo *self);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @return uint16_t 
+ */
 uint16_t Foo_GetValue(Foo *self);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param data 
+ */
 void Foo_SetValue(Foo *self, uint16_t data);
 
 #endif  /* IFOO_H */

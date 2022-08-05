@@ -4,7 +4,7 @@
  * @author Matthew Spinks
  * 
  * @date 12/2/14  Original creation
- * @date 2/4/22   Modified
+ * @date 8/6/22   Modified
  * 
  * @file IFoo.c
  * 
@@ -18,10 +18,10 @@
 // ***** Defines ***************************************************************
 
 
-// ***** Function Prototypes ***************************************************
-
-
 // ***** Global Variables ******************************************************
+
+
+// ***** Function Prototypes ***************************************************
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -30,17 +30,6 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/***************************************************************************//**
- * @brief Combine the base class, sub class, and function table
- * 
- * This function shouldn't be called directly. It is preferred that it is 
- * called from within the sub class constructor. This makes the function more 
- * type safe with the use of the void pointer
- * 
- * @param self 
- * @param instanceOfSubClass 
- * @param interface 
- */
 void Foo_Create(Foo *self, void *instanceOfSubClass, Foo_Interface *interface)
 {
     self->instance = instanceOfSubClass;
@@ -53,11 +42,6 @@ void Foo_Create(Foo *self, void *instanceOfSubClass, Foo_Interface *interface)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- */
 void Foo_Func(Foo *self)
 {
     /* Check the function table is set up properly before calling the processor
@@ -69,12 +53,8 @@ void Foo_Func(Foo *self)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * @return uint16_t 
- */
+// *****************************************************************************
+
 uint16_t Foo_GetValue(Foo *self)
 {
     if(self->interface->Foo_GetValue != NULL && self->instance != NULL)
@@ -87,12 +67,8 @@ uint16_t Foo_GetValue(Foo *self)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * @param data 
- */
+// *****************************************************************************
+
 void Foo_SetValue(Foo *self, uint16_t data)
 {
     if(self->interface->Foo_SetValue != NULL && self->instance != NULL)
