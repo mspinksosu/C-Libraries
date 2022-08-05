@@ -15,8 +15,6 @@
  *      I am currently using register names as given by the header file
  * included with STM32 F10x standard peripheral library v2.0.3
  * 
- *      TODO Add details, 9-bit, and different parity, hardware flow control
- * 
  * Example Code:
  *      UART myUART;
  *      UART_Create(&myUART, &UART1_FunctionTable);
