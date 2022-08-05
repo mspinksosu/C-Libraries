@@ -48,12 +48,14 @@
 
 // ***** Global Variables ******************************************************
 
+/* A forward declaration which will allow the compiler to "know" what a Timer
+is before I use it in the callback function declaration below me */
 typedef struct Timer Timer;
 
-/*  callback function pointer. The context is so that you can know which timer 
-    initiated the callback. This is so that you can service multiple timer 
-    callbacks with the same function if you desire. */
-typedef void (*TimerCallbackFunc)(Timer *timerContext);
+/* callback function pointer. The context is so that you can know which timer 
+initiated the callback. This is so that you can service multiple timer 
+callbacks with the same function if you desire. */
+typedef void (*TimerCallbackFunc)(Timer *context);
 
 // Free timer (with bit field)
 struct Timer
@@ -195,6 +197,6 @@ void Timer_ClearFlag(Timer *self);
  * 
  * @param Function  format: void SomeFunction(Timer *context)
  */
-void Timer_SetFinishedCallback(Timer *self, TimerCallbackFunc);
+void Timer_SetFinishedCallback(Timer *self, TimerCallbackFunc Function);
 
 #endif /* TIMER_H */
