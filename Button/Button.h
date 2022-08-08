@@ -12,7 +12,7 @@
  * 
  * @details
  *      A library that handles basic button features like short press and long
- * press. It can debounce the button press or release, to use with a digital
+ * press. It can debounce the button press or release when using a digital
  * input, or it can use a analog voltage level. This library can also be used 
  * for things like inserting connectors or switches.
  * 
@@ -33,11 +33,11 @@
  * time, the long press event fires. If you let go of it before the long press 
  * period expires, it performs the normal short press action. 
  * 
- *      To create a long press button, call the init function with the long 
- * press length in milliseconds. Set it to zero if not needed. To change the
- * long press length of a button later, use the set long press function. It 
- * would be best to make sure your button is in a known state before changing 
- * the long press time though.
+ *      To create a long press button, simply give the long press length in 
+ * milliseconds to the init function. Set it to zero if not needed. If you need
+ * to change the long press length of a button later, use the set long press 
+ * function. It would be best to make sure your button is in a known state 
+ * before changing the long press time though.
  * 
  *      There are multiple types of events available to you. When you check for 
  * an event, the flag for that event is not automatically cleared. This is for 
@@ -52,14 +52,14 @@
  * change. These can be useful depending on the situation. Like for example, 
  * you need to register a button down event in order to wake up a display, but 
  * need to ignore the normal short press action. Or if you need to do something
- * during the time the button is being held down and the long press event.
+ * during the time between the button being held down and the long press event.
  * 
  * Example Code:
  *      Button PushButton;
  *      DigitalButton digitalPushButton;
  *      Button_Digital_Create(&digitalPushButton, &PushButton, 20, 20, 10);
- *      Button_InitMs(&PushButton, 3000);
- *      uint16_t buttonIsPressed = getGPIOValue();
+ *      Button_InitMs(&PushButton, 3000); // long press 3 seconds
+ *      uint16_t buttonIsPressed = GPIO_ReadPin(&pin1);
  *      Button_Tick(&PushButton, buttonIsPressed);
  * 
  ******************************************************************************/

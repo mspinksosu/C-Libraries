@@ -13,14 +13,14 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
 - [x] Buffer: Complete!
 - [x] Button: Refactor! Ready to test!
   - [x] Added analog button
-  - [ ] Update doxygen
+  - [x] Update doxygen
 - [x] Button Group: New library! Tested and working!
 - [ ] Comparator: New library! Ready for testing
   - [x] Update doxygen
 - [ ] GPIO: Redesign!
   - [x] STM32 implementation finished! Testing in progress
   - [x] Refactored STM32 G0 to get rid of ST library dependancy
-  - [ ] Update doxygen 
+  - [x] Update doxygen 
   - [ ] PIC32 implementation in progress
 - [ ] I2C: Old PIC32 library. Working. Needs updating
 - [x] Pattern: New library! Tested and working!

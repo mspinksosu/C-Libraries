@@ -37,7 +37,7 @@ struct Pattern
 {
     PatternState *patternArray;
     uint8_t numOfStates;
-    PatternState *nextPatternArray; // TODO test atomic load 
+    PatternState *nextPatternArray;
     uint8_t nextNumOfStates;
 
     uint16_t tickMs;
