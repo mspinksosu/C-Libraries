@@ -98,7 +98,7 @@ uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz)
     double uartDivMantissa;
     uint8_t carry = 0;
 
-    uartDivFloat = pclkInHz / (desiredBaudRate * 16);
+    uartDivFloat = pclkInHz / (desiredBaudRate * 16.0f);
 
     /* For some reason the reference manual likes to call the integer part 
     of uartDivFloat the mantissa. The modf function will set uartDivFloat to 
@@ -106,7 +106,7 @@ uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz)
     divFractionFloat = modf(uartDivFloat, &uartDivMantissa);
     
     uartDiv = (uint32_t)uartDivMantissa;
-    divFraction = (uint32_t)roundf(divFractionFloat * 16);
+    divFraction = (uint32_t)roundf(divFractionFloat * 16.0f);
 
     /* The fractional part is 4-bits. If the rounding goes over 16, add it to
     the "mantissa part" (uartDiv). Example 3. Page 799 */
