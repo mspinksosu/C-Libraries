@@ -164,7 +164,6 @@ void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh)
     and a negative number indicates a counter clockwise transition. A zero 
     means there was no transition, or that it was invalid. */
     int8_t newOutput = rotaryLookupTable[self->state];
-    bool goClockwise;
 
     /* Detect direction reversal. A -1 to +1 or +1 to -1 changes the sign and
     resets the count */
@@ -175,23 +174,27 @@ void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh)
     else
     {
         self->output += newOutput;
+
+        /* Prevent overflow and underflow */
+        if(newOutput == 1 && self->output == -128)
+            self->output = 0;
+        
+        if(newOutput == -1 && self->output == 127)
+            self->output = -1;
     }
-    
-    if(self->output > 0)
-        goClockwise = true;
     
     /* The typemask will cause an event to occur every quarter, half, or full
     cycle depending on the type of rotary encoder. It is based on modulo
     division. */
     if((self->output & self->typeMask) == 0)
     {
-        if(goClockwise)
+        if(newOutput == 1)
         {
             self->flags.clockwise = 1;
             if(self->clockwiseEventCallback)
                 self->clockwiseEventCallback(self);
         }
-        else
+        else if(newOutput == -1)
         {
             self->flags.counterClockwise = 1;
             if(self->counterClockwiseEventCallback)
