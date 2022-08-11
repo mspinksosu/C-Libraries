@@ -61,6 +61,8 @@
  *      Button_InitMs(&PushButton, 3000); // long press 3 seconds
  *      uint16_t buttonIsPressed = GPIO_ReadPin(&pin1);
  *      Button_Tick(&PushButton, buttonIsPressed);
+ *      if(Button_GetLongPress(&PushButton))
+ *      { .... do something .... }
  * 
  ******************************************************************************/
 
@@ -101,8 +103,8 @@ typedef enum ButtonLengthTag
 is before I use it in the callback function declaration below me */
 typedef struct ButtonTag Button;
 
-/* callback function pointer. The context is so that you can know which timer 
-initiated the callback. This is so that you can service multiple timer 
+/* callback function pointer. The context is so that you can know which button 
+initiated the callback. This is so that you can service multiple button 
 callbacks with the same function if you desire. */
 typedef void (*ButtonCallbackFunc)(Button *context);
 
@@ -199,10 +201,10 @@ typedef struct DigitalButtonTag
 /***************************************************************************//**
  * @brief Creates an Analog Button object and links it to the base class
  * 
- * The output is high (pressed) when the pot value crosses the lower and upper
- * thresholds, and low (released) when the pot value is below the upper and 
- * lower thresholds. This is similar in operation to a Schmitt trigger. The
- * tickMs is necessary if you are going to use the long press feature
+ * The output is high (pressed) when the value crosses the lower and upper
+ * thresholds, and low (released) when the value is below the upper and lower 
+ * thresholds. This is similar in operation to a Schmitt trigger. The tickMs 
+ * is necessary if you are going to use the long press feature
  * 
  * @param self  pointer to the Button that you are using
  * 
@@ -248,7 +250,6 @@ void Button_Digital_Create(DigitalButton *self, Button *base, uint16_t pressDebo
  * @param longPressMs  long press period (in ms). Zero if not needed
  */
 void Button_InitMs(Button *self, uint16_t longPressMs);
-
 
 /***************************************************************************//**
  * @brief Change the long press time of a button
@@ -389,7 +390,7 @@ ButtonLength Button_GetLength(Button *self);
  * 
  * The function prototype must have a pointer to a Button as its argument. 
  * This is so that multiple Buttons can be serviced by the same function if 
- * desired. This function does not clear the flag automatically.
+ * desired. This function will not clear any event flags.
  * 
  * @param self  pointer to the Button that you are using
  * 
@@ -402,7 +403,7 @@ void Button_SetShortPressCallback(Button *self, ButtonCallbackFunc Function);
  * 
  * The function prototype must have a pointer to a Button as its argument. 
  * This is so that multiple Buttons can be serviced by the same function if 
- * desired. This function does not clear the flag automatically.
+ * desired. This function will not clear any event flags.
  * 
  * @param self  pointer to the Button that you are using
  * 

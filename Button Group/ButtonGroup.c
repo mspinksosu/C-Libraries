@@ -20,7 +20,7 @@
  * called self as its first argument. This is the pointer to the Button Group 
  * object you are currently using.
  * 
- * Button are combined into groups of eight. Check the header file for some
+ * Buttons are combined into groups of eight. Check the header file for some
  * useful preprocessor macros you can use to decode the buttons more easily.
  * 
  ******************************************************************************/

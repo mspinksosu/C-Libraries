@@ -28,7 +28,11 @@
  *      If you have a large list of inputs you can use some preprocessor macros 
  * to help manage your inputs and their indexes. You can use an enum with the 
  * last value being "TOTAL". By doing this, you can make an array of Button 
- * Group objects:
+ * Group objects like so:
+ * 
+ * enum { BUTTON1,
+ *        BUTTON2,
+ *        TOTAL_BUTTONS};
  * 
  * #define NUM_BUTTON_GROUPS    (TOTAL_BUTTONS / 8 + 1)
  * 
