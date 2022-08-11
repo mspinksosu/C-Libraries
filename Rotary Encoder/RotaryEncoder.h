@@ -91,7 +91,11 @@ struct RotaryEncoderTag
     RECallbackFunc counterClockwiseEventCallback;
 };
 
-// ***** Function Prototypes ***************************************************
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Function Prototypes *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
  * @brief Initialize a Rotary Encoder object (half cycle type)
@@ -166,7 +170,7 @@ void RE_SetClockwiseEventCallback(RotaryEncoder *self, RECallbackFunc Function);
 /***************************************************************************//**
  * @brief Set a function to be called when a counter clockwise event happens
  * 
-* The function prototype must have a pointer to a RotaryEncoder as its 
+ * The function prototype must have a pointer to a RotaryEncoder as its 
  * argument. This is so that multiple encoders can be serviced by the same 
  * function if desired. This function will not clear any event flags.
  * 

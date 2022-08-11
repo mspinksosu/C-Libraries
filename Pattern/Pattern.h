@@ -33,10 +33,7 @@
  * immediately starts regardless of what state it was in previously. But the
  * LoadAtomic function will wait until the pattern finishes and then load the
  * next pattern and begin. This is very useful for ensuring there are no little
- * "blips" when switching patterns. I also like to make the last state in the 
- * pattern be all off (even if it's really short) just to always ensure that 
- * I'm in a known state when the pattern finishes. To flash a pattern once and
- * then stop, simply call Load and then StopAtomic immediately after.
+ * "blips" when switching patterns.
  * 
  * The output is read by calling the GetOutput function. The output is just an
  * 8-bit value. It can be 1 or 0. Or it can have multiple outputs together. 
@@ -44,18 +41,15 @@
  * to make a cool Knight Rider sequence. How you choose to decode the output is 
  * entirely up to you.
  * 
- * When the pattern finishes finishes, the finished flag is set. The flag is
- * not cleared automatically. This is for you to decide when to clear it. 
- * You can poll this flag using the IsFinished function and then clear it using
- * the ClearFlag function.
- * 
- * There is also a pattern finished callback function. It is always called at
- * the end of the pattern regardless of it the pattern loops or not. The 
- * function you create must follow the prototype listed for PatternCallbackFunc.
- * It must have a pointer to a Pattern object as an argument. This is so you
- * can have multiple patterns pointing to the same callback function if you 
- * desire. Inside of your callback function, you can look at the context
- * pointer to see which Pattern called the function and decide what to do.
+ * When the pattern finishes a flag is set. The flag is not cleared 
+ * automatically. This is for you to decide when to clear it. There is also a 
+ * pattern finished callback function. It is always called at the end of the 
+ * pattern regardless if the pattern loops or not. The function you create must 
+ * follow the prototype listed for PatternCallbackFunc. It must have a pointer 
+ * to a Pattern object as an argument. This is so you can have multiple 
+ * patterns pointing to the same callback function if you desire. Inside your 
+ * callback function, you can look at the context pointer to see which Pattern 
+ * called the function and decide what to do.
  * 
  * Example Code:
  *      Pattern ledBlink;
