@@ -40,8 +40,8 @@ static union {
 
 // local function pointers
 static void (*ADC_SampleFinishedCallbackFunc)(ADCChannel *context);
-static void (*ADC_EnableFinishedCallbackFunc)(void);
-static void (*ADC_DisableFinishedCallbackFunc)(void);
+static void (*ADC_PeripheralEnabledCallbackFunc)(void);
+static void (*ADC_PeripheralDisabledCallbackFunc)(void);
 
 // ***** Static Function Prototypes ********************************************
 
@@ -244,9 +244,9 @@ void ADC_Enable(void)
         while(LL_ADC_IsActiveFlag_ADRDY(ADC1) == 0){}
     }
 
-    if(ADC_EnableFinishedCallbackFunc)
+    if(ADC_PeripheralEnabledCallbackFunc)
     {
-        ADC_EnableFinishedCallbackFunc();
+        ADC_PeripheralEnabledCallbackFunc();
     }
 }
 
@@ -261,9 +261,9 @@ void ADC_Disable(void)
     adcFlags.start = 0;
     adcFlags.active = 0;
 
-    if(ADC_DisableFinishedCallbackFunc)
+    if(ADC_PeripheralDisabledCallbackFunc)
     {
-        ADC_DisableFinishedCallbackFunc();
+        ADC_PeripheralDisabledCallbackFunc();
     }
 }
 
@@ -328,21 +328,21 @@ void ADC_SetSampleFinishedCallbackFunc(void (*CallbackFunc)(ADCChannel *context)
 
 // *****************************************************************************
 
-void ADC_SetEnableFinishedCallbackFunc(void (*Function)(void))
+void ADC_SetPeripheralEnabledCallbackFunc(void (*Function)(void))
 {
-    ADC_EnableFinishedCallbackFunc = Function;
+    ADC_PeripheralEnabledCallbackFunc = Function;
 }
 
 // *****************************************************************************
 
-void ADC_SetDisableFinishedCallbackFunc(void (*Function)(void))
+void ADC_SetPeripheralDisabledCallbackFunc(void (*Function)(void))
 {
-    ADC_DisableFinishedCallbackFunc = Function;
+    ADC_PeripheralDisabledCallbackFunc = Function;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// ***** Static Functions ****************************************************//
+// ***** Local Functions *****************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 

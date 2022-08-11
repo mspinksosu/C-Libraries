@@ -15,16 +15,17 @@
  ******************************************************************************/
 
 #include "ADC_Manager.h"
+#include <stddef.h> // needed for NULL
 
 // ***** Defines ***************************************************************
 
-#define ADC_MANAGE_SAMPLE_MS    5
+#define ADC_MANAGE_SAMPLE_MS    5 // time to wait for a sample to finish
 #define ADC_MANAGE_TICK_MS      1
 
 // ***** Global Variables ******************************************************
 
-static ADCChannelEntry *ptrToLast = NULL;
-static ADCChannelEntry *currentChannel = NULL;
+static ADCChannelEntry *ptrToLast = NULL;       // linked list
+static ADCChannelEntry *currentChannel = NULL;  // index for linked list
 static bool adcManagerEnabled;
 
 ////////////////////////////////////////////////////////////////////////////////

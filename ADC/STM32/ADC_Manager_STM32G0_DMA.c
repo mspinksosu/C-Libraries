@@ -14,13 +14,14 @@
  * This file replaces ADC_Manager.c.
  * 
  * The use of an array with all the parts combined will allow the user to 
- * declare and initialize everything here in this file without need to call the 
- * init function individually for every object. If more objects are added after
- * initialization, the appropriate init functions need to be called.
+ * declare and initialize everything here in this file without needing to call 
+ * the init function individually for every object. If more objects are added 
+ * after initialization, the appropriate init functions need to be called.
  * 
  ******************************************************************************/
 
 #include "ADC_Manager.h"
+#include <stddef.h> // needed for NULL
 
 /* Include processor specific header files here */
 #include "stm32g071xx.h"
@@ -28,9 +29,9 @@
 
 // ***** Defines ***************************************************************
 
-#define ADC_MANAGE_SAMPLE_MS            5
+#define ADC_MANAGE_SAMPLE_MS            5 // time to wait for sample to finish
 #define ADC_MANAGE_TICK_MS              1
-#define ADC_MANAGE_NUM_CHANNELS         1
+#define ADC_MANAGE_NUM_CHANNELS         3
 #define ADC_MANAGE_SAMPLES_PER_CHANNEL  8
 
 // ***** Global Variables ******************************************************
@@ -50,7 +51,7 @@ typedef struct ADCChannelFullTag
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// ***** Initialization ADC Channels *****************************************//
+// ***** Initialize ADC Channels *********************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -115,7 +116,7 @@ void ADC_Manager_Init(uint16_t sampleTimeMs, uint16_t tickRateMs)
             ADC_Manager_AddChannel(&(ChannelArray[i].entry), &(ChannelArray[i].adcChannel));
 
             /* Add to DMA sequencer. Order of channels is fixed by channel 
-            hardware number. The first entries added to my list will be sorted 
+            hardware number. The first entries added to my list must be sorted 
             by channel number. */
             dmaChannelSelection |= (1 << ChannelArray[i].adcChannel.channelNumber);
         }
@@ -128,8 +129,8 @@ void ADC_Manager_Init(uint16_t sampleTimeMs, uint16_t tickRateMs)
     the ADC needs to start or stop it will call these functions which will 
     start and stop the DMA for us automatically. This way, the ADC doesn't need 
     to know or care about the DMA or the DMA channel number */
-    ADC_SetEnableFinishedCallbackFunc(ADC_Manager_Enable);
-    ADC_SetDisableFinishedCallbackFunc(ADC_Manager_Disable);
+    ADC_SetPeripheralEnabledCallbackFunc(ADC_Manager_Enable);
+    ADC_SetPeripheralDisabledCallbackFunc(ADC_Manager_Disable);
 }
 
 // *****************************************************************************
@@ -217,8 +218,8 @@ void ADC_Manager_Tick(void)
             if(!ADC_IsBusy())
             {
                 /* When the take sample function is called, the DMA is paused
-                automatically through the enable and disable ADC call back
-                functions. The ADC will restore it's channel select settings
+                automatically through the enable and disable ADC callback
+                functions. The ADC will restore its channel select settings
                 when it finishes. */
                 ADC_TakeSample(currentChannel);
                 currentChannel = currentChannel->next;
@@ -227,7 +228,7 @@ void ADC_Manager_Tick(void)
         }
         else
         {
-            /* TODO Restart DMA sequencer */
+            /* TODO check DMA sequencer gets reset after TakeSample */
             loopCount = 0;
         }
     }
@@ -258,7 +259,7 @@ void ADC_Manager_Disable(void)
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// ***** Static Functions ****************************************************//
+// ***** Local Functions *****************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
