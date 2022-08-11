@@ -23,15 +23,24 @@
  * sure to call it periodically and make sure to initialize the timer with the 
  * expected rate. This lets the timer know how far it must count. 
  * 
- *      I've provided a timer finished callback function. The function pointer 
- * you create must follow the prototype listed in Timer.h. It must have a Timer 
- * object as the return type. The idea is that when you set up the callback 
- * function, you tell it which Timer object will be calling it. This provides 
- * context for you so that if you have multiple timers, you can tell which one 
- * executed the callback function. This way you can have multiple timers 
- * pointing to the same callback function if you desire. Then you could look at 
- * the Timer object to see which one called it and decide what to do.
+ *      I've provided a timer finished callback function. The function you 
+ * create must follow the prototype listed for TimerCallbackFunc. It must have 
+ * a pointer to a Timer object as an argument. The idea is that when the 
+ * callback function executes, you will get a pointer to the timer that called
+ * the function. This way you can have multiple timers pointing to the same 
+ * callback function if you desire. Then inside your callback function you can 
+ * look at the context pointer to see which Timer object called the function 
+ * and decide what to do.
  * 
+ * Example Code:
+ *      Timer startUpTimer;
+ *      Timer_InitMs(&startupTimer, STARTUP_TIME_MS, TICK_1MS);
+ *      Timer_Start(&startupTimer);
+ *      if(Timer_IsFinished(&startupTimer))
+ *      { 
+ *          Timer_ClearFlag(&startupTimer);
+ *          // do some stuff
+ *      }
  ******************************************************************************/
 
 #ifndef TIMER_H

@@ -8,7 +8,15 @@
  * @file Pattern.c
  * 
  * @details
- *      TODO
+ *      A library that makes simple patterns. This is basically a software 
+ * timer with some special atomic functions added the make loading a new 
+ * pattern very easy. It's not meant to be an extremely accurate timer, but it 
+ * can work very well depending on the tick rate you choose and how well you 
+ * stick to it. When the pattern gets ready to to go to the next state, it will 
+ * calculate the period in ticks. The period in ticks is truncated based on the 
+ * tick rate you initialized your pattern with. If your period ends up being 
+ * smaller than your tick rate, the period will be set to one. If you 
+ * accidentally set your tick rate to zero, I will set it to one as well. 
  * 
  ******************************************************************************/
 
@@ -25,17 +33,12 @@
 
 // *****************************************************************************
 
-void Pattern_InitMs(Pattern *self, PatternState *arrayOfStates, uint8_t numOfStates, uint16_t tickMs)
+void Pattern_InitMs(Pattern *self, uint16_t tickMs)
 {
-    if(numOfStates == 0)
-        return;
-
     /* The count for a given state is calculated by dividing the period in 
     milliseconds by the tick in milliseconds. If your tick rate is larger
     than the period, it will be set to 1. I will also set the tick value to
     1 if you accidentally set it to zero. */
-    self->patternArray = arrayOfStates;
-    self->numOfStates = numOfStates;
     self->count = 0;
     self->index = 0;
     self->flags.all = 0;
@@ -62,7 +65,7 @@ void Pattern_Load(Pattern *self, PatternState *arrayOfStates, uint8_t numOfState
     self->count = 0;
     self->index = 0;
 
-    /* TODO Should I load the output immediately? */
+    /* TODO Should I start the timer automatically? */
     self->output = self->patternArray[self->index].output;
     self->flags.start = 1;
 }
@@ -112,7 +115,7 @@ void Pattern_Tick(Pattern *self)
         self->flags.start = 0;
         self->period =  self->patternArray[self->index].timeInMs / self->tickMs;
 
-        /* TODO If the period is less than 1, should I set it to 1 for the user? */
+        /* If the period is less than 1, make it to 1 for the user */
         if(self->period == 0)
             self->period = 1;
 

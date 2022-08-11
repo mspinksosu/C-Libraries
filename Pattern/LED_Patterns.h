@@ -20,9 +20,9 @@
  * don't, you'll most likely get a very cryptic compiler error.
  * 
  * You technically don't have to have an array for every single pattern you
- * want to make. The pattern maker will loop back to zero once it hits the end
- * of the pattern size that you initialized it as. You could make a temporary
- * pattern array and copy from one array to a larger one if you desire.
+ * want to make. The pattern maker will loop back to zero once it hits the size 
+ * that you initialized it as. You could make a temporary pattern array and 
+ * copy from one array to a larger one if you desire.
  * 
  ******************************************************************************/
 
@@ -41,16 +41,18 @@ patterns I was using a tick rate of 8 ms, but the times don't have to be exact.
     PatternState doubleBlink[DOUBLE_BLINK_SIZE] = DOUBLE_BLINK_PATT; */
 
 // a single blink, once per second
-#define SINGLE_BLINK_SIZE   2
-#define SINGLE_BLINK_PATT   {{.output = 1, .timeInMs = 32},\
-                             {.output = 0, .timeInMs = 968}}
+#define SINGLE_BLINK_SIZE   3
+#define SINGLE_BLINK_PATT   {{.output = 0, .timeInMs = 904},\
+                             {.output = 1, .timeInMs = 32},\
+                             {.output = 0, .timeInMs = 64}}
 
 // two rapid blinks, once per second
-#define DOUBLE_BLINK_SIZE   4
-#define DOUBLE_BLINK_PATT   {{.output = 1, .timeInMs = 32},\
+#define DOUBLE_BLINK_SIZE   5
+#define DOUBLE_BLINK_PATT   {{.output = 0, .timeInMs = 808},\
+                             {.output = 1, .timeInMs = 32},\
                              {.output = 0, .timeInMs = 64},\
                              {.output = 1, .timeInMs = 32},\
-                             {.output = 0, .timeInMs = 872}}
+                             {.output = 0, .timeInMs = 64}}
 
 // flash both LED's at the same time
 #define TWO_LED_FLASH_SIZE  2
@@ -67,6 +69,7 @@ patterns I was using a tick rate of 8 ms, but the times don't have to be exact.
 #define FAST_BLINK_PATT     {{.output = 1, .timeInMs = 32},\
                              {.output = 0, .timeInMs = 468}}
 
+// blink once, in three seconds
 #define ERROR_CODE_1_SIZE   2
 #define ERROR_CODE_1_PATT   {{.output = 1, .timeInMs = 250},\
                              {.output = 0, .timeInMs = 2750}}

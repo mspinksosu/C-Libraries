@@ -8,7 +8,69 @@
  * @file Pattern.h
  * 
  * @details
- *      TODO
+ *      A library that makes simple patterns. It's very useful for blinking 
+ * LED's. LED's are good for diagnostics. It starts out simple enough. One or 
+ * two LED's and some flags usually. But at some point we get asked to add more 
+ * patterns and different conditions. Then we get asked if we can make it flash 
+ * different error codes to the customer. Now it becomes a little bit more 
+ * complicated and we have to spend some time making the blinken lights look 
+ * just right. This library can help you do all of that.
+ * 
+ * To make a Pattern, you will need to make an array of PatternStates. The
+ * PatternState defines what the output should be and for how long (in
+ * milliseconds). When you initialize the Pattern, you pass a reference to your 
+ * array of PatternStates and the number of states (be careful not to give the
+ * size of the array in bytes). You also need the expected update rate in 
+ * milliseconds. This is how often you plan to call the tick function. The time 
+ * periods are truncated based on your tick rate.
+ * 
+ * When the pattern reaches the final state, a few things can happen depending
+ * on what flags are set. Normally, the pattern loops around and starts again
+ * at index zero. I've included some special functions called "atomic", which 
+ * let the pattern run to completion. For example, calling the Stop function
+ * pauses the pattern immediately. But calling StopAtomic stops the pattern
+ * after if reaches the end. Likewise, the Load function loads a pattern and 
+ * immediately starts regardless of what state it was in previously. But the
+ * LoadAtomic function will wait until the pattern finishes and then load the
+ * next pattern and begin. This is very useful for ensuring there are no little
+ * "blips" when switching patterns. I also like to make the last state in the 
+ * pattern be all off (even if it's really short) just to always ensure that 
+ * I'm in a known state when the pattern finishes. To flash a pattern once and
+ * then stop, simply call Load and then StopAtomic immediately after.
+ * 
+ * The output is read by calling the GetOutput function. The output is just an
+ * 8-bit value. It can be 1 or 0. Or it can have multiple outputs together. 
+ * It can be used to flash patterns on an battery level gauge for example. Or 
+ * to make a cool Knight Rider sequence. How you choose to decode the output is 
+ * entirely up to you.
+ * 
+ * When the pattern finishes finishes, the finished flag is set. The flag is
+ * not cleared automatically. This is for you to decide when to clear it. 
+ * You can poll this flag using the IsFinished function and then clear it using
+ * the ClearFlag function.
+ * 
+ * There is also a pattern finished callback function. It is always called at
+ * the end of the pattern regardless of it the pattern loops or not. The 
+ * function you create must follow the prototype listed for PatternCallbackFunc.
+ * It must have a pointer to a Pattern object as an argument. This is so you
+ * can have multiple patterns pointing to the same callback function if you 
+ * desire. Inside of your callback function, you can look at the context
+ * pointer to see which Pattern called the function and decide what to do.
+ * 
+ * Example Code:
+ *      Pattern ledBlink;
+ *      PatternState pattern1Array[2] = {{.output = 1, .timeInMs = 32},
+ *                                       {.output = 0, .timeInMs = 468}};
+ *      PatternState pattern2Array[3] = {{.output = 0x01, .timeInMs = 250},
+ *                                       {.output = 0x02, .timeInMs = 250},
+ *                                       {.output = 0x00, .timeInMs = 5}};
+ *      Pattern_InitMs(&ledBlink, &pattern1Array[0], 2, TICK_ONE_MS);
+ *      Pattern_Tick(&ledBlink); // call every 1 ms
+ *      ledOutput = Pattern_GetOutput(&ledBlink); // set GPIO
+ *      if(stopBlinking == true)
+ *          Pattern_StopAtomic(&ledBlink);
+ *      if(changePattern == true)
+ *          Pattern_LoadAtomic(&ledBlink, &pattern2Array[0], 3, TICK_ONE_MS);
  * 
  ******************************************************************************/
 
@@ -107,31 +169,25 @@ struct Pattern
 /***************************************************************************//**
  * @brief Initialize a Pattern Object
  * 
- * Uses an array of states that define the output state and the time for that
- * state in milliseconds. The pattern will always start at index zero of the 
- * array. Be sure to pass the number of states and not the size of the array 
- * itself.
+ * Sets the expected tick rate and all the initial values
  * 
  * @param self  pointer to the Pattern you are using
  * 
- * @param arrayOfStates  pointer to a single PatternState or an array
- * 
- * @param numOfStates  the number of states (not the size of the array)
- * 
  * @param tickMs  how often you plan to call the Pattern Tick function
  */
-void Pattern_InitMs(Pattern *self, PatternState *arrayOfStates, uint8_t numOfStates, uint16_t tickMs);
+void Pattern_InitMs(Pattern *self, uint16_t tickMs);
 
 /***************************************************************************//**
  * @brief Load a new pattern immediately
  * 
- * Stops the current pattern and loads the new pattern, beginning at index 0
+ * Stops the current pattern and loads the new pattern, beginning at index 0.
+ * Be sure to pass the number of states and not the size of the array in bytes.
  * 
  * @param self  pointer to the Pattern you are using
  * 
  * @param arrayOfStates  pointer to a single PatternState or an array
  * 
- * @param numOfStates  the number of states (not the size of the array)
+ * @param numOfStates  the number of states in the array
  */
 void Pattern_Load(Pattern *self, PatternState *arrayOfStates, uint8_t numOfStates);
 
@@ -155,9 +211,8 @@ void Pattern_LoadAtomic(Pattern *self, PatternState *arrayOfStates, uint8_t numO
  * 
  * The start function always takes precedence over stop atomic. If you want to
  * display a pattern once, call start and then stop atomic. The start function
- * will not restart the pattern for you either. This can useful when switching
- * back and forth between patterns. If you need to restart from index zero
- * use Pattern_Load.
+ * will not restart the pattern for you either. If you need to restart from 
+ * index zero use Pattern_Load.
  * 
  * @param self  pointer to the Pattern you are using
  */
@@ -191,7 +246,7 @@ void Pattern_Stop(Pattern *self);
  * next pattern when it finishes. Load atomic does not alter the start and stop
  * bits.
  * 
- * @param self 
+ * @param self  pointer to the Pattern you are using
  */
 void Pattern_Tick(Pattern *self);
 
