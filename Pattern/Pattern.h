@@ -108,8 +108,6 @@ struct Pattern
     uint8_t index;
     uint8_t output;
 
-    PatternCallbackFunc patternCallbackFunc;
-
     union {
         struct {
             unsigned start              :1;
@@ -121,6 +119,9 @@ struct Pattern
         };
         uint8_t all;
     } flags;
+
+    PatternCallbackFunc patternFinishedCallback;
+    void (*outputChangedCallback)(uint8_t outputState);
 };
 
 /** 
@@ -301,5 +302,17 @@ void Pattern_ClearFlag(Pattern *self);
  */
 void Pattern_SetFinishedCallback(Pattern *self, PatternCallbackFunc Function);
 
+/***************************************************************************//**
+ * @brief Set a function to be called anytime the output changes
+ * 
+ * What's that? You said you wanted to have the function to set your GPIO to be
+ * called automatically for you? Without it needing to include this header?
+ * Don't worry fam. I got you.
+ * 
+ * @param self  pointer to the Pattern that you are using
+ * 
+ * @param Function  format: void SomeFunction(uint8_t outputState)
+ */
+void Pattern_SetOutputChangedCallback(Pattern *self, void (*Function)(uint8_t));
 
 #endif  /* PATTERN_H */

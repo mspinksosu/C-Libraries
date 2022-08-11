@@ -123,6 +123,9 @@ void Pattern_Tick(Pattern *self)
         self->count = self->period;
         self->output = self->patternArray[self->index].output;
         self->flags.active = 1;
+
+        if(self->outputChangedCallback)
+            self->outputChangedCallback(self->output);
     }
 
     /* Update the timer */
@@ -140,8 +143,8 @@ void Pattern_Tick(Pattern *self)
                 self->index = 0;
 
                 /* Callback function with context */
-                if(self->patternCallbackFunc)
-                    self->patternCallbackFunc(self);
+                if(self->patternFinishedCallback)
+                    self->patternFinishedCallback(self);
 
                 if(self->flags.loadAtomic)
                 {
@@ -206,7 +209,14 @@ void Pattern_ClearFlag(Pattern *self)
 
 void Pattern_SetFinishedCallback(Pattern *self,PatternCallbackFunc Function)
 {
-    self->patternCallbackFunc = Function;
+    self->patternFinishedCallback = Function;
+}
+
+// *****************************************************************************
+
+void Pattern_SetOutputChangedCallback(Pattern *self, void (*Function)(uint8_t))
+{
+    self->outputChangedCallback = Function;
 }
 
 /*
