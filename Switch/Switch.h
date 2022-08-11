@@ -24,7 +24,7 @@
  * 
  *      Be sure to give the initialization function the initial value or else
  * you will get a false event on startup. Also, if you would like to use this 
- * for a single pole switch, simply set one of the inputs to the tick
+ * for a single pole switch, simply set one of the arguments to the tick
  * function to always be false.
  * 
  *      There are flags for different events such as "A on", "B on", as well as 
@@ -46,7 +46,7 @@
 
 // ***** Global Variables ******************************************************
 
-// A is LSB, B is bit 1
+// A is bit 0, B is bit 1
 typedef enum SwitchStateTag
 {
     SW_OUTPUT_OFF = 0x00,
@@ -79,12 +79,13 @@ typedef struct SwitchTag
     // bitfield for events
     union {
         struct {
-            unsigned switchChangedEvent     :1;
-            unsigned outputAOnEvent         :1;
-            unsigned outputBOnEvent         :1;
-            unsigned outputOffEvent         :1;
-            unsigned                        :0;
+            unsigned switchChangedEvent :1;
+            unsigned outputAOnEvent     :1;
+            unsigned outputBOnEvent     :1;
+            unsigned outputOffEvent     :1;
+            unsigned                    :4;
         };
+        uint8_t all;
     } flags;
 } Switch;
 
@@ -245,7 +246,7 @@ bool Switch_OutputA(Switch *self);
 bool Switch_OutputB(Switch *self);
 
 /***************************************************************************//**
- * @brief Get the raw value of the switch as an enum
+ * @brief Get the raw value of the switch as an enum.
  * 
  * This can return the SW_OUTPUT_OFF regardless of whether or not the
  * center-off feature is enabled. Be careful. If you want to be safer, use the

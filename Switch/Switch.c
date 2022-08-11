@@ -50,6 +50,7 @@ void Switch_Init(Switch *self, uint16_t debounceMs, uint16_t tickMs, bool inputA
     }
     self->outputState = initState;
     self->debounceState = SW_READY;
+    self->flags.all = 0;
 }
 
 // *****************************************************************************
@@ -75,11 +76,13 @@ void Switch_Tick(Switch *self, bool inputAIsOn, bool inputBIsOn)
             {
                 if(self->debouncePeriod == 0)
                 {
-                    // If the debounce period is zero, we assume that
-                    // debouncing is being done via hardware
+                    /* If the debounce period is zero, we assume that the
+                    debouncing is being done via hardware */
 
-                    // Output changed decode the output
+                    /* Output changed. Decode the output, set any flags, and
+                    update the current output. */
                     DecodeOutput(self, currentState);
+                    self->outputState = currentState;
                 }
                 else
                 {
@@ -93,10 +96,11 @@ void Switch_Tick(Switch *self, bool inputAIsOn, bool inputBIsOn)
             self->debounceCounter++;
             if(self->debounceCounter == self->debouncePeriod)
             {
-                // We have finished debouncing. Decode the output
+                /* We have finished debouncing. Decode the output, set any 
+                flags, update the current output. */
                 DecodeOutput(self, currentState);
-                self->debounceState = SW_READY;
                 self->outputState = currentState;
+                self->debounceState = SW_READY;
             }
             break;
         default:
