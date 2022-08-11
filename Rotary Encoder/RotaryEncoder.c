@@ -186,9 +186,17 @@ void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh)
     if((self->output & self->typeMask) == 0)
     {
         if(goClockwise)
+        {
             self->flags.clockwise = 1;
+            if(self->clockwiseEventCallback)
+                self->clockwiseEventCallback(self);
+        }
         else
+        {
             self->flags.counterClockwise = 1;
+            if(self->counterClockwiseEventCallback)
+                self->counterClockwiseEventCallback(self);
+        }
     }
 }
 
@@ -216,6 +224,20 @@ bool RE_GetCounterClockwise(RotaryEncoder *self)
     
     self->flags.counterClockwise = 0;
     return retVal;
+}
+
+// *****************************************************************************
+
+void RE_SetClockwiseEventCallback(RotaryEncoder *self, RECallbackFunc Function)
+{
+    self->clockwiseEventCallback = Function;
+}
+
+// *****************************************************************************
+
+void RE_SetCounterClockwiseEventCallback(RotaryEncoder *self, RECallbackFunc Function)
+{
+    self->counterClockwiseEventCallback = Function;
 }
 
 /*
