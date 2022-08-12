@@ -13,10 +13,44 @@
  * controller of the G0 processor to store results in the DMAArray variable.
  * This file replaces ADC_Manager.c.
  * 
+ * This library  makes use of the PeripheralEnable and PeripheralDisable 
+ * callback functions. These will, in turn, stop or reset and start the DMA
+ * controller. This makes it so that the ADC library no longer needs to care
+ * about the DMA controller or include any DMA controller related header files.
+ * This also allows the user to call the ADC_TakeSample function at any time
+ * and automatically pause the DMA sequence.
+ * 
  * The use of an array with all the parts combined will allow the user to 
  * declare and initialize everything here in this file without needing to call 
- * the init function individually for every object. If more objects are added 
- * after initialization, the appropriate init functions need to be called.
+ * the init function individually for every object. I just did as an example of 
+ * different way to initialize all the channels as an array. I did this because
+ * the DMA array must have a known size before initialization. The size is 
+ * determined by the number of channels times the samples. Since, the number of
+ * channels must be known, I decided to put the channels in array.
+ * 
+ * One important difference is that I'm using an external pointer to point to
+ * the ADC channel rather than declaring the ADC channels as extern. This is 
+ * because the ADC channels are in an array, and if I make the array extern, I
+ * have to have some way to decode the index. This leads to having an enum
+ * somewhere that always has to match the order of this array exactly. By using
+ * the pointer and setting it during the declaration of the array's members, 
+ * everything can be done here and the declarations can be done in any order.
+ * The downside of this method is that it takes up slightly more memory due to
+ * the pointer. Remember in this case, because we are using a pointer, the
+ * function calls don't need to use the reference operator.
+ * ADC_Get16Bit(tempInternal) vs ADC_Get16Bit(&tempInternal) <-not needed
+ * 
+ * The number of channels is given by a define statement near the top of this
+ * file. This value must be altered to match the number of channels declared in
+ * the array. The DMA controller requires that the channels be sorted by the 
+ * channel number. During the intialization process, the list is sorted
+ * everytime a new channel is added.
+ * 
+ * More channel objects can still be added to the list from outside this file,
+ * though the appropriate init functions still have to be called. If more 
+ * channel objects are added after initialization, they will still operate and 
+ * you can still read their values. These channels will be added to the back of 
+ * the list and won't have a matching entry in the DMA array. 
  * 
  ******************************************************************************/
 

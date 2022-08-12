@@ -9,7 +9,16 @@
  * @file ADC_STM32G0_DMA.c
  * 
  * @details
- *      TODO
+ *      An ADC library for STM32G0 that implements the functions listed in the 
+ * ADC interface (IADC.h) and has functions related to the DMA controller.
+ *
+ * This implementation is intended to work with the ADC_Manager_STM32G0_DMA.c 
+ * file which is a version of ADC_Manager that uses the G0's DMA controller.
+ * Technically, you don't need the DMA controller to use this library. In fact, 
+ * it doesn't even include the DMA header files. That is because the DMA 
+ * settings related to the ADC are contained in the G0's ADC header files. When 
+ * you call the take sample function, it will pause the DMA controller, save
+ * its settings, take the sample, then restore its settings.
  * 
  ******************************************************************************/
 

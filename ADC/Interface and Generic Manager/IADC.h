@@ -185,12 +185,16 @@ uint8_t ADC_Get8Bit(ADCChannel *self);
 /***************************************************************************//**
  * @brief Enable the ADC peripheral
  * 
+ * After the peripheral is enabled, the ADC_PeripheralEnabledCallbackFunc is 
+ * called.
  */
 void ADC_Enable(void);
 
 /***************************************************************************//**
  * @brief Disable the ADC peripheral
  * 
+ * After the peripheral is disabled, the ADC_PeripheralDisabledCallbackFunc is 
+ * called.
  */
 void ADC_Disable(void);
 
