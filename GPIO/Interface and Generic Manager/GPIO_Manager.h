@@ -8,14 +8,40 @@
  * @file GPIO_Manager.h
  * 
  * @details
- *     I removed the initialization function that was in the GPIO library and 
- * put it here. Code in the GPIO library should only be concerned with pins. 
- * It shouldn't care how the user initializes all their pins. This gives more 
- * flexibility with how we decide to handle pin organization.
+ *     This is a simple piece of code that handles initializing all of the pins 
+ * on the MCU. It also handles access to the GPIO pins for other files.
  * 
- * When using the GPIO interface functions, calls to the base functions are 
- * done with the GPIO type. Other functions that may need external access to 
- * the pins only need to use the base class object.
+ * The code in the GPIO library should really only deal with modifying the 
+ * pins. It should not be concerned with how the user manages their pin 
+ * organization. Furthermore, The GPIO implementation will always have some 
+ * sort of processor specific dependency. So if the user were to include the
+ * header for that file they wouldn't be able to port their code as easily to 
+ * a different processor.
+ * 
+ * Calls to the GPIO functions are done with the base GPIO type. Because of 
+ * this, functions that may need access to the pins only need to use the base 
+ * class object. By putting the external declaration here, any file that needs 
+ * to use the pins can include this header. Now we don't need to deal with any 
+ * other files needing to include processor specific headers.
+ * 
+ * Each external base GPIO object will need a matching initialization in a .c
+ * file. This will be done in the GPIO_Manager.c file, or in your own processor
+ * specific GPIO_Manager.c file if you choose to make one.
+ * 
+ * The first step in the intialization process is to set the GPIO driver
+ * interface or function table by calling GPIO_SetDriverInterface. This table 
+ * is created inside a processor specific GPIO library, which is library that 
+ * implements the functions listed in IGPIO.h. After that, each pins properties
+ * can be set and the GPIO_Init function can be called once for every pin that 
+ * is needed.
+ * 
+ * I've also included some generic pin aliases below. If you'd rather not make
+ * a processor specific subclass, you can use these definitions if you like. 
+ * I've combined the port and pin together into a single byte, to be used as
+ * the pinNumber variable in the base class (defined in GPIO.h). The upper 
+ * nibble is the "port" A through N and the lower nibble is the pin 0 through 
+ * 15. Not every processor is going to use 16 pins per port though. So, it is 
+ * up to you to handle this in your processor's implementation.
  * 
  ******************************************************************************/
 
@@ -32,24 +58,48 @@
 /* Any file that includes this header can have access to these objects to use 
 with the GPIO library. Only the GPIO type needs to be external. Each external 
 variable will need a matching declaration and initialization. This will be done 
-in your processor specific GPIO Manager implementation. */
+in your processor specific GPIO_Manager implementation. */
 
 // ----- Declare GPIO pins here. Declare as extern  ----------------------------
 
 extern GPIO led1, led2;
 
 
-// ***** Function Prototypes ***************************************************
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Function Prototypes *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
+/***************************************************************************//**
+ * @brief Set the GPIO driver interface and initialize all of the pins
+ * 
+ * Each pin has to be declared as a global variable. However, only the base
+ * class GPIO needs to be extern. Anything that needs to access these pins
+ * will include this header file which has the extern declaration.
+ */
 void GPIO_Manager_InitAllPins(void);
 
 // ***** Generic Pin Numbers ***************************************************
 
-/* I've create some generic pin aliases for you to use if you don't want to
-make a subclass to define a port. The upper nibble is the "port" A through N
-(I don't use "O" because it looks like "0") and the lower nibble is the pin 
-0 through 15. Not every processor is going to use 16 pins per port though. It 
-is up to you to handle this in your processor's implementation correctly. */
+/* Generic pin aliases. The upper nibble is the "port" A through N and the 
+lower nibble is the pin 0 through 15. The port is also provided separately so 
+you can take the upper nibble and compare to this value if you want: 
+
+led1Pin.pinNumber = GPIO_PORTB_PIN5;
+
+GPIO_MCU1_SetPin(GPIO_MCU1 *self)
+{
+    portNibble = (self->pinNumber) >> 4;
+    pinNibble = (self->pinNumber) & 0x0F;
+
+    switch(portNibble)
+    {
+        case GPIO_PORTA:
+        break;
+    }
+}
+*/
 enum {
     GPIO_PORTA = 0,
     GPIO_PORTB,
@@ -64,8 +114,7 @@ enum {
     GPIO_PORTK,
     GPIO_PORTL,
     GPIO_PORTM,
-    GPIO_PORTN
-};
+    GPIO_PORTN };
 
 enum {
     GPIO_PORTA_PIN0 = 0,
@@ -291,8 +340,6 @@ enum {
     GPIO_PORTN_PIN12,
     GPIO_PORTN_PIN13,
     GPIO_PORTN_PIN14,
-    GPIO_PORTN_PIN15,
-};
-
+    GPIO_PORTN_PIN15 };
 
 #endif  /* GPIO_MANAGER_H */

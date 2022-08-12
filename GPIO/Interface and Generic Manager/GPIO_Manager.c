@@ -10,9 +10,13 @@
  * 
  * @details
  *     I removed the initialization function that was in the GPIO library and 
- * put it here. Code in the GPIO library should only be concerned with pins. 
- * It shouldn't care how the user initializes all their pins. This gives more 
- * flexibility with how we decide to handle pin organization.
+ * put it here. Code in the GPIO library should only be concerned with 
+ * modifying the pins. It shouldn't care how the user initializes all of their 
+ * pins. This gives more flexibility with how we decide to handle pin 
+ * organization.
+ * 
+ * This file is just a suggestion on how to handle initializing your pins.
+ * Use it, or make your own to replace it.
  * 
  ******************************************************************************/
 
@@ -29,22 +33,14 @@
 matching extern declaration in a header file. Only the GPIO variable needs to
 be made extern. Use a memorable name. This is the object you will use for 
 library function calls. */
-//------------------------------------------------------------------------------
 
 GPIO led1, led2;
 
 /* If you have any GPIO sub classes, declare them here */
+// GPIO_MCU1 _led1, _led2
 
-//------------------------------------------------------------------------------
+//******************************************************************************
 
-
-/***************************************************************************//**
- * @brief Initialize all pins
- * 
- * Each pin has to be declared as a global variable. However, only the base
- * class GPIO needs to be extern. Anything that needs to access these pins
- * will include the header file which has the extern declaration.
- */
 void GPIO_Manager_InitAllPins(void)
 {
     /* The function table is declared in your own GPIO implementation header
@@ -53,13 +49,16 @@ void GPIO_Manager_InitAllPins(void)
 
     GPIOInitType init;
 
-    /* Declare any GPIOInitType subclasses here */
+    /* Declare any GPIOInitType subclass variables here */
+    // GPIOInitType_MCU1 _init;
 
     /* Processor specific init properties can be changed for each individual 
     pin before calling the GPIO init function */
+    // _init.alternate = 0;
 
     /* Call your sub class create init type function. This part only needs to 
     be done once */
+    // GPIO_MCU1_CreateInitType(&_init, &init);
 
 // ----- Add your pins --------------------------------------------------
 

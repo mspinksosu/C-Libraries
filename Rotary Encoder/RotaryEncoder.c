@@ -78,8 +78,8 @@ void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debou
     /* If you are using an RC filter to debounce, the debounce period should be
     zero. However, this type of debouncing algorithm requires a non-zero number 
     for its minimum. Using 1 will simply toggle the output every time the input 
-    changes. For the maximum, I limit it to 8-bits. If your rotary encoder needs
-    more than 255 ms to debounce, you've got some serious issues. */
+    changes. For the maximum, I limit it to 8-bits. If you need more than 
+    255 ms to debounce your rotary encoder, you've got some serious issues. */
     if(debouncePeriod == 0)
         self->debouncePeriod = 1;
     else if(debouncePeriod > 255)
@@ -138,7 +138,7 @@ void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh)
     allow us to see the output from the previous state and the current state 
     together. Phase A will be encoded as bit 0, and and phase B as bit 1. 
     So the byte will look like this: 0000baba */
-    self->state = ((self->state << 2) | self->state) & 0x0F;
+    self->state = (self->state << 2) & 0x0C;
 
     /* Update the outputs */
     if(self->phaseAIntegrator == 0)
