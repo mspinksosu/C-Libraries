@@ -7,7 +7,7 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
 - [ ] ADC: Interface and generic manager complete! Needs field testing
   - [x] STM32 implementation finished!
   - [x] STM32 DMA implementation finished! Testing in progress
-  - [ ] Update doxygen
+  - [x] Update doxygen
   - [ ] PIC32 implementation in progress
 - [x] Bitfield: New library! Complete and tested!
 - [x] Buffer: Complete!
@@ -19,7 +19,7 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
   - [x] Update doxygen
 - [ ] GPIO: Redesign!
   - [x] STM32 implementation finished! Testing in progress
-  - [x] Refactored STM32 G0 to get rid of ST library dependancy
+  - [x] Refactored STM32 G0 to get rid of ST library dependancy. Needs re-testing
   - [x] Update doxygen 
   - [ ] PIC32 implementation in progress
 - [ ] I2C: Old PIC32 library. Working. Needs updating
