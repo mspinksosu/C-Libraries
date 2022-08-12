@@ -24,9 +24,9 @@
  * to use the pins can include this header. Now we don't need to deal with any 
  * other files needing to include processor specific headers.
  * 
- * Each external base GPIO object will need a matching initialization in a .c
- * file. This will be done in the GPIO_Manager.c file, or in your own processor
- * specific GPIO_Manager.c file if you choose to make one.
+ * Each external base GPIO object will need a matching declaration in the 
+ * GPIO_Manager.c file, or in your own processor specific GPIO_Manager.c file 
+ * if you choose to make one.
  * 
  * The first step in the intialization process is to set the GPIO driver
  * interface or function table by calling GPIO_SetDriverInterface. This table 
