@@ -33,9 +33,11 @@
  * initialization, any code that deals with the ADC channel can refer to it by
  * name. This will give you the ability to quickly and easily swap physical 
  * hardware to different channels, or use different processors without changing
- * the code in multiple places. In my opinion, setting the GPIO to analog type 
- * should not be done in the ADC channel init section. If we do it here, that 
- * would create a dependency on some GPIO library.
+ * the code in multiple places. 
+ * 
+ * This library should not deal with setting the GPIO to analog type. That
+ * should be done before calling the the ADC channel init function. If we do
+ * that here, it would create a dependency on some GPIO library.
  * 
  * Non-blocking mode is the default mode. If you choose, you can start a sample 
  * by calling ADC_TakeSample and poll the ADC_IsBusy function to know when the 
@@ -124,6 +126,9 @@ void ADC_UseBlockingMode(void);
 
 /***************************************************************************//**
  * @brief Initialize an ADC channel object
+ * 
+ * Setting the GPIO to analog type should not be done here. It should be done
+ * before calling this function.
  * 
  * @param self  pointer to the ADC channel object you are using
  * 

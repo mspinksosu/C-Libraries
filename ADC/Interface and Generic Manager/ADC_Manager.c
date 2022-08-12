@@ -10,7 +10,14 @@
  * @file ADC_Manager.c
  * 
  * @details
- *      TODO
+ *      A simple implementation of the ADC_Manager library that handles taking
+ * sample for you. It manages a linked list, then goes around the list one by 
+ * one calling the ADC_TakeSample function.
+ * 
+ * There will be one ADCChannel and one ADCChannelEntry for each channel used. 
+ * Only the ADCChannel needs to be made extern. Any file that needs access to
+ * the ADC channel's value can use the ADCChannel by including the ADC_Manager
+ * header file.
  * 
  ******************************************************************************/
 
@@ -37,9 +44,7 @@ static bool adcManagerEnabled;
 /* Declare ADC channels and entries starting here. The entry variable is only 
 for use by the manager. Each ADCChannel object should have a matching extern 
 declaration in a header file. Use a memorable name. You will call ADC_Get8bit 
-or ADC_Get16Bit with this ADCChannel object to get its value. Also, don't 
-forget to set the corresponding GPIO pin to analog. */
-//------------------------------------------------------------------------------
+or ADC_Get16Bit with this ADCChannel object to get its value. */
 
 ADCChannel analogInput1, analogInput2;
 ADCChannelEntry entry1, entry2;
