@@ -7,13 +7,24 @@
  * @date 2/4/22    Changed to interface. Added Doxygen
  * @date 3/3/22    Redesigned to use function table. Also added new parameters
  * @date 6/13/22   Changed compute baud rate function and flow control
- * @date 6/25/22   Changed received callback to include a function pointer
  * @date 7/31/22   Added handler for pending transmit interrupt
  * 
  * @file IUART.h
  * 
  * @details
  *      TODO 
+ * 
+ * Example Code:
+ *      UART myUART, anotherUART;
+ *      UART_Create(&myUART, &UART1_FunctionTable);
+ *      UART_SetToDefaultParams(&myUART);
+ *      uint32_t baud = UART_ComputeBRGValue(&myUART, 115200, 16000000UL);
+ *      UART_SetBRGValue(&myUART, baud);
+ *      UART_Init(&myUART);
+ *      UART_Create(&anotherUART, &UART2FunctionTable);
+ *      baud = UART_ComputeBRGValue(&anotherUART, 19200, 16000000UL);
+ *      UART_SetBRGValue(&anotherUART, baud);
+ *      UART_Init(&anotherUART);
  * 
  * ****************************************************************************/
 
