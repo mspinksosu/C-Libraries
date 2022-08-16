@@ -67,12 +67,11 @@ typedef void (*TimerCallbackFunc)(Timer *context);
 
 struct Timer
 {
+    TimerCallbackFunc timerCallbackFunc;
+
     uint16_t period;
     uint16_t count;
     
-    TimerCallbackFunc timerCallbackFunc;
-    
-    // bit field
     union {
         struct {
             unsigned start      :1;

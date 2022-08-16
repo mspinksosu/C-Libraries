@@ -43,7 +43,7 @@
  * The number of channels is given by a define statement near the top of this
  * file. This value must be altered to match the number of channels declared in
  * the array. The DMA controller requires that the channels be sorted by the 
- * channel number. During the intialization process, the list is sorted
+ * channel number. During the initialization process, the list is sorted
  * everytime a new channel is added.
  * 
  * More channel objects can still be added to the list from outside this file,

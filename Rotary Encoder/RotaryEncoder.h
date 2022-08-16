@@ -70,6 +70,9 @@ typedef void (*RECallbackFunc)(RotaryEncoder *context);
 
 struct RotaryEncoderTag
 {
+    RECallbackFunc clockwiseEventCallback;
+    RECallbackFunc counterClockwiseEventCallback;
+    
     uint8_t typeMask;
     uint8_t debouncePeriod;
     uint8_t phaseAIntegrator;
@@ -86,9 +89,6 @@ struct RotaryEncoderTag
         };
         uint8_t all;
     } flags;
-
-    RECallbackFunc clockwiseEventCallback;
-    RECallbackFunc counterClockwiseEventCallback;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

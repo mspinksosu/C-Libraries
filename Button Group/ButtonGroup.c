@@ -8,7 +8,7 @@
  * @file ButtonGroup.c
  * 
  * @details
- *      This version of the debounce code is based on an alogrithm that has
+ *      This version of the debounce code is based on an algorithm that has
  * been around for many years. It uses a very simple counter to act as an 
  * integrator. When the integrator reaches either 0 or the maximum value, the 
  * output state is changed.

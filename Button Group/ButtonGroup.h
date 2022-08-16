@@ -99,7 +99,7 @@ typedef struct ButtonGroupTag
  * debouncePeriod  The number of ticks to debounce the button press and release
  * 
  * integrator  A counter which changes the output variable when it saturates.
- *             Basically, it smoothes the inputs.
+ *             Basically, it smooths the inputs.
  * 
  * input  The combined input of all 8 buttons
  * 

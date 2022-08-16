@@ -15,7 +15,7 @@
  * 
  * A base class must contain at minimum, a pointer to the interface and a void 
  * pointer called "instance". In this particular case, the MCU will never have
- * more than one GPIO interface, so I've ommitted the pointer to the interface.
+ * more than one GPIO interface, so I've omitted the pointer to the interface.
  * Sub class objects need their own variables which are not in the base class. 
  * This is why the void pointer is used. After the base and sub class are 
  * linked, the void pointer will be set to point to the sub class.
@@ -45,7 +45,7 @@
  * the appropriate sub class function and give it the sub class object. All you 
  * would need is the base class GPIO variable and IGPIO.h Doing it this way 
  * will hide the sub class away and removes the need to include those files, 
- * which would otherwise create a processor specific dependancy.
+ * which would otherwise create a processor specific dependency.
  * 
  * In the example below, there are two init type objects. These do not have to
  * be kept in memory. They can be declared as local variables and used for each
@@ -164,7 +164,7 @@ typedef struct GPIOInitTypeTag
  * need to be a pointer to the interface in each GPIO object. For this library
  * the interface will be static.
  * 
- * @param thisInterface  the function table you want to use
+ * @param thisInterface  pointer to the function table you want to use
  */
 void GPIO_DriverSetInterface(GPIOInterface *thisInterface);
 
@@ -225,7 +225,7 @@ void GPIO_SetPointerToAnalogValue(GPIO *self, uint16_t *ptr);
  * 
  * @param self  pointer to the GPIO you are using
  * 
- * @param params  pointer to the GPIOInit type you are using
+ * @param params  pointer to the GPIOInitType that provides the init parameters
  */
 void GPIO_InitPin(GPIO *self, GPIOInitType *params);
 
@@ -286,7 +286,7 @@ bool GPIO_ReadBool(GPIO *self);
 /***************************************************************************//**
  * @brief Set the pin type
  * 
- * Set the pin's asscociated registers
+ * Set the pin's associated registers
  * 
  * @param self  pointer to the GPIO you are using
  * 
@@ -298,7 +298,7 @@ void GPIO_SetType(GPIO *self, GPIOType type);
 /***************************************************************************//**
  * @brief Get the type of pin
  * 
- * Read the pin's asscociated registers and determine the pin type
+ * Read the pin's associated registers and determine the pin type
  * 
  * @param self  pointer to the GPIO you are using
  * 
@@ -310,7 +310,7 @@ GPIOType GPIO_GetType(GPIO *self);
 /***************************************************************************//**
  * @brief Set the pull up resistors
  * 
- * Set the pin's asscociated registers
+ * Set the pin's associated registers
  * 
  * @param self  pointer to the GPIO you are using
  * 

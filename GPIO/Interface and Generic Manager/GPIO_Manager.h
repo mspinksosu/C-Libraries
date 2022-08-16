@@ -28,7 +28,7 @@
  * GPIO_Manager.c file, or in your own processor specific GPIO_Manager.c file 
  * if you choose to make one.
  * 
- * The first step in the intialization process is to set the GPIO driver
+ * The first step in the initialization process is to set the GPIO driver
  * interface or function table by calling GPIO_SetDriverInterface. This table 
  * is created inside a processor specific GPIO library, which is library that 
  * implements the functions listed in IGPIO.h. After that, each pins properties

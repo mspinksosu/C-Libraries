@@ -91,16 +91,20 @@ typedef void (*PatternCallbackFunc)(Pattern *patternContext);
 
 struct Pattern
 {
+    PatternCallbackFunc patternFinishedCallback;
+    void (*outputChangedCallback)(uint8_t outputState);
+
     PatternState *patternArray;
-    uint8_t numOfStates;
     PatternState *nextPatternArray;
-    uint8_t nextNumOfStates;
 
     uint16_t tickMs;
     uint16_t count;
     uint16_t period;
     uint8_t index;
     uint8_t output;
+
+    uint8_t numOfStates;
+    uint8_t nextNumOfStates;
 
     union {
         struct {
@@ -113,9 +117,6 @@ struct Pattern
         };
         uint8_t all;
     } flags;
-
-    PatternCallbackFunc patternFinishedCallback;
-    void (*outputChangedCallback)(uint8_t outputState);
 };
 
 /** 

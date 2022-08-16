@@ -112,6 +112,8 @@ typedef void (*ButtonCallbackFunc)(Button *context);
 struct ButtonTag
 {
     void *instance;
+    ButtonCallbackFunc shortPressCallback;
+    ButtonCallbackFunc longPressCallback;
     ButtonState state;
     ButtonType type;
     ButtonLength length;
@@ -119,7 +121,6 @@ struct ButtonTag
     uint16_t longPressCounter;
     uint16_t tickMs;
     
-    // bit field for button events
     union {
         struct {
             unsigned shortPress         :1;
@@ -130,9 +131,6 @@ struct ButtonTag
         };
         uint8_t all;
     } flags;
-
-    ButtonCallbackFunc shortPressCallback;
-    ButtonCallbackFunc longPressCallback;
 };
 
 typedef struct AnalogButtonTag

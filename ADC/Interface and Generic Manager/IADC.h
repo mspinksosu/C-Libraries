@@ -107,7 +107,7 @@ void ADC_InitPeripheral(void);
  * @brief Initialize a timer to allow for non-blocking use (default)
  * 
  * Non-blocking will be set by default. Using non-blocking mode will require 
- * you to call the ADC_Tick function periodically in order to upate the timer. 
+ * you to call the ADC_Tick function periodically in order to update the timer. 
  * The timer will check ongoing conversions and perform a callback if needed.
  * Otherwise, you can always just poll the ADC_IsBusy function.
  * 

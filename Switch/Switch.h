@@ -69,14 +69,13 @@ typedef enum DebounceTag
 
 typedef struct SwitchTag
 {
+    uint16_t debouncePeriod;
+    uint16_t debounceCounter;
+
     SwitchState outputState;
     SwitchType type;
     SwitchDebounceState debounceState;
 
-    uint16_t debouncePeriod;
-    uint16_t debounceCounter;
-
-    // bitfield for events
     union {
         struct {
             unsigned switchChangedEvent :1;
