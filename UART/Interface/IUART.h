@@ -12,12 +12,49 @@
  * @file IUART.h
  * 
  * @details
- *      TODO 
+ *      An interface for a UART library to be used with different processors.
+ * There are two types of objects. One that holds the properties needed for the
+ * UART to operate and the other other that holds the parameters needed to
+ * initialize the UART object called UARTInitType.
+ * 
+ * The UART object contains a pointer to the UARTInterface object. This
+ * UARTInterface or function table tells the interface what functions to call.
+ * Each of the UART implementations will have its own function table. When the
+ * function table is created, its members (which are function pointers) are
+ * initialized to the functions in that implementation. By doing this, each 
+ * UART peripheral can have its own function table, but the function calls
+ * don't change. Therefore, we can easily swap UART periperhals around. This 
+ * also allows us to name our UART's. For example "bluetoothUART" could be 
+ * UART1 on one processor, but UART3 on a different processor. The code that 
+ * uses "bluetoothUART" never has to change though.
+ * 
+ * Declare your UARTInterface object as extern in your UART implementation's
+ * header file. This is so whatever file does the initialization can set the
+ * function table. Then, in your implementation's .c file declare and 
+ * initialize your UARTInterface object. Set each of its members to the 
+ * functions in your implementation.
+ * 
+ * Now you are ready to create a UART object. First, declare a UART object, 
+ * then call the UART_Create function and pass it a reference to that 
+ * UARTInterface function table you made in the previous step.
+ * 
+ * Next, declare a UARTInitType object, then call either UART_SetInitTypeParams
+ * or UART_SetInitTypeToDefaultParams functions to configure the settings for 
+ * your UART. The calculation for the UART baud rate will vary depending on 
+ * your processor. So instead of having the init function always compute the 
+ * baud rate, I decided to have a separate function called "ComputeBRGValue". 
+ * This function will return the value to be loaded into the baud rate 
+ * generator's registers. This gives more flexibility with how the math is 
+ * handled (or not handled). How you choose to implement the ComputeBRGValue 
+ * function is up to you, but it should still be implemented even if it isn't 
+ * used. So, get your BRG value either by calling the compute function or 
+ * hardcoding a precomputed value, and then give it to the UART_SetBRGValue 
+ * function. After this, you are ready to call UART_Init.
  * 
  * Example Code:
  *      UART myUART, anotherUART;
  *      UART_Create(&myUART, &UART1_FunctionTable);
- *      UART_SetToDefaultParams(&myUART);
+ *      UART_SetInitTypeToDefaultParams(&myUART);
  *      uint32_t baud = UART_ComputeBRGValue(&myUART, 115200, 16000000UL);
  *      UART_SetBRGValue(&myUART, baud);
  *      UART_Init(&myUART);
@@ -70,7 +107,7 @@ typedef struct UARTInterfaceTag
     interface object for your class that will have these function signatures.
     Set each of your functions equal to one of these pointers */
     uint32_t (*UART_ComputeBRGValue)(uint32_t, uint32_t);
-    void (*UART_Init)(void *instance);
+    void (*UART_Init)(UARTInitType *params);
     void (*UART_ReceivedDataEvent)(void);
     uint8_t (*UART_GetReceivedByte)(void);
     bool (*UART_IsReceiveRegisterFull)(void);
@@ -91,7 +128,6 @@ typedef struct UARTInterfaceTag
 typedef struct UARTTag
 {
     UARTInterface *interface;
-    /* Add any more necessary base class members here */
 } UART;
 
 typedef struct UARTInitTypeTag

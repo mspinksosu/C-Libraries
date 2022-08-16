@@ -13,39 +13,49 @@
  * pin, called GPIO and the other that holds the parameters needed to
  * initialize the pin called GPIOInitType.
  * 
- * A base class must contain at minimum, a pointer to the interface and a void 
- * pointer called "instance". In this particular case, the MCU will never have
- * more than one GPIO interface, so I've omitted the pointer to the interface.
- * Sub class objects need their own variables which are not in the base class. 
- * This is why the void pointer is used. After the base and sub class are 
- * linked, the void pointer will be set to point to the sub class.
+ * To make a GPIO object, you will need to make a base class GPIO object, and
+ * a subclass GPIO object. You will also need a base class GPIOInitType object
+ * and possibly a subclass GPIOInitType object. The base class will usually 
+ * contain at minimum, a pointer to the interface and a void pointer called 
+ * "instance". But in this particular case, the MCU will never have more than 
+ * one GPIO interface, so I've omitted the pointer to the interface. Sub class 
+ * objects need their own variables which are not in the base class. This is 
+ * why the void pointer is used. After the base and sub classes are linked, the 
+ * void pointer will be set to point to the sub class.
  * 
  * The GPIOInterface or function table tells the interface what functions to 
- * call. When we create the function table, we are initializing its members 
- * (which are function pointers) the our local functions. The function pointers
- * listed in the table will use void pointers for the base class objects. In
- * the implementation, the functions will use the sub class objects. Setting 
- * the functions in the implementation to the function pointers in the table 
- * will require typecasting.
+ * call. Declare your GPIOInterface object as extern in your GPIO 
+ * implementation's header file. Then in your implementation's .c file, declare
+ * and initialize your GPIOInterface object. Set each of its members to the
+ * functions in your implementation. Typecasting will be required. The function
+ * pointers in the table will be using void pointers in place of the base class
+ * types. In your implementation, your functions will be using your own sub 
+ * class types.
  * 
- * After creating a sub class, it needs to be connected to the base class by
- * using the Create functions. By using a void pointer to point to an instance 
+ * A sub class will contain at minimum, a pointer to the base class named
+ * "super". After creating a sub class, the base class will be connected to 
+ * it by using the base class's Create function. These functions will set the 
+ * void pointers for you. By using a void pointer to point to an instance 
  * of the subclass object, we remove the need for the user to have to do some 
- * ugly typecasting on every single function call. I think the best way to do 
- * this step is to call this function from a sub class create function. Make a 
- * function in your implementation called "create" that uses your sub class 
- * type and the base class type as arguments. This function will not be listed
- * in the function table. From within that function, call the base class create 
- * function to finish setting the void pointer. The reason I prefer this method 
- * is it makes the process a little more type-safe by having the base class
- * and sub class as arguments in the function signature.
+ * ugly typecasting on every single function call. You will also need to set
+ * your pointer to the base class ("super") to point to whatever base class
+ * object you created.
+ * 
+ * I think the best way to do the previous step is to call the Create function 
+ * from a sub class create function. Make your own implementation of the Create 
+ * function that uses your sub class type and the base class type as arguments. 
+ * This function will not be listed in the function table. From within that 
+ * function, set your pointer to the base class ("super"), and then call the 
+ * base class create function to finish setting the void pointer. The reason I 
+ * prefer this method is it makes the process a little more type-safe by having 
+ * the base class and sub class as arguments in the function signature.
  * 
  * If you need access to the pins from anywhere besides where the pins were 
- * declared, you can make the base type external. The function table will call 
+ * declared, you can make the base class external. The function table will call 
  * the appropriate sub class function and give it the sub class object. All you 
- * would need is the base class GPIO variable and IGPIO.h Doing it this way 
- * will hide the sub class away and removes the need to include those files, 
- * which would otherwise create a processor specific dependency.
+ * would need is the base class GPIO variable and IGPIO.h. Doing it this way 
+ * hides the sub class away and removes the need to include those files, which 
+ * would otherwise create a processor specific dependency.
  * 
  * In the example below, there are two init type objects. These do not have to
  * be kept in memory. They can be declared as local variables and used for each
@@ -96,7 +106,6 @@ typedef struct GPIOInterfaceTag
     GPIOType (*GPIO_GetType)(void *instance);
     void (*GPIO_SetPull)(void *instance, GPIOPull);
     GPIOPull (*GPIO_GetPull)(void *instance);
-    // Add more functions below
 } GPIOInterface;
 
 typedef enum GPIOTypeTag

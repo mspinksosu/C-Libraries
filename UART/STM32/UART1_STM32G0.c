@@ -60,7 +60,7 @@ static const uint8_t preLUT[16] = {0,2,4,6,8,10,12,16,32,64,128,256};
 /* Assign functions to the interface */
 UARTInterface UART1_FunctionTable = {
     .UART_ComputeBRGValue = UART1_ComputeBRGValue,
-    .UART_Init = (void (*)(void *))UART1_Init,
+    .UART_Init = UART1_Init,
     .UART_ReceivedDataEvent = UART1_ReceivedDataEvent,
     .UART_GetReceivedByte = UART1_GetReceivedByte,
     .UART_IsReceiveRegisterFull = UART1_IsReceiveRegisterFull,
