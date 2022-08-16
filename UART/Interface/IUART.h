@@ -46,14 +46,14 @@ typedef enum UARTStopBitsTag
     UART_ONE_P = 0,
     UART_HALF_P,
     UART_ONE_PLUS_HALF_P,
-    UART_TWO_P,
+    UART_TWO_P
 } UARTStopBits;
 
 typedef enum UARTParityTag
 {
     UART_NO_PARITY = 0,
     UART_EVEN_PARITY,
-    UART_ODD_PARITY,
+    UART_ODD_PARITY
 } UARTParity;
 
 typedef enum UARTFlowControlTag
@@ -61,7 +61,7 @@ typedef enum UARTFlowControlTag
     UART_FLOW_NONE = 0,
     UART_FLOW_HARDWARE,
     UART_FLOW_CALLBACKS, // User will implement functions for controlling pins
-    UART_FLOW_SOFTWARE,
+    UART_FLOW_SOFTWARE
 } UARTFlowControl;
 
 typedef struct UARTInterfaceTag
@@ -99,8 +99,8 @@ typedef struct UARTInitTypeTag
     uint32_t BRGValue;
     UARTStopBits stopBits;
     UARTParity parity;
-    bool use9Bit; 
     UARTFlowControl flowControl;
+    bool use9Bit;
     bool useTxInterrupt;
     bool useRxInterrupt;
 } UARTInitType;
@@ -153,28 +153,38 @@ typedef struct UARTInitTypeTag
  * interface and also assign them to one of the function pointers in the 
  * UARTInterface object.
  * 
- * @param self  
- * @param interface 
+ * @param self  pointer to the UART you are using
+ * 
+ * @param interface  pointer to the function table that your UART uses
  */
 void UART_Create(UART *self, UARTInterface *interface);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Set the default values of the UARTInitType object
  * 
- * @param params 
+ * 8 data bits, 1 stop bit, no parity, no flow control, no interrupts
+ * 
+ * @param params  pointer to the UARTInitType that you are using
  */
 void UART_SetInitTypeToDefaultParams(UARTInitType *params);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Change the initial parameters of your UARTInitType object
  * 
- * @param params 
- * @param numStopBits 
- * @param parityType 
- * @param enable9Bit 
- * @param flowControl 
- * @param useRxInterrupt 
- * @param useTxInterrupt 
+ * If UART_FLOW_CALLBACKS is chosen for flow control, you must implement
+ * functions to set the RTS and CTS pins, and setup callbacks functions by
+ * using the UART_SetRTSPinFunc and UART_SetIsCTSPinLowFunc functions. If you
+ * using interrupts, you will want to setup callback functions using the 
+ * SetReceivedDataCallback and SetTransmitFinishedCallback functions.
+ * 
+ * @param params  pointer to the UARTInitType that you are going to use
+ * @param numStopBits UART_ONE_P,UART_HALF_P,UART_ONE_PLUS_HALF_P,UART_TWO_P
+ * @param parityType UART_NO_PARITY, UART_EVEN_PARITY, UART_ODD_PARITY
+ * @param enable9Bit true or false
+ * @param flowControl UART_FLOW_NONE,UART_FLOW_HARDWARE,UART_FLOW_CALLBACKS,
+ *                    UART_FLOW_SOFTWARE
+ * @param useRxInterrupt true or false
+ * @param useTxInterrupt true or false
  */
 void UART_SetInitTypeParams(UARTInitType *params, UARTStopBits numStopBits, UARTParity parityType, 
     bool enable9Bit, UARTFlowControl flowControl, bool useRxInterrupt, bool useTxInterrupt);
@@ -183,10 +193,13 @@ void UART_SetInitTypeParams(UARTInitType *params, UARTStopBits numStopBits, UART
  * @brief Set the value for the baud rate generator
  * 
  * This is the value that gets loaded directly to the register, NOT the baud 
- * rate.
+ * rate. This function will take your BRG value and apply it to the
+ * UARTInitType object that you give it. The value will vary depending on
+ * your processor.
  * 
- * @param params 
- * @param BRGValue 
+ * @param params  pointer to the UARTInitType that you are using
+ * 
+ * @param BRGValue  the baud rate generator raw value (not the baud rate)
  */
 void UART_SetInitBRGValue(UARTInitType *params, uint32_t BRGValue);
 
@@ -197,139 +210,237 @@ void UART_SetInitBRGValue(UARTInitType *params, uint32_t BRGValue);
 ////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
- * @brief 
+ * @brief Return a raw baud rate generator value
  * 
- * @param self  
- * @param desiredBaudRate  
- * @param clkInHz  
- * @return uint32_t  
+ * Computes the baud rate generator value that will loaded into the register
+ * given the desired baud rate and the clock frequency in Hertz. You may then
+ * take this value and call SetInitBRGValue.
+ * 
+ * @param self  pointer to the UART you are using
+ * 
+ * @param desiredBaudRate  the baud rate you want
+ * 
+ * @param clkInHz  the frequency of your UART peripherals clock in Hertz
+ * 
+ * @return uint32_t  the baud rate generator value
  */
 uint32_t UART_ComputeBRGValue(UART *self, uint32_t desiredBaudRate, uint32_t clkInHz);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Initialize the UART
  * 
- * @param self 
- * @param params 
+ * Use the parameters provided to set the necessary registers for your MCU.
+ * 
+ * @param self  pointer to the UART you are using
+ * 
+ * @param params  pointer to the UARTInitType that you are using
  */
 void UART_Init(UART *self, UARTInitType *params);
 
 /***************************************************************************//**
- * @brief 
+ * @brief A byte has been received. Set RTS pin, then call Rx callback.
  * 
- * @param self 
+ * This event is called whenever a byte is shifted into the received data
+ * register. If you are using interrupts, this will be the function you call
+ * wherever the receive interrupt is at. The interrupt flag should not be 
+ * cleared at this point. This function will set the RTS flow control pin high,
+ * then call the receive data callback function pointer.
+ * 
+ * @param self  pointer to the UART you are using
  */
 void UART_ReceivedDataEvent(UART *self);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Get a byte, clear the Rx interrupt flag, and clear the RTS pin.
  * 
- * @param self 
- * @return uint8_t 
+ * Typically, the Rx interrupt flag is cleared automatically when the data 
+ * register is read. Set the RTS pin low to signal that we are ready to receive
+ * more data.
+ * 
+ * @param self  pointer to the UART you are using
+ * 
+ * @return uint8_t  the data from the Rx register
  */
 uint8_t UART_GetReceivedByte(UART *self);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Check if received data is available
  * 
- * @param self 
- * @return true 
+ * This function will return true whenever a byte is shifted into the received
+ * data register. If you are not using interrupts, you can poll this function. 
+ * Then when data is ready, call the GetReceivedByte function.
+ * 
+ * @param self  pointer to the UART you are using
+ * 
+ * @return true if there is data in the receive register
  */
 bool UART_IsReceiveRegisterFull(UART *self);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Enable the UART receiver
  * 
- * @param self 
+ * If you are using flow control, you will want to set the RTS pin low to 
+ * signal that you are ready to receive data.
+ * 
+ * @param self  pointer to the UART you are using
  */
 void UART_ReceiveEnable(UART *self);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Disable the UART receiver
  * 
- * @param self 
+ * If you are using flow control, you will want to set the RTS pin high to 
+ * signal that you are not ready to receive data.
+ * 
+ * @param self  pointer to the UART you are using
  */
 void UART_ReceiveDisable(UART *self);
 
 /***************************************************************************//**
- * @brief 
+ * @brief A byte has been transmitted. Disable Tx interrupt, call Tx callback
  * 
- * @param self 
+ * This event is called whenever a byte is finished transmitting. This would be
+ * equivalent to a "Tx register empty" event. If you are using interrupts, this
+ * will be the function you call wherever your transmit register empty 
+ * interrupt is at. Because we don't know when the full payload is finished, we
+ * must disable the Tx interrupt after every byte. Then call the transmit
+ * finished callback function pointer. In addition, you should check to make
+ * sure there isn't already a call to this function pending. If there is, you
+ * need to set a flag and return. The easiest way to do this is to use a static 
+ * variable that is set whenever this function is entered. This flag will be 
+ * checked by the PendingEventHandler function further below. 
+ * 
+ * @param self  pointer to the UART you are using
  */
 void UART_TransmitFinishedEvent(UART *self);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Check CTS pin, place data in the Tx register, send
  * 
- * @param self 
- * @param dataToSend 
+ * If the flow control is being used and the CTS pin is low, place the data in
+ * transmit register. If interrupts are being used, turn on the Tx interrupt.
+ * 
+ * @param self  pointer to the UART you are using
+ * 
+ * @param dataToSend  the data you want to send out
  */
 void UART_TransmitByte(UART *self, uint8_t dataToSend);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Check if the transmit register is empty and CTS is low
  * 
- * @param self 
- * @return true 
+ * This function will return true whenever the contents of the Tx register have
+ * been shifted out. If you are not using interrupts, you can poll this
+ * function to know when the previous transmission is finished. Then when the 
+ * register is empty, call TransmitByte. If you are using flow control, it is a 
+ * good idea to check the CTS pin as well.
+ * 
+ * @param self  pointer to the UART you are using
+ * 
+ * @return true if the transmit register is empty
  */
 bool UART_IsTransmitRegisterEmpty(UART *self);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Enable the UART transmitter
  * 
- * @param self 
+ * @param self  pointer to the UART you are using
  */
 void UART_TransmitEnable(UART *self);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Disable the UART transmitter
  * 
- * @param self 
+ * @param self  pointer to the UART you are using
  */
 void UART_TransmitDisable(UART *self);
 
 /***************************************************************************//**
- * @brief Checks for pending transmit finished events
+ * @brief Checks for pending events (transmit finished)
  * 
  * Because the transmit finished callback is called within the interrupt, if
  * the user wants to transmit another byte, the transmit finished interrupt
  * will almost certainly fire before the current callback is done. This can
- * lead to multiple recursive function calls. Call this function in a loop 
- * continously and it will check for a pending interrupt for you. This will
- * let the stack unwind. Note that this is really only an issue if you are 
- * using interrupts to transmit.
+ * lead to multiple recursive function calls. You will need to have a flag of 
+ * some kind set whenever the TransmitFinishedEvent function is entered. If 
+ * another Tx interrupt is called then set a pending interrupt flag. Then, call
+ * this function in a loop continuously and it will check for a pending 
+ * interrupt for you. This will let the stack unwind. Note that this is really 
+ * only an issue if you are using interrupts to transmit.
+ * 
+ * @param self  pointer to the UART you are using
  */
 void UART_PendingEventHandler(UART *self);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Set a function to be called whenever the transmit event happens
  * 
- * @param self 
- * @param Function 
+ * This function pointer is called from within the TransmitFinishedEvent
+ * function, which is your "transmit register not empty" interrupt. Your 
+ * function should follow the format listed below.
+ * 
+ * @param self  pointer to the UART you are using
+ * 
+ * @param Function  format: void SomeFunction(void)
  */
 void UART_SetTransmitFinishedCallback(UART *self, void (*Function)(void));
 
 /***************************************************************************//**
- * @brief 
+ * @brief Set a function to be called whenever a received data event happens
  * 
- * @param self 
- * @param Function 
+ * This callback function uses another function pointer as its argument. Copy 
+ * the format listed below to create your function to be used with this 
+ * callback. When your function is called, you will have a pointer to another
+ * function passed to you. This function pointer "CallToGetData" has a uint8_t
+ * return type. When you call it, you will be getting the actual data from the
+ * UART. The reason I give you a function to call instead of the data itself, 
+ * is because we don't want to mess up any flow control or interrupt flags in 
+ * the UART before the user gets the actual data. Typically, the receive 
+ * interrupt flag is cleared when the data is read out. So it's a simple method
+ * of ensure that the data stays in the UART until the user calls for it. To
+ * issue the callback in your implementation, you will typically give it a
+ * reference to the GetReceivedByte function.
+ * 
+ * void MyFunction(uint8_t (*CallToGetData)void) {
+ *      uint8_t data = CallToGetData();
+ * }
+ * 
+ * // In the implementation:
+ * void UART1_ReceivedDataEvent(void) {
+ *      if(ReceivedDataCallbackPtr != NULL)
+ *          ReceivedDataCallbackPtr(UART1_GetReceivedByte)
+ * }
+ * 
+ * @param self  pointer to the UART you are using
+ * 
+ * @param Function  format: void SomeFunction(uint8_t (*CallToGetData)(void))
  */
 void UART_SetReceivedDataCallback(UART *self, void (*Function)(uint8_t (*CallToGetData)(void)));
 
 /***************************************************************************//**
- * @brief 
+ * @brief Set a function to check the CTS pin for the UART library
  * 
- * @param self 
- * @param Function 
+ * If the CTS pin is asserted (low) it means we are okay to send data to the 
+ * other device. Your function should follow the format listed below. Your 
+ * function should return true if the CTS pin is low
+ * 
+ * @param self  pointer to the UART you are using
+ * 
+ * @param Function  format: bool SomeFunction(void) // return true if CTS low
  */
 void UART_SetIsCTSPinLowFunc(UART *self, bool (*Function)(void));
 
 /***************************************************************************//**
- * @brief 
+ * @brief Set a function to allow the UART library to control the RTS pin
  * 
- * @param self 
- * @param Function 
+ * The RTS pin is asserted (low) whenever we are ready to receive data and
+ * deasserted (high) whenever we are not ready to receive data. Your function 
+ * should follow the format listed below. If the argument passed in is true, 
+ * set the RTS pin high.
+ * 
+ * @param self  pointer to the UART you are using
+ * 
+ * @param Function  format: void SomeFunction(bool) // set pin high if true
  */
 void UART_SetRTSPinFunc(UART *self, void (*Function)(bool setPinHigh));
 

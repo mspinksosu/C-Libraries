@@ -5,7 +5,6 @@
  * 
  * @date 3/12/22   Original creation
  * @date 6/13/22   Changed compute baud rate function to match interface
- * @date 6/19/22    9-bit, parity, and Tx interrupt options
  * 
  * @file UART1_STM32G0.c
  * 

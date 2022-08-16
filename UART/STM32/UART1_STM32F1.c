@@ -5,7 +5,6 @@
  * 
  * @date 3/12/22    Original creation (G0 implementation)
  * @date 6/13/22    Ported settings for F1
- * @date 6/19/22    9-bit, parity, and Tx interrupt options
  * @date 6/25/22    Updated receive callback function
  * @date 7/31/22    Added checks and handler for recursive function calls
  * 
@@ -272,6 +271,12 @@ bool UART1_IsReceiveRegisterFull(void)
 void UART1_ReceiveEnable(void)
 {
     UART1_ADDR->CR1 |= USART_CR1_RE;
+
+    /* RTS is asserted (low) whenever we are ready to receive data. */
+    if(flowControl == UART_FLOW_CALLBACKS && SetRTSPin != NULL)
+    {
+        SetRTSPin(false); // set low
+    }
 }
 
 // *****************************************************************************
@@ -279,6 +284,12 @@ void UART1_ReceiveEnable(void)
 void UART1_ReceiveDisable(void)
 {
     UART1_ADDR->CR1 &= ~USART_CR1_RE;
+
+    /* RTS is deasserted (high) whenever we are not ready to receive data. */
+    if(flowControl == UART_FLOW_CALLBACKS && SetRTSPin != NULL)
+    {
+        SetRTSPin(true); // set high
+    }
 }
 
 // *****************************************************************************

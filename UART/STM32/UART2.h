@@ -18,7 +18,7 @@
  * as well. From there, you will set each one of its pointers to one of the 
  * functions listed here.
  * 
- * Whichever file does the initalization for this UART will need to include 
+ * Whichever file does the initialization for this UART will need to include 
  * this header file to gain access to the function table. The implementation 
  * can vary across different processors. All that matters is that the functions
  * listed in the table point to the correct functions for your implementation.
