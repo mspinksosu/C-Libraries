@@ -13,21 +13,6 @@
  *      A basic 8-bit ring buffer. To create a buffer, the minimum you will 
  * need is a Buffer object, an array pointer, and the size of the array.
  * 
- *      This library lets you control the size of your ring buffer as well as 
- * the way the buffer handles overflows. Multiple functions are provided to get 
- * the status of the buffer. For each function, you will pass the buffer that 
- * you wish to perform the operation on.
- * 
- *      There are two initializations: One has a boolean which will allow data 
- * to be overwritten when placing data in the buffer. The default setting is 
- * false. 
- * 
- *      There is a buffer overflow callback function. The function you create
- * for the callback must follow the prototype listed in Buffer.h. If overflow 
- * is about to happen and you have overwrite disabled, you will receive a 
- * callback and a boolean notification. If you don't clear the notification, it 
- * will be cleared for you when there is space in the buffer.
- * 
  ******************************************************************************/
 
 #include "Buffer.h"
