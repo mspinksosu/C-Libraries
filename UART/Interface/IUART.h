@@ -24,7 +24,7 @@
  * initialized to the functions in that implementation. By doing this, each 
  * UART peripheral can have its own function table, but the function calls
  * don't change. Therefore, we can easily swap UART periperhals around. This 
- * also allows us to name our UART's. For example "bluetoothUART" could be 
+ * also allows us to name our UARTs. For example "bluetoothUART" could be 
  * UART1 on one processor, but UART3 on a different processor. The code that 
  * uses "bluetoothUART" never has to change though.
  * 
@@ -41,7 +41,7 @@
  * Next, declare a UARTInitType object, then call either UART_SetInitTypeParams
  * or UART_SetInitTypeToDefaultParams functions to configure the settings for 
  * your UART. The calculation for the UART baud rate will vary depending on 
- * your processor. So instead of having the init function always compute the 
+ * your processor. Instead of having the init function always compute the 
  * baud rate, I decided to have a separate function called "ComputeBRGValue". 
  * This function will return the value to be loaded into the baud rate 
  * generator's registers. This gives more flexibility with how the math is 

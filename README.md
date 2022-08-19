@@ -35,7 +35,7 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
     - [x] Added options for flow control and interrupts
     - [x] STM32 F1 implementation tested and working!
     - [ ] PIC16 implementation redesign for new interface
-    - [ ] Update doxygen
+    - [x] Update doxygen
 
 ---
 ### Introduction

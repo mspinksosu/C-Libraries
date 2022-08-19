@@ -12,7 +12,10 @@
  * @file IUART.c
  * 
  * @details
- *      TODO details
+ *      The counterpart for the UART interface library. The create function 
+ * sets up the interface. The functions in the interface sections use this 
+ * interface object in order to determine which function implementation to 
+ * call.
  * 
  ******************************************************************************/
 

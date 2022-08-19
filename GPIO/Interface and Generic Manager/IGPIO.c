@@ -9,10 +9,11 @@
  * 
  * @details
  *      The counterpart for the GPIO interface library. Functions here are
- * called using the base class object. When you use the create function, you
- * are linking a base class and a subclass together. This file will use the
- * interface and your base class object to determine which function
- * implementation to call and which subclass object to give to it.
+ * called using the base class object. When you use the create functions, you
+ * are linking a base class and a subclass together. The functions listed in
+ * the interface section will use the interface object and your base class 
+ * object to determine which function implementation to call and which subclass
+ * object to give to it.
  * 
  ******************************************************************************/
 
