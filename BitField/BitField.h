@@ -30,12 +30,16 @@
  * your bits in an enum, with the very last value being "TOTAL". Then declare
  * your array like so:
  * 
+ * enum { INPUT_A = 0, INPUT_B, TOTAL };
  * uint8_t inputMaskArray[TOTAL / 8 + 1];
  * 
  * Example Usage:
  *      BifField_Init(&myBifField, &inputMaskArray, sizeof(inputMaskArray));
  *      BifField_SetBit(&myBitField, INPUT_A);
- *      if(BitField_GetBit(&myBitField, INPUT_A)) { do something }
+ *      if(BitField_GetBit(&myBitField, INPUT_A)) 
+ *      {
+ *          // do something 
+ *      }
  * 
  ******************************************************************************/
 

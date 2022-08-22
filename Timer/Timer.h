@@ -25,12 +25,16 @@
  * 
  *      I've provided a timer finished callback function. The function you 
  * create must follow the prototype listed for TimerCallbackFunc. It must have 
- * a pointer to a Timer object as an argument. The idea is that when the 
+ * a // TODO pointer to a Timer object as an argument. The idea is that when the 
  * callback function executes, you will get a pointer to the timer that called
  * the function. This way you can have multiple timers pointing to the same 
  * callback function if you desire. Then inside your callback function you can 
  * look at the context pointer to see which Timer object called the function 
- * and decide what to do.
+ * and decide what to do. // TODO The reason I chose a void pointer is so that
+ * you have the option of not using the contextPointer if you don't want to.
+ * This removes a dependency on needing to including Timer.h if your callback
+ * is in some other file. You're still going to get a pointer to the Timer, but
+ * it can be ignored.
  * 
  * Example Code:
  *      Timer startUpTimer;
@@ -58,14 +62,16 @@
 
 /* A forward declaration which will allow the compiler to "know" what a Timer
 is before I use it in the callback function declaration below me */
-typedef struct Timer Timer;
+//typedef struct Timer Timer;
 
-/* callback function pointer. The context is so that you can know which timer 
+/* callback function pointer. The context pointer tells you which timer 
 initiated the callback. This is so that you can service multiple timer 
 callbacks with the same function if you desire. */
-typedef void (*TimerCallbackFunc)(Timer *context);
+typedef void (*TimerCallbackFunc)(void *timerContext); 
+/* TODO Experiment. Try with void pointer instead of pointer to timer. This could be useful for 
+calling a function somewhere else without the need to include the Timer.h header file */
 
-struct Timer
+typedef struct TimerTag
 {
     TimerCallbackFunc timerCallbackFunc;
 
@@ -81,7 +87,7 @@ struct Timer
         };
         uint8_t all;
     } flags;
-};
+} Timer;
 
 /** These variable should be treated as private. You should only access them   
  *  with the use of a function.
