@@ -64,8 +64,8 @@
 is before I use it in the callback function declaration below me */
 //typedef struct Timer Timer;
 
-/* callback function pointer. The context pointer tells you which timer 
-initiated the callback. This is so that you can service multiple timer 
+/* callback function pointer. The context pointer will point to the Timer that 
+initiated the callback. This is so that you can service multiple Timer 
 callbacks with the same function if you desire. */
 typedef void (*TimerCallbackFunc)(void *timerContext); 
 /* TODO Experiment. Try with void pointer instead of pointer to timer. This could be useful for 
