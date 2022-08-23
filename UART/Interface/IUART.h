@@ -214,13 +214,13 @@ void UART_SetInitTypeToDefaultParams(UARTInitType *params);
  * SetReceivedDataCallback and SetTransmitFinishedCallback functions.
  * 
  * @param params  pointer to the UARTInitType that you are going to use
- * @param numStopBits UART_ONE_P,UART_HALF_P,UART_ONE_PLUS_HALF_P,UART_TWO_P
- * @param parityType UART_NO_PARITY, UART_EVEN_PARITY, UART_ODD_PARITY
- * @param enable9Bit true or false
- * @param flowControl UART_FLOW_NONE,UART_FLOW_HARDWARE,UART_FLOW_CALLBACKS,
- *                    UART_FLOW_SOFTWARE
- * @param useRxInterrupt true or false
- * @param useTxInterrupt true or false
+ * @param numStopBits  UART_ONE_P, UART_HALF_P,UART_ONE_PLUS_HALF_P, UART_TWO_P
+ * @param parityType  UART_NO_PARITY, UART_EVEN_PARITY, UART_ODD_PARITY
+ * @param enable9Bit  true or false
+ * @param flowControl  UART_FLOW_NONE, UART_FLOW_HARDWARE, UART_FLOW_CALLBACKS,
+ *                     UART_FLOW_SOFTWARE
+ * @param useRxInterrupt  true or false
+ * @param useTxInterrupt  true or false
  */
 void UART_SetInitTypeParams(UARTInitType *params, UARTStopBits numStopBits, UARTParity parityType, 
     bool enable9Bit, UARTFlowControl flowControl, bool useRxInterrupt, bool useTxInterrupt);
