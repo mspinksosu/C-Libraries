@@ -101,6 +101,17 @@ typedef enum UARTFlowControlTag
     UART_FLOW_SOFTWARE
 } UARTFlowControl;
 
+typedef struct UARTInitTypeTag
+{
+    uint32_t BRGValue;
+    UARTStopBits stopBits;
+    UARTParity parity;
+    UARTFlowControl flowControl;
+    bool use9Bit;
+    bool useTxInterrupt;
+    bool useRxInterrupt;
+} UARTInitType;
+
 typedef struct UARTInterfaceTag
 {
     /*  These are the functions that will be called. You will create your own
@@ -129,17 +140,6 @@ typedef struct UARTTag
 {
     UARTInterface *interface;
 } UART;
-
-typedef struct UARTInitTypeTag
-{
-    uint32_t BRGValue;
-    UARTStopBits stopBits;
-    UARTParity parity;
-    UARTFlowControl flowControl;
-    bool use9Bit;
-    bool useTxInterrupt;
-    bool useRxInterrupt;
-} UARTInitType;
 
 /** 
  * Description of struct members. You shouldn't really mess with any of these

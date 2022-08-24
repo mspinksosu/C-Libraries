@@ -89,6 +89,21 @@
 
 // ***** Global Variables ******************************************************
 
+typedef enum GPIOTypeTag
+{
+    GPIO_TYPE_ANALOG,
+    GPIO_TYPE_DIGITAL_INPUT,
+    GPIO_TYPE_DIGITAL_OUTPUT,
+    GPIO_TYPE_OPEN_DRAIN,
+} GPIOType;
+
+typedef enum GPIOPullTag
+{
+    GPIO_PULL_NONE,
+    GPIO_PULL_UP,
+    GPIO_PULL_DOWN,
+} GPIOPull;
+
 typedef struct GPIOInterfaceTag
 {
     /*  These are the functions that will be called. You will create your own
@@ -108,21 +123,6 @@ typedef struct GPIOInterfaceTag
     GPIOPull (*GPIO_GetPull)(void *instance);
 } GPIOInterface;
 
-typedef enum GPIOTypeTag
-{
-    GPIO_TYPE_ANALOG,
-    GPIO_TYPE_DIGITAL_INPUT,
-    GPIO_TYPE_DIGITAL_OUTPUT,
-    GPIO_TYPE_OPEN_DRAIN,
-} GPIOType;
-
-typedef enum GPIOPullTag
-{
-    GPIO_PULL_NONE,
-    GPIO_PULL_UP,
-    GPIO_PULL_DOWN,
-} GPIOPull;
-
 typedef struct GPIOTag
 {
     void *instance;
@@ -138,6 +138,9 @@ typedef struct GPIOInitTypeTag
 } GPIOInitType;
 
 /**
+ * Description of struct members. You shouldn't really mess with any of these
+ * variables directly. That is why I made functions for you to use.
+ * 
  * GPIOInterface The table of functions that need to be implemented
  * 
  * GPIO  The base class pin object
