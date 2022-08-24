@@ -54,6 +54,8 @@
  * need to ignore the normal short press action. Or if you need to do something
  * during the time between the button being held down and the long press event.
  * 
+ * // TODO callback details
+ * 
  * Example Code:
  *      Button PushButton;
  *      DigitalButton digitalPushButton;
@@ -101,15 +103,14 @@ typedef enum ButtonLengthTag
 
 /* A forward declaration which will allow the compiler to "know" what a Button
 is before I use it in the callback function declaration below me */
-typedef struct ButtonTag Button;
+//typedef struct ButtonTag Button;
 
-/* callback function pointer. The context is so that you can know which button 
-initiated the callback. This is so that you can service multiple button 
+/* callback function pointer. The context pointer will point to the Button that 
+initiated the callback. This is so that you can service multiple Button  
 callbacks with the same function if you desire. */
-typedef void (*ButtonCallbackFunc)(Button *context);
+typedef void (*ButtonCallbackFunc)(void *buttonContext);
 
-/* Button object with counters and flags (with bit field) */
-struct ButtonTag
+typedef struct ButtonTag
 {
     void *instance;
     ButtonCallbackFunc shortPressCallback;
@@ -131,7 +132,7 @@ struct ButtonTag
         };
         uint8_t all;
     } flags;
-};
+} Button;
 
 typedef struct AnalogButtonTag
 {

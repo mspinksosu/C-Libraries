@@ -85,11 +85,16 @@ typedef struct PatternStateTag
     uint16_t timeInMs;
 } PatternState;
 
-typedef struct Pattern Pattern;
+/* A forward declaration which will allow the compiler to "know" what a Pattern
+is before I use it in the callback function declaration below me */
+typedef struct PatternTag Pattern;
 
+/* callback function pointer. The context is so that you can know which Pattern 
+initiated the callback. This is so that you can service multiple Pattern 
+callbacks with the same function if you desire. */
 typedef void (*PatternCallbackFunc)(Pattern *patternContext);
 
-struct Pattern
+struct PatternTag
 {
     PatternCallbackFunc patternFinishedCallback;
     void (*outputChangedCallback)(uint8_t outputState);
@@ -301,8 +306,11 @@ void Pattern_SetFinishedCallback(Pattern *self, PatternCallbackFunc Function);
  * @brief Set a function to be called anytime the output changes
  * 
  * What's that? You said you wanted to have the function to set your GPIO to be
- * called automatically for you? Without it needing to include this header?
- * Don't worry fam. I got you.
+ * called automatically for you? Without it needing to include the header for
+ * this library? Don't worry fam. I got you.
+ * 
+ * Just make a function that follows the format below. It will get called 
+ * automatically and you will be given the output state as an argument.
  * 
  * @param self  pointer to the Pattern that you are using
  * 

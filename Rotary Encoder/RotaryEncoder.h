@@ -61,14 +61,14 @@ typedef enum RotaryEncoderTypeTag
 
 /* A forward declaration which will allow the compiler to "know" what a
 RotaryEncoder type is before I use it in the callback function declaration */
-typedef struct RotaryEncoderTag RotaryEncoder;
+//typedef struct RotaryEncoderTag RotaryEncoder;
 
-/* callback function pointer. The context is so that you can know which encoder 
-initiated the callback. This is so that you can service multiple encoder 
-callbacks with the same function if you desire. */
-typedef void (*RECallbackFunc)(RotaryEncoder *context);
+/* callback function pointer. The context pointer will point to the Rotary
+Encoder that initiated the callback. This is so that you can service multiple 
+Rotary Encoder callbacks with the same function if you desire. */
+typedef void (*RECallbackFunc)(void *rotaryContext);
 
-struct RotaryEncoderTag
+typedef struct RotaryEncoderTag
 {
     RECallbackFunc clockwiseEventCallback;
     RECallbackFunc counterClockwiseEventCallback;
@@ -89,7 +89,7 @@ struct RotaryEncoderTag
         };
         uint8_t all;
     } flags;
-};
+} RotaryEncoder;
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
