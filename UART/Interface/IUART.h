@@ -399,10 +399,10 @@ void UART_TransmitDisable(UART *self);
  * will almost certainly fire before the current callback is done. This can
  * lead to multiple recursive function calls. You will need to have a flag of 
  * some kind set whenever the TransmitFinishedEvent function is entered. If 
- * another Tx interrupt is called then set a pending interrupt flag. Then, call
- * this function in a loop continuously and it will check for a pending 
- * interrupt for you. This will let the stack unwind. Note that this is really 
- * only an issue if you are using interrupts to transmit.
+ * another Tx interrupt is called then set a pending interrupt flag. This 
+ * function will sit in a loop somewhere and check for a pending interrupt then 
+ * call TransmitFinishedEvent for you. This will let the stack unwind. Note 
+ * that this is really only an issue if you are using interrupts to transmit.
  * 
  * @param self  pointer to the UART you are using
  */
@@ -433,19 +433,17 @@ void UART_SetTransmitFinishedCallback(UART *self, void (*Function)(void));
  * is because we don't want to mess up any flow control or interrupt flags in 
  * the UART before the user gets the actual data. Typically, the receive 
  * interrupt flag is cleared when the data is read out. So it's a simple method
- * of ensure that the data stays in the UART until the user calls for it. To
- * issue the callback in your implementation, you will typically give it a
- * reference to the GetReceivedByte function.
+ * of ensuring that the data stays in the UART until the user calls for it.
+ * When you issue the callback in your implementation you will typically give 
+ * it a reference to the GetReceivedByte function.
  * 
- * void MyFunction(uint8_t (*CallToGetData)void) {
- *      uint8_t data = CallToGetData();
+ * void MyFunction(uint8_t (*CallToGetData)void) { // callback function
+ *     uint8_t data = CallToGetData();
  * }
  * 
- * // In the implementation:
- * void UART1_ReceivedDataEvent(void) {
- *      if(ReceivedDataCallbackPtr != NULL)
- *          ReceivedDataCallbackPtr(UART1_GetReceivedByte)
- * }
+ * // inside ReceivedDataEvent implementation:
+ * if(ReceivedDataCallbackFuncPtr != NULL)
+ *     ReceivedDataCallbackFuncPtr(UART1_GetReceivedByte);
  * 
  * @param self  pointer to the UART you are using
  * 
