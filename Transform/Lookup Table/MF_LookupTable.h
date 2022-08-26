@@ -10,17 +10,17 @@
  * @details
  *      Implements the base class MapFunction. This implementation uses the
  * a simple lookup table method for computing a curve. The lookup table is an
- * array of values that I have precomputed. In order to use it, well simply
- * take the input which is tyically and adc reading or something similar and
- * go to that index in the array.
+ * array of bytes that I have precomputed. In order to use it, simply take the 
+ * input which is tyically and adc reading or something similar and go to that 
+ * index in the array.
  * 
  * I like to make my lookup tables small powers of two, usually between 64 and 
  * 128 values. This way I can easily scale my adc reading down by shifting it 
- * to the right. For example, if my adc reading is a 16-bit unsigned int and my
- * output of my lookup table is 0-127, I will need to shift my input right 
- * 9 times to match my lookup table. I've included an optional parameter called
- * shiftInputRightNBits to this for me, so I can pass the input directly to the
- * function.
+ * to the right. For example, if my adc reading is a 16-bit unsigned int and 
+ * my lookup table has 128 values, I will need to shift my input right 9 times 
+ * to match my lookup table. I've included an optional parameter called
+ * shiftInputRightNBits to do this for me so I can pass the input directly to 
+ * the function.
  * 
  * Example Code:
  *      LUTArray[32] = { ... };
