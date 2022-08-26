@@ -41,17 +41,6 @@ static bool shiftInputSet = false;
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/***************************************************************************//**
- * @brief Initializes a Lookup Table object.
- * 
- * @param self  pointer to the LUT object you are using
- * 
- * @param base  pointer to the base class object used for function calls
- * 
- * @param arrayLUT  pointer to the actual lookup table
- * 
- * @param numPoints  number of entries in the lookup table
- */
 void MF_LookupTable_Create(MF_LookupTable *self, MapFunction *base, uint8_t *arrayLUT, uint8_t numPoints)
 {
     self->super = base;

@@ -3,13 +3,31 @@
  * 
  * @author Matthew Spinks
  * 
- * @date December 24, 2021  Original creation
+ * @date 12/20/21  Original creation
  * 
  * @file MF_LookupTable.h
  * 
  * @details
  *      Implements the base class MapFunction. This implementation uses the
- * a simple lookup table method for computing a trigger map.
+ * a simple lookup table method for computing a curve. The lookup table is an
+ * array of values that I have precomputed. In order to use it, well simply
+ * take the input which is tyically and adc reading or something similar and
+ * go to that index in the array.
+ * 
+ * I like to make my lookup tables small powers of two, usually between 64 and 
+ * 128 values. This way I can easily scale my adc reading down by shifting it 
+ * to the right. For example, if my adc reading is a 16-bit unsigned int and my
+ * output of my lookup table is 0-127, I will need to shift my input right 
+ * 9 times to match my lookup table. I've included an optional parameter called
+ * shiftInputRightNBits to this for me, so I can pass the input directly to the
+ * function.
+ * 
+ * Example Code:
+ *      LUTArray[32] = { ... };
+ *      MapFunction myCurve;
+ *      MF_LUT myLookupTable;
+ *      MF_LUT_Init(&myCurve, &Curve, &LUTArray, ...);
+ *      output = MF_Compute(&Curve, adcValue);   
  * 
  ******************************************************************************/
 
@@ -38,20 +56,61 @@ typedef struct MF_LookupTableTag
  * 
  * numPoints   Number of entries in the lookup table
  * 
- * shiftInputRightNBits     I like to make my look up tables small powers of
- *      two. Usually between 64 and 256 values if possible. What I typically
- *      do is shift the input of my adc reading to alter the range of the input
- *      to match my table
+ * shiftInputRightNBits     
  */
 
-// ***** Function Prototypes ***************************************************
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Non-Interface Functions *********************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
-void MF_LookupTable_Init(MF_LookupTable *self, MapFunction *base, uint8_t *arrayLUT, uint8_t numPoints);
+/***************************************************************************//**
+ * @brief Connects the sub class and base class object then calls MF_Create
+ * 
+ * @param self  pointer to the LUT object you are using
+ * 
+ * @param base  pointer to the base class object used for function calls
+ * 
+ * @param arrayLUT  pointer to the actual lookup table
+ * 
+ * @param numPoints  number of entries in the lookup table
+ */
+void MF_LookupTable_Create(MF_LookupTable *self, MapFunction *base, uint8_t *arrayLUT, uint8_t numPoints);
 
-void MF_LookupTable_Init_WithBitShift(MF_LookupTable *self, MapFunction *base, uint8_t *arrayLUT, uint8_t numPoints, uint8_t shiftInputRightNBits);
+/***************************************************************************//**
+ * @brief  Set the value to shift the input to match your lookup table array
+ * 
+ * Most adc readings are between 8 and 16 bits in length. Whereas, a lookup 
+ * table could be much smaller. Shifting the input is a quick way to scale it
+ * to match your table. I'll handle the bit shift for you, so you don't have to
+ * add it before your function call. This works great for lookup tables where 
+ * the number of entries are a power of two. If you don't have the proper 
+ * amount, I will just stop at the maximum value.
+ * 
+ * @param self  pointer to the LUT object you are using
+ * 
+ * @param shiftInputRightNBits  shift input right. default is 0
+ */
+void MF_LookupTable_SetRightShiftInput(MF_LookupTable *self, uint8_t shiftInputRightNBits);
 
-// ----- Interface Functions ---------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Interface Functions *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
+/***************************************************************************//**
+ * @brief Compute the output of the curve using the lookup table
+ * 
+ * The input will restricted to 0 to numPoints - 1.
+ * 
+ * @param self  pointer to the LUT object you are using
+ * 
+ * @param input   input to map the function
+ * 
+ * @return int32_t  output of the map function
+ */
 int32_t MF_LookupTable_Compute(MF_LookupTable *self, int32_t input);
 
 #endif	/* MF_LOOKUP_H */
