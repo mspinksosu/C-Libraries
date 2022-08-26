@@ -90,8 +90,30 @@ typedef struct GPIOInitType_STM32Tag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+/***************************************************************************//**
+ * @brief Connects the sub class to the base class
+ * 
+ * Calls the base class GPIO_Create function. Each sub class object must have 
+ * a base class.
+ * 
+ * @param self  pointer to the GPIO_STM32 subclass that you are using
+ * 
+ * @param base  pointer to the base class GPIO object
+ */
 void GPIO_STM32_Create(GPIO_STM32 *self, GPIO *base);
 
+/***************************************************************************//**
+ * @brief Connects the sub class to the base class
+ * 
+ * Calls the base class GPIO_CreateInitType function. Each sub class must have 
+ * a base class. However, you do not need an InitType for every single pin. You
+ * can create one init type during your initialization and use it repeatedly
+ * until all of your pins are initialized.
+ * 
+ * @param self  pointer to the GPIOInitType_STM32 subclass
+ * 
+ * @param base  pointer to the GPIOInitType
+ */
 void GPIO_STM32_CreateInitType(GPIOInitType_STM32 *self, GPIOInitType *base);
 
 ////////////////////////////////////////////////////////////////////////////////

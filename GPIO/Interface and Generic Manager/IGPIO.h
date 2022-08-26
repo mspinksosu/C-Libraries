@@ -200,7 +200,7 @@ void GPIO_Create(GPIO *self, void *instanceOfSubClass);
  * @brief Combine the base class and sub class
  * 
  * Links the instance pointer in the base class to the sub class. Because of 
- * the void pointer, my preferred method is to call this function from the sub
+ * the void pointer, my preferred method is to call this function from a sub
  * class constructor. I created a sub class constructor that needs an instance 
  * of the sub class and base class. This makes the create function more type
  * safe.

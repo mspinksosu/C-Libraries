@@ -56,8 +56,6 @@ GPIOInterface GPIOFunctionTable = {
 
 void GPIO_STM32_Create(GPIO_STM32 *stm32Pin, GPIO *base)
 {
-    /* Connect our subclass type to the base class, then call the base class
-    constructor to connect the base class to us. */
     stm32Pin->super = base;
     GPIO_Create(base, stm32Pin);
 }
@@ -66,8 +64,6 @@ void GPIO_STM32_Create(GPIO_STM32 *stm32Pin, GPIO *base)
 
 void GPIO_STM32_CreateInitType(GPIOInitType_STM32 *stm32Params, GPIOInitType *base)
 {
-    /* Connect our subclass type to the base class, then call the base class
-    constructor to connect the base class to us. */
     stm32Params->super = base;
     GPIO_CreateInitType(base, stm32Params);
 }

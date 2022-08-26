@@ -3,7 +3,7 @@
  * 
  * @author  Matthew Spinks
  * 
- * @date 1/17/19   Original creation
+ * @date 1/17/19    Original creation
  * @date 10/1/21    Updated documention
  * @date 2/21/22    Added doxygen
  * 

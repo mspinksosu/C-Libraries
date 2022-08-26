@@ -3,13 +3,26 @@
  * 
  * @author Matthew Spinks
  * 
- * @date February 21, 2022  Original creation
+ * @date 12/19/21    Original creation
  * 
  * @file MF_Linear.h
  * 
  * @details
- *      Implements the base class MapFunction. This implementation uses a 
- * a method known as linear interpolation to map one range of value to another.
+ *      A library that implements IMapFunction interface. This implementation 
+ * uses a method known as linear interpolation to map one range of value to 
+ * another. There are five parameters. The input, the old range of values, 
+ * and the new range of values. The function uses integer division, so your
+ * output will be truncated. This usually isn't a problem for simple range
+ * conversions. If you need something faster, consider using the MF_LookupTable
+ * library. The main advantage of this library is that it could save a little
+ * bit of memory if your lookup table is very large.
+ * 
+ * Example Code:
+ *      MapFunction Map;
+ *      MF_Linear linearMap;
+ *      MF_Linear_Create(&linearMap, &Map);
+ *      MF_Linear_SetRange(&linearMap, oldMin, oldMax, newMin, newMax);
+ *      output = MF_Compute(&Map, input);
  * 
  ******************************************************************************/
 
@@ -33,24 +46,60 @@ typedef struct MF_LinearTag
 } MF_Linear;
 
 /** 
- * super        The base class we are inheriting from
+ * Description of struct members
  * 
- * oldMin TODO
+ * super  The base class we are inheriting from
  * 
- * oldMax
+ * oldMin  the minimum value of the range you are converting from
  * 
- * newMin
+ * oldMax  the maximum value of the range you are converting from
  * 
- * newMax
+ * newMin  the minimum value of the range you are converting to
  * 
+ * newMax  the maximum value of the range you are converting to
  */
 
-// ***** Function Prototypes ***************************************************
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Non-Interface Functions *********************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
-void MF_Linear_Create(MF_Linear *self, MapFunction *base, uint32_t oldMin, uint32_t oldMax, uint32_t newMin, uint32_t newMax);
+/***************************************************************************//**
+ * @brief Connects the sub class and base class object then calls MF_Create
+ * 
+ * @param self  pointer to the linear map object you are using
+ * 
+ * @param base  pointer to the base class object used for function calls
+ */
+void MF_Linear_Create(MF_Linear *self, MapFunction *base);
 
-// ----- Interface Functions ---------------------------------------------------
+/***************************************************************************//**
+ * @brief Set the parameters of the linear map function
+ * 
+ * @param self  pointer to the linear map object you are using
+ * @param oldMin  the minimum value of the range you are converting from
+ * @param oldMax  the maximum value of the range you are converting from
+ * @param newMin  the minimum value of the range you are converting to
+ * @param newMax  the maximum value of the range you are converting to
+ */
+void MF_Linear_SetRange(MF_Linear *self, uint32_t oldMin, uint32_t oldMax, uint32_t newMin, uint32_t newMax);
 
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Interface Functions *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+/***************************************************************************//**
+ * @brief Compute the output of the linear map given an input
+ * 
+ * @param self  pointer to the linear map object you are using
+ * 
+ * @param input  input to the map function
+ * 
+ * @return int32_t  output of the map function
+ */
 int32_t MF_Linear_Compute(MF_Linear *self, int32_t input);
 
 #endif	/* MF_LINEAR_H */
