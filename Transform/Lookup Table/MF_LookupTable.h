@@ -25,8 +25,8 @@
  * Example Code:
  *      LUTArray[32] = { ... };
  *      MapFunction myCurve;
- *      MF_LUT myLookupTable;
- *      MF_LUT_Init(&myCurve, &Curve, &LUTArray, ...);
+ *      MF_LookupTable myLUT;
+ *      MF_LookupTable_Create(&myLUT, &myCurve, &LUTArray, sizeof(LUTArray));
  *      output = MF_Compute(&Curve, adcValue);   
  * 
  ******************************************************************************/
@@ -50,13 +50,14 @@ typedef struct MF_LookupTableTag
 } MF_LookupTable;
 
 /** 
- * super        The base class we are inheriting from
+ * super        the base class we are inheriting from
  * 
- * lookUpTable  A pointer to the array that you are going to use
+ * lookUpTable  pointer to the array that you are going to use
  * 
- * numPoints   Number of entries in the lookup table
+ * numPoints    number of entries in the lookup table
  * 
- * shiftInputRightNBits     
+ * shiftInputRightNBits  shift the input n bits to the right to scale it to 
+ *                       match the lookup table size
  */
 
 ////////////////////////////////////////////////////////////////////////////////
