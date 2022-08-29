@@ -44,10 +44,7 @@
  ******************************************************************************/
 
 #ifndef ADC_MANAGER_H
-#define	ADC_MANAGER_H
-
-#include <stdint.h>
-#include <stdbool.h>
+#define ADC_MANAGER_H
 
 #include "IADC.h"
 
@@ -126,4 +123,4 @@ void ADC_Manager_Enable(void);
  */
 void ADC_Manager_Disable(void);
 
-#endif	/* ADC_MANAGER_H */
+#endif  /* ADC_MANAGER_H */

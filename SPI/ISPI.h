@@ -128,6 +128,9 @@ void SPI_TransmitDisable(SPI *self);
 
 SPIStatusBits SPI_GetStatus(SPI *self);
 
-void SPI_SetSSPin(bool setPinHigh, uint8_t slaveAddress); // for master mode
+/* TODO At the very minimum, there should be one slave select pin as an option.
+This will constitute the majority of users. The SPI manager can have the ability
+to manage multiple slave select lines */
+void SPI_SetSSPinFunc(SPI *self, void (*Function)(bool setPinHigh));
 
 #endif  /* ISPI_H */
