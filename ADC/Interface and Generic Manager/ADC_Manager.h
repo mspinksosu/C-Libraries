@@ -53,11 +53,13 @@
 
 // ***** Global Variables ******************************************************
 
-typedef struct ADCChannelEntryTag
+typedef struct ADCChannelEntryTag ADCChannelEntry;
+
+struct ADCChannelEntryTag
 {
     ADCChannel *channel;
     ADCChannelEntry *next;
-} ADCChannelEntry;
+};
 
 /* Any file that includes this header can access the values of these channels
 declared below by calling ADC_Get8Bit or ADC_Get16Bit. */

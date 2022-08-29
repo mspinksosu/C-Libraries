@@ -35,6 +35,27 @@ typedef struct SPISlaveTag
     uint8_t readCount;
 } SPISlave;
 
+typedef struct SPISlaveEntryTag SPISlaveEntry;
+
+struct SPISlaveEntryTag
+{
+    SPISlave *slaveDevice;
+    SPISlaveEntry *next;
+};
+
+typedef struct SPIEntryTag SPIEntry;
+
+struct SPIEntryTag
+{
+    SPI *peripheral;
+    bool peripheralBusy;
+    SPIEntry *next;
+};
+
+// static SPIEntry *peripheralList = NULL;  // linked list
+// static SPISlaveEntry *ptrToLastDevice = NULL;  // circular linked list
+// static SPISlaveEntry *currentDevice = NULL;  // index for linked list
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Function Prototypes *************************************************//

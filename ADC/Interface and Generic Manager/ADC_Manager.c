@@ -31,7 +31,7 @@
 
 // ***** Global Variables ******************************************************
 
-static ADCChannelEntry *ptrToLast = NULL;       // linked list
+static ADCChannelEntry *ptrToLast = NULL;       // circular linked list
 static ADCChannelEntry *currentChannel = NULL;  // index for linked list
 static bool adcManagerEnabled;
 
@@ -150,11 +150,9 @@ static void ADC_Manager_ChannelPush(ADCChannelEntry *self, ADCChannel *newChanne
 {
     /* Store the new data */
     self->channel = newChannel;
-
     /* Add the new entry to the beginning of the list. The last entry's "next" 
     pointer will always point to the beginning of the list */
     self->next = ptrToLast->next;
-
     /* Update the beginning entry to point to the new beginning */
     ptrToLast->next = self;
 }
@@ -174,11 +172,11 @@ static void ADC_Manager_InsertChannelAfter(ADCChannelEntry *entryToInsert, ADCCh
     {
         return;
     }
-    // Store the new data
+    /* Store the new data */
     entryToInsert->channel = newChannel;
-    // Insert the new entry
+    /* Insert the new entry */
     entryToInsert->next = prev->next;
-    // Change the previous entry to point to our new entry
+    /* Change the previous entry to point to our new entry */
     prev->next = entryToInsert->next;
 }
 
