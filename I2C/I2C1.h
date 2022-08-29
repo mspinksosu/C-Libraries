@@ -43,7 +43,6 @@ void I2C1_FsmGetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CObject 
 bool I2C1_InitWithFrequencies(float pbclkInMHz, uint16_t baudInKHz);
 bool I2C1_InitWithBRGValue(uint32_t brgValue);
 
-// TODO move to .c file eventually
 bool I2C1_IsBusy(void); // is the actual peripheral bus busy
 void I2C1_Start(void);
 void I2C1_Stop(void);
