@@ -46,7 +46,6 @@ typedef enum SPISSControlTag
 
 typedef struct SPIInitTypeTag
 {
-    uint32_t BRGValue;
     SPIRole role;
     SPIMode mode;
     SPISSControl control;
