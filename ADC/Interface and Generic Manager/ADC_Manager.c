@@ -21,8 +21,8 @@
  * 
  ******************************************************************************/
 
-#include "ADC_Manager.h"
 #include <stddef.h> // needed for NULL
+#include "ADC_Manager.h"
 
 // ***** Defines ***************************************************************
 
@@ -98,7 +98,7 @@ void ADC_Manager_AddChannel(ADCChannelEntry *self, ADCChannel *newChannel)
     else
     {
         ADC_Manager_ChannelPush(self, newChannel);
-        currentChannel = ptrToLast->next;
+        currentChannel = ptrToLast->next; // reset the index
     }
 
     /* Initialize the new channel */

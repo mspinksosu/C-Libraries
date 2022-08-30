@@ -468,7 +468,7 @@ void UART_SetIsCTSPinLowFunc(UART *self, bool (*Function)(void));
  * @brief Set a function to allow the UART library to control the RTS pin
  * 
  * The RTS pin is asserted (low) whenever we are ready to receive data and
- * deasserted (high) whenever we are not ready to receive data. Your function 
+ * de-asserted (high) whenever we are not ready to receive data. Your function 
  * should follow the format listed below. If the argument passed in is true, 
  * set the RTS pin high.
  * 

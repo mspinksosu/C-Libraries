@@ -21,8 +21,8 @@
  *      
  * ****************************************************************************/
 
-#include <stddef.h> // needed for NULL
 #include "UART1.h"
+#include <stddef.h> // needed for NULL
 
 /* Include processor specific header files here */
 #include "stm32g071xx.h"
