@@ -22,8 +22,20 @@
 
 // ***** Global Variables ******************************************************
 
-typedef struct SPISlaveTag
+typedef enum SPISlaveStateTag
 {
+    SPI_SS_IDLE = 0,
+    SPI_SS_BEGIN,
+    SPI_SS_SEND_BYTE,
+    SPI_SS_RECEIVE_BYTE,
+    SPI_SS_FINISHED
+} SPISlaveState;
+
+typedef struct SPISlaveTag SPISlave;
+
+struct SPISlaveTag
+{
+    SPISlave *next;
     void (*SetSSPin)(bool setPinHigh, void *slaveContext);
     SPI *peripheral;
     uint8_t *writeBuffer;
@@ -31,16 +43,7 @@ typedef struct SPISlaveTag
     uint16_t numBytesToSend;
     uint16_t numBytesToRead;
     uint16_t readWriteCount;
-    uint8_t slaveAddress; // TODO probably not needed
-    bool busy; // TODO probably not needed
-} SPISlave;
-
-typedef struct SPISlaveEntryTag SPISlaveEntry;
-
-struct SPISlaveEntryTag
-{
-    SPISlave *device;
-    SPISlaveEntry *next;
+    SPISlaveState state;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,11 +58,13 @@ void SPI_Manager_Init(void);
 /* TODO should I add size parameters or just let the user handle it? */
 void SPI_Manager_CreateSlave(SPISlave *self, SPI *peripheral, uint8_t *writeBuffer, uint8_t *readBuffer);
 
-void SPI_Manager_AddSlaveDevice(SPISlaveEntry *self, SPISlave *newDevice);
+void SPI_Manager_AddSlave(SPISlave *self);
 
 void SPI_Manager_BeginTransfer(SPISlave *self, uint16_t numBytesToSend, uint16_t numBytesToRead);
 
-void SPI_Manager_Tick(void);
+bool SPI_Manager_IsTransferFinished(SPISlave *self);
+
+void SPI_Manager_Process(void);
 
 void SPI_Manager_Enable(void);
 

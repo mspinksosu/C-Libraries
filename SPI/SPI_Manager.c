@@ -24,27 +24,27 @@ number can be reduced to save a few bytes if you need to. */
 
 // ***** Global Variables ******************************************************
 
-typedef struct SPIPeripheralTag
+typedef struct SPIEntryTag
 {
     SPI *peripheral;
     bool peripheralBusy;
-} SPIPeripheral;
+} SPIEntry;
 
-static SPISlaveEntry *ptrToLastDevice = NULL;  // circular linked list
-static SPISlaveEntry *currentDevice = NULL;  // index for linked list
-static SPIPeripheral peripheralArray[DEFAULT_NUM_PERIPHERALS];
+static SPISlave *ptrToLastDevice = NULL;  // circular linked list
+static SPISlave *currentDevice = NULL;  // index for linked list
+static SPIEntry peripheralArray[DEFAULT_NUM_PERIPHERALS];
 static numPeripherals = 0;
 
 // ***** Static Function Prototypes ********************************************
 
 /* Put static function prototypes here */
 static void SPI_Manager_AddPeripheral(SPI *newPeripheral);
-static void SPI_Manager_DevicePush(SPISlaveEntry *self, SPISlave *newChannel);
-// static void ADC_Manager_InsertChannelAfter(ADCChannelEntry *entryToInsert, ADCChannelEntry *prev, ADCChannel *newChannel);
+static void SPI_Manager_DevicePush(SPISlave *self);
+static bool SPI_Manager_CheckPeripheralBusy(SPISlave *slave);
 
 // *****************************************************************************
 
-void ADC_Manager_Init(uint16_t sampleTimeMs, uint16_t tickRateMs)
+void SPI_Manager_Init(void)
 {
 
     /* Initialize the SPI peripherals */
@@ -65,14 +65,11 @@ void SPI_Manager_CreateSlave(SPISlave *self, SPI *peripheral, uint8_t *writeBuff
 
 // *****************************************************************************
 
-void SPI_Manager_AddSlaveDevice(SPISlaveEntry *self, SPISlave *newDevice)
+void SPI_Manager_AddSlave(SPISlave *self)
 {
     if(ptrToLastDevice == NULL)
     {
-        /* Begin with empty list */
-        self->device = newDevice;
-
-        /* Update the pointer to point to the last entry, which is itself */
+        /* Begin with a new list */
         ptrToLastDevice = self;
 
         /* Since the list only contains one entry, the "next" pointer will
@@ -85,12 +82,12 @@ void SPI_Manager_AddSlaveDevice(SPISlaveEntry *self, SPISlave *newDevice)
     else
     {
         /* Add the slave device to the list */
-        SPI_Manager_DevicePush(self, newDevice);
+        SPI_Manager_DevicePush(self);
         currentDevice = ptrToLastDevice->next; // reset the index
     }
 
     /* Add the SPI peripheral to the peripheral list */
-    SPI_Manager_AddPeripheral(newDevice->peripheral);
+    //SPI_Manager_AddPeripheral(self->peripheral);
 }
 
 // *****************************************************************************
@@ -102,13 +99,73 @@ void SPI_Manager_BeginTransfer(SPISlave *self, uint16_t numBytesToSend, uint16_t
 
 // *****************************************************************************
 
-void SPI_Manager_Tick(void)
+void SPI_Manager_Process(void)
 {
-    /* Go round-robin through the list of devices, first checking if the
-    peripheral is already in use. */
-    if(currentDevice != NULL)
+    /* Go round-robin through the list of devices */
+    if(currentDevice != NULL && currentDevice->peripheral != NULL)
     {
+        bool devicePeripheralBusy = SPI_Manager_CheckPeripheralBusy(currentDevice);
 
+        switch(currentDevice->state)
+        {
+            case SPI_SS_BEGIN:
+                if(!devicePeripheralBusy)
+                {
+                    /* Begin transfer. Set slave select line low */
+                    if(currentDevice->SetSSPin != NULL)
+                        currentDevice->SetSSPin(false, currentDevice);
+
+                    /* Send the first byte */
+                    if(currentDevice->numBytesToSend > 0)
+                    {
+                        SPI_TransmitByte(currentDevice->peripheral, 
+                        currentDevice->writeBuffer[currentDevice->readWriteCount]);
+                    }
+                    else if(currentDevice->numBytesToRead > 0)
+                    {
+                        /* Send empty data out for a slave read */
+                        SPI_TransmitByte(currentDevice->peripheral, 0);
+                    }
+                    currentDevice->state = SPI_SS_SEND_BYTE;
+                }
+                break;
+            case SPI_SS_SEND_BYTE:
+
+                break;
+            case SPI_SS_RECEIVE_BYTE:
+
+                break;
+            case SPI_SS_FINISHED:
+                // Set SS line high
+                currentDevice->state = SPI_SS_IDLE;
+                break;
+        } // end switch
+
+        /* TODO Receive byte */
+        if(SPI_IsReceiveRegisterFull(currentDevice->peripheral))
+        {
+            uint8_t data = SPI_GetReceivedByte(currentDevice->peripheral);
+
+            if(currentDevice->readWriteCount <= currentDevice->numBytesToRead)
+            {
+                currentDevice->readBuffer[currentDevice->readWriteCount] = data;
+            }
+            currentDevice->readWriteCount++;
+        }
+
+        /* TODO Check if there are more bytes to transfer */
+        if(currentDevice->readWriteCount < currentDevice->numBytesToSend)
+        {
+
+        }
+        else if(currentDevice->readWriteCount < currentDevice->numBytesToRead)
+        {
+
+        }
+        else
+        {
+            //currentDevice->state.transferFinished = 1;
+        }
 
         currentDevice = currentDevice->next;
     }
@@ -116,14 +173,14 @@ void SPI_Manager_Tick(void)
 
 // *****************************************************************************
 
-void ADC_Manager_Enable(void)
+void SPI_Manager_Enable(void)
 {
 
 }
 
 // *****************************************************************************
 
-void ADC_Manager_Disable(void)
+void SPI_Manager_Disable(void)
 {
 
 }
@@ -174,30 +231,45 @@ static void SPI_Manager_AddPeripheral(SPI *newPeripheral)
         numPeripherals++;
 }
 
-static void SPI_Manager_DevicePush(SPISlaveEntry *self, SPISlave *newDevice)
+/***************************************************************************//**
+ * @brief Check if a certain SPI peripheral is busy
+ * 
+ * Go through the list of devices and see if anyone is already using my 
+ * peripheral. I was originally going to have a list of peripherals, but then I
+ * would have to loop that list and update it anyway. For a small number of 
+ * devices, this won't take long.
+ * 
+ * @param slave 
+ * 
+ * @return true 
+ */
+static bool SPI_Manager_CheckPeripheralBusy(SPISlave *slave)
 {
-    /* Store the new data */
-    self->device = newDevice;
+    bool isBusy = false;
+    SPISlave *index = ptrToLastDevice->next;
+
+    while(index != ptrToLastDevice)
+    {
+        if(slave->peripheral == index->peripheral)
+        {
+            if(index->state != SPI_SS_IDLE)
+                isBusy = true;
+            break;
+        }
+        index = index->next;
+    }
+    return isBusy;
+}
+
+static void SPI_Manager_DevicePush(SPISlave *self)
+{
     /* Add the new entry to the beginning of the list. The last entry's "next" 
     pointer will always point to the beginning of the list */
     self->next = ptrToLastDevice->next;
+    
     /* Update the beginning entry to point to the new beginning */
     ptrToLastDevice->next = self;
 }
-
-// static void ADC_Manager_InsertChannelAfter(ADCChannelEntry *entryToInsert, ADCChannelEntry *prev, ADCChannel *newChannel)
-// {
-//     if(prev == NULL || entryToInsert == NULL)
-//     {
-//         return;
-//     }
-//     /* Store the new data */
-//     entryToInsert->channel = newChannel;
-//     /* Insert the new entry */
-//     entryToInsert->next = prev->next;
-//     /* Change the previous entry to point to our new entry */
-//     prev->next = entryToInsert->next;
-// }
 
 /*
  End of File
