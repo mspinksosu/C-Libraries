@@ -26,35 +26,22 @@ typedef struct SPISlaveTag
 {
     void (*SetSSPin)(bool setPinHigh, void *slaveContext);
     SPI *peripheral;
-    uint8_t slaveAddress;
     uint8_t *writeBuffer;
     uint8_t *readBuffer;
-    uint8_t numBytesToSend;
-    uint8_t numBytesToRead;
-    uint8_t writeCount;
-    uint8_t readCount;
+    uint16_t numBytesToSend;
+    uint16_t numBytesToRead;
+    uint16_t readWriteCount;
+    uint8_t slaveAddress; // TODO probably not needed
+    bool busy; // TODO probably not needed
 } SPISlave;
 
 typedef struct SPISlaveEntryTag SPISlaveEntry;
 
 struct SPISlaveEntryTag
 {
-    SPISlave *slaveDevice;
+    SPISlave *device;
     SPISlaveEntry *next;
 };
-
-typedef struct SPIEntryTag SPIEntry;
-
-struct SPIEntryTag
-{
-    SPI *peripheral;
-    bool peripheralBusy;
-    SPIEntry *next;
-};
-
-// static SPIEntry *peripheralList = NULL;  // linked list
-// static SPISlaveEntry *ptrToLastDevice = NULL;  // circular linked list
-// static SPISlaveEntry *currentDevice = NULL;  // index for linked list
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -65,7 +52,12 @@ struct SPIEntryTag
 
 void SPI_Manager_Init(void);
 
-//void ADC_Manager_AddChannel(ADCChannelEntry *self, ADCChannel *newChannel);
+/* TODO should I add size parameters or just let the user handle it? */
+void SPI_Manager_CreateSlave(SPISlave *self, SPI *peripheral, uint8_t *writeBuffer, uint8_t *readBuffer);
+
+void SPI_Manager_AddSlaveDevice(SPISlaveEntry *self, SPISlave *newDevice);
+
+void SPI_Manager_BeginTransfer(SPISlave *self, uint16_t numBytesToSend, uint16_t numBytesToRead);
 
 void SPI_Manager_Tick(void);
 
