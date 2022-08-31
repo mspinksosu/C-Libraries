@@ -24,12 +24,6 @@ number can be reduced to save a few bytes if you need to. */
 
 // ***** Global Variables ******************************************************
 
-typedef struct SPIEntryTag
-{
-    SPI *peripheral;
-    bool peripheralBusy;
-} SPIEntry;
-
 static SPISlave *ptrToLastDevice = NULL;  // circular linked list
 static SPISlave *currentDevice = NULL;  // index for linked list
 static SPIEntry peripheralArray[DEFAULT_NUM_PERIPHERALS];
@@ -192,14 +186,7 @@ void SPI_Manager_Disable(void)
 ////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
- * @brief Add SPI peripheral to the array
- * 
- * I decided to have an array with a default size that should cover the 
- * majority of use cases. This is so that the user doesn't need to worry about
- * having to create a list of SPI peripherals as well as SPI devices. If there 
- * are more SPI peripherals than I have room for, then I will go through the 
- * list of devices, checking if their peripheral is busy before starting a 
- * transfer. 
+ * @brief Add SPI peripheral to the array 
  * 
  * @param newPeripheral 
  */

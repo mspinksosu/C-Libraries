@@ -21,8 +21,8 @@
  * 
  ******************************************************************************/
 
-#include <stddef.h> // needed for NULL
 #include "ADC_Manager.h"
+#include <stddef.h> // needed for NULL
 
 // ***** Defines ***************************************************************
 

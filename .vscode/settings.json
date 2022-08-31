@@ -15,6 +15,7 @@
         "xtr1common": "c",
         "button.h": "c",
         "iadc.h": "c",
-        "adc_manager.h": "c"
+        "adc_manager.h": "c",
+        "uart1.h": "c"
     }
 }

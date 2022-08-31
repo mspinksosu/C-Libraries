@@ -46,6 +46,15 @@ struct SPISlaveTag
     SPISlaveState state;
 };
 
+typedef struct SPIEntryTag SPIEntry;
+
+struct SPIEntryTag
+{
+    SPI *peripheral;
+    SPIEntry *next;
+    bool peripheralBusy;
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Function Prototypes *************************************************//
@@ -58,7 +67,10 @@ void SPI_Manager_Init(void);
 /* TODO should I add size parameters or just let the user handle it? */
 void SPI_Manager_CreateSlave(SPISlave *self, SPI *peripheral, uint8_t *writeBuffer, uint8_t *readBuffer);
 
+/* TODO I should probably just get rid of the create function and change it to add */
 void SPI_Manager_AddSlave(SPISlave *self);
+
+void SPI_Manager_AddPeripheral(SPIEntry *self, SPI *newPeripheral);
 
 void SPI_Manager_BeginTransfer(SPISlave *self, uint16_t numBytesToSend, uint16_t numBytesToRead);
 

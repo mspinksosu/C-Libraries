@@ -24,9 +24,9 @@
  *      
  * ****************************************************************************/
 
-#include <stddef.h>
-#include <math.h>
 #include "UART1.h"
+#include <math.h>
+#include <stddef.h>
 
 /* Include processor specific header files here */
 #include "stm32f10x_map.h"
