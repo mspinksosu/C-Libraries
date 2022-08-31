@@ -25,10 +25,9 @@
 typedef enum SPISlaveStateTag
 {
     SPI_SS_IDLE = 0,
-    SPI_SS_BEGIN,
+    SPI_SS_RQ_START,
     SPI_SS_SEND_BYTE,
-    SPI_SS_RECEIVE_BYTE,
-    SPI_SS_FINISHED
+    SPI_SS_RECEIVE_BYTE
 } SPISlaveState;
 
 typedef struct SPISlaveTag SPISlave;
@@ -44,6 +43,7 @@ struct SPISlaveTag
     uint16_t numBytesToRead;
     uint16_t readWriteCount;
     SPISlaveState state;
+    bool transferFinished;
 };
 
 typedef struct SPIEntryTag SPIEntry;
@@ -70,11 +70,13 @@ void SPI_Manager_CreateSlave(SPISlave *self, SPI *peripheral, uint8_t *writeBuff
 /* TODO I should probably just get rid of the create function and change it to add */
 void SPI_Manager_AddSlave(SPISlave *self);
 
-void SPI_Manager_AddPeripheral(SPIEntry *self, SPI *newPeripheral);
+bool SPI_Manager_IsDeviceBusy(SPISlave *self);
 
 void SPI_Manager_BeginTransfer(SPISlave *self, uint16_t numBytesToSend, uint16_t numBytesToRead);
 
 bool SPI_Manager_IsTransferFinished(SPISlave *self);
+
+//void SPI_Manager_GetData(SPISlave *self, uint8_t *retNumBytesSent, uint8_t *retNumBytesRead);
 
 void SPI_Manager_Process(void);
 

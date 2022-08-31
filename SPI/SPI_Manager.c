@@ -17,9 +17,6 @@
 
 // ***** Defines ***************************************************************
 
-/* If there are more peripherals added than exist in the array, then we start 
-going through the device list to check which ones are currently busy. This 
-number can be reduced to save a few bytes if you need to. */
 #define DEFAULT_NUM_PERIPHERALS 4
 
 // ***** Global Variables ******************************************************
@@ -34,7 +31,7 @@ static numPeripherals = 0;
 /* Put static function prototypes here */
 static void SPI_Manager_AddPeripheral(SPI *newPeripheral);
 static void SPI_Manager_DevicePush(SPISlave *self);
-static bool SPI_Manager_CheckPeripheralBusy(SPISlave *slave);
+static bool SPI_Manager_IsPeripheralBusy(SPISlave *slave);
 
 // *****************************************************************************
 
@@ -55,6 +52,7 @@ void SPI_Manager_CreateSlave(SPISlave *self, SPI *peripheral, uint8_t *writeBuff
     self->numBytesToSend = 0;
     self->numBytesToRead = 0;
     self->readWriteCount = 0;
+    self->transferFinished = false;
 }
 
 // *****************************************************************************
@@ -86,81 +84,100 @@ void SPI_Manager_AddSlave(SPISlave *self)
 
 // *****************************************************************************
 
+bool SPI_Manager_IsDeviceBusy(SPISlave *self)
+{
+    if(self->state == SPI_SS_IDLE)
+        return false;
+    else
+        return true;
+}
+
+// *****************************************************************************
+
 void SPI_Manager_BeginTransfer(SPISlave *self, uint16_t numBytesToSend, uint16_t numBytesToRead)
 {
+    if(self->state != SPI_SS_IDLE) // TODO
+        return;
 
+    if(numBytesToSend > 0 && self->writeBuffer != NULL)
+        self->numBytesToSend = numBytesToSend;
+
+    if(numBytesToRead > 0 && self->readBuffer != NULL)
+        self->numBytesToRead = numBytesToRead;
+
+    self->transferFinished = false;
+    self->state = SPI_SS_RQ_START; // request start
+}
+
+// *****************************************************************************
+
+bool SPI_Manager_IsTransferFinished(SPISlave *self)
+{
+    return self->transferFinished;
 }
 
 // *****************************************************************************
 
 void SPI_Manager_Process(void)
 {
-    /* Go round-robin through the list of devices */
+    /* Go round-robin through the list of devices. Right now, I'm only going to 
+    deal with SPI master mode. */
+    // TODO add check for master mode, and eventually add slave mode
     if(currentDevice != NULL && currentDevice->peripheral != NULL)
     {
-        bool devicePeripheralBusy = SPI_Manager_CheckPeripheralBusy(currentDevice);
-
         switch(currentDevice->state)
         {
-            case SPI_SS_BEGIN:
-                if(!devicePeripheralBusy)
+            case SPI_SS_RQ_START:
+                if(!SPI_Manager_IsPeripheralBusy(currentDevice))
                 {
                     /* Begin transfer. Set slave select line low */
                     if(currentDevice->SetSSPin != NULL)
                         currentDevice->SetSSPin(false, currentDevice);
-
-                    /* Send the first byte */
-                    if(currentDevice->numBytesToSend > 0)
-                    {
-                        SPI_TransmitByte(currentDevice->peripheral, 
-                        currentDevice->writeBuffer[currentDevice->readWriteCount]);
-                    }
-                    else if(currentDevice->numBytesToRead > 0)
-                    {
-                        /* Send empty data out for a slave read */
-                        SPI_TransmitByte(currentDevice->peripheral, 0);
-                    }
                     currentDevice->state = SPI_SS_SEND_BYTE;
                 }
                 break;
             case SPI_SS_SEND_BYTE:
-
+                if(currentDevice->readWriteCount < currentDevice->numBytesToSend)
+                {
+                    SPI_TransmitByte(currentDevice->peripheral, 
+                        currentDevice->writeBuffer[currentDevice->readWriteCount]);
+                }
+                else
+                {
+                    /* Send empty data out for a slave read */
+                    SPI_TransmitByte(currentDevice->peripheral, 0);
+                }
+                currentDevice->state = SPI_SS_SEND_BYTE;
                 break;
             case SPI_SS_RECEIVE_BYTE:
+                /* In master mode, there is always a read after a write. */
+                if(SPI_IsTransmitRegisterEmpty(currentDevice->peripheral))
+                {
+                    uint8_t data = SPI_GetReceivedByte(currentDevice->peripheral);
 
-                break;
-            case SPI_SS_FINISHED:
-                // Set SS line high
-                currentDevice->state = SPI_SS_IDLE;
+                    if(currentDevice->readWriteCount < currentDevice->numBytesToRead)
+                    {
+                        currentDevice->readBuffer[currentDevice->readWriteCount] = data;
+                    }
+                    currentDevice->readWriteCount++;
+                    
+                    if(currentDevice->readWriteCount < currentDevice->numBytesToSend ||
+                        currentDevice->readWriteCount < currentDevice->numBytesToRead)
+                    {
+                        /* There are more bytes to send */
+                        currentDevice->state = SPI_SS_SEND_BYTE;
+                    }
+                    else
+                    {
+                        /* Set slave select line high */
+                        if(currentDevice->SetSSPin != NULL)
+                            currentDevice->SetSSPin(true, currentDevice);
+                        currentDevice->transferFinished = true;
+                        currentDevice->state = SPI_SS_IDLE;
+                    }
+                }
                 break;
         } // end switch
-
-        /* TODO Receive byte */
-        if(SPI_IsReceiveRegisterFull(currentDevice->peripheral))
-        {
-            uint8_t data = SPI_GetReceivedByte(currentDevice->peripheral);
-
-            if(currentDevice->readWriteCount <= currentDevice->numBytesToRead)
-            {
-                currentDevice->readBuffer[currentDevice->readWriteCount] = data;
-            }
-            currentDevice->readWriteCount++;
-        }
-
-        /* TODO Check if there are more bytes to transfer */
-        if(currentDevice->readWriteCount < currentDevice->numBytesToSend)
-        {
-
-        }
-        else if(currentDevice->readWriteCount < currentDevice->numBytesToRead)
-        {
-
-        }
-        else
-        {
-            //currentDevice->state.transferFinished = 1;
-        }
-
         currentDevice = currentDevice->next;
     }
 }
@@ -185,11 +202,10 @@ void SPI_Manager_Disable(void)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/***************************************************************************//**
- * @brief Add SPI peripheral to the array 
- * 
- * @param newPeripheral 
- */
+/* TODO remove this later. I decided to just use the slave list instead of a 
+seperate peripheral list. This makes it easier for the user. I do have to 
+traverse the list, but I made it so that I only have to do so whenever a 
+request to begin data transfer happens. */
 static void SPI_Manager_AddPeripheral(SPI *newPeripheral)
 {
     if(newPeripheral == NULL || newPeripheral->interface == NULL)
@@ -222,24 +238,22 @@ static void SPI_Manager_AddPeripheral(SPI *newPeripheral)
  * @brief Check if a certain SPI peripheral is busy
  * 
  * Go through the list of devices and see if anyone is already using my 
- * peripheral. I was originally going to have a list of peripherals, but then I
- * would have to loop that list and update it anyway. For a small number of 
- * devices, this won't take long.
+ * peripheral.
  * 
- * @param slave 
+ * @param slave  pointer to the slave who's peripheral we are checking
  * 
- * @return true 
+ * @return true  true if anyone else is already using that peripheral
  */
-static bool SPI_Manager_CheckPeripheralBusy(SPISlave *slave)
+static bool SPI_Manager_IsPeripheralBusy(SPISlave *slave)
 {
     bool isBusy = false;
-    SPISlave *index = ptrToLastDevice->next;
-
-    while(index != ptrToLastDevice)
+    SPISlave *index = slave->next;
+    /* Go around the loop once, starting with our the slave index + 1 */
+    while(index != slave)
     {
-        if(slave->peripheral == index->peripheral)
+        if(index->peripheral == slave->peripheral)
         {
-            if(index->state != SPI_SS_IDLE)
+            if(index->state == SPI_SS_SEND_BYTE || index->state == SPI_SS_RECEIVE_BYTE)
                 isBusy = true;
             break;
         }
