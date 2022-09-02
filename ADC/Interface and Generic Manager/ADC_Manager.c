@@ -32,7 +32,7 @@
 // ***** Global Variables ******************************************************
 
 static ADCChannelEntry *ptrToLast = NULL;       // circular linked list
-static ADCChannelEntry *currentChannel = NULL;  // index for linked list
+static ADCChannelEntry *currentEntry = NULL;  // index for linked list
 static bool adcManagerEnabled;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,12 +93,12 @@ void ADC_Manager_AddChannel(ADCChannelEntry *self, ADCChannel *newChannel)
         self->next = ptrToLast;
 
         /* Set index to the beginning */
-        currentChannel = ptrToLast->next;
+        currentEntry = ptrToLast->next;
     }
     else
     {
         ADC_Manager_ChannelPush(self, newChannel);
-        currentChannel = ptrToLast->next; // reset the index
+        currentEntry = ptrToLast->next; // reset the index
     }
 
     /* Initialize the new channel */
@@ -112,10 +112,10 @@ void ADC_Manager_Tick(void)
     ADC_Tick();
 
     /* Go round-robin through the list */
-    if(!ADC_IsBusy() && currentChannel != NULL)
+    if(!ADC_IsBusy() && currentEntry != NULL)
     {
-        ADC_TakeSample(currentChannel);
-        currentChannel = currentChannel->next;
+        ADC_TakeSample(currentEntry->channel);
+        currentEntry = currentEntry->next;
     }
 }
 
