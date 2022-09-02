@@ -84,8 +84,6 @@ void SPI_Manager_Enable(void);
 
 void SPI_Manager_Disable(void);
 
-/* TODO Figure out if I should have an address argument. Or maybe use a 
-SPISlave object. Or possibly put the function pointer in the slave object. */
 void SPI_Manager_SetSSPinFunc(SPISlave *self, void (*Function)(bool setPinHigh, void *slaveContext));
 
 #endif  /* SPI_MANAGER_H */

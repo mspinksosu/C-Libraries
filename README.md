@@ -11,13 +11,13 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
   - [ ] PIC32 implementation in progress
 - [x] Bitfield: New library! Complete and tested!
 - [x] Buffer: Complete!
-- [x] Button: Refactor! Ready to test!
+- [x] Button: Refactored! 99% tested
   - [x] Added analog button
   - [x] Update doxygen
 - [x] Button Group: New library! Tested and working!
 - [ ] Comparator: New library! Ready for testing
   - [x] Update doxygen
-- [ ] GPIO: Redesign!
+- [ ] GPIO: Redesigned!
   - [x] STM32 implementation finished! Testing in progress
   - [x] Refactored STM32 G0 to get rid of ST library dependancy. Needs re-testing
   - [x] Update doxygen 
@@ -27,14 +27,18 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
   - [x] Update doxygen
 - [ ] Rotary Encoder: Redesigned! Testing in progress
   - [x] Add different types of rotary encoder
-- [ ] SPI: Not started yet
+- [ ] SPI: Finished interface
+    - [ ] Create STM32 implementation and test
+    - [ ] Create PIC32 implementation and test
+    - [ ] SPI Manager state machine
+    - [ ] Update doxygen
 - [x] Switch: Complete!
 - [x] Timer: Complete!
-- [ ] UART: Complete rebuild
+- [ ] UART: Almost ready
     - [x] STM32 G0 implementation finished! Testing in progress
     - [x] Added options for flow control and interrupts
     - [x] STM32 F1 implementation tested and working!
-    - [ ] PIC16 implementation redesign for new interface
+    - [ ] PIC16 implementation redesign
     - [x] Update doxygen
 
 ---

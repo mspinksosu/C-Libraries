@@ -96,7 +96,8 @@ bool SPI_Manager_IsDeviceBusy(SPISlave *self)
 
 void SPI_Manager_BeginTransfer(SPISlave *self, uint16_t numBytesToSend, uint16_t numBytesToRead)
 {
-    if(self->state != SPI_SS_IDLE) // TODO
+     // TODO
+    if(self->state != SPI_SS_IDLE || (numBytesToRead == 0 && numBytesToSend == 0))
         return;
 
     if(numBytesToSend > 0 && self->writeBuffer != NULL)
@@ -194,6 +195,13 @@ void SPI_Manager_Enable(void)
 void SPI_Manager_Disable(void)
 {
 
+}
+
+// *****************************************************************************
+
+void SPI_Manager_SetSSPinFunc(SPISlave *self, void (*Function)(bool setPinHigh, void *slaveContext))
+{
+    self->SetSSPin = Function;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

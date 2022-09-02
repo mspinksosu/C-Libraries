@@ -25,23 +25,23 @@
 
 typedef enum SPIRoleTag
 {
-    SPI_MASTER = 0,
-    SPI_SLAVE,
+    SPI_ROLE_MASTER = 0,
+    SPI_ROLE_SLAVE,
 } SPIRole;
 
 typedef enum SPIModeTag
 {
     SPI_MODE_0 = 0, // clock idle low, sample on first edge
-    SPI_MODE_1, // clock idle low, sample on second edge
-    SPI_MODE_2, // clock idle high, sample on first edge
-    SPI_MODE_3 // clock idle high, sample on second edge
+    SPI_MODE_1,     // clock idle low, sample on second edge
+    SPI_MODE_2,     // clock idle high, sample on first edge
+    SPI_MODE_3      // clock idle high, sample on second edge
 } SPIMode;
 
 typedef enum SPISSControlTag
 {
     SPI_SS_NONE = 0,
     SPI_SS_HARDWARE,
-    SPI_SS_CALLBACKS, // User will implement functions for controlling pins
+    SPI_SS_CALLBACKS, // User will implement functions for controlling the pin
 } SPISSControl;
 
 typedef struct SPIInitTypeTag
@@ -58,7 +58,21 @@ typedef struct SPIInterfaceTag
     /*  These are the functions that will be called. You will create your own
     interface object for your class that will have these function signatures.
     Set each of your functions equal to one of these pointers */
-
+    void (*SPI_Init)(SPIInitType *params);
+    void (*SPI_ReceivedDataEvent)(void);
+    uint8_t (*SPI_GetReceivedByte)(void);
+    bool (*SPI_IsReceiveRegisterFull)(void);
+    void (*SPI_ReceiveEnable)(void);
+    void (*SPI_ReceiveDisable)(void);
+    void (*SPI_TransmitFinishedEvent)(void);
+    void (*SPI_TransmitByte)(uint8_t);
+    bool (*SPI_IsTransmitRegisterEmpty)(void);
+    void (*SPI_TransmitEnable)(void);
+    void (*SPI_TransmitDisable)(void);
+    SPIStatusBits (*SPI_GetStatus)(void);
+    void (*SPI_SetTransmitFinishedCallback)(void (*Function)(void));
+    void (*SPI_SetReceivedDataCallback)(void (*Function)(uint8_t (*CallToGetData)(void)));
+    void (*SPI_SetSSPinFunc)(void (*Function)(bool));
 } SPIInterface;
 
 typedef struct SPITag
@@ -127,6 +141,10 @@ void SPI_TransmitEnable(SPI *self);
 void SPI_TransmitDisable(SPI *self);
 
 SPIStatusBits SPI_GetStatus(SPI *self);
+
+void SPI_SetTransmitFinishedCallback(SPI *self, void (*Function)(void));
+
+void SPI_SetReceivedDataCallback(SPI *self, void (*Function)(uint8_t (*CallToGetData)(void)));
 
 /* TODO At the very minimum, there should be one slave select pin as an option.
 This will constitute the majority of users. The SPI manager can have the ability
