@@ -210,36 +210,15 @@ void SPI_Manager_SetSSPinFunc(SPISlave *self, void (*Function)(bool setPinHigh, 
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/* TODO remove this later. I decided to just use the slave list instead of a 
-seperate peripheral list. This makes it easier for the user. I do have to 
-traverse the list, but I made it so that I only have to do so whenever a 
-request to begin data transfer happens. */
 static void SPI_Manager_AddPeripheral(SPI *newPeripheral)
 {
-    if(newPeripheral == NULL || newPeripheral->interface == NULL)
-        return;
+    // Check that the peripheral has an interface pointer
 
-    bool deviceInList = false;
+    /* TODO Should I change the peripheral to use polling instead of 
+    interrupts? That would require me to re-initialize the peripheral. What if
+    the user initializes it after calling this function? I could try to just 
+    have a function in the manager to handle the interrupts. */
 
-    for(uint8_t i = 0; i < DEFAULT_NUM_PERIPHERALS; i++)
-    {
-        if(peripheralArray[i].peripheral == newPeripheral)
-        {
-            deviceInList = true;
-            break; // device already in list
-        }
-        else if(peripheralArray[i].peripheral == NULL)
-        {
-            // Add to list
-            deviceInList = true;
-            peripheralArray[i].peripheral = newPeripheral;
-            numPeripherals++;
-            break;
-        }
-    }
-
-    if(!deviceInList)
-        numPeripherals++;
 }
 
 /***************************************************************************//**
