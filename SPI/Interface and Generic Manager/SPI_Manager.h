@@ -36,7 +36,7 @@ struct SPISlaveTag
 {
     SPISlave *next;
     void (*SetSSPin)(bool setPinHigh, void *slaveContext);
-    SPI *peripheral;
+    SPIManager *manager;
     uint8_t *writeBuffer;
     uint8_t *readBuffer;
     uint16_t numBytesToSend;
@@ -46,14 +46,14 @@ struct SPISlaveTag
     bool transferFinished;
 };
 
-typedef struct SPIEntryTag SPIEntry;
-
-struct SPIEntryTag
+typedef struct SPIManagerTag
 {
     SPI *peripheral;
-    SPIEntry *next;
-    bool peripheralBusy;
-};
+    SPISlave *endOfList; // circular linked list
+    SPISlave *currentDevice;
+    bool busy;
+    // TODO state
+} SPIManager;
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -61,14 +61,11 @@ struct SPIEntryTag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+void SPI_Manager_Init(SPIManager *self);
 
-void SPI_Manager_Init(void);
+void SPI_Manager_Create(SPIManager *self, SPI *peripheral);
 
-/* TODO should I add size parameters or just let the user handle it? */
-void SPI_Manager_CreateSlave(SPISlave *self, SPI *peripheral, uint8_t *writeBuffer, uint8_t *readBuffer);
-
-/* TODO I should probably just get rid of the create function and change it to add */
-void SPI_Manager_AddSlave(SPISlave *self);
+void SPI_Manager_AddSlave(SPIManager *self, SPISlave *slave, uint8_t *writeBuffer, uint8_t *readBuffer);
 
 bool SPI_Manager_IsDeviceBusy(SPISlave *self);
 
@@ -78,11 +75,11 @@ bool SPI_Manager_IsTransferFinished(SPISlave *self);
 
 //void SPI_Manager_GetData(SPISlave *self, uint8_t *retNumBytesSent, uint8_t *retNumBytesRead);
 
-void SPI_Manager_Process(void);
+void SPI_Manager_Process(SPIManager *self);
 
-void SPI_Manager_Enable(void);
+void SPI_Manager_Enable(SPIManager *self);
 
-void SPI_Manager_Disable(void);
+void SPI_Manager_Disable(SPIManager *self);
 
 void SPI_Manager_SetSSPinFunc(SPISlave *self, void (*Function)(bool setPinHigh, void *slaveContext));
 

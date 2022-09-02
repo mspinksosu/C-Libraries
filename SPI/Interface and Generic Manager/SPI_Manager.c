@@ -21,21 +21,15 @@
 
 // ***** Global Variables ******************************************************
 
-static SPISlave *ptrToLastDevice = NULL;  // circular linked list
-static SPISlave *currentDevice = NULL;  // index for linked list
-static SPIEntry peripheralArray[DEFAULT_NUM_PERIPHERALS];
-static numPeripherals = 0;
 
 // ***** Static Function Prototypes ********************************************
 
 /* Put static function prototypes here */
-static void SPI_Manager_AddPeripheral(SPI *newPeripheral);
-static void SPI_Manager_DevicePush(SPISlave *self);
-static bool SPI_Manager_IsPeripheralBusy(SPISlave *slave);
+static void SPI_Manager_DevicePush(SPISlave *self, SPISlave *endOfList);
 
 // *****************************************************************************
 
-void SPI_Manager_Init(void)
+void SPI_Manager_Init(SPIManager *self)
 {
 
     /* Initialize the SPI peripherals */
@@ -44,42 +38,41 @@ void SPI_Manager_Init(void)
 
 // *****************************************************************************
 
-void SPI_Manager_CreateSlave(SPISlave *self, SPI *peripheral, uint8_t *writeBuffer, uint8_t *readBuffer)
+void SPI_Manager_Create(SPIManager *self, SPI *peripheral)
 {
     self->peripheral = peripheral;
-    self->writeBuffer = writeBuffer;
-    self->readBuffer = readBuffer;
-    self->numBytesToSend = 0;
-    self->numBytesToRead = 0;
-    self->readWriteCount = 0;
-    self->transferFinished = false;
+    self->endOfList = NULL;
+    self->busy = false;
 }
 
 // *****************************************************************************
 
-void SPI_Manager_AddSlave(SPISlave *self)
+void SPI_Manager_AddSlave(SPIManager *self, SPISlave *slave, uint8_t *writeBuffer, uint8_t *readBuffer)
 {
-    if(ptrToLastDevice == NULL)
+    slave->manager = self;
+    slave->writeBuffer = writeBuffer;
+    slave->readBuffer = readBuffer;
+    slave->numBytesToRead = 0;
+    slave->numBytesToSend = 0;
+    slave->readWriteCount = 0;
+    slave->state = SPI_SS_IDLE;
+    slave->transferFinished = false;
+
+    if(self->endOfList == NULL)
     {
         /* Begin with a new list */
-        ptrToLastDevice = self;
+        //ptrToLastDevice = self;
+        self->endOfList = slave;
 
         /* Since the list only contains one entry, the "next" pointer will
         also point to itself */
-        self->next = ptrToLastDevice;
-
-        /* Set index to the beginning */
-        currentDevice = ptrToLastDevice->next;
+        self->endOfList->next = self->endOfList;
     }
     else
     {
-        /* Add the slave device to the list */
-        SPI_Manager_DevicePush(self);
-        currentDevice = ptrToLastDevice->next; // reset the index
+        SPI_Manager_DevicePush(slave, self->endOfList);
     }
-
-    /* Add the SPI peripheral to the peripheral list */
-    //SPI_Manager_AddPeripheral(self->peripheral);
+    self->currentDevice = self->endOfList->next;
 }
 
 // *****************************************************************************
@@ -119,80 +112,78 @@ bool SPI_Manager_IsTransferFinished(SPISlave *self)
 
 // *****************************************************************************
 
-void SPI_Manager_Process(void)
+void SPI_Manager_Process(SPIManager *self)
 {
     /* Go round-robin through the list of devices. Right now, I'm only going to 
     deal with SPI master mode. */
     // TODO add check for master mode, and eventually add slave mode
-    if(currentDevice != NULL && currentDevice->peripheral != NULL)
+    // TODO I may want to replace "busy" a state for the peripheral
+    if(self->busy == false && self->currentDevice != NULL)
     {
-        switch(currentDevice->state)
+        switch(self->currentDevice->state)
         {
             case SPI_SS_RQ_START:
-                if(!SPI_Manager_IsPeripheralBusy(currentDevice))
-                {
-                    /* Begin transfer. Set slave select line low */
-                    if(currentDevice->SetSSPin != NULL)
-                        currentDevice->SetSSPin(false, currentDevice);
-                    currentDevice->state = SPI_SS_SEND_BYTE;
-                }
+                /* Begin transfer. Set slave select line low */
+                if(self->currentDevice->SetSSPin != NULL)
+                    (self->currentDevice->SetSSPin)(false, self->currentDevice);
+                self->currentDevice->state = SPI_SS_SEND_BYTE;
                 break;
             case SPI_SS_SEND_BYTE:
-                if(currentDevice->readWriteCount < currentDevice->numBytesToSend)
+                if(self->currentDevice->readWriteCount < self->currentDevice->numBytesToSend)
                 {
-                    SPI_TransmitByte(currentDevice->peripheral, 
-                        currentDevice->writeBuffer[currentDevice->readWriteCount]);
+                    SPI_TransmitByte(self->peripheral, 
+                        self->currentDevice->writeBuffer[self->currentDevice->readWriteCount]);
                 }
                 else
                 {
                     /* Send empty data out for a slave read */
-                    SPI_TransmitByte(currentDevice->peripheral, 0);
+                    SPI_TransmitByte(self->peripheral, 0);
                 }
-                currentDevice->state = SPI_SS_SEND_BYTE;
+                self->currentDevice->state = SPI_SS_SEND_BYTE;
                 break;
             case SPI_SS_RECEIVE_BYTE:
                 /* In master mode, there is always a read after a write. */
-                if(SPI_IsTransmitRegisterEmpty(currentDevice->peripheral))
+                if(SPI_IsTransmitRegisterEmpty(self->peripheral))
                 {
-                    uint8_t data = SPI_GetReceivedByte(currentDevice->peripheral);
+                    uint8_t data = SPI_GetReceivedByte(self->peripheral);
 
-                    if(currentDevice->readWriteCount < currentDevice->numBytesToRead)
+                    if(self->currentDevice->readWriteCount < self->currentDevice->numBytesToRead)
                     {
-                        currentDevice->readBuffer[currentDevice->readWriteCount] = data;
+                        self->currentDevice->readBuffer[self->currentDevice->readWriteCount] = data;
                     }
-                    currentDevice->readWriteCount++;
+                    self->currentDevice->readWriteCount++;
                     
-                    if(currentDevice->readWriteCount < currentDevice->numBytesToSend ||
-                        currentDevice->readWriteCount < currentDevice->numBytesToRead)
+                    if(self->currentDevice->readWriteCount < self->currentDevice->numBytesToSend ||
+                        self->currentDevice->readWriteCount < self->currentDevice->numBytesToRead)
                     {
                         /* There are more bytes to send */
-                        currentDevice->state = SPI_SS_SEND_BYTE;
+                        self->currentDevice->state = SPI_SS_SEND_BYTE;
                     }
                     else
                     {
                         /* Set slave select line high */
-                        if(currentDevice->SetSSPin != NULL)
-                            currentDevice->SetSSPin(true, currentDevice);
-                        currentDevice->transferFinished = true;
-                        currentDevice->state = SPI_SS_IDLE;
+                        if(self->currentDevice->SetSSPin != NULL)
+                            (self->currentDevice->SetSSPin)(true, self->currentDevice);
+                        self->currentDevice->transferFinished = true;
+                        self->currentDevice->state = SPI_SS_IDLE;
                     }
                 }
                 break;
         } // end switch
-        currentDevice = currentDevice->next;
+        self->currentDevice = self->currentDevice->next;
     }
 }
 
 // *****************************************************************************
 
-void SPI_Manager_Enable(void)
+void SPI_Manager_Enable(SPIManager *self)
 {
 
 }
 
 // *****************************************************************************
 
-void SPI_Manager_Disable(void)
+void SPI_Manager_Disable(SPIManager *self)
 {
 
 }
@@ -210,53 +201,13 @@ void SPI_Manager_SetSSPinFunc(SPISlave *self, void (*Function)(bool setPinHigh, 
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-static void SPI_Manager_AddPeripheral(SPI *newPeripheral)
+static void SPI_Manager_DevicePush(SPISlave *self, SPISlave *endOfList)
 {
-    // Check that the peripheral has an interface pointer
-
-    /* TODO Should I change the peripheral to use polling instead of 
-    interrupts? That would require me to re-initialize the peripheral. What if
-    the user initializes it after calling this function? I could try to just 
-    have a function in the manager to handle the interrupts. */
-
-}
-
-/***************************************************************************//**
- * @brief Check if a certain SPI peripheral is busy
- * 
- * Go through the list of devices and see if anyone is already using my 
- * peripheral.
- * 
- * @param slave  pointer to the slave who's peripheral we are checking
- * 
- * @return true  true if anyone else is already using that peripheral
- */
-static bool SPI_Manager_IsPeripheralBusy(SPISlave *slave)
-{
-    bool isBusy = false;
-    SPISlave *index = slave->next;
-    /* Go around the loop once, starting with our the slave index + 1 */
-    while(index != slave)
-    {
-        if(index->peripheral == slave->peripheral)
-        {
-            if(index->state == SPI_SS_SEND_BYTE || index->state == SPI_SS_RECEIVE_BYTE)
-                isBusy = true;
-            break;
-        }
-        index = index->next;
-    }
-    return isBusy;
-}
-
-static void SPI_Manager_DevicePush(SPISlave *self)
-{
-    /* Add the new entry to the beginning of the list. The last entry's "next" 
-    pointer will always point to the beginning of the list */
-    self->next = ptrToLastDevice->next;
-    
-    /* Update the beginning entry to point to the new beginning */
-    ptrToLastDevice->next = self;
+    /* Add the new entry to the beginning of the list. Make the "next" pointer
+    point to the head */
+    self->next = endOfList->next;
+    /* Update the beginning of the list to point to the new beginning */
+    endOfList->next = self;
 }
 
 /*
