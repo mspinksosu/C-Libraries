@@ -303,8 +303,8 @@ uint8_t UART_GetReceivedByte(UART *self);
  * @brief Check if received data is available
  * 
  * This function will return true whenever a byte is shifted into the received
- * data register. If you are not using interrupts, you can poll this function. 
- * Then when data is ready, call the GetReceivedByte function.
+ * data register. If you are not using interrupts, you can poll this function,
+ * then call GetReceivedByte when data is ready.
  * 
  * @param self  pointer to the UART you are using
  * 
@@ -344,7 +344,7 @@ void UART_ReceiveDisable(UART *self);
  * sure there isn't already a call to this function pending. If there is, you
  * need to set a flag and return. The easiest way to do this is to use a static 
  * variable that is set whenever this function is entered. This flag will be 
- * checked by the PendingEventHandler function further below. 
+ * checked by the PendingEventHandler function further below.
  * 
  * @param self  pointer to the UART you are using
  */
@@ -437,7 +437,8 @@ void UART_SetTransmitFinishedCallback(UART *self, void (*Function)(void));
  * When you issue the callback in your implementation you will typically give 
  * it a reference to the GetReceivedByte function.
  * 
- * void MyFunction(uint8_t (*CallToGetData)void) { // callback function
+ * // callback function implementation:
+ * void MyFunction(uint8_t (*CallToGetData)void) {
  *     uint8_t data = CallToGetData();
  * }
  * 
