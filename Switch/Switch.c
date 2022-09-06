@@ -83,6 +83,12 @@ void Switch_Tick(Switch *self, bool inputAIsOn, bool inputBIsOn)
                     update the current output. */
                     DecodeOutput(self, currentState);
                     self->outputState = currentState;
+                    
+                    /* callback function */
+                    if(self->flags.switchChangedEvent && self->outputChangeCallback)
+                    {
+                        (self->outputChangeCallback)(Switch_GetOuput(self), self);
+                    }
                 }
                 else
                 {
@@ -101,6 +107,12 @@ void Switch_Tick(Switch *self, bool inputAIsOn, bool inputBIsOn)
                 DecodeOutput(self, currentState);
                 self->outputState = currentState;
                 self->debounceState = SW_READY;
+
+                /* callback function */
+                if(self->flags.switchChangedEvent && self->outputChangeCallback)
+                {
+                    (self->outputChangeCallback)(Switch_GetOuput(self), self);
+                }
             }
             break;
         default:
@@ -209,9 +221,21 @@ bool Switch_OutputB(Switch *self)
 
 // *****************************************************************************
 
-SwitchState Switch_GetState(Switch *self)
+SwitchState Switch_GetOutput(Switch *self)
 {
-    return(self->outputState);
+    SwitchState retVal = self->outputState;
+
+    if(self->type == SW_NORMAL && retVal == SW_OUTPUT_OFF)
+        retVal = SW_OUTPUT_INVALID;
+    
+    return retVal;
+}
+
+// *****************************************************************************
+
+void Switch_SetOutputChangeCallback(Switch *self, SwitchCallbackFunc Function)
+{
+    self->outputChangeCallback = Function;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

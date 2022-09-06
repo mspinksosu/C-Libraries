@@ -33,6 +33,8 @@
  * events flags are not cleared automatically. There may be times when you 
  * don't want to immediately clear a flag.
  * 
+ * // TODO callback details
+ * 
  ******************************************************************************/
 
 #ifndef SWITCH_H
@@ -46,32 +48,40 @@
 
 // ***** Global Variables ******************************************************
 
-// A is bit 0, B is bit 1
 typedef enum SwitchStateTag
 {
-    SW_OUTPUT_OFF = 0x00,
+    SW_OUTPUT_OFF = 0x00, // A is bit 0, B is bit 1
     SW_OUTPUT_A = 0x01,
     SW_OUTPUT_B = 0x02,
-    SW_OUTPUT_INVALID = 0x03,
+    SW_OUTPUT_INVALID = 0x03
 } SwitchState;
 
 typedef enum SwitchTypeTag
 {
-    SW_NORMAL,
-    SW_CENTER_OFF,
+    SW_NORMAL = 0,
+    SW_CENTER_OFF
 } SwitchType;
 
 typedef enum DebounceTag
 {
     SW_READY = 0,
-    SW_DEBOUNCING,
+    SW_DEBOUNCING
 } SwitchDebounceState;
 
-typedef struct SwitchTag
+/* A forward declaration which will allow the compiler to "know" what a Switch
+is before I use it in the callback function declaration below me */
+typedef struct SwitchTag Switch;
+
+/* callback function pointer. The context pointer will point to the Switch that 
+initiated the callback. This is so that you can service multiple Switch 
+callbacks with the same function if you desire. */
+typedef void (*SwitchCallbackFunc)(SwitchState output, Switch *switchContext);
+
+struct SwitchTag
 {
+    SwitchCallbackFunc outputChangeCallback;
     uint16_t debouncePeriod;
     uint16_t debounceCounter;
-
     SwitchState outputState;
     SwitchType type;
     SwitchDebounceState debounceState;
@@ -86,7 +96,7 @@ typedef struct SwitchTag
         };
         uint8_t all;
     } flags;
-} Switch;
+};
 
 /** 
  * Description of struct members. You shouldn't really mess with any of these
@@ -245,16 +255,29 @@ bool Switch_OutputA(Switch *self);
 bool Switch_OutputB(Switch *self);
 
 /***************************************************************************//**
- * @brief Get the raw value of the switch as an enum.
+ * @brief Get the output of the switch as an enum.
  * 
- * This can return the SW_OUTPUT_OFF regardless of whether or not the
- * center-off feature is enabled. Be careful. If you want to be safer, use the
- * OutputA, OutputB, and IsOff functions instead.
+ * Will return SW_OUTPUT_INVALID if switch is off and off is not allowed.
  * 
  * @param self  pointer to the Switch that you are using
  * 
- * @return SwitchState  an enum that holds the switch state
+ * @return SwitchState  an enum that holds the switch output
  */
-SwitchState Switch_GetState(Switch *self);
+SwitchState Switch_GetOutput(Switch *self);
+
+/***************************************************************************//**
+ * @brief Set a function to be called when an output change event happens
+ * 
+ * Make your function follow the format listed below. The function prototype 
+ * must have a pointer to a Switch as its argument. This is so that multiple 
+ * Switches can be serviced by the same function if desired. This function will 
+ * not clear any event flags.
+ * 
+ * @param self  pointer to the Switch that you are using
+ * 
+ * @param Function  format: void SomeFunction(SwitchState, Switch *context)
+ */
+void Switch_SetOutputChangeCallback(Switch *self, SwitchCallbackFunc Function);
+
 
 #endif /* TRIGGER_H */
