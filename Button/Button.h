@@ -101,12 +101,8 @@ typedef enum ButtonLengthTag
     BUTTON_LONG_PRESS,
 } ButtonLength;
 
-/* A forward declaration which will allow the compiler to "know" what a Button
-is before I use it in the callback function declaration below me */
-//typedef struct ButtonTag Button;
-
 /* callback function pointer. The context pointer will point to the Button that 
-initiated the callback. This is so that you can service multiple Button  
+initiated the callback. This is so that you can service multiple Button 
 callbacks with the same function if you desire. */
 typedef void (*ButtonCallbackFunc)(void *buttonContext);
 
@@ -115,12 +111,12 @@ typedef struct ButtonTag
     void *instance;
     ButtonCallbackFunc shortPressCallback;
     ButtonCallbackFunc longPressCallback;
-    ButtonState state;
-    ButtonType type;
-    ButtonLength length;
     uint16_t longPressPeriod;
     uint16_t longPressCounter;
     uint16_t tickMs;
+    ButtonState state;
+    ButtonType type;
+    ButtonLength length;
     
     union {
         struct {
@@ -387,26 +383,28 @@ ButtonLength Button_GetLength(Button *self);
 /***************************************************************************//**
  * @brief Set a function to be called when a short press event happens
  * 
- * The function prototype must have a pointer to a Button as its argument. 
- * This is so that multiple Buttons can be serviced by the same function if 
- * desired. This function will not clear any event flags.
+ * The function prototype must have a void pointer as its argument. The pointer
+ * will be set to the Button that called the function. This is so that multiple
+ * Buttons can be serviced by the same function if desired. This function will 
+ * not clear any event flags.
  * 
  * @param self  pointer to the Button that you are using
  * 
- * @param Function  format: void SomeFunction(Button *context)
+ * @param Function  format: void SomeFunction(void *buttonContext)
  */
 void Button_SetShortPressCallback(Button *self, ButtonCallbackFunc Function);
 
 /***************************************************************************//**
  * @brief Set a function to be called when a long press event happens
  * 
- * The function prototype must have a pointer to a Button as its argument. 
- * This is so that multiple Buttons can be serviced by the same function if 
- * desired. This function will not clear any event flags.
+ * The function prototype must have a void pointer as its argument. The pointer
+ * will be set to the Button that called the function. This is so that multiple
+ * Buttons can be serviced by the same function if desired. This function will 
+ * not clear any event flags.
  * 
  * @param self  pointer to the Button that you are using
  * 
- * @param Function  format: void SomeFunction(Button *context)
+ * @param Function  format: void SomeFunction(void *buttonContext)
  */
 void Button_SetLongPressCallback(Button *self, ButtonCallbackFunc Function);
 

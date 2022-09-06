@@ -84,7 +84,6 @@ typedef struct ButtonGroupTag
 {
     uint16_t debouncePeriod;
     uint16_t integrator[8];
-
     uint8_t input;
     uint8_t output;
     uint8_t previousOutput;

@@ -37,6 +37,8 @@
  * with going slower. The maximum available debounce time for debouncing with 
  * software is 255 ms.
  * 
+ * // TODO callback details
+ * 
  * ****************************************************************************/
 
 #ifndef ROTARYENCODER_H
@@ -58,10 +60,6 @@ typedef enum RotaryEncoderTypeTag
     RE_FULL_CYCLE_PER_DETENT,
     RE_QUARTER_CYCLE_PER_DETENT,
 } RotaryEncoderType;
-
-/* A forward declaration which will allow the compiler to "know" what a
-RotaryEncoder type is before I use it in the callback function declaration */
-//typedef struct RotaryEncoderTag RotaryEncoder;
 
 /* callback function pointer. The context pointer will point to the Rotary
 Encoder that initiated the callback. This is so that you can service multiple 
@@ -157,26 +155,28 @@ bool RE_GetCounterClockwise(RotaryEncoder *self);
 /***************************************************************************//**
  * @brief Set a function to be called when a clockwise event happens
  * 
- * The function prototype must have a pointer to a RotaryEncoder as its 
- * argument. This is so that multiple encoders can be serviced by the same 
- * function if desired. This function will not clear any event flags.
+ * The function prototype must have a void pointer as its argument. The pointer
+ * will be set to the RotaryEncoder that called the function. This is so that 
+ * multiple encoders can be serviced by the same function if desired. This 
+ * function will not clear any event flags.
  * 
  * @param self  pointer to the Rotary Encoder that you are using
  * 
- * @param Function  format: void SomeFunction(RotaryEncoder *context)
+ * @param Function  format: void SomeFunction(void *rotaryContext)
  */
 void RE_SetClockwiseEventCallback(RotaryEncoder *self, RECallbackFunc Function);
 
 /***************************************************************************//**
  * @brief Set a function to be called when a counter clockwise event happens
  * 
- * The function prototype must have a pointer to a RotaryEncoder as its 
- * argument. This is so that multiple encoders can be serviced by the same 
- * function if desired. This function will not clear any event flags.
+ * The function prototype must have a void pointer as its argument. The pointer
+ * will be set to the RotaryEncoder that called the function. This is so that 
+ * multiple encoders can be serviced by the same function if desired. This 
+ * function will not clear any event flags.
  * 
  * @param self  pointer to the Rotary Encoder that you are using
  * 
- * @param Function  format: void SomeFunction(RotaryEncoder *context)
+ * @param Function  format: void SomeFunction(void *rotaryContext)
  */
 void RE_SetCounterClockwiseEventCallback(RotaryEncoder *self, RECallbackFunc Function);
 
