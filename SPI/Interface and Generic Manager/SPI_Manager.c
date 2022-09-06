@@ -34,6 +34,7 @@ void SPI_Manager_Init(SPIManager *self)
 
     /* Initialize the SPI peripherals */
 
+    /* Enable the SPI peripherals */
 }
 
 // *****************************************************************************

@@ -55,6 +55,13 @@ typedef struct SPIManagerTag
     // TODO state
 } SPIManager;
 
+/**
+ * Description of struct members. You shouldn't really mess with any of these
+ * variables directly. That is why I made functions for you to use.
+ * 
+ * 
+ */
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Function Prototypes *************************************************//
