@@ -84,7 +84,7 @@ typedef struct SPIStatusBitsTag
 {
     union {
         struct {
-            // TODO
+            // TODO status bits
             unsigned :8;
         };
         uint8_t all;

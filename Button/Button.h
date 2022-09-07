@@ -54,7 +54,19 @@
  * need to ignore the normal short press action. Or if you need to do something
  * during the time between the button being held down and the long press event.
  * 
- * // TODO callback details
+ *      There are two callback functions for short press and long press events.
+ * The function you create must follow the prototype listed for the
+ * ButtonCallbackFunc. It must have a void pointer as an argument. When the 
+ * callback function gets called, you will get a pointer to the Button that 
+ * called it. This way, you can have multiple callbacks pointing to the same 
+ * function if you desire. Inside your function, you can compare the pointer 
+ * to your Buttons to determine which Button initiated the callback. The reason 
+ * a void pointer is used is so that you have the option of not using the 
+ * contextPointer if you don't want to. This removes a dependency on needing to
+ * including Button.h if your callback is in some other file. You're still 
+ * going to get a pointer to the Button, but it can be ignored. After you
+ * create your function, call SetLongPressCallback or SetShortPressCallback and
+ * give it your function as an argument.
  * 
  * Example Code:
  *      Button PushButton;

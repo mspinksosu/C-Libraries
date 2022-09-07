@@ -26,14 +26,16 @@
  *      I've provided a timer finished callback function. The function you 
  * create must follow the prototype listed for TimerCallbackFunc. It must have 
  * a void pointer as an argument. The idea is that when the callback function 
- * executes, you will get a pointer to the timer that called the function. This
- * way you can have multiple timers pointing to the same callback function if 
- * you desire. Then inside your callback function you can look at the context 
+ * is called you will get a pointer to the Timer that called it. This way you 
+ * can have multiple Timers pointing to the same callback function if you 
+ * desire. Then inside your callback function you can look at the context 
  * pointer to see which Timer object called the function and decide what to do.
  * The reason I chose a void pointer is so that you have the option of not 
  * using the contextPointer if you don't want to. This removes a dependency on 
  * needing to including Timer.h if your callback is in some other file. You're 
- * still going to get a pointer to the Timer, but it can be ignored.
+ * still going to get a pointer to the Timer, but it can be ignored. After you
+ * create your function prototype, call SetFinishedCallback and give it your 
+ * function as an argument.
  * 
  * Example Code:
  *      Timer startUpTimer;
@@ -63,8 +65,6 @@
 initiated the callback. This is so that you can service multiple Timer 
 callbacks with the same function if you desire. */
 typedef void (*TimerCallbackFunc)(void *timerContext); 
-/* TODO Experiment. Try with void pointer instead of pointer to timer. This could be useful for 
-calling a function somewhere else without the need to include the Timer.h header file */
 
 typedef struct TimerTag
 {

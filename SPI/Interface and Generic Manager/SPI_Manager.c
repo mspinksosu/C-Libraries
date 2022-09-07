@@ -8,7 +8,7 @@
  * @file SPI_Manager.h
  * 
  * @details
- *      // TODO
+ *      // TODO details
  * 
  ******************************************************************************/
 
@@ -90,7 +90,6 @@ bool SPI_Manager_IsDeviceBusy(SPISlave *self)
 
 void SPI_Manager_BeginTransfer(SPISlave *self, uint16_t numBytesToSend, uint16_t numBytesToRead)
 {
-     // TODO
     if(self->state != SPI_SS_IDLE || (numBytesToRead == 0 && numBytesToSend == 0))
         return;
 

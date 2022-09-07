@@ -132,8 +132,7 @@ void ADC_InitChannel(ADCChannel *self, uint8_t channelNumber)
 // *****************************************************************************
 
 void ADC_TakeSample(ADCChannel *self)
-{   
-    /* TODO do I want to stop if there is a conversion going on? */
+{
     if(adcFlags.start == 0 && adcFlags.active == 0)
     {
         /* Load the channel to start the conversion */

@@ -33,7 +33,16 @@
  * events flags are not cleared automatically. There may be times when you 
  * don't want to immediately clear a flag.
  * 
- * // TODO callback details
+ *      In addition to the flags, I've also made a callback function that will
+ * get called every time the output of the switch changes. Create a function 
+ * follows the prototype listed for SwitchCallbackFunc and then call 
+ * SetOutputChangeCallback and give it your function as an argument. Your
+ * function prototype must use a pointer to a Switch as argument. When your
+ * function is called, you will get the output of the Switch and a pointer to 
+ * the Switch that called the function. This is so that you can have multiple
+ * Switch callbacks pointing to the same function if you desire. Inside your
+ * function, you can compare the pointer to your Switches to determine which
+ * one initiated that callback.
  * 
  ******************************************************************************/
 
