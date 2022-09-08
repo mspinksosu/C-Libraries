@@ -44,7 +44,7 @@ GPIO_STM32 _led1, _led2;
  */
 void GPIO_Manager_InitAllPins(void)
 {
-    GPIO_DriverSetInterface(&GPIOFunctionTable); // defined in GPIO_STM32G0.h
+    GPIO_DriverSetInterface(&GPIO_FunctionTable); // defined in GPIO_STM32G0.h
 
     GPIOInitType init;
     GPIOInitType_STM32 _init;

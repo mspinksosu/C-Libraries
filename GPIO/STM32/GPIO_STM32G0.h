@@ -14,7 +14,7 @@
  * gain access to the alternate pin functions. The sub classes contain a 
  * pointer to the base class in order to access those variables.
  * 
- * The external interface variable, GPIOFunctionTable is declared and defined
+ * The external interface variable, GPIO_FunctionTable is declared and defined
  * in the .c file. This header file needs to be included wherever the 
  * initialization takes place. However, it is only needed for this intial step. 
  * It is not needed to perform operations on the pins. Any file needing access 
@@ -36,7 +36,7 @@
  * and modified for each pin's initialization.
  * 
  * Example Code:
- *      GPIO_DriverSetInterface(&GPIOFunctionTable);
+ *      GPIO_DriverSetInterface(&GPIO_FunctionTable);
  *      GPIO led1;
  *      GPIO_STM32 _led1; // extends led 1
  *      GPIOInitType init;
@@ -64,7 +64,7 @@
 
 // ***** Global Variables ******************************************************
 
-extern GPIOInterface GPIOFunctionTable;
+extern GPIOInterface GPIO_FunctionTable;
 
 /* Processor specific class */
 typedef struct GPIO_STM32Tag

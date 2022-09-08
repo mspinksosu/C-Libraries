@@ -45,7 +45,7 @@ void GPIO_Manager_InitAllPins(void)
 {
     /* The function table is declared in your own GPIO implementation header
     file and defined in your implementation .c file */
-    GPIO_DriverSetInterface(&GPIOFunctionTable);
+    GPIO_DriverSetInterface(&GPIO_FunctionTable);
 
     GPIOInitType init;
 
