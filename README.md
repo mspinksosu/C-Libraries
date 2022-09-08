@@ -34,7 +34,7 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
     - [ ] Update doxygen
 - [x] Switch: Complete!
 - [x] Timer: Complete!
-- [ ] UART: Almost ready
+- [ ] UART: Almost complete. STM32F1 tested
     - [x] STM32 G0 implementation finished! Testing in progress
     - [x] Added options for flow control and interrupts
     - [x] STM32 F1 implementation tested and working!

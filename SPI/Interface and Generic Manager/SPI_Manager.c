@@ -62,7 +62,6 @@ void SPI_Manager_AddSlave(SPIManager *self, SPISlave *slave, uint8_t *writeBuffe
     if(self->endOfList == NULL)
     {
         /* Begin with a new list */
-        //ptrToLastDevice = self;
         self->endOfList = slave;
 
         /* Since the list only contains one entry, the "next" pointer will

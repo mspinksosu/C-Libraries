@@ -25,7 +25,7 @@
 // ***** Global Variables ******************************************************
 
 /* Create the function table */
-typedef struct Foo_InterfaceTag
+typedef struct FooInterfaceTag
 {
     /*  These are the functions that will be called. You will create your own
         function table for your class that will have these function signatures 
@@ -36,12 +36,12 @@ typedef struct Foo_InterfaceTag
     void (*Foo_SetValue)(void *instance, uint16_t data);
 
     // Add more functions below
-} Foo_Interface;
+} FooInterface;
 
 /* Create the base class */
 typedef struct FooTag
 {
-    Foo_Interface *interface;
+    FooInterface *interface;
     void *instance;
 
     // Add more necessary members

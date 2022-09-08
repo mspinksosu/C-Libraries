@@ -59,19 +59,17 @@ typedef struct SPIInterfaceTag
     interface object for your class that will have these function signatures.
     Set each of your functions equal to one of these pointers */
     void (*SPI_Init)(SPIInitType *params);
+    void (*SPI_Enable)(void);
+    void (*SPI_Disable)(void);
     void (*SPI_ReceivedDataEvent)(void);
     uint8_t (*SPI_GetReceivedByte)(void);
     bool (*SPI_IsReceiveRegisterFull)(void);
-    void (*SPI_ReceiveEnable)(void);
-    void (*SPI_ReceiveDisable)(void);
     void (*SPI_TransmitFinishedEvent)(void);
     void (*SPI_TransmitByte)(uint8_t);
     bool (*SPI_IsTransmitRegisterEmpty)(void);
-    void (*SPI_TransmitEnable)(void);
-    void (*SPI_TransmitDisable)(void);
     SPIStatusBits (*SPI_GetStatus)(void);
     void (*SPI_SetTransmitFinishedCallback)(void (*Function)(void));
-    void (*SPI_SetReceivedDataCallback)(void (*Function)(uint8_t (*CallToGetData)(void)));
+    void (*SPI_SetReceivedDataCallback)(void (*Function)(uint8_t));
     void (*SPI_SetSSPinFunc)(void (*Function)(bool));
 } SPIInterface;
 

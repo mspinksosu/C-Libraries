@@ -25,7 +25,7 @@
     (which are function pointers) the our local functions. Typecasting is 
     necessary. When a new sub class object is created, we will set its interface
     member equal to this table. */
-static Foo_Interface FooFunctionTable = {
+FooInterface FooFunctionTable = {
     .Foo_Func = (void (*)(void *))Foo_MCU1_Func,
     .Foo_GetValue = (uint16_t (*)(void *))Foo_MCU1_GetValue,
     .Foo_SetValue = (void (*)(void *, uint16_t))Foo_MCU1_SetValue,
