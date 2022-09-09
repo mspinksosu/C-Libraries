@@ -43,7 +43,7 @@
 /* Assign functions to the interface */
 UARTInterface UART2_FunctionTable = {
     .UART_ComputeBRGValue = UART2_ComputeBRGValue,
-    .UART_Init = (void (*)(void *))UART2_Init,
+    .UART_Init = UART2_Init,
     .UART_ReceivedDataEvent = UART2_ReceivedDataEvent,
     .UART_GetReceivedByte = UART2_GetReceivedByte,
     .UART_IsReceiveRegisterFull = UART2_IsReceiveRegisterFull,
