@@ -162,11 +162,11 @@ void UART_ReceiveDisable(UART *self)
 
 // *****************************************************************************
 
-void UART_TransmitFinishedEvent(UART *self)
+void UART_TransmitRegisterEmptyEvent(UART *self)
 {
-    if(self->interface->UART_TransmitFinishedEvent != NULL)
+    if(self->interface->UART_TransmitRegisterEmptyEvent != NULL)
     {
-        (self->interface->UART_TransmitFinishedEvent)();
+        (self->interface->UART_TransmitRegisterEmptyEvent)();
     }
 }
 
@@ -187,6 +187,20 @@ bool UART_IsTransmitRegisterEmpty(UART *self)
     if(self->interface->UART_IsTransmitRegisterEmpty != NULL)
     {
         return (self->interface->UART_IsTransmitRegisterEmpty)();
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// *****************************************************************************
+
+bool UART_IsTransmitFinished(UART *self)
+{
+    if(self->interface->UART_IsTransmitFinished != NULL)
+    {
+        return (self->interface->UART_IsTransmitFinished)();
     }
     else
     {

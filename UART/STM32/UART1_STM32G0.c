@@ -66,9 +66,10 @@ UARTInterface UART1_FunctionTable = {
     .UART_IsReceiveRegisterFull = UART1_IsReceiveRegisterFull,
     .UART_ReceiveEnable = UART1_ReceiveEnable,
     .UART_ReceiveDisable = UART1_ReceiveDisable,
-    .UART_TransmitFinishedEvent = UART1_TransmitFinishedEvent,
+    .UART_TransmitRegisterEmptyEvent = UART1_TransmitRegisterEmptyEvent,
     .UART_TransmitByte = UART1_TransmitByte,
     .UART_IsTransmitRegisterEmpty = UART1_IsTransmitRegisterEmpty,
+    .UART_IsTransmitFinished = UART1_IsTransmitFinished,
     .UART_TransmitEnable = UART1_TransmitEnable,
     .UART_TransmitDisable = UART1_TransmitDisable,
     .UART_PendingEventHandler = UART1_PendingEventHandler,
@@ -294,7 +295,7 @@ void UART1_ReceiveDisable(void)
 
 // *****************************************************************************
 
-void UART1_TransmitFinishedEvent(void)
+void UART1_TransmitRegisterEmptyEvent(void)
 {
     /* This will prevent recursive calls if we call transmit byte function 
     from within the transmit interrupt callback. This requires the process
@@ -378,7 +379,7 @@ void UART1_PendingEventHandler(void)
     if(txFinishedEventPending && !lockTxFinishedEvent)
     {
         txFinishedEventPending = false;
-        UART1_TransmitFinishedEvent();
+        UART1_TransmitRegisterEmptyEvent();
     }
 }
 

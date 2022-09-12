@@ -68,11 +68,13 @@ void UART1_ReceiveEnable(void);
 
 void UART1_ReceiveDisable(void);
 
-void UART1_TransmitFinishedEvent(void);
+void UART1_TransmitRegisterEmptyEvent(void);
 
 void UART1_TransmitByte(uint8_t dataToSend);
 
 bool UART1_IsTransmitRegisterEmpty(void);
+
+bool UART1_IsTransmitFinished(void);
 
 void UART1_TransmitEnable(void);
 

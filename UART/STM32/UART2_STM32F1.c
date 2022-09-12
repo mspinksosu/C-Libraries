@@ -49,11 +49,13 @@ UARTInterface UART2_FunctionTable = {
     .UART_IsReceiveRegisterFull = UART2_IsReceiveRegisterFull,
     .UART_ReceiveEnable = UART2_ReceiveEnable,
     .UART_ReceiveDisable = UART2_ReceiveDisable,
-    .UART_TransmitFinishedEvent = UART2_TransmitFinishedEvent,
+    .UART_TransmitRegisterEmptyEvent = UART2_TransmitRegisterEmptyEvent,
     .UART_TransmitByte = UART2_TransmitByte,
     .UART_IsTransmitRegisterEmpty = UART2_IsTransmitRegisterEmpty,
+    .UART_IsTransmitFinished = UART2_IsTransmitFinished,
     .UART_TransmitEnable = UART2_TransmitEnable,
     .UART_TransmitDisable = UART2_TransmitDisable,
+    .UART_PendingEventHandler = UART2_PendingEventHandler,
     .UART_SetTransmitFinishedCallback = UART2_SetTransmitFinishedCallback,
     .UART_SetReceivedDataCallback = UART2_SetReceivedDataCallback,
     .UART_SetIsCTSPinLowFunc = UART2_SetIsCTSPinLowFunc,
@@ -69,7 +71,6 @@ static bool lockTxFinishedEvent = false, txFinishedEventPending = false,
 
 // local function pointers
 static void (*TransmitFinishedCallback)(void);
-//static void (*ReceivedDataCallback)(void);
 static void (*ReceivedDataCallback)(uint8_t (*CallToGetData)(void));
 static bool (*IsCTSPinLow)(void);
 static void (*SetRTSPin)(bool setHigh);
@@ -193,7 +194,8 @@ void UART2_Init(UARTInitType *params)
     fire off repeatedly. It's best to turn it on after placing data in the 
     transmit register */
 
-    if(useRxInterrupt) UART2_ADDR->CR1 |= USART_CR1_RXNEIE; // rx register not empty interrupt
+    if(useRxInterrupt) 
+        UART2_ADDR->CR1 |= USART_CR1_RXNEIE; // rx register not empty interrupt
 
     UART2_ADDR->CR1 |= USART_CR1_RE; // enable receiver
     UART2_ADDR->CR1 |= USART_CR1_TE; // enable transmitter
@@ -271,6 +273,12 @@ bool UART2_IsReceiveRegisterFull(void)
 void UART2_ReceiveEnable(void)
 {
     UART2_ADDR->CR1 |= USART_CR1_RE;
+
+        /* RTS is asserted (low) whenever we are ready to receive data. */
+    if(flowControl == UART_FLOW_CALLBACKS && SetRTSPin != NULL)
+    {
+        SetRTSPin(false); // set low
+    }
 }
 
 // *****************************************************************************
@@ -278,11 +286,17 @@ void UART2_ReceiveEnable(void)
 void UART2_ReceiveDisable(void)
 {
     UART2_ADDR->CR1 &= ~USART_CR1_RE;
+    
+    /* RTS is deasserted (high) whenever we are not ready to receive data. */
+    if(flowControl == UART_FLOW_CALLBACKS && SetRTSPin != NULL)
+    {
+        SetRTSPin(true); // set high
+    }
 }
 
 // *****************************************************************************
 
-void UART2_TransmitFinishedEvent(void)
+void UART2_TransmitRegisterEmptyEvent(void)
 {
     /* This will prevent recursive calls if we call transmit byte function 
     from within the transmit interrupt callback. This requires the process
@@ -315,6 +329,9 @@ void UART2_TransmitByte(uint8_t data)
         return; // CTS was high
     }
     UART2_ADDR->DR = data;
+    
+    /* Clear the transmission complete flag if implemented */
+    UART2_ADDR->SR &= ~USART_SR_TC;
 
     /* Enable transmit interrupt here if needed */
     if(useTxInterrupt)
@@ -347,7 +364,31 @@ bool UART2_IsTransmitRegisterEmpty(void)
 
 // *****************************************************************************
 
-void UART2_TransmitEnable(void)
+bool UART1_IsTransmitFinished(void)
+{
+    bool txReady = false;
+
+    /* The transmit complete flag is set when a full data byte is shifted out 
+    and the transmit register empty flag is set. It is cleared by writing a
+    zero to it. */
+    if(UART2_ADDR->SR & USART_SR_TC)
+        txReady = true;
+
+    /* This function will behave the same as the transmit register empty 
+    function. If the user chooses to poll this function, we want to make sure 
+    we block input to the transmit register when CTS is asserted */
+    if(flowControl == UART_FLOW_CALLBACKS && IsCTSPinLow != NULL &&
+        IsCTSPinLow() == false)
+    {
+        txReady = false; // CTS was high. Don't allow transmission
+    }
+
+    return txReady;
+}
+
+// *****************************************************************************
+
+void UART1_TransmitEnable(void)
 {
     UART2_ADDR->CR1 |= USART_CR1_TE;
 }
@@ -366,7 +407,7 @@ void UART2_PendingEventHandler(void)
     if(txFinishedEventPending && !lockTxFinishedEvent)
     {
         txFinishedEventPending = false;
-        UART2_TransmitFinishedEvent();
+        UART2_TransmitRegisterEmptyEvent();
     }
 }
 

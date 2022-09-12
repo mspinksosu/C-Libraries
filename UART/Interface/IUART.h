@@ -124,9 +124,10 @@ typedef struct UARTInterfaceTag
     bool (*UART_IsReceiveRegisterFull)(void);
     void (*UART_ReceiveEnable)(void);
     void (*UART_ReceiveDisable)(void);
-    void (*UART_TransmitFinishedEvent)(void);
+    void (*UART_TransmitRegisterEmptyEvent)(void);
     void (*UART_TransmitByte)(uint8_t);
     bool (*UART_IsTransmitRegisterEmpty)(void);
+    bool (*UART_IsTransmitFinished)(void);
     void (*UART_TransmitEnable)(void);
     void (*UART_TransmitDisable)(void);
     void (*UART_PendingEventHandler)(void);
@@ -333,26 +334,26 @@ void UART_ReceiveDisable(UART *self);
 /***************************************************************************//**
  * @brief A byte has been transmitted. Disable Tx interrupt, call Tx callback
  * 
- * This event is called whenever a byte is finished transmitting. This would be
- * equivalent to a "Tx register empty" event. If you are using interrupts, this
- * will be the function you call wherever your transmit register empty 
- * interrupt is at. Because we don't know when the full payload is finished, we
- * must disable the Tx interrupt after every byte. Then call the transmit
- * finished callback function pointer. In addition, you should check to make
- * sure there isn't already a call to this function pending. If there is, you
- * need to set a flag and return. The easiest way to do this is to use a static 
- * variable that is set whenever this function is entered. This flag will be 
- * checked by the PendingEventHandler function further below.
+ * This event is called whenever the Tx register is empty. If you are using 
+ * interrupts, this will be the function you call wherever your transmit 
+ * register empty interrupt is at. Because we don't know when the full payload 
+ * is finished, we must disable the Tx interrupt after every byte. Then call 
+ * the transmit finished callback function pointer. In addition, you should 
+ * check to make sure there isn't already a call to this function pending. If 
+ * there is, you need to set a flag and return. The easiest way to do this is 
+ * to use a static variable that is set whenever this function is entered. 
+ * This flag will be checked by the PendingEventHandler function further below.
  * 
  * @param self  pointer to the UART you are using
  */
-void UART_TransmitFinishedEvent(UART *self);
+void UART_TransmitRegisterEmptyEvent(UART *self);
 
 /***************************************************************************//**
- * @brief Check CTS pin, place data in the Tx register, send
+ * @brief Check CTS pin, place data in Tx register, clear flags, send
  * 
  * If the flow control is being used and the CTS pin is low, place the data in
- * transmit register. If interrupts are being used, turn on the Tx interrupt.
+ * transmit register. If the MCU has a transmission complete flag, clear it.
+ * If interrupts are being used, turn on the Tx interrupt.
  * 
  * @param self  pointer to the UART you are using
  * 
@@ -363,17 +364,36 @@ void UART_TransmitByte(UART *self, uint8_t dataToSend);
 /***************************************************************************//**
  * @brief Check if the transmit register is empty and CTS is low
  * 
- * This function will return true whenever the contents of the Tx register have
- * been shifted out. If you are not using interrupts, you can poll this
- * function to know when the previous transmission is finished. Then when the 
- * register is empty, call TransmitByte. If you are using flow control, it is a 
- * good idea to check the CTS pin as well.
+ * This function will return true whenever the Tx data register is empty. If 
+ * you are not using interrupts, you can poll this function to know when the 
+ * previous data is being transmitted. Then call TransmitByte and load the next
+ * byte. If you are using flow control, it is a good idea to check the CTS pin 
+ * as well.
  * 
  * @param self  pointer to the UART you are using
  * 
  * @return true if the transmit register is empty
  */
 bool UART_IsTransmitRegisterEmpty(UART *self);
+
+/***************************************************************************//**
+ * @brief Check if the data has finished being shifted out and CTS is low
+ * 
+ * Identical to IsTransmitRegisterEmpty except that this is only true when the 
+ * actual contents of the Tx register have been completely shifted out. This is
+ * sometimes called "transmit complete" or "shift register status". You should 
+ * use IsTransmitRegisterEmpty and TransmitRegisterEmptyEvent instead of this 
+ * function because not every MCU implements this feature. However, there are
+ * some situations when it would be nice to know exactly when the transmission 
+ * has finished, such as with half-duplex communication. If your MCU doesn't
+ * implement this feature, return the Tx register not empty status instead. 
+ * Make sure to clear this flag every time you send a byte.
+ * 
+ * @param self  pointer to the UART you are using
+ * 
+ * @return true if the transmission is fully completed
+ */
+bool UART_IsTransmitFinished(UART *self);
 
 /***************************************************************************//**
  * @brief Enable the UART transmitter

@@ -1,5 +1,5 @@
 /***************************************************************************//**
- * @brief SPI Library Implementation (STM32g0)
+ * @brief SPI Library Implementation (STM32G0)
  * 
  * @author Matthew Spinks
  * 

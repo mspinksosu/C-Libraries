@@ -49,9 +49,10 @@ UARTInterface UART1_FunctionTable = {
     .UART_IsReceiveRegisterFull = UART1_IsReceiveRegisterFull,
     .UART_ReceiveEnable = UART1_ReceiveEnable,
     .UART_ReceiveDisable = UART1_ReceiveDisable,
-    .UART_TransmitFinishedEvent = UART1_TransmitFinishedEvent,
+    .UART_TransmitRegisterEmptyEvent = UART1_TransmitRegisterEmptyEvent,
     .UART_TransmitByte = UART1_TransmitByte,
     .UART_IsTransmitRegisterEmpty = UART1_IsTransmitRegisterEmpty,
+    .UART_IsTransmitFinished = UART1_IsTransmitFinished,
     .UART_TransmitEnable = UART1_TransmitEnable,
     .UART_TransmitDisable = UART1_TransmitDisable,
     .UART_PendingEventHandler = UART1_PendingEventHandler,
@@ -193,7 +194,8 @@ void UART1_Init(UARTInitType *params)
     fire off repeatedly. It's best to turn it on after placing data in the 
     transmit register */
 
-    if(useRxInterrupt) UART1_ADDR->CR1 |= USART_CR1_RXNEIE; // rx register not empty interrupt
+    if(useRxInterrupt) 
+        UART1_ADDR->CR1 |= USART_CR1_RXNEIE; // rx register not empty interrupt
 
     UART1_ADDR->CR1 |= USART_CR1_RE; // enable receiver
     UART1_ADDR->CR1 |= USART_CR1_TE; // enable transmitter
@@ -294,7 +296,7 @@ void UART1_ReceiveDisable(void)
 
 // *****************************************************************************
 
-void UART1_TransmitFinishedEvent(void)
+void UART1_TransmitRegisterEmptyEvent(void)
 {
     /* This will prevent recursive calls if we call transmit byte function 
     from within the transmit interrupt callback. This requires the process
@@ -328,6 +330,9 @@ void UART1_TransmitByte(uint8_t data)
     }
     UART1_ADDR->DR = data;
 
+    /* Clear the transmission complete flag if implemented */
+    UART1_ADDR->SR &= ~USART_SR_TC;
+
     /* Enable transmit interrupt here if needed */
     if(useTxInterrupt)
         UART1_ADDR->CR1 |= USART_CR1_TXEIE;
@@ -359,6 +364,30 @@ bool UART1_IsTransmitRegisterEmpty(void)
 
 // *****************************************************************************
 
+bool UART1_IsTransmitFinished(void)
+{
+    bool txReady = false;
+
+    /* The transmit complete flag is set when a full data byte is shifted out 
+    and the transmit register empty flag is set. It is cleared by writing a
+    zero to it. */
+    if(UART1_ADDR->SR & USART_SR_TC)
+        txReady = true;
+
+    /* This function will behave the same as the transmit register empty 
+    function. If the user chooses to poll this function, we want to make sure 
+    we block input to the transmit register when CTS is asserted */
+    if(flowControl == UART_FLOW_CALLBACKS && IsCTSPinLow != NULL &&
+        IsCTSPinLow() == false)
+    {
+        txReady = false; // CTS was high. Don't allow transmission
+    }
+
+    return txReady;
+}
+
+// *****************************************************************************
+
 void UART1_TransmitEnable(void)
 {
     UART1_ADDR->CR1 |= USART_CR1_TE;
@@ -378,7 +407,7 @@ void UART1_PendingEventHandler(void)
     if(txFinishedEventPending && !lockTxFinishedEvent)
     {
         txFinishedEventPending = false;
-        UART1_TransmitFinishedEvent();
+        UART1_TransmitRegisterEmptyEvent();
     }
 }
 

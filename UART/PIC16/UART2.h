@@ -54,7 +54,7 @@ void UART2_ReceiveEnable(void);
 
 void UART2_ReceiveDisable(void);
 
-void UART2_TransmitFinishedEvent(void);
+void UART2_TransmitRegisterEmptyEvent(void);
 
 void UART2_TransmitByte(uint8_t dataToSend);
 

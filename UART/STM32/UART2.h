@@ -68,17 +68,19 @@ void UART2_ReceiveEnable(void);
 
 void UART2_ReceiveDisable(void);
 
-void UART2_TransmitFinishedEvent(void);
+void UART2_TransmitRegisterEmptyEvent(void);
 
 void UART2_TransmitByte(uint8_t dataToSend);
 
 bool UART2_IsTransmitRegisterEmpty(void);
 
+bool UART2_IsTransmitFinished(void);
+
 void UART2_TransmitEnable(void);
 
 void UART2_TransmitDisable(void);
 
-void UART1_PendingEventHandler(void);
+void UART2_PendingEventHandler(void);
 
 void UART2_SetTransmitFinishedCallback(void (*Function)(void));
 
