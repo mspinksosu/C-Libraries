@@ -364,7 +364,7 @@ bool UART2_IsTransmitRegisterEmpty(void)
 
 // *****************************************************************************
 
-bool UART1_IsTransmitFinished(void)
+bool UART2_IsTransmitFinished(void)
 {
     bool txReady = false;
 
@@ -388,7 +388,7 @@ bool UART1_IsTransmitFinished(void)
 
 // *****************************************************************************
 
-void UART1_TransmitEnable(void)
+void UART2_TransmitEnable(void)
 {
     UART2_ADDR->CR1 |= USART_CR1_TE;
 }
