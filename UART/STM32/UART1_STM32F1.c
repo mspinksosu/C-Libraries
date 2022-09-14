@@ -397,6 +397,7 @@ void UART1_TransmitEnable(void)
 
 void UART1_TransmitDisable(void)
 {
+    while(!(UART1_ADDR->SR & USART_SR_TC)){} // wait for transmission to finish
     UART1_ADDR->CR1 &= ~USART_CR1_TE;
 }
 
