@@ -21,21 +21,66 @@
 
 // ***** Defines ***************************************************************
 
+#define HW_TIM_8_BIT_MAX    256
+#define HW_TIM_16_BIT_MAX   65536
 
 // ***** Global Variables ******************************************************
 
-typedef enum HWTimerTypeTag
+typedef enum HWTimerTypeTag // TODO might move this to a timer manager or something
 {
     HWTIM_FREE_RUNNING = 0,
     HWTIM_MONO_RESETTABLE,
     HWTIM_MONO_NONRESETTABLE
 } HWTimerType;
 
-typedef enum HWTimerSizeTag
+typedef enum HWTimerSizeTag // TODO probably not needed
 {
     HWTIM_8_BIT = 0,
-    HWTIM_16_BIT
+    HWTIM_16_BIT,
+    //HWTIM_32_BIT
 } HWTimerSize;
+
+typedef enum HWTimerPrescaleSelectTag
+{
+    HWTIM_PRESCALE_USES_COUNTER = 0,
+    HWTIM_PRESCALE_2,
+    HWTIM_PRESCALE_4,
+    HWTIM_PRESCALE_8,
+    HWTIM_PRESCALE_16,
+    HWTIM_PRESCALE_32,
+    HWTIM_PRESCALE_64,
+    HWTIM_PRESCALE_128,
+    HWTIM_PRESCALE_256,
+    HWTIM_PRESCALE_512,
+    HWTIM_PRESCALE_1024,
+} HWTimerPrescaleSelect;
+
+typedef struct HWTimerPrescaleOptionsTag
+{
+    struct {
+        unsigned usesCounter    :1;
+        unsigned prescale2      :1;
+        unsigned prescale4      :1;
+        unsigned prescale8      :1;
+        unsigned prescale16     :1;
+        unsigned prescale32     :1;
+        unsigned prescale64     :1;
+        unsigned prescale128    :1;
+        unsigned prescale256    :1;
+        unsigned prescale512    :1;
+        unsigned prescale1024   :1;
+        unsigned                :5;
+    } options;
+    uint8_t counterNumBits;
+} HWTimerPrescaleOptions;
+
+typedef struct HWTimerInitTypeTag
+{
+    HWTimerPrescaleSelect prescaleSelect;
+    uint16_t prescaleCounterValue;
+    bool useOverflowInterrupt;
+    bool useCompareMatchInterrupts;
+} HWTimerInitType;
 
 typedef struct HWTimerInterfaceTag
 {
@@ -102,48 +147,281 @@ void HWTimer_Create(HWTimer *self, void *instanceOfSubclass, HWTimerInterface *i
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-// TODO Probably don't need this or care
-uint32_t HWTimer_ComputePeriodUs(HWTimer *self, uint32_t desiredPeriodUs, uint32_t clkInHz);
+/***************************************************************************//**
+ * @brief Get the prescale options for the Hardware Timer
+ * 
+ * A bit will be set for each prescale option that is availble for the timer.
+ * If the timer uses a counter for a prescaler instead, bit zero should be set 
+ * as well as the number of bits for the counter.
+ * 
+ * @param self  pointer to the HWTimer that you are using
+ * 
+ * @return HWTimerPrescaleOptions  either fixed prescale values or a counter
+ */
+HWTimerPrescaleOptions HWTimer_GetPrescaleOptions(HWTimer *self);
 
-void HWTimer_Init(HWTimer *self, uint32_t periodInUs, uint32_t clkInHz);
+/***************************************************************************//**
+ * @brief Return the settings needed for the desired period (in us)
+ * 
+ * The function should go through the prescale settings starting from the 
+ * lowest, and find the setting that is greater than or equal to the desired
+ * period in us. Then return the settings used and the difference in ticks
+ * subtracted from the maximum value of the timer. The idea is that the user 
+ * can then use just the settings returned to get close enough to the value
+ * they want. Or, they can take the difference in ticks and load that value 
+ * into the counter every time the counter overflows to get a more accurate 
+ * time period.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * @param desiredPeriodUs  the period that you want
+ * @param clkInHz  the frequency of your timer peripheral's clock in Hertz
+ * @param retDiffInTicks  difference in ticks subtracted from the max count
+ * @return HWTimerInitType  The prescale settings used to compute the period
+ */
+HWTimerInitType HWTimer_ComputePeriodUs(HWTimer *self, uint32_t desiredPeriodUs, 
+    uint32_t clkInHz, uint16_t *retDiffInTicks);
 
+/***************************************************************************//**
+ * @brief Initialize the Hardware Timer
+ * 
+ * Use the parameters provided to set the necessary registers for your MCU.
+ * The timer should count from 0 up to its maximum value, then rollover.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @param params  pointer to the HWTimerInitType you are using
+ */
+void HWTimer_Init(HWTimer *self, HWTimerInitType *params);
+
+/***************************************************************************//**
+ * @brief Get the size of the Hardware Timer
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @return HWTimerSize  HWTIM_8_BIT or HWTIM_16_BIT
+ */
 HWTimerSize HWTimer_GetSize(HWTimer *self);
 
+/***************************************************************************//**
+ * @brief Start the Hardware Timer
+ * 
+ * @param self  pointer to the HWTimer you are using
+ */
 void HWTimer_Start(HWTimer *self);
 
+/***************************************************************************//**
+ * @brief Stop the Hardware Timer
+ * 
+ * Does not reset the counter.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ */
 void HWTimer_Stop(HWTimer *self);
 
+/***************************************************************************//**
+ * @brief Reset the counter to zero
+ * 
+ * Does not stop the timer.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ */
 void HWTimer_Reset(HWTimer *self);
 
+/***************************************************************************//**
+ * @brief Check if the Hardware Timer is running
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @return true if the timer is running
+ */
 bool HWTimer_IsRunning(HWTimer *self);
 
+/***************************************************************************//**
+ * @brief Set the counter of the Hardware Timer directly
+ * 
+ * The timer should count from 0 up to its maximum value, then rollover
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @param count  the value to set the counter register to
+ */
 void HWTimer_SetCount(HWTimer *self, uint16_t count);
 
+/***************************************************************************//**
+ * @brief Get the current count of the Hardware Timer
+ * 
+ * The timer should count from 0 up to its maximum value, then rollover
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @return uint16_t  the current count of the timer
+ */
 uint16_t HWTimer_GetCount(HWTimer *self);
 
+/***************************************************************************//**
+ * @brief Add a value to the current count directly
+ * 
+ * If you want to generate an overflow event every so many ticks, adding the 
+ * current value of the counter to your value is a little bit more accurate 
+ * than just loading the value at every overflow event. This function is 
+ * provided to make it slightly faster.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @param addToCount  the value to add to the count
+ */
+void HWTimer_AddToCount(HWTimer *self, uint16_t addToCount);
+
+/***************************************************************************//**
+ * @brief Get the number of compare channels available
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @return uint8_t  how many compare channels there are available
+ */
 uint8_t HWTimer_GetNumCompareChannels(HWTimer *self);
 
-// For PWM generation
-void HWTimer_SetCompare(HWTimer *self, uint8_t compChan, uint16_t compValue);
+/***************************************************************************//**
+ * @brief Set the compare value for a given channel (0-65535 full scale)
+ * 
+ * This does not set the value directly. Rather, it uses a 16-bit full scale
+ * value and then computes the actual value based on the bits allowed by the 
+ * compare channel. This is because some microcontrollers can use a 10-bit, 
+ * 12-bit, or higher compare value. When the timer count hits the value set by 
+ * the compare channel, you will get a compare match event. When using the 
+ * compare output to generate a PWM waveform, you should not be altering the 
+ * period of the timer, or else your compare match event may not get triggered.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @param compChan  the number of the compare channel
+ * 
+ * @param compValue  the value of the compare channel (0-65535)
+ */
+void HWTimer_SetCompare16Bit(HWTimer *self, uint8_t compChan, uint16_t compValue);
 
+/***************************************************************************//**
+ * @brief Get the compare value for a given channel (0-65535 full scale)
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @param compChan  the number of the compare channel
+ * 
+ * @return uint16_t  the value of the compare channel (0-65535)
+ */
+uint16_t HWTimer_GetCompare16Bit(HWTimer *self, uint8_t compChan);
+
+/***************************************************************************//**
+ * @brief Set the compare value for a given channel (0-100 full scale)
+ * 
+ * Sets the compare value to a percentage. This is probably most useful for 
+ * generating PWM waveforms. When the timer count hits the value set by the 
+ * compare channel, you will get a compare match event. When using the compare 
+ * output to generate a PWM waveform, you should not be altering the period of 
+ * the timer, or else your compare match event may not get triggered. If you 
+ * need more resolution, use the SetCompare function instead.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @param compChan  the number of the compare channel
+ * 
+ * @param percent  the value of the compare channel (0-100)
+ */
 void HWTimer_SetComparePercent(HWTimer *self, uint8_t compChan, uint8_t percent);
 
-uint16_t HWTimer_GetCompare(HWTimer *self, uint8_t compChan);
+/***************************************************************************//**
+ * @brief Get the compare value for a given channel (0-100 full scale)
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @param compChan  the number of the compare channel
+ * 
+ * @return uint8_t  the value of the compare channel (0-100)
+ */
+uint8_t HWTimer_GetComparePercent(HWTimer *self, uint8_t compChan);
 
+/***************************************************************************//**
+ * @brief Enable a compare match channel
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @param compChan  the number of the compare channel
+ */
 void HWTimer_EnableCompare(HWTimer *self, uint8_t compChan);
 
+/***************************************************************************//**
+ * @brief Disable a compare match channel
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @param compChan  the number of the compare channel
+ */
 void HWTimer_DisableCompare(HWTimer *self, uint8_t compChan);
 
+/***************************************************************************//**
+ * @brief Check if the overflow flag is set
+ * 
+ * The flag should not cleared when calling this function.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @return true if the timer did overflow
+ */
 bool HWTimer_GetOverflow(HWTimer *self);
 
+/***************************************************************************//**
+ * @brief Check if the hardware compare match flag is set
+ * 
+ * The flag should not cleared when calling this function.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @param compChan  the number of the compare channel
+ * 
+ * @return true if the compare match flag is set
+ */
 bool HWTimer_GetCompareMatch(HWTimer *self, uint8_t compChan);
 
+/***************************************************************************//**
+ * @brief Clear the overflow flag
+ * 
+ * If you are using an interrupt, this flag will be cleared when the interrupt 
+ * is called.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ */
 void HWTimer_ClearOverflowFlag(HWTimer *self);
 
+/***************************************************************************//**
+ * @brief Clear the compare match flag
+ * 
+ * If you are using an interrupt, this flag will be cleared when the interrupt 
+ * is called.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @param compChan  the number of the compare channel
+ */
 void HWTimer_ClearCompareMatchFlag(HWTimer *self, uint8_t compChan);
 
-void HWTimer_CompareOverflowEvent(HWTimer *self);
+/***************************************************************************//**
+ * @brief The timer has overflowed. Clear the flag, then call the callback
+ * 
+ * This event is called whenever the timer overflows and the overflow interrupt
+ * is enabled. Place this function wherever your interrupt is at.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ */
+void HWTimer_OverflowEvent(HWTimer *self);
 
+/***************************************************************************//**
+ * @brief A compare event has happened. Clear the flag, then call the callback
+ * 
+ * This event is called whenever 
+ * 
+ * @param self 
+ * @param compChan 
+ */
 void HWTimer_CompareMatchEvent(HWTimer *self, uint8_t compChan);
 
 void HWTimer_SetOverflowCallback(HWTimer *self, HWTimerOverflowCallbackFunc Function);
