@@ -21,10 +21,10 @@
  * is so that the user does not have to deal with typecasting every function 
  * call. The void pointer will be changed to point to your subclass object. 
  * 
- * The MF_Interface or function table will tell the interface which functions 
+ * The MFInterface or function table will tell the interface which functions 
  * to call. Your implementation of the MapFunction will have its own functions
  * that use your subclass type as arguments. Declare and initialize a 
- * MF_Interface object and set its members (which are function pointers) to 
+ * MFInterface object and set its members (which are function pointers) to 
  * each of your functions. References to the base class are replaced with void.
  * You will need to typecast your functions for this step.
  * 
@@ -57,26 +57,26 @@
 
 // ***** Global Variables ******************************************************
 
-typedef struct MF_InterfaceTag
+typedef struct MFInterfaceTag
 {
     /*  These are the functions that will be called. Each object type will have
         its own implementation. The void pointer "instance" will point to the
         child object */ 
     int32_t (*Compute)(void *instance, int32_t input);
 
-} MF_Interface;
+} MFInterface;
 
 typedef struct MapFunctionTag
 {
     /*  A base class must contain at minimum, a pointer to the sub class's 
         interface and a void pointer. */
-    MF_Interface *interface;
+    MFInterface *interface;
     void *instance;
 
 } MapFunction;
 
 /**
- * MF_Interface This is the table of functions that need to be implemented
+ * MFInterface This is the table of functions that need to be implemented
  * 
  * MapFunction  This is the base class object
  * 
@@ -109,7 +109,7 @@ typedef struct MapFunctionTag
  * 
  * @param interface  the interface or function table to use
  */
-void MF_Create(MapFunction *self, void *instanceOfSubClass, MF_Interface *interface);
+void MF_Create(MapFunction *self, void *instanceOfSubClass, MFInterface *interface);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //

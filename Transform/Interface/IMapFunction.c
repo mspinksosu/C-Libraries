@@ -34,7 +34,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void MF_Create(MapFunction *self, void *instanceOfSubClass, MF_Interface *interface)
+void MF_Create(MapFunction *self, void *instanceOfSubClass, MFInterface *interface)
 {
     self->instance = instanceOfSubClass;
     self->interface = interface;

@@ -27,10 +27,10 @@
 /* Create the function table */
 typedef struct FooInterfaceTag
 {
-    /*  These are the functions that will be called. You will create your own
-        function table for your class that will have these function signatures 
-        Replace references to the base class with void. The void pointer
-        "instance" will be set to the sub class object */
+    /* These are the functions that will be called. You will create your own
+    interface object for your class that will have these function signatures.
+    Set each of your functions equal to one of these pointers. The void pointer
+    will be set to the sub class object */
     void (*Foo_Func)(void *instance);
     uint16_t (*Foo_GetValue)(void *instance);
     void (*Foo_SetValue)(void *instance, uint16_t data);
@@ -78,7 +78,7 @@ typedef struct FooTag
  * @param instanceOfSubClass 
  * @param interface 
  */
-void Foo_Create(Foo *self, void *instanceOfSubclass, Foo_Interface *interface);
+void Foo_Create(Foo *self, void *instanceOfSubclass, FooInterface *interface);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //

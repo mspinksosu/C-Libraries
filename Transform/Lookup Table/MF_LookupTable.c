@@ -24,7 +24,7 @@
 /*  Declare an interface struct and initialize its members the our local 
     functions. Typecasting is necessary. When a new sub class object is 
     created, we will set its interface member equal to this table. */
-static MF_Interface FunctionTable = {
+static MFInterface FunctionTable = {
     .Compute = (int32_t (*)(void *, int32_t))MF_LookupTable_Compute,
 };
 
