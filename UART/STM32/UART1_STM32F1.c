@@ -18,7 +18,7 @@
  *      UART myUART;
  *      UART_Create(&myUART, &UART1_FunctionTable);
  *      UART_SetToDefaultParams(&myUART);
- *      uint32_t baud = UART_ComputeBRGValue(&myUART, 115200, 12.0);
+ *      uint32_t baud = UART_ComputeBRGValue(&myUART, 115200, 12000000UL);
  *      UART_SetBRGValue(&myUART, baud);
  *      UART_Init(&myUART);
  *      
@@ -328,10 +328,11 @@ void UART1_TransmitByte(uint8_t data)
     {
         return; // CTS was high
     }
-    UART1_ADDR->DR = data;
-
+    
     /* Clear the transmission complete flag if implemented */
     UART1_ADDR->SR &= ~USART_SR_TC;
+
+    UART1_ADDR->DR = data;
 
     /* Enable transmit interrupt here if needed */
     if(useTxInterrupt)

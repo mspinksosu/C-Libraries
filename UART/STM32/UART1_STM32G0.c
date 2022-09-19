@@ -15,7 +15,7 @@
  *      UART myUART;
  *      UART_Create(&myUART, &UART1_FunctionTable);
  *      UART_SetToDefaultParams(&myUART);
- *      uint32_t baud = UART_ComputeBRGValue(&myUART, 115200, 12.0);
+ *      uint32_t baud = UART_ComputeBRGValue(&myUART, 115200, 12000000UL);
  *      UART_SetBRGValue(&myUART, baud);
  *      UART_Init(&myUART);
  *      
@@ -243,7 +243,7 @@ void UART1_ReceivedDataEvent(void)
 
 uint8_t UART1_GetReceivedByte(void)
 {
-    uint8_t data = UART1_ADDR->DR;
+    uint8_t data = UART1_ADDR->TDR;
 
     /* RTS is asserted (low) whenever we are ready to receive data. It is 
     deasserted (high) when the receive register is full */
@@ -327,7 +327,9 @@ void UART1_TransmitByte(uint8_t data)
     {
         return; // CTS was high
     }
-    UART1_ADDR->DR = data;
+    
+    /* The transmission complete flag is cleared by writing to TDR */
+    UART1_ADDR->TDR = data;
 
     /* Enable transmit interrupt here if needed */
     if(useTxInterrupt)
@@ -349,6 +351,30 @@ bool UART1_IsTransmitRegisterEmpty(void)
     of function. If the user chooses to poll the transmit register empty 
     function, we want to make sure we block input to the transmit register 
     when CTS is asserted */
+    if(flowControl == UART_FLOW_CALLBACKS && IsCTSPinLow != NULL &&
+        IsCTSPinLow() == false)
+    {
+        txReady = false; // CTS was high. Don't allow transmission
+    }
+
+    return txReady;
+}
+
+// *****************************************************************************
+
+bool UART1_IsTransmitFinished(void)
+{
+    bool txReady = false;
+
+    /* The transmit complete flag is set when a full data byte is shifted out 
+    and the transmit register empty flag is set. It is cleared by writing a 1
+    to TCCF in USART_ICR or a write to the transmit data register. */
+    if(UART1_ADDR->ISR & USART_ISR_TC)
+        txReady = true;
+
+    /* This function will behave the same as the transmit register empty 
+    function. If the user chooses to poll this function, we want to make sure 
+    we block input to the transmit register when CTS is asserted */
     if(flowControl == UART_FLOW_CALLBACKS && IsCTSPinLow != NULL &&
         IsCTSPinLow() == false)
     {
