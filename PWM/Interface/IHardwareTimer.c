@@ -1,19 +1,18 @@
 /***************************************************************************//**
- * @brief Foo Interface
+ * @brief Hardware Timer Interface
  * 
  * @author Matthew Spinks
  * 
- * @date 12/2/14  Original creation
- * @date 8/6/22   Modified
+ * @date 9/17/22  Original creation
  * 
- * @file IFoo.c
+ * @file IHardwareTimer.c
  * 
  * @details
- *      TODO
+ *      // TODO
  * 
  ******************************************************************************/
 
-#include "IFoo.h"
+#include "IHardwareTimer.h"
 
 // ***** Defines ***************************************************************
 

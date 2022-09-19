@@ -1,0 +1,101 @@
+/***************************************************************************//**
+ * @brief Hardware Timer 1 Implementation Header (STM32G0)
+ * 
+ * @author Matthew Spinks
+ * 
+ * @date 9/17/22  Original creation
+ * 
+ * @file HWTimer1.h
+ * 
+ * @details
+ *      // TODO
+ * 
+ ******************************************************************************/
+
+#ifndef HW_TIM1_STM32G0_H
+#define HW_TIM1_STM32G0_H
+
+#include "HWTimer_STM32G0.h"
+
+/* Include processor specific header files here if needed */
+
+
+// ***** Defines ***************************************************************
+
+
+// ***** Global Variables ******************************************************
+
+/* Declare and define this variable in your implementation's .c file */
+extern HWTimerInterface HWTimer1_FunctionTable;
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Non-Interface Functions *********************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Interface Functions *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+HWTimerPrescaleOptions HWTimer1_STM32_GetPrescaleOptions(void);
+
+void HWTimer1_STM32_ComputePeriodUs(HWTimerInitType *params, uint32_t desiredPeriodUs, 
+    uint32_t clkInHz, uint16_t *retDiffInTicks);
+
+void HWTimer1_STM32_Init(HWTimerInitType_STM32 *params);
+
+HWTimerSize HWTimer1_STM32_GetSize(void);
+
+void HWTimer1_STM32_Start(void);
+
+void HWTimer1_STM32_Stop(void);
+
+void HWTimer1_STM32_Reset(void);
+
+bool HWTimer1_STM32_IsRunning(void);
+
+void HWTimer1_STM32_SetCount(uint16_t count);
+
+uint16_t HWTimer1_STM32_GetCount(void);
+
+void HWTimer1_STM32_AddToCount(uint16_t addToCount);
+
+uint8_t HWTimer1_STM32_GetNumCompareChannels(void);
+
+void HWTimer_SetCompare16Bit(uint8_t compChan, uint16_t compValue);
+
+uint16_t HWTimer1_STM32_GetCompare16Bit(uint8_t compChan);
+
+void HWTimer1_STM32_SetComparePercent(uint8_t compChan, uint8_t percent);
+
+uint16_t HWTimer1_STM32_GetCompare(uint8_t compChan);
+
+void HWTimer1_STM32_EnableCompare(uint8_t compChan);
+
+void HWTimer1_STM32_DisableCompare(uint8_t compChan);
+
+bool HWTimer1_STM32_GetOverflow(void);
+
+bool HWTimer1_STM32_GetCompareMatch(uint8_t compChan);
+
+void HWTimer1_STM32_ClearOverflowFlag(void);
+
+void HWTimer1_STM32_ClearCompareMatchFlag(uint8_t compChan);
+
+void HWTimer1_STM32_EventHandler(void);
+
+void HWTimer1_STM32_SetOverflowCallback(HWTimerOverflowCallbackFunc Function);
+
+void HWTimer1_STM32_SetCompareMatchCallback(HWTimerCompareMatchCallbackFunc Function);
+
+// TODO This would require us to store our period in us. But it would be very convenient
+void HWTimer1_STM32_SetCompareInUs(uint8_t compChan, uint32_t desiredTimeInUs);
+
+// TODO
+uint32_t HWTimer1_STM32_GetPeriodInUs(void);
+
+#endif  /* HW_TIM1_STM32G0_H */
