@@ -131,7 +131,7 @@ typedef struct UARTInterfaceTag
     void (*UART_TransmitEnable)(void);
     void (*UART_TransmitDisable)(void);
     void (*UART_PendingEventHandler)(void);
-    void (*UART_SetTransmitFinishedCallback)(void (*Function)(void));
+    void (*UART_SetTransmitRegisterEmptyCallback)(void (*Function)(void));
     void (*UART_SetReceivedDataCallback)(void (*Function)(uint8_t (*CallToGetData)(void)));
     void (*UART_SetIsCTSPinLowFunc)(bool (*Function)(void));
     void (*UART_SetRTSPinFunc)(void (*Function)(bool));
@@ -210,7 +210,7 @@ void UART_SetInitTypeToDefaultParams(UARTInitType *params);
  * functions to set the RTS and CTS pins, and setup callbacks functions by
  * using the UART_SetRTSPinFunc and UART_SetIsCTSPinLowFunc functions. If you
  * using interrupts, you will want to setup callback functions using the 
- * SetReceivedDataCallback and SetTransmitFinishedCallback functions.
+ * SetReceivedDataCallback and SetTransmitRegisterEmptyCallback functions.
  * 
  * @param params  pointer to the UARTInitType that you are going to use
  * @param numStopBits  UART_ONE_P, UART_HALF_P,UART_ONE_PLUS_HALF_P, UART_TWO_P
@@ -429,15 +429,14 @@ void UART_PendingEventHandler(UART *self);
 /***************************************************************************//**
  * @brief Set a function to be called whenever the transmit event happens
  * 
- * This function pointer is called from within the TransmitFinishedEvent
- * function, which is your "transmit register not empty" interrupt. Your 
- * function should follow the format listed below.
+ * This function pointer is called from within the TransmitRegisterEmptyEvent
+ * function. Your function should follow the format listed below.
  * 
  * @param self  pointer to the UART you are using
  * 
  * @param Function  format: void SomeFunction(void)
  */
-void UART_SetTransmitFinishedCallback(UART *self, void (*Function)(void));
+void UART_SetTransmitRegisterEmptyCallback(UART *self, void (*Function)(void));
 
 /***************************************************************************//**
  * @brief Set a function to be called whenever a received data event happens

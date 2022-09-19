@@ -64,7 +64,7 @@ void UART2_TransmitEnable(void);
 
 void UART2_TransmitDisable(void);
 
-void UART2_SetTransmitFinishedCallback(void (*Function)(void));
+void UART2_SetTransmitRegisterEmptyCallback(void (*Function)(void));
 
 //void UART2_SetReceivedDataCallback(void (*Function)(void));
 

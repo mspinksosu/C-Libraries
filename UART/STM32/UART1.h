@@ -82,7 +82,7 @@ void UART1_TransmitDisable(void);
 
 void UART1_PendingEventHandler(void);
 
-void UART1_SetTransmitFinishedCallback(void (*Function)(void));
+void UART1_SetTransmitRegisterEmptyCallback(void (*Function)(void));
 
 void UART1_SetReceivedDataCallback(void (*Function)(uint8_t (*CallToGetData)(void)));
 

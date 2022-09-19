@@ -240,11 +240,11 @@ void UART_PendingEventHandler(UART *self)
 
 // *****************************************************************************
 
-void UART_SetTransmitFinishedCallback(UART *self, void (*Function)(void))
+void UART_SetTransmitRegisterEmptyCallback(UART *self, void (*Function)(void))
 {
-    if(self->interface->UART_SetTransmitFinishedCallback != NULL)
+    if(self->interface->UART_SetTransmitRegisterEmptyCallback != NULL)
     {
-        (self->interface->UART_SetTransmitFinishedCallback)(Function);
+        (self->interface->UART_SetTransmitRegisterEmptyCallback)(Function);
     }
 }
 

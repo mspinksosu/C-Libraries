@@ -74,7 +74,7 @@ UARTInterface UART2_FunctionTable = {
     .UART_IsTransmitRegisterEmpty = UART2_IsTransmitRegisterEmpty,
     .UART_TransmitEnable = UART2_TransmitEnable,
     .UART_TransmitDisable = UART2_TransmitDisable,
-    .UART_SetTransmitFinishedCallback = UART2_SetTransmitFinishedCallback,
+    .UART_SetTransmitRegisterEmptyCallback = UART2_SetTransmitRegisterEmptyCallback,
     .UART_SetReceivedDataCallback = UART2_SetReceivedDataCallback,
     .UART_SetCTSPinFunc = UART2_SetCTSPinFunc,
     .UART_SetRTSPinFunc = UART2_SetRTSPinFunc,
@@ -85,7 +85,7 @@ static UARTStopBits stopBits = UART_ONE_P;
 static UARTParity parity = UART_NO_PARITY;
 
 // local function pointers
-static void (*UART_TransmitFinishedCallback)(void);
+static void (*UART_TransmitRegisterEmptyCallback)(void);
 static void (*UART_ReceivedDataCallback)(void);
 static void (*UART_CTSPinFunc)(void);
 static void (*UART_RTSPinFunc)(void);
@@ -191,9 +191,9 @@ void UART2_TransmitFinished(void)
 {
     /* Clear any interrupt flags here if needed */
 
-    if(UART_TransmitFinishedCallback)
+    if(UART_TransmitRegisterEmptyCallback)
     {
-        UART_TransmitFinishedCallback();
+        UART_TransmitRegisterEmptyCallback();
     }
 }
 
@@ -268,9 +268,9 @@ bool UART2_IsTransmitRegisterEmpty(void)
  * 
  * @param Function 
  */
-void UART2_SetTransmitFinishedCallback(void (*Function)(void))
+void UART2_SetTransmitRegisterEmptyCallback(void (*Function)(void))
 {
-    UART_TransmitFinishedCallback = Function;
+    UART_TransmitRegisterEmptyCallback = Function;
 }
 
 /***************************************************************************//**

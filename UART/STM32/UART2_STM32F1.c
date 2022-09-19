@@ -56,7 +56,7 @@ UARTInterface UART2_FunctionTable = {
     .UART_TransmitEnable = UART2_TransmitEnable,
     .UART_TransmitDisable = UART2_TransmitDisable,
     .UART_PendingEventHandler = UART2_PendingEventHandler,
-    .UART_SetTransmitFinishedCallback = UART2_SetTransmitFinishedCallback,
+    .UART_SetTransmitRegisterEmptyCallback = UART2_SetTransmitRegisterEmptyCallback,
     .UART_SetReceivedDataCallback = UART2_SetReceivedDataCallback,
     .UART_SetIsCTSPinLowFunc = UART2_SetIsCTSPinLowFunc,
     .UART_SetRTSPinFunc = UART2_SetRTSPinFunc,
@@ -70,7 +70,7 @@ static bool lockTxFinishedEvent = false, txFinishedEventPending = false,
     lockRxReceivedEvent = false;
 
 // local function pointers
-static void (*TransmitFinishedCallback)(void);
+static void (*TransmitRegisterEmptyCallback)(void);
 static void (*ReceivedDataCallback)(uint8_t (*CallToGetData)(void));
 static bool (*IsCTSPinLow)(void);
 static void (*SetRTSPin)(bool setHigh);
@@ -311,9 +311,9 @@ void UART2_TransmitRegisterEmptyEvent(void)
     /* Disable transmit interrupt here */
     UART2_ADDR->CR1 &= ~USART_CR1_TXEIE;
 
-    if(TransmitFinishedCallback)
+    if(TransmitRegisterEmptyCallback)
     {
-        TransmitFinishedCallback();
+        TransmitRegisterEmptyCallback();
     }
     lockTxFinishedEvent = false;
 }
@@ -414,9 +414,9 @@ void UART2_PendingEventHandler(void)
 
 // *****************************************************************************
 
-void UART2_SetTransmitFinishedCallback(void (*Function)(void))
+void UART2_SetTransmitRegisterEmptyCallback(void (*Function)(void))
 {
-    TransmitFinishedCallback = Function;
+    TransmitRegisterEmptyCallback = Function;
 }
 
 // *****************************************************************************
