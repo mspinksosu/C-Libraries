@@ -408,7 +408,8 @@ void HWTimer_ClearCompareMatchFlag(HWTimer *self, uint8_t compChan);
  * @brief The timer has overflowed. Clear the flag, then call the callback
  * 
  * This event is called whenever the timer overflows and the overflow interrupt
- * is enabled. Place this function wherever your interrupt is at.
+ * is enabled. Place this function wherever your interrupt is at. It will clear
+ * the interrupt flag and call the overflow callback function.
  * 
  * @param self  pointer to the HWTimer you are using
  */
@@ -417,15 +418,42 @@ void HWTimer_OverflowEvent(HWTimer *self);
 /***************************************************************************//**
  * @brief A compare event has happened. Clear the flag, then call the callback
  * 
- * This event is called whenever 
+ * Then event is called whenever a compare match happens and the interrupt for
+ * that compare channel is enabled. You will have to place this wherever your
+ * interrupt is at and call it with the appropriate channel number. This 
+ * function will clear that interrupt flag and call the compare match callback
+ * function.
  * 
- * @param self 
- * @param compChan 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @param compChan  the number of the compare channel
  */
 void HWTimer_CompareMatchEvent(HWTimer *self, uint8_t compChan);
 
+/***************************************************************************//**
+ * @brief Set a function to be called whenever the timer overflows
+ * 
+ * This function is called from within the OverflowEvent function. Your 
+ * function should follow the format listed below. The context pointer will be
+ * set to the timer that initiated the callback.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @param Function  format: void SomeFunction(HWTimer *timerContext)
+ */
 void HWTimer_SetOverflowCallback(HWTimer *self, HWTimerOverflowCallbackFunc Function);
 
+/***************************************************************************//**
+ * @brief Set a function to be called whenever a compare match happens
+ * 
+ * This function is called from within the CompareMatchEvent function. Your 
+ * function should follow the format listed below. The context pointer will be
+ * set to the timer that initiated the callback.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @param Function  format: void Function(HWTimer *context, uint8_t compChan)
+ */
 void HWTimer_SetCompareMatchCallback(HWTimer *self, HWTimerCompareMatchCallbackFunc Function);
 
 // TODO This would require us to store our period in us. But it would be very convenient
