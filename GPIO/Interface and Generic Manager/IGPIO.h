@@ -207,7 +207,7 @@ void GPIO_Create(GPIO *self, void *instanceOfSubClass);
  * 
  * @param params  pointer to the GPIOInit type you are using
  * 
- * @param instanceOfSubClass  the child object that implements the GPIOInit
+ * @param instanceOfSubClass  the child object that implements the GPIOInitType
  */
 void GPIO_CreateInitType(GPIOInitType *params, void *instanceOfSubClass);
 

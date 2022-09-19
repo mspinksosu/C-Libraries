@@ -103,10 +103,11 @@ typedef struct HWTimerInterfaceTag
 {
     /* These are the functions that will be called. You will create your own
     interface object for your class that will have these function signatures.
-    Set each of your functions equal to one of these pointers. */
+    Set each of your functions equal to one of these pointers. The void pointer
+    will be set to the sub class object. Typecasting will be needed. */
     HWTimerPrescaleOptions (*HWTimer_GetPrescaleOptions)(void);
-    void (*HWTimer_ComputePeriodUs)(HWTimerInitType *params, uint32_t, uint32_t, uint16_t *retValue);
-    void (*HWTimer_Init)(HWTimerInitType *params);
+    void (*HWTimer_ComputePeriodUs)(void *params, uint32_t, uint32_t, uint16_t *retValue);
+    void (*HWTimer_Init)(void *params);
     HWTimerSize (*HWTimer_GetSize)(void);
     void (*HWTimer_Start)(void);
     void (*HWTimer_Stop)(void);
@@ -119,14 +120,15 @@ typedef struct HWTimerInterfaceTag
     void (*HWTimer_SetCompare16Bit)(uint8_t compChan, uint16_t compValue);
     uint16_t (*HWTimer_GetCompare16Bit)(uint8_t compChan);
     void (*HWTimer_SetComparePercent)(uint8_t compChan, uint8_t percent);
-    uint16_t (*HWTimer_GetCompare)(uint8_t compChan);
+    uint8_t (*HWTimer_GetComparePercent)(uint8_t compChan);
     void (*HWTimer_EnableCompare)(uint8_t compChan);
     void (*HWTimer_DisableCompare)(uint8_t compChan);
     bool (*HWTimer_GetOverflow)(void);
     bool (*HWTimer_GetCompareMatch)(uint8_t compChan);
     void (*HWTimer_ClearOverflowFlag)(void);
-    void (*HWTimer_EventHandler)(void);
-    void (*HWTimer_CompareMatchEvent)(uint8_t compChan);
+    void (*HWTimer_ClearCompareMatchFlag)(uint8_t compChan);
+    void (*HWTimer_OverflowEvent)(void);
+    void (*HWTimer_CompareMatchEvent)(void);
     void (*HWTimer_SetOverflowCallback)(HWTimerOverflowCallbackFunc Function);
     void (*HWTimer_SetCompareMatchCallback)(HWTimerCompareMatchCallbackFunc Function);
 } HWTimerInterface;
@@ -149,19 +151,26 @@ typedef struct HWTimerTag
 ////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
- * @brief Combine the base class, sub class, and function table
+ * @brief Set the function table for your HWTimer object
  * 
- * It is preferred that it is called from within the sub class constructor if
- * possible. This makes the function more type safe with the use of the void 
- * pointer.
- * 
- * @param self  pointer to the HWTimer that you are using
- * 
- * @param instanceOfSubClass  // TODO 
+ * @param self  pointer to the HWTimer you are using
  * 
  * @param interface  pointer to the function table that your HWTimer uses
  */
-void HWTimer_Create(HWTimer *self, void *instanceOfSubclass, HWTimerInterface *interface);
+void HWTimer_Create(HWTimer *self, HWTimerInterface *interface);
+
+/***************************************************************************//**
+ * @brief Combine the base class and sub class HWTimerInitType
+ * 
+ * My preferred method is to call this function from a sub class constructor. 
+ * To do so, create a sub class constructor that needs an instance of the sub 
+ * class and base class. This makes the create function more type safe.
+ * 
+ * @param params  pointer to the HWTimerInitType you are using
+ * 
+ * @param instanceOfSubclass  the child object that implements HWTimerInitType
+ */
+void HWTimer_CreateInitType(HWTimerInitType *params, void *instanceOfSubclass);
 
 /***************************************************************************//**
  * @brief Set the initial parameters of your HWTimerInitType object
@@ -190,7 +199,7 @@ void HWTimer_SetInitTypeParams(HWTimerInitType *params, HWTimerPrescaleSelect pr
  * If the timer uses a counter for a prescaler instead, bit zero should be set 
  * as well as the number of bits for the counter.
  * 
- * @param self  pointer to the HWTimer that you are using
+ * @param self  pointer to the HWTimer you are using
  * 
  * @return HWTimerPrescaleOptions  either fixed prescale values or a counter
  */
@@ -312,8 +321,8 @@ void HWTimer_AddToCount(HWTimer *self, uint16_t addToCount);
 /***************************************************************************//**
  * @brief Get the number of compare channels available
  * 
- * The compare match channels should be numbered in ascending order. Sometimes 
- * microcontrollers will use letters 'A' 'B' etc.
+ * The compare match channels should be numbered in ascending order starting
+ * with zero. Sometimes microcontrollers will use letters 'A' 'B' etc.
  * 
  * @param self  pointer to the HWTimer you are using
  * 
@@ -383,8 +392,8 @@ uint8_t HWTimer_GetComparePercent(HWTimer *self, uint8_t compChan);
 /***************************************************************************//**
  * @brief Enable a compare match channel
  * 
- * The compare match channels should be numbered in ascending order. Sometimes 
- * microcontrollers will use letters 'A' 'B' etc.
+ * The compare match channels should be numbered in ascending order starting
+ * with zero order. Sometimes microcontrollers will use letters 'A' 'B' etc.
  * 
  * @param self  pointer to the HWTimer you are using
  * 
@@ -448,20 +457,31 @@ void HWTimer_ClearOverflowFlag(HWTimer *self);
 void HWTimer_ClearCompareMatchFlag(HWTimer *self, uint8_t compChan);
 
 /***************************************************************************//**
- * @brief An event has happened. Check flags, clear flags, call any callbacks
+ * @brief The timer has overflowed. Clear the flag, then call the callback
  * 
- * This event is called anytime there is a hardware timer overflow event or
- * a compare match event. Place this function call wherever your interrupts 
- * for this timer are at. This function will go through the list of events and 
- * check if each one is enabled and has a flag set. If so, clear the flag, and 
- * call the appropriate callback function. The compare match channels should
- * be numbered in ascending order. Sometimes microcontrollers will use letters
- * 'A' 'B' etc. This function will call either the OverflowCallback function or
- * the CompareMatchCallback function.
+ * This event is called whenever the timer overflows and the overflow interrupt
+ * is enabled. Place this function wherever your interrupt is at. It will clear
+ * the interrupt flag and call the OverflowCallback function.
  * 
  * @param self  pointer to the HWTimer you are using
  */
-void HWTimer_EventHandler(HWTimer *self);
+void HWTimer_OverflowEvent(HWTimer *self);
+
+/***************************************************************************//**
+ * @brief An event has happened. Check flags, clear flags, call any callbacks
+ * 
+ * This event is called anytime there is a compare match event. Place this 
+ * function call wherever your compare match interrupts for this timer are at. 
+ * This function will go through the list of events and check if each one is 
+ * enabled and has a flag set. If so, clear the flag, and call the appropriate 
+ * callback function. The compare match channels should be numbered in 
+ * ascending order starting with zero order. Sometimes microcontrollers will 
+ * use letters 'A' 'B' etc. This function will call the CompareMatchCallback 
+ * function.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ */
+void HWTimer_CompareMatchEvent(HWTimer *self);
 
 /***************************************************************************//**
  * @brief Set a function to be called whenever the timer overflows

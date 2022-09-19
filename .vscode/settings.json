@@ -16,6 +16,8 @@
         "button.h": "c",
         "iadc.h": "c",
         "adc_manager.h": "c",
-        "uart1.h": "c"
+        "uart1.h": "c",
+        "hwtimer_stm32g0.h": "c",
+        "hwtimer1_stm32g0.h": "c"
     }
 }

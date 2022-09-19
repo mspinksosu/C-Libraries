@@ -30,7 +30,7 @@ typedef struct FooInterfaceTag
     /* These are the functions that will be called. You will create your own
     interface object for your class that will have these function signatures.
     Set each of your functions equal to one of these pointers. The void pointer
-    will be set to the sub class object */
+    will be set to the sub class object. Typecasting will be needed. */
     void (*Foo_Func)(void *instance);
     uint16_t (*Foo_GetValue)(void *instance);
     void (*Foo_SetValue)(void *instance, uint16_t data);
