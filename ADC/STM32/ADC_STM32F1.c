@@ -8,7 +8,7 @@
  * @file ADC_STM32F1.c
  * 
  * @details
- *      TODO Finish porting over settings
+ *      // TODO Finish porting over settings
  * 
  ******************************************************************************/
 
