@@ -87,8 +87,32 @@ typedef struct HWTimerInterfaceTag
     /* These are the functions that will be called. You will create your own
     interface object for your class that will have these function signatures.
     Set each of your functions equal to one of these pointers. */
-
-
+    HWTimerPrescaleOptions (*HWTimer_GetPrescaleOptions)(void);
+    HWTimerInitType (*HWTimer_ComputePeriodUs)(uint32_t, uint32_t, uint16_t *retValue);
+    void (*HWTimer_Init)(HWTimerInitType *params);
+    HWTimerSize (*HWTimer_GetSize)(void);
+    void (*HWTimer_Start)(void);
+    void (*HWTimer_Stop)(void);
+    void (*HWTimer_Reset)(void);
+    bool (*HWTimer_IsRunning)(void);
+    void (*HWTimer_SetCount)(uint16_t count);
+    uint16_t (*HWTimer_GetCount)(void);
+    void (*HWTimer_AddToCount)(uint16_t addToCount);
+    uint8_t (*HWTimer_GetNumCompareChannels)(void);
+    void (*HWTimer_SetCompare16Bit)(uint8_t compChan, uint16_t compValue);
+    uint16_t (*HWTimer_GetCompare16Bit)(uint8_t compChan);
+    void (*HWTimer_SetComparePercent)(uint8_t compChan, uint8_t percent);
+    uint16_t (*HWTimer_GetCompare)(uint8_t compChan);
+    void (*HWTimer_EnableCompare)(uint8_t compChan);
+    void (*HWTimer_DisableCompare)(uint8_t compChan);
+    bool (*HWTimer_GetOverflow)(void);
+    bool (*HWTimer_GetCompareMatch)(uint8_t compChan);
+    void (*HWTimer_ClearOverflowFlag)(void);
+    void (*HWTimer_ClearCompareMatchFlag)(uint8_t compChan);
+    void (*HWTimer_OverflowEvent)(void);
+    void (*HWTimer_CompareMatchEvent)(uint8_t compChan);
+    void (*HWTimer_SetOverflowCallback)(HWTimerOverflowCallbackFunc Function);
+    void (*HWTimer_SetCompareMatchCallback)(HWTimerCompareMatchCallbackFunc Function);
 } HWTimerInterface;
 
 /* A forward declaration which will allow the compiler to "know" what a HWTimer
@@ -106,7 +130,7 @@ typedef struct HWTimerTag
     HWTimerInterface *interface;
     void *instance;
     HWTimerOverflowCallbackFunc overflowCallback;
-    //HWTimerCompareMatchCallbackFunc compareMatchCallback;
+    HWTimerCompareMatchCallbackFunc compareMatchCallback;
     uint32_t periodInUs; // TODO not needed unless we want to set values in us
     //HWTimerType type;
     uint16_t period;
@@ -264,7 +288,8 @@ uint16_t HWTimer_GetCount(HWTimer *self);
  * If you want to generate an overflow event every so many ticks, adding the 
  * current value of the counter to your value is a little bit more accurate 
  * than just loading the value at every overflow event. This function is 
- * provided to make it slightly faster.
+ * provided to make it slightly faster, but don't expect it to be extremely
+ * accurate.
  * 
  * @param self  pointer to the HWTimer you are using
  * 
@@ -448,7 +473,8 @@ void HWTimer_SetOverflowCallback(HWTimer *self, HWTimerOverflowCallbackFunc Func
  * 
  * This function is called from within the CompareMatchEvent function. Your 
  * function should follow the format listed below. The context pointer will be
- * set to the timer that initiated the callback.
+ * set to the timer that initiated the callback. You will have to give the 
+ * function the correct channel number as well.
  * 
  * @param self  pointer to the HWTimer you are using
  * 

@@ -57,58 +57,62 @@ of the base class type. */
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-// TODO Probably don't need this or care
-uint32_t HWTimer1_ComputePeriodUs(HWTimer *self, uint32_t desiredPeriodUs, uint32_t clkInHz);
+HWTimerPrescaleOptions HWTimer1_GetPrescaleOptions(void);
 
-void HWTimer1_Init(HWTimer *self, uint32_t periodInUs, uint32_t clkInHz);
+HWTimerInitType HWTimer1_ComputePeriodUs(uint32_t desiredPeriodUs, uint32_t clkInHz, uint16_t *retDiffInTicks);
 
-HWTimerSize HWTimer1_GetSize(HWTimer *self);
+void HWTimer1_Init(HWTimerInitType *params);
 
-void HWTimer1_Start(HWTimer *self);
+HWTimerSize HWTimer1_GetSize(void);
 
-void HWTimer1_Stop(HWTimer *self);
+void HWTimer1_Start(void);
 
-void HWTimer1_Reset(HWTimer *self);
+void HWTimer1_Stop(void);
 
-bool HWTimer1_IsRunning(HWTimer *self);
+void HWTimer1_Reset(void);
 
-void HWTimer1_SetCount(HWTimer *self, uint16_t count);
+bool HWTimer1_IsRunning(void);
 
-uint16_t HWTimer1_GetCount(HWTimer *self);
+void HWTimer1_SetCount(uint16_t count);
 
-uint8_t HWTimer1_GetNumCompareChannels(HWTimer *self);
+uint16_t HWTimer1_GetCount(void);
 
-// For PWM generation
-void HWTimer1_SetCompare(HWTimer *self, uint8_t compChan, uint16_t compValue);
+void HWTimer1_AddToCount(uint16_t addToCount);
 
-void HWTimer1_SetComparePercent(HWTimer *self, uint8_t compChan, uint8_t percent);
+uint8_t HWTimer1_GetNumCompareChannels(void);
 
-uint16_t HWTimer1_GetCompare(HWTimer *self, uint8_t compChan);
+void HWTimer_SetCompare16Bit(uint8_t compChan, uint16_t compValue);
 
-void HWTimer1_EnableCompare(HWTimer *self, uint8_t compChan);
+uint16_t HWTimer1_GetCompare16Bit(uint8_t compChan);
 
-void HWTimer1_DisableCompare(HWTimer *self, uint8_t compChan);
+void HWTimer1_SetComparePercent(uint8_t compChan, uint8_t percent);
 
-bool HWTimer1_GetOverflow(HWTimer *self);
+uint16_t HWTimer1_GetCompare(uint8_t compChan);
 
-bool HWTimer1_GetCompareMatch(HWTimer *self, uint8_t compChan);
+void HWTimer1_EnableCompare(uint8_t compChan);
 
-void HWTimer1_ClearOverflowFlag(HWTimer *self);
+void HWTimer1_DisableCompare(uint8_t compChan);
 
-void HWTimer1_ClearCompareMatchFlag(HWTimer *self, uint8_t compChan);
+bool HWTimer1_GetOverflow(void);
 
-void HWTimer1_CompareOverflowEvent(HWTimer *self);
+bool HWTimer1_GetCompareMatch(uint8_t compChan);
 
-void HWTimer1_CompareMatchEvent(HWTimer *self, uint8_t compChan);
+void HWTimer1_ClearOverflowFlag(void);
 
-void HWTimer1_SetOverflowCallback(HWTimer *self, HWTimerOverflowCallbackFunc Function);
+void HWTimer1_ClearCompareMatchFlag(uint8_t compChan);
 
-void HWTimer1_SetCompareMatchCallback(HWTimer *self, HWTimerCompareMatchCallbackFunc Function);
+void HWTimer1_OverflowEvent(void);
+
+void HWTimer1_CompareMatchEvent(uint8_t compChan);
+
+void HWTimer1_SetOverflowCallback(HWTimerOverflowCallbackFunc Function);
+
+void HWTimer1_SetCompareMatchCallback(HWTimerCompareMatchCallbackFunc Function);
 
 // TODO This would require us to store our period in us. But it would be very convenient
-void HWTimer1_SetCompareInUs(HWTimer *self, uint8_t compChan, uint32_t desiredTimeInUs);
+void HWTimer1_SetCompareInUs(uint8_t compChan, uint32_t desiredTimeInUs);
 
 // TODO
-uint32_t HWTimer1_GetPeriodInUs(HWTimer *self);
+uint32_t HWTimer1_GetPeriodInUs(void);
 
 #endif  /* HW_TIM1_H */
