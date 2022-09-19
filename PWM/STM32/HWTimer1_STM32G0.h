@@ -43,7 +43,7 @@ extern HWTimerInterface HWTimer1_FunctionTable;
 
 HWTimerPrescaleOptions HWTimer1_STM32_GetPrescaleOptions(void);
 
-void HWTimer1_STM32_ComputePeriodUs(HWTimerInitType *params, uint32_t desiredPeriodUs, 
+void HWTimer1_STM32_ComputePeriodUs(HWTimerInitType_STM32 *params, uint32_t desiredPeriodUs, 
     uint32_t clkInHz, uint16_t *retDiffInTicks);
 
 void HWTimer1_STM32_Init(HWTimerInitType_STM32 *params);
@@ -66,13 +66,13 @@ void HWTimer1_STM32_AddToCount(uint16_t addToCount);
 
 uint8_t HWTimer1_STM32_GetNumCompareChannels(void);
 
-void HWTimer_SetCompare16Bit(uint8_t compChan, uint16_t compValue);
+void HWTimer1_STM32_SetCompare16Bit(uint8_t compChan, uint16_t compValue);
 
 uint16_t HWTimer1_STM32_GetCompare16Bit(uint8_t compChan);
 
 void HWTimer1_STM32_SetComparePercent(uint8_t compChan, uint8_t percent);
 
-uint16_t HWTimer1_STM32_GetCompare(uint8_t compChan);
+uint16_t HWTimer1_STM32_GetComparePercent(uint8_t compChan);
 
 void HWTimer1_STM32_EnableCompare(uint8_t compChan);
 
@@ -86,7 +86,9 @@ void HWTimer1_STM32_ClearOverflowFlag(void);
 
 void HWTimer1_STM32_ClearCompareMatchFlag(uint8_t compChan);
 
-void HWTimer1_STM32_EventHandler(void);
+void HWTimer1_STM32_OverflowEvent(void);
+
+void HWTimer1_STM32_CompareMatchEvent(void);
 
 void HWTimer1_STM32_SetOverflowCallback(HWTimerOverflowCallbackFunc Function);
 

@@ -475,9 +475,8 @@ void HWTimer_OverflowEvent(HWTimer *self);
  * This function will go through the list of events and check if each one is 
  * enabled and has a flag set. If so, clear the flag, and call the appropriate 
  * callback function. The compare match channels should be numbered in 
- * ascending order starting with zero order. Sometimes microcontrollers will 
- * use letters 'A' 'B' etc. This function will call the CompareMatchCallback 
- * function.
+ * ascending order starting with zero. This function will call the 
+ * CompareMatchCallback function.
  * 
  * @param self  pointer to the HWTimer you are using
  */
