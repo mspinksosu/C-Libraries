@@ -298,9 +298,9 @@ void UART2_ReceiveDisable(void)
 
 void UART2_TransmitRegisterEmptyEvent(void)
 {
-    /* This will prevent recursive calls if we call transmit byte function 
-    from within the transmit interrupt callback. This requires the process
-    function to be called to catch the txFinishedEventPending flag. */
+    /* This will prevent recursive calls if we call transmit byte function from
+    within the transmit interrupt callback. This requires the pending event
+    handler function to be called to catch the txFinishedEventPending flag. */
     if(lockTxFinishedEvent == true)
     {
         txFinishedEventPending = true;
@@ -350,10 +350,9 @@ bool UART2_IsTransmitRegisterEmpty(void)
     if(UART2_ADDR->SR & USART_SR_TXE)
         txReady = true;
 
-    /* The transmit empty function also functions as a "transmit ready" sort
-    of function. If the user chooses to poll the transmit register empty 
-    function, we want to make sure we block input to the transmit register 
-    when CTS is asserted */
+    /* If the user chooses to poll this function instead of using the transmit
+    register empty event, we want to try and prevent transmission if CTS is 
+    asserted */
     if(flowControl == UART_FLOW_CALLBACKS && IsCTSPinLow != NULL &&
         IsCTSPinLow() == false)
     {
@@ -376,8 +375,8 @@ bool UART2_IsTransmitFinished(void)
         txReady = true;
 
     /* This function will behave the same as the transmit register empty 
-    function. If the user chooses to poll this function, we want to make sure 
-    we block input to the transmit register when CTS is asserted */
+    function. If the user chooses to poll this function, we want to try and 
+    prevent transmission if CTS is asserted */
     if(flowControl == UART_FLOW_CALLBACKS && IsCTSPinLow != NULL &&
         IsCTSPinLow() == false)
     {

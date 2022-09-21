@@ -209,21 +209,21 @@ HWTimerPrescaleOptions HWTimer_GetPrescaleOptions(HWTimer *self);
  * @brief Select the settings needed for the desired period (in us)
  * 
  * The function should go through the prescale settings starting from the 
- * lowest, and find the setting that is greater than or equal to the desired
- * period in us. Then return the settings used and the difference in ticks
- * subtracted from the maximum value of the timer. The idea is that the user 
- * can then use just the settings returned to get close enough to the value
- * they want. Or, they can take the difference in ticks and load that value 
- * into the counter every time the counter overflows to get a more accurate 
- * time period.
+ * lowest, and find the setting that generates a period greater than or equal 
+ * to the desired period in us. Then return the settings used and the 
+ * difference in ticks subtracted from the maximum value of the timer. The idea
+ * is that the user can use the settings returned to get close enough to the 
+ * value they want. Or, they can take the difference in ticks and load that 
+ * value into the counter every time the counter overflows to get a more 
+ * accurate time period.
  * 
  * @param self  pointer to the HWTimer you are using
- * @param params  pointer to the HWTimerInitType that you are using
+ * @param retParams  pointer to the HWTimerInitType that you are using
  * @param desiredPeriodUs  the period that you want
  * @param clkInHz  the frequency of your timer peripheral's clock in Hertz
  * @param retDiffInTicks  difference in ticks subtracted from the max count
  */
-void HWTimer_ComputePeriodUs(HWTimer *self, HWTimerInitType *params, 
+void HWTimer_ComputePeriodUs(HWTimer *self, HWTimerInitType *retParams, 
     uint32_t desiredPeriodUs, uint32_t clkInHz, uint16_t *retDiffInTicks);
 
 /***************************************************************************//**
@@ -471,7 +471,7 @@ void HWTimer_OverflowEvent(HWTimer *self);
  * @brief An event has happened. Check flags, clear flags, call any callbacks
  * 
  * This event is called anytime there is a compare match event. Place this 
- * function call wherever your compare match interrupts for this timer are at. 
+ * function call in each of your compare match interrupts for this timer. 
  * This function will go through the list of events and check if each one is 
  * enabled and has a flag set. If so, clear the flag, and call the appropriate 
  * callback function. The compare match channels should be numbered in 
@@ -500,8 +500,7 @@ void HWTimer_SetOverflowCallback(HWTimer *self, HWTimerOverflowCallbackFunc Func
  * 
  * This function is called from within the CompareMatchEvent function. Your 
  * function should follow the format listed below. The context pointer will be
- * set to the timer that initiated the callback. You will have to give the 
- * function the correct channel number as well.
+ * set to the timer that initiated the callback.
  * 
  * @param self  pointer to the HWTimer you are using
  * 

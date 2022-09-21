@@ -4,12 +4,13 @@
  * @author Matthew Spinks
  * 
  * @date 3/12/22   Original creation
- * @date 6/13/22   Changed compute baud rate function to match interface
+ * @date 6/13/22   Changed compute baud rate function
+ * @date 7/31/22   Added checks and handler for recursive function calls
  * 
  * @file UART1_STM32G0.c
  * 
  * @details
- *      TODO Add details, 9-bit, and different parity, hardware flow control
+ *      // TODO Add details, 9-bit
  * 
  * Example Code:
  *      UART myUART;
@@ -297,9 +298,9 @@ void UART1_ReceiveDisable(void)
 
 void UART1_TransmitRegisterEmptyEvent(void)
 {
-    /* This will prevent recursive calls if we call transmit byte function 
-    from within the transmit interrupt callback. This requires the process
-    function to be called to catch the txFinishedEventPending flag. */
+    /* This will prevent recursive calls if we call transmit byte function from
+    within the transmit interrupt callback. This requires the pending event
+    handler function to be called to catch the txFinishedEventPending flag. */
     if(lockTxFinishedEvent == true)
     {
         txFinishedEventPending = true;
@@ -347,10 +348,9 @@ bool UART1_IsTransmitRegisterEmpty(void)
     if(UART1_ADDR->ISR & USART_ISR_TXE_TXFNF)
         txReady = true;
 
-    /* The transmit empty function also functions as a "transmit ready" sort
-    of function. If the user chooses to poll the transmit register empty 
-    function, we want to make sure we block input to the transmit register 
-    when CTS is asserted */
+    /* If the user chooses to poll this function instead of using the transmit
+    register empty event, we want to try and prevent transmission if CTS is 
+    asserted */
     if(flowControl == UART_FLOW_CALLBACKS && IsCTSPinLow != NULL &&
         IsCTSPinLow() == false)
     {
