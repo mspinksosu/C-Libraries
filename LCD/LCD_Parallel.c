@@ -37,7 +37,7 @@ static uint8_t rowToBitPos[4] = {0, 1, 5, 3, 7};
 // ***** Static Function Prototypes ********************************************
 
 /* Put static function prototypes here */
-
+static displayState GetNextState(LCD_Parallel *self);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -91,7 +91,57 @@ void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint8_t tickMs)
 
 void LCD_Parallel_Tick(LCD_Parallel *self)
 {
+    /* TODO Replace LCD busy while loop with some sort of non-blocking function
+    or a retry */
+    displayState nextState = GetNextState(self);
 
+    if(nextState == self->currentState)
+        return;
+
+    switch(self->currentState)
+    {
+        case LCD_PAR_REFRESH_ROW1_LEFT:
+            if(self->super->cursorCol == 1 || self->updateAddressFlag)
+            {
+                /* Set the DDRAM address to the row + column.
+                Row 1 address is 0x00. Column address is 0-19
+                Cmd = 0x80 + row addr + col - 1 = 0x80 + 0x00 + col - 1*/
+                while(LCD_Parallel_IsBusy(self)){}
+                LCD_Parallel_WriteCommand(self, 0x80 + self->super->cursorCol - 1);
+                self->updateAddressFlag = false;
+            }
+            while(LCD_Parallel_IsBusy(self)){}
+            LCD_Parallel_WriteData(self, self->lineBuffer1[self->super->cursorCol - 1]);
+            self->super->cursorCol++;
+            if(self->super->cursorCol > (self->super->numCols+1) / 2)
+            {
+                if(nextState != self->currentState + 1)
+                    self->updateAddressFlag = true;
+                self->currentState = nextState;
+            }
+            break;
+        case LCD_PAR_REFRESH_ROW3_LEFT:
+        case LCD_PAR_REFRESH_ROW3_RIGHT:
+            if(self->updateAddressFlag)
+            {
+                /* Set the DDRAM address to the row + column.
+                Row 3 address is 0x00. Column address is cursor columm 19
+                Cmd = 0x80 + row addr + col = 0x80 + 0x00 + col */
+                while(LCD_Parallel_IsBusy(self)){}
+                LCD_Parallel_WriteCommand(self, 0x80 + self->super->cursorCol);
+                self->updateAddressFlag = false;
+            }
+            while(LCD_Parallel_IsBusy(self)){}
+            LCD_Parallel_WriteData(self, self->lineBuffer1[self->super->cursorCol]);
+            self->super->cursorCol++;
+            if(self->super->cursorCol > (self->super->numCols+1) / 2)
+            {
+                if(nextState != self->currentState + 1)
+                    self->updateAddressFlag = true;
+                self->currentState = nextState;
+            }
+            break;
+    }
 }
 
 bool LCD_Parallel_IsBusy(LCD_Parallel *self)
@@ -272,6 +322,32 @@ void LCD_Parallel_ScrollLine(LCD_Parallel *self, uint8_t lineNum, uint8_t scroll
 void LCD_Parallel_SetCGRAMAddress(LCD_Parallel *self, uint8_t address)
 {
 
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Local Functions *****************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+static displayState GetNextState(LCD_Parallel *self)
+{
+    displayState nextState = self->currentState + 1;
+
+    while(nextState != self->currentState)
+    {
+        if(self->currentRefreshMask & (1 << nextState))
+            break;
+        nextState++;
+
+        if(nextState == 8)
+        {
+            /* We finished going through all the states. Load new values and start 
+            over. */
+            self->currentRefreshMask = self->nextRefreshMask;
+            self->currentState = 0;
+        }
+    }
 }
 
 /*
