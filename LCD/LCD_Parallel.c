@@ -13,9 +13,12 @@
  ******************************************************************************/
 
 #include "LCD_Parallel.h"
+#include <string.h>
 
 // ***** Defines ***************************************************************
 
+#define LCD_PAR_LEFT    0x01
+#define LCD_PAR_RIGHT   0x02
 
 // ***** Global Variables ******************************************************
 
@@ -27,6 +30,9 @@
 LCDInterface LCD_ParallelFunctionTable = {
 
 };
+
+/* For use with the displayRefreshMask variable */
+static uint8_t rowToBitPos[4] = {0, 1, 5, 3, 7};
 
 // ***** Static Function Prototypes ********************************************
 
@@ -131,58 +137,131 @@ void LCD_Parallel_SetCursorBlink(LCD_Parallel *self, bool blinkEnabled)
 void LCD_Parallel_MoveCursor(LCD_Parallel *self, uint8_t row, uint8_t col)
 {
     // check rows and columns
-    if(row > self->super->numRows || col > self->super->numCols)
-        return;
+    if(row == 0 || col == 0 || 
+        row > self->super->numRows || col > self->super->numCols)
+            return;
 
-    // if single row, check halfway boundry
-    if(self->super->numRows == 1 && col >= self->super->numCols / 2)
-    {
-        // Add 0x40 to address
-    }
+    self->super->cursorRow = row;
+    self->super->cursorCol = col;
 
-    // write address
+    self->refreshCursor = true;
 }
 
 void LCD_Parallel_MoveCursorForward(LCD_Parallel *self)
 {
-    // check rows and columns
+    if(self->super->cursorCol == self->super->numCols)
+    {
+        self->super->cursorCol = 1;
+        self->super->cursorRow++;
+    }
 
-    // if single row, check halfway boundry
+    if(self->super->cursorRow > self->super->numRows)
+        self->super->cursorRow = 1;
 
-    // else if last column, move to next row
-
-    // write address
+    self->refreshCursor = true;
 }
 
 void LCD_Parallel_MoveCursorBackward(LCD_Parallel *self)
 {
-    // check rows and columns
+    if(self->super->cursorCol == 1)
+    {
+        self->super->cursorCol = self->super->numCols;
+        self->super->cursorRow--;
+    }
 
-    // if single row, check halfway boundry
-
-    // else if first column, move to previous row
-
-    // write address
+    if(self->super->cursorRow < 1)
+        self->super->cursorRow = self->super->numRows;
+    
+    self->refreshCursor = true;
 }
 
 void LCD_Parallel_PutChar(LCD_Parallel *self, uint8_t character)
 {
+    uint8_t index = 0;
+    uint8_t bitmask = LCD_PAR_LEFT;
+    uint8_t *lineBuffer;
+    uint8_t bitPos = rowToBitPos[self->super->cursorRow];
 
+    /* The memory addresses of a 4 line display are stored in two contiguous 
+    address ranges. Row 3 begins after row 1 and row 4 begins after row 2. */
+    if(self->super->cursorRow == 3 || self->super->cursorRow == 4)
+        index = self->super->cursorCol + 19;
+    else
+        index = self->super->cursorCol - 1;
+
+    /* If we are further than halfway across, update the right side. Else, just
+    the left side. For the bitmask, left side = 0x01 and right side = 0x02 */
+    if(self->super->cursorCol > (self->super->numCols+1) / 2)
+        bitmask = LCD_PAR_RIGHT;
+
+    if(self->super->cursorRow == 1 || self->super->cursorRow == 3)
+    {
+        /* Single line displays split the line in half. If we are on the 
+        right side, go to the line 2 buffer. */
+        if(self->super->numRows == 1 && bitmask == LCD_PAR_RIGHT)
+            lineBuffer = self->lineBuffer2;
+        else
+            lineBuffer = self->lineBuffer1;
+    }
+    else
+    {
+        lineBuffer = self->lineBuffer2;
+    }
+
+    lineBuffer[index] = character;
+    self->nextRefreshMask |= (bitmask << bitPos);
 }
 
-void LCD_Parallel_PutDigit(LCD_Parallel *self, uint8_t convertThisDigitToChar)
+void LCD_Parallel_PutDigit(LCD_Parallel *self, uint8_t digit)
 {
-
+    
 }
 
 void LCD_Parallel_PutString(LCD_Parallel *self, uint8_t *ptrToString)
 {
+    uint8_t index = 0;
+    uint8_t bitmask = 0;
+    uint8_t *lineBuffer = self->lineBuffer1;
+    uint8_t bitPos = rowToBitPos[self->super->cursorRow];
+    uint8_t maxLength = self->super->numCols - self->super->cursorCol + 1;
 
+    /* The memory addresses of a 4 line display are stored in two contiguous 
+    address ranges. Row 3 begins after row 1 and row 4 begins after row 2. */
+    if(self->super->cursorRow == 3 || self->super->cursorRow == 4)
+        index = self->super->cursorCol + 19;
+    else
+        index = self->super->cursorCol - 1;
+
+    // flag left side for update
+    if(self->super->cursorCol <= (self->super->numCols+1) / 2)
+        bitmask |= LCD_PAR_LEFT;
+
+    if(self->super->cursorRow == 2 || self->super->cursorRow == 4)
+        lineBuffer = self->lineBuffer2;
+
+    /* Stop at the end of the current row */
+    uint8_t j = 0;
+    while(*ptrToString != '\0' || j < maxLength)
+    {
+        lineBuffer[index] = *ptrToString;
+        j++;
+        ptrToString++;
+    }
+
+    if(self->super->cursorCol > (self->super->numCols+1) / 2)
+        bitmask |= LCD_PAR_RIGHT;
+    self->nextRefreshMask |= (bitmask << bitPos);
 }
 
 void LCD_Parallel_WriteFullLine(LCD_Parallel *self, uint8_t lineNum, uint8_t *array, uint8_t size)
 {
+    if(size > 20)
+        size = 20;
 
+    if(lineNum == 1 || lineNum == 3)
+        memcpy(self->lineBuffer1, array, size);
+    else if(lineNum == 2 || lineNum == 4)
+        memcpy(self->lineBuffer2, array, size);
 }
 
 void LCD_Parallel_ScrollLine(LCD_Parallel *self, uint8_t lineNum, uint8_t scrollBoundry)

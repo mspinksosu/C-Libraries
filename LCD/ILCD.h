@@ -20,6 +20,10 @@
 
 // ***** Defines ***************************************************************
 
+#define LCD_ROW1_ADDR   0x00
+#define LCD_ROW2_ADDR   0x40
+#define LCD_ROW3_ADDR   0x14
+#define LCD_ROW4_ADDR   0x54
 
 // ***** Global Variables ******************************************************
 
@@ -54,8 +58,6 @@ typedef struct LCDTag
 {
     LCDInterface *interface;
     void *instance;
-    uint8_t buffer1[40];
-    uint8_t buffer2[40];
     void (*DelayUs)(uint8_t delayInUs);
     uint8_t numRows;
     uint8_t numCols;

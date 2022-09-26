@@ -23,6 +23,36 @@
 
 // ***** Global Variables ******************************************************
 
+/* These are in order based on DDRAM address. First is row 1, then row 3, then 
+row 2 starting at address 0x40, then row 4. */
+typedef enum displayStateTag
+{
+    LCD_PAR_STATE_ROW1_LEFT = 0,
+    LCD_PAR_STATE_ROW1_RIGHT,
+    LCD_PAR_STATE_ROW3_LEFT, // address 0x14
+    LCD_PAR_STATE_ROW3_RIGHT,
+    LCD_PAR_STATE_ROW2_LEFT, // address 0x40
+    LCD_PAR_STATE_ROW2_RIGHT,
+    LCD_PAR_STATE_ROW4_LEFT, // address 0x54
+    LCD_PAR_STATE_ROW4_RIGHT,
+} displayState;
+
+/* This is a bit mask that will match the typedef above starting from the LSb. 
+I'm dividing the display into sections. Most people will keep a static image
+somewhere on the screen. If I see that there is no change for that section of 
+the display, I will skip over it to reduce the amount of writes. */
+enum displayRefreshMask
+{
+    LCD_PAR_REFRESH_ROW1_LEFT = 0,
+    LCD_PAR_REFRESH_ROW1_RIGHT,
+    LCD_PAR_REFRESH_ROW3_LEFT,
+    LCD_PAR_REFRESH_ROW3_RIGHT,
+    LCD_PAR_REFRESH_ROW2_LEFT, // 0x40
+    LCD_PAR_REFRESH_ROW2_RIGHT,
+    LCD_PAR_REFRESH_ROW4_LEFT,
+    LCD_PAR_REFRESH_ROW4_RIGHT,
+};
+
 /* If you need to extend the base class, then declare your processor specific
 class here. Your processor specific functions should all use this type in place 
 of the base class type. */
@@ -33,7 +63,14 @@ typedef struct LCD_ParallelTag
     void (*SetEnablePin)(bool setPinHigh);
     void (*SetDataPins)(uint8_t data, bool nibble);
     uint8_t (*ReadDataPins)(void);
+    uint8_t lineBuffer1[40];
+    uint8_t lineBuffer2[40];
     bool use4BitMode;
+    bool updateAddressFlag;
+    bool refreshCursor;
+    uint8_t currentRefreshMask;
+    uint8_t nextRefreshMask;
+    displayState currentState;
 } LCD_Parallel;
 
 /** 
