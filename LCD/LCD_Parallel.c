@@ -17,8 +17,9 @@
 
 // ***** Defines ***************************************************************
 
-#define LCD_PAR_LEFT    0x01
-#define LCD_PAR_RIGHT   0x02
+#define LCD_PAR_LEFT        0x01
+#define LCD_PAR_RIGHT       0x02
+#define LCD_PAR_DELAY_US    70
 
 // ***** Global Variables ******************************************************
 
@@ -86,7 +87,7 @@ void LCD_Parallel_ReadDataPinsFunc(LCD_Parallel *self, uint8_t (*Function)(void)
 
 void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint8_t tickMs)
 {
-
+    // do some stuff
 }
 
 void LCD_Parallel_Tick(LCD_Parallel *self)
@@ -122,7 +123,6 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
         }
         return;
     }
-
 
     /* If there is a refresh flag set, and it's not the one belonging to the 
     state we are currently in, go find it. */
@@ -197,7 +197,40 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
 
 bool LCD_Parallel_IsBusy(LCD_Parallel *self)
 {
+    uint8_t data = 0;
+    bool isBusy = false;
 
+    /* The best way to check if the LCD is busy is to read the address counter
+    and look at bit 7. If for some reason I can't do that, I'll use a delay. */
+    if(self->super->mode == LCD_READ_WRITE && self->SetEnablePin && 
+        self->SetSelectPins && self->ReadDataPins)
+    {
+        (self->SetEnablePin)(false);
+
+        // RS = 0: instruction, RW = 1: read
+        (self->SetSelectPins)(false, true);
+
+        (self->SetEnablePin)(true);
+        
+        data = self->ReadDataPins();
+        
+        (self->SetEnablePin)(false);
+
+        if(data & 0x80)
+            isBusy = true;
+        self->updateAddressFlag = true;
+    }
+    else if(self->super->DelayUs)
+    {
+        (self->super->DelayUs)(LCD_PAR_DELAY_US);
+    }
+    else
+    {
+        /* I'm going to attempt to make a delay of some kind. This is going to 
+        vary a lot based on your processor */
+        for(uint16_t i = 0; i < 1000; i++) continue;
+    }
+    return isBusy;
 }
 
 void LCD_Parallel_WriteCommand(LCD_Parallel *self, uint8_t command)

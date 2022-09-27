@@ -61,6 +61,7 @@ typedef struct LCDTag
     void (*DelayUs)(uint8_t delayInUs);
     uint8_t numRows;
     uint8_t numCols;
+    LCDMode mode;
     uint8_t cursorRow;
     uint8_t cursorCol;
     struct {
@@ -90,7 +91,7 @@ void LCD_SetInitTypeToDefaultParams(LCDInitType *params);
 
 void LCD_SetInitTypeParams(LCDInitType *params, uint8_t numRows, uint8_t numCols);
 
-void LCD_SetDelayUsFunc(LCD *self, void (*Function)(uint8_t delayInUs));
+void LCD_SetDelayUsFunc(LCD *self, void (*Function)(uint16_t delayInUs));
 
 void LCD_PutInt(LCD *self, int16_t num, uint8_t width);
 
