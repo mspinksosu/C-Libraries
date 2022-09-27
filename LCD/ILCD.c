@@ -14,12 +14,14 @@
  ******************************************************************************/
 
 #include "IFoo.h"
+#include <stdio.h>
 
 // ***** Defines ***************************************************************
 
 
 // ***** Global Variables ******************************************************
 
+static uint8_t str[10];
 
 // ***** Static Function Prototypes ********************************************
 
@@ -34,6 +36,45 @@ void Foo_Create(Foo *self, void *instanceOfSubClass, Foo_Interface *interface)
 {
     self->instance = instanceOfSubClass;
     self->interface = interface;
+}
+
+void LCD_PutInt(LCD *self, int16_t num, uint8_t width)
+{
+    if(self->interface->LCD_PutString != NULL && self->instance != NULL)
+    {
+        int n = sprintf(str, "%*d", width, num);
+        
+        if(n > 0)
+            (self->interface->LCD_PutString)(str);
+    }
+}
+
+void LCD_PutFloat(LCD *self, float num, uint8_t precision)
+{
+    if(self->interface->LCD_PutString != NULL && self->instance != NULL)
+    {
+        float round = 0.5f;
+        int n = 0;
+
+        if(precision > 6)
+            precision = 6;
+        
+        for(uint8_t i = 0; i < precision; i++) round = round / 10.0f;
+        
+        if(num < 0.0)
+        {
+            /* If < 0, add 3 places for minus sign, 0, and decimal point */
+            num -= round;
+            n = sprintf(str, "%0*.*f", precision + 3, precision, num);
+        }
+        else
+        {
+            num += round;
+            n = sprintf(str, "%.*f", precision, num);
+        }
+        if(n > 0)
+            (self->interface->LCD_PutString)(str);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

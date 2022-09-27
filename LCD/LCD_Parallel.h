@@ -117,6 +117,8 @@ void LCD_Parallel_WriteData(LCD_Parallel *self, uint8_t data);
 
 uint8_t LCD_Parallel_ReadData(LCD_Parallel *self);
 
+void LCD_Parallel_ClearDisplay(LCD_Parallel *self);
+
 void LCD_Parallel_DisplayOn(LCD_Parallel *self);
 
 void LCD_Parallel_DisplayOff(LCD_Parallel *self);
@@ -133,13 +135,11 @@ void LCD_Parallel_MoveCursorBackward(LCD_Parallel *self);
 
 void LCD_Parallel_PutChar(LCD_Parallel *self, uint8_t character);
 
-void LCD_Parallel_PutDigit(LCD_Parallel *self, uint8_t convertThisDigitToChar);
-
 void LCD_Parallel_PutString(LCD_Parallel *self, uint8_t *ptrToString);
 
 void LCD_Parallel_WriteFullLine(LCD_Parallel *self, uint8_t lineNum, uint8_t *array, uint8_t size);
 
-void LCD_Parallel_ScrollLine(LCD_Parallel *self, uint8_t lineNum, uint8_t scrollBoundry);
+void LCD_Parallel_ScrollLine(LCD_Parallel *self, uint8_t lineNum, uint8_t *array, uint8_t size);
 
 void LCD_Parallel_SetCGRAMAddress(LCD_Parallel *self, uint8_t address);
 

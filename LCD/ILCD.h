@@ -92,6 +92,10 @@ void LCD_SetInitTypeParams(LCDInitType *params, uint8_t numRows, uint8_t numCols
 
 void LCD_SetDelayUsFunc(LCD *self, void (*Function)(uint8_t delayInUs));
 
+void LCD_PutInt(LCD *self, int16_t num, uint8_t width);
+
+void LCD_PutFloat(LCD *self, float num, uint8_t precision);
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Interface Functions *************************************************//
@@ -110,6 +114,8 @@ void LCD_WriteData(LCD *self, uint8_t data);
 
 uint8_t LCD_ReadData(LCD *self);
 
+void LCD_ClearDisplay(LCD *self);
+
 void LCD_DisplayOn(LCD *self);
 
 void LCD_DisplayOff(LCD *self);
@@ -126,13 +132,12 @@ void LCD_MoveCursorBackward(LCD *self);
 
 void LCD_PutChar(LCD *self, uint8_t character);
 
-void LCD_PutDigit(LCD *self, uint8_t convertThisDigitToChar);
-
 void LCD_PutString(LCD *self, uint8_t *ptrToString);
 
 void LCD_WriteFullLine(LCD *self, uint8_t lineNum, uint8_t *array, uint8_t size);
 
-void LCD_ScrollLine(LCD *self, uint8_t lineNum, uint8_t scrollBoundry);
+// TODO
+void LCD_ScrollLine(LCD *self, uint8_t lineNum, uint8_t *array, uint8_t size);
 
 void LCD_SetCGRAMAddress(LCD *self, uint8_t address);
 
