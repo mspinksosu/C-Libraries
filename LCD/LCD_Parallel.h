@@ -68,8 +68,9 @@ typedef struct LCD_ParallelTag
     bool use4BitMode;
     bool updateAddressFlag;
     bool refreshCursor;
+    uint8_t currentIndex;
+    uint8_t count;
     uint8_t currentRefreshMask;
-    uint8_t nextRefreshMask;
     displayState currentState;
 } LCD_Parallel;
 

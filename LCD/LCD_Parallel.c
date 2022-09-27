@@ -91,56 +91,73 @@ void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint8_t tickMs)
 
 void LCD_Parallel_Tick(LCD_Parallel *self)
 {
+    static displayState nextState;
+
     /* TODO Replace LCD busy while loop with some sort of non-blocking function
     or a retry */
-    displayState nextState = GetNextState(self);
-
-    if(nextState == self->currentState)
+    if(self->currentRefreshMask == 0)
         return;
+
+    /* If there is a refresh flag set, and it's not the one belonging to the 
+    state we are currently in, go find it. */
+    if(!(self->currentRefreshMask & (1 << self->currentState)))
+    {
+        self->currentState = GetNextState(self);
+    }
 
     switch(self->currentState)
     {
         case LCD_PAR_REFRESH_ROW1_LEFT:
-            if(self->super->cursorCol == 1 || self->updateAddressFlag)
+        case LCD_PAR_REFRESH_ROW1_RIGHT:
+        case LCD_PAR_REFRESH_ROW3_LEFT:
+        case LCD_PAR_REFRESH_ROW3_RIGHT:
+            if(self->currentIndex == 0 || self->updateAddressFlag)
             {
                 /* Set the DDRAM address to the row + column.
-                Row 1 address is 0x00. Column address is 0-19
-                Cmd = 0x80 + row addr + col - 1 = 0x80 + 0x00 + col - 1*/
+                Row 1 address is 0x00. Column address is 0-39
+                Cmd = 0x80 + row addr + col = 0x80 + 0x00 + col */
                 while(LCD_Parallel_IsBusy(self)){}
-                LCD_Parallel_WriteCommand(self, 0x80 + self->super->cursorCol - 1);
+                LCD_Parallel_WriteCommand(self, 0x80 + self->currentIndex);
                 self->updateAddressFlag = false;
             }
             while(LCD_Parallel_IsBusy(self)){}
-            LCD_Parallel_WriteData(self, self->lineBuffer1[self->super->cursorCol - 1]);
-            self->super->cursorCol++;
-            if(self->super->cursorCol > (self->super->numCols+1) / 2)
-            {
-                if(nextState != self->currentState + 1)
-                    self->updateAddressFlag = true;
-                self->currentState = nextState;
-            }
+            LCD_Parallel_WriteData(self, self->lineBuffer1[self->currentIndex]);
+            self->currentIndex++;
+            self->count++;
             break;
-        case LCD_PAR_REFRESH_ROW3_LEFT:
-        case LCD_PAR_REFRESH_ROW3_RIGHT:
+        case LCD_PAR_REFRESH_ROW2_LEFT:
+        case LCD_PAR_REFRESH_ROW2_RIGHT:
+        case LCD_PAR_REFRESH_ROW4_LEFT:
+        case LCD_PAR_REFRESH_ROW4_RIGHT:
             if(self->updateAddressFlag)
             {
                 /* Set the DDRAM address to the row + column.
-                Row 3 address is 0x00. Column address is cursor columm 19
-                Cmd = 0x80 + row addr + col = 0x80 + 0x00 + col */
+                Row 2 address is 0x40. Column address is 0 - 39
+                Cmd = 0x80 + row addr + col = 0x80 + 0x40 + col */
                 while(LCD_Parallel_IsBusy(self)){}
-                LCD_Parallel_WriteCommand(self, 0x80 + self->super->cursorCol);
+                LCD_Parallel_WriteCommand(self, 0xC0 + self->currentIndex);
                 self->updateAddressFlag = false;
             }
             while(LCD_Parallel_IsBusy(self)){}
-            LCD_Parallel_WriteData(self, self->lineBuffer1[self->super->cursorCol]);
-            self->super->cursorCol++;
-            if(self->super->cursorCol > (self->super->numCols+1) / 2)
-            {
-                if(nextState != self->currentState + 1)
-                    self->updateAddressFlag = true;
-                self->currentState = nextState;
-            }
+            LCD_Parallel_WriteData(self, self->lineBuffer2[self->currentIndex]);
+            self->currentIndex++;
+            self->count++;
             break;
+    }
+
+    if(self->count > (self->super->numCols-1) / 2)
+    {
+        self->count = 0;
+        self->currentRefreshMask &= ~(1 << self->currentState);
+        nextState = GetNextState(self);
+        if(nextState == LCD_PAR_REFRESH_ROW1_LEFT || 
+            nextState == LCD_PAR_REFRESH_ROW2_LEFT)
+        {
+            self->currentIndex = 0;
+        }
+        if(nextState != self->currentState + 1)
+            self->updateAddressFlag = true;
+        self->currentState = nextState;
     }
 }
 
@@ -199,7 +216,8 @@ void LCD_Parallel_MoveCursor(LCD_Parallel *self, uint8_t row, uint8_t col)
 
 void LCD_Parallel_MoveCursorForward(LCD_Parallel *self)
 {
-    if(self->super->cursorCol == self->super->numCols)
+    self->super->cursorCol + 1;
+    if(self->super->cursorCol > self->super->numCols)
     {
         self->super->cursorCol = 1;
         self->super->cursorRow++;
@@ -213,7 +231,8 @@ void LCD_Parallel_MoveCursorForward(LCD_Parallel *self)
 
 void LCD_Parallel_MoveCursorBackward(LCD_Parallel *self)
 {
-    if(self->super->cursorCol == 1)
+    self->super->cursorCol - 1;
+    if(self->super->cursorCol < 1)
     {
         self->super->cursorCol = self->super->numCols;
         self->super->cursorRow--;
@@ -247,9 +266,13 @@ void LCD_Parallel_PutChar(LCD_Parallel *self, uint8_t character)
     if(self->super->cursorRow == 1 || self->super->cursorRow == 3)
     {
         /* Single line displays split the line in half. If we are on the 
-        right side, go to the line 2 buffer. */
+        right side, go to the line 2 buffer, left side. */
         if(self->super->numRows == 1 && bitmask == LCD_PAR_RIGHT)
+        {
+            bitmask = LCD_PAR_LEFT;
+            bitPos = rowToBitPos[2];
             lineBuffer = self->lineBuffer2;
+        }
         else
             lineBuffer = self->lineBuffer1;
     }
@@ -257,9 +280,9 @@ void LCD_Parallel_PutChar(LCD_Parallel *self, uint8_t character)
     {
         lineBuffer = self->lineBuffer2;
     }
-
     lineBuffer[index] = character;
-    self->nextRefreshMask |= (bitmask << bitPos);
+    self->currentRefreshMask |= (bitmask << bitPos);
+    LCD_Parallel_MoveCursorForward(self); // TODO decide where to put the cursor
 }
 
 void LCD_Parallel_PutDigit(LCD_Parallel *self, uint8_t digit)
@@ -269,11 +292,13 @@ void LCD_Parallel_PutDigit(LCD_Parallel *self, uint8_t digit)
 
 void LCD_Parallel_PutString(LCD_Parallel *self, uint8_t *ptrToString)
 {
+    if(*ptrToString == '\0')
+        return;
+        
     uint8_t index = 0;
     uint8_t bitmask = 0;
     uint8_t *lineBuffer = self->lineBuffer1;
     uint8_t bitPos = rowToBitPos[self->super->cursorRow];
-    uint8_t maxLength = self->super->numCols - self->super->cursorCol + 1;
 
     /* The memory addresses of a 4 line display are stored in two contiguous 
     address ranges. Row 3 begins after row 1 and row 4 begins after row 2. */
@@ -282,36 +307,70 @@ void LCD_Parallel_PutString(LCD_Parallel *self, uint8_t *ptrToString)
     else
         index = self->super->cursorCol - 1;
 
-    // flag left side for update
+    /* flag left side for update */
     if(self->super->cursorCol <= (self->super->numCols+1) / 2)
-        bitmask |= LCD_PAR_LEFT;
+        self->currentRefreshMask |= (LCD_PAR_LEFT << bitPos);
 
     if(self->super->cursorRow == 2 || self->super->cursorRow == 4)
         lineBuffer = self->lineBuffer2;
 
-    /* Stop at the end of the current row */
-    uint8_t j = 0;
-    while(*ptrToString != '\0' || j < maxLength)
-    {
+    /* Copy the data over. Stop when we hit the end of the row. Cursor will 
+    stop at the next position. */
+    do {
+        if(self->super->cursorCol > (self->super->numCols+1) / 2)
+        {
+            /* Single line displays split the line in half. If we are on the 
+            right side, go to the line 2 buffer, left side. */
+            if(self->super->numRows == 1)
+            {
+                lineBuffer = self->lineBuffer2;
+                bitPos = rowToBitPos[2];
+                self->currentRefreshMask |= (LCD_PAR_LEFT << bitPos);
+            }
+            else
+            {
+                self->currentRefreshMask |= (LCD_PAR_RIGHT << bitPos);
+            }
+        }
         lineBuffer[index] = *ptrToString;
-        j++;
-        ptrToString++;
-    }
+        index++;
+        self->super->cursorCol++;
+    } while(*ptrToString != '\0' || self->super->cursorCol < self->super->numCols);
 
-    if(self->super->cursorCol > (self->super->numCols+1) / 2)
-        bitmask |= LCD_PAR_RIGHT;
-    self->nextRefreshMask |= (bitmask << bitPos);
+    LCD_Parallel_MoveCursorForward(self); // TODO decide where to put the cursor
 }
 
 void LCD_Parallel_WriteFullLine(LCD_Parallel *self, uint8_t lineNum, uint8_t *array, uint8_t size)
 {
+    if(lineNum == 0 || lineNum > self->super->numRows)
+        return;
+
     if(size > 20)
         size = 20;
 
-    if(lineNum == 1 || lineNum == 3)
-        memcpy(self->lineBuffer1, array, size);
-    else if(lineNum == 2 || lineNum == 4)
-        memcpy(self->lineBuffer2, array, size);
+    switch(lineNum)
+    {
+        case 1:
+            uint8_t leftEndCol = (self->super->numCols+1) / 2;
+            if(self->super->numRows == 1 && size > leftEndCol)
+            {
+                /* Split the single row display in half */
+                memcpy(self->lineBuffer1, array, leftEndCol);
+                memcpy(self->lineBuffer2, &array[leftEndCol - 1], size - leftEndCol);
+            }
+            else
+            {
+                memcpy(self->lineBuffer1, array, size);
+            }
+            break;
+        case 3:
+            memcpy(self->lineBuffer1, array, size);
+            break;
+        case 2:
+        case 4:
+            memcpy(self->lineBuffer2, array, size);
+            break;
+    }
 }
 
 void LCD_Parallel_ScrollLine(LCD_Parallel *self, uint8_t lineNum, uint8_t scrollBoundry)
@@ -332,22 +391,17 @@ void LCD_Parallel_SetCGRAMAddress(LCD_Parallel *self, uint8_t address)
 
 static displayState GetNextState(LCD_Parallel *self)
 {
-    displayState nextState = self->currentState + 1;
+    /* The states go from 0 to 7. This is just a quick method of doing modulo
+    division */
+    displayState nextState = (self->currentState + 1) & 0x07;
 
     while(nextState != self->currentState)
     {
         if(self->currentRefreshMask & (1 << nextState))
             break;
-        nextState++;
-
-        if(nextState == 8)
-        {
-            /* We finished going through all the states. Load new values and start 
-            over. */
-            self->currentRefreshMask = self->nextRefreshMask;
-            self->currentState = 0;
-        }
+        nextState = (nextState + 1) & 0x07;
     }
+    return nextState;
 }
 
 /*
