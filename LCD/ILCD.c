@@ -62,8 +62,10 @@ void LCD_SetInitTypeToDefaultParams(LCDInitType *params)
 void LCD_SetInitTypeParams(LCDInitType *params, LCDMode mode, uint8_t numRows, 
     uint8_t numCols, bool displayOn, bool cursorOn, bool blinkOn)
 {
-    if(numRows < 1) numRows = 1;
-    if(numCols < 1) numCols = 12;
+    if(numRows < 1)
+        numRows = 1;
+    if(numCols < 1)
+        numCols = 12;
     params->numRows = numRows;
     params->numCols = numCols;
     params->mode = mode;
@@ -136,7 +138,7 @@ void LCD_PutFloat(LCD *self, float num, uint8_t precision)
 void LCD_Init(LCD *self, LCDInitType *params, uint8_t tickMs)
 {
     if(self->interface->LCD_Init != NULL && self->instance != NULL 
-            && params->instance != NULL)
+        && params->instance != NULL)
     {
         (self->interface->LCD_Init)(self->instance, params->instance, tickMs);
     }

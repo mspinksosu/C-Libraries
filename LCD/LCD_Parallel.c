@@ -17,6 +17,11 @@
 
 // ***** Defines ***************************************************************
 
+#define LCD_PAR_ROW1_ADDR   0x00
+#define LCD_PAR_ROW2_ADDR   0x40
+#define LCD_PAR_ROW3_ADDR   LCD_PAR_ROW1_ADDR + 20
+#define LCD_PAR_ROW4_ADDR   LCD_PAR_ROW2_ADDR + 20
+
 #define LCD_PAR_LEFT        0x01
 #define LCD_PAR_RIGHT       0x02
 #define LCD_PAR_DELAY_US    70
@@ -32,14 +37,34 @@ LCDInterface LCD_ParallelFunctionTable = {
 
 };
 
-/* Lookup table for use with the displayRefreshMask variable. Row number equals
-bit position: 4R 4L 2R 2L 3R 3L 1R 1L */
+/* A lookup table for use with the displayRefreshMask variable. Row number 
+equals bit position: 4R 4L 2R 2L 3R 3L 1R 1L */
 static uint8_t rowToBitPos[4] = {0, 1, 5, 3, 7};
+
+/* Another lookup table for converting the row number to the address */
+static uint8_t rowToAddr[4] = {0, LCD_PAR_ROW1_ADDR, LCD_PAR_ROW2_ADDR,
+                                  LCD_PAR_ROW3_ADDR, LCD_PAR_ROW4_ADDR};
 
 // ***** Static Function Prototypes ********************************************
 
 /* Put static function prototypes here */
 static displayState GetNextState(LCD_Parallel *self);
+
+/* A function to convert the cursor row and column to the correct address.
+The memory addresses of a 4 line display are stored in two contiguous address 
+ranges. Row 3 begins after row 1 and row 4 begins after row 2. */
+static inline uint8_t cursorToAddress(uint8_t cursorRow, uint8_t cursorCol)
+{
+    return rowToAddr[cursorRow] + cursorCol - 1;
+}
+
+/* A function to convert the cursor row and column to the buffer index. I have
+two buffers that mirror the addresses of the LCD. Rows 2 and 4 are the same as
+rows 1 and 3 but with an added offset. */
+static inline uint8_t cursorToIndex(uint8_t cursorRow, uint8_t cursorCol)
+{
+    return (rowToAddr[cursorRow] + cursorCol - 1) & ~LCD_PAR_ROW2_ADDR;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -93,6 +118,10 @@ void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint8_t tickMs)
     // set up variables
 
     // call base class constructor
+
+    // Send initial LCD commands
+
+    // Start busy wait timer
 }
 
 // *****************************************************************************
@@ -130,26 +159,12 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
     {
         /* We've finished updating the screen. There is nothing else to do 
         except place the cursor if needed before returning. 
-        The command is 0x80 + row addr + col */
+        The command is 0x80 + row addr + col - 1 */
         if(self->refreshCursor)
         {
             self->refreshCursor = false;
             while(LCD_Parallel_IsBusy(self)){}
-            switch(self->cursorRow)
-            {
-                case 1:
-                    LCD_Parallel_WriteCommand(self, 0x80 + self->cursorCol - 1);
-                    break;
-                case 2:
-                    LCD_Parallel_WriteCommand(self, 0xC0 + self->cursorCol - 1);
-                    break;
-                case 3:
-                    LCD_Parallel_WriteCommand(self, 0x80 + self->cursorCol + 19);
-                    break;
-                case 4:
-                    LCD_Parallel_WriteCommand(self, 0xC0 + self->cursorCol + 19);
-                    break;
-            }
+            LCD_Parallel_WriteCommand(self, 0x80 + cursorToAddress(self->cursorRow, self->cursorCol));
         }
         return;
     }
@@ -164,9 +179,9 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
     sort of static image on the screen somewhere. If I don't see any change
     in the buffer, I will skip it in order to reduce the number of writes. The
     states go in order of address. First row 1, then 3, then 2, then 4. If 
-    there was an LCD_Read or we skip a state, rewrite the cursor address. This
-    also reduces the time spent here by only doing an extra write command when
-    necessary. */
+    there was an LCD_Read or we skip a state, then we re-write the cursor. 
+    This also reduces the time spent here by only doing an extra write command 
+    when necessary. */
     switch(self->currentState)
     {
         case LCD_PAR_REFRESH_ROW1_LEFT:
@@ -177,7 +192,7 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
             {
                 /* Set the DDRAM address to the row + column.
                 Row 1 address is 0x00. Column address is 0-39
-                Cmd = 0x80 + row addr + col = 0x80 + 0x00 + col */
+                Cmd = 0x80 + row addr + col index = 0x80 + 0x00 + col index */
                 while(LCD_Parallel_IsBusy(self)){}
                 LCD_Parallel_WriteCommand(self, 0x80 + self->currentIndex);
                 self->updateAddressFlag = false;
@@ -195,7 +210,7 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
             {
                 /* Set the DDRAM address to the row + column.
                 Row 2 address is 0x40. Column address is 0 - 39
-                Cmd = 0x80 + row addr + col = 0x80 + 0x40 + col */
+                Cmd = 0x80 + row addr + col index = 0x80 + 0x40 + col index */
                 while(LCD_Parallel_IsBusy(self)){}
                 LCD_Parallel_WriteCommand(self, 0xC0 + self->currentIndex);
                 self->updateAddressFlag = false;
@@ -236,8 +251,8 @@ bool LCD_Parallel_IsBusy(LCD_Parallel *self)
     bool isBusy = false;
     /* The best way to check if the LCD is busy is to read the address counter
     and look at bit 7. If for some reason I can't do that, I'll use a delay. */
-    if(self->super->mode == LCD_READ_WRITE && self->SetEnablePin && 
-        self->SetSelectPins && self->ReadDataPins)
+    if(self->super->mode == LCD_READ_WRITE && self->SetEnablePin 
+        && self->SetSelectPins && self->ReadDataPins)
     {
         (self->SetEnablePin)(false); // RS and RW must be set while E is low
         (self->SetSelectPins)(false, true); // RS = 0: instruction, RW = 1: read
@@ -313,8 +328,8 @@ uint8_t LCD_Parallel_ReadData(LCD_Parallel *self)
 {
     uint8_t data = 0;
 
-    if(self->super->mode == LCD_READ_WRITE && self->SetEnablePin && 
-        self->SetSelectPins && self->ReadDataPins)
+    if(self->super->mode == LCD_READ_WRITE && self->SetEnablePin 
+        && self->SetSelectPins && self->ReadDataPins)
     {
         (self->SetEnablePin)(false); // RS and RW must be set while E is low
         (self->SetSelectPins)(true, true); // RS = 1: data, RW = 1: read
@@ -348,6 +363,7 @@ void LCD_Parallel_ClearDisplay(LCD_Parallel *self)
     self->refreshCursor = true;
     self->currentRefreshMask = 0xFF; // TODO figure out if this is necessary
     LCD_Parallel_WriteCommand(self, 0x01);
+    self->clearDisplayTimer.flags.expired = 0;
     self->clearDisplayTimer.flags.start = 1;
 }
 
@@ -358,7 +374,7 @@ void LCD_Parallel_DisplayOn(LCD_Parallel *self)
     uint8_t command = 0x08;
     if(self->blinkOn) command |= 0x01;
     if(self->cursorOn) command |= 0x02;
-    command |= 0x0C; // display on
+    command |= 0x04; // display on
     self->displayOn = 1;
     LCD_Parallel_WriteCommand(self, command);
 }
@@ -428,7 +444,6 @@ void LCD_Parallel_MoveCursor(LCD_Parallel *self, uint8_t row, uint8_t col)
 
     self->cursorRow = row;
     self->cursorCol = col;
-
     self->refreshCursor = true;
 }
 
@@ -470,17 +485,10 @@ void LCD_Parallel_MoveCursorBackward(LCD_Parallel *self)
 
 void LCD_Parallel_PutChar(LCD_Parallel *self, uint8_t character)
 {
-    uint8_t index = 0;
+    uint8_t index = cursorToIndex(self->cursorRow, self->cursorCol);
     uint8_t bitmask = LCD_PAR_LEFT;
     uint8_t *lineBuffer;
     uint8_t bitPos = rowToBitPos[self->cursorRow];
-
-    /* The memory addresses of a 4 line display are stored in two contiguous 
-    address ranges. Row 3 begins after row 1 and row 4 begins after row 2. */
-    if(self->cursorRow == 3 || self->cursorRow == 4)
-        index = self->cursorCol + 19;
-    else
-        index = self->cursorCol - 1;
 
     /* If we are further than halfway across, update the right side. Else, just
     the left side. For the bitmask, left side = 0x01 and right side = 0x02 */
@@ -517,20 +525,13 @@ void LCD_Parallel_PutString(LCD_Parallel *self, uint8_t *ptrToString)
     if(*ptrToString == '\0')
         return;
         
-    uint8_t index = 0;
+    uint8_t index = cursorToIndex(self->cursorRow, self->cursorCol);
     uint8_t bitmask = 0;
     uint8_t *lineBuffer = self->lineBuffer1;
     uint8_t bitPos = rowToBitPos[self->cursorRow];
 
     if(self->cursorRow == 2 || self->cursorRow == 4)
         lineBuffer = self->lineBuffer2;
-
-    /* The memory addresses of a 4 line display are stored in two contiguous 
-    address ranges. Row 3 begins after row 1 and row 4 begins after row 2. */
-    if(self->cursorRow == 3 || self->cursorRow == 4)
-        index = self->cursorCol + 19;
-    else
-        index = self->cursorCol - 1;
 
     /* flag left side for update */
     if(self->cursorCol <= (self->super->numCols+1) / 2)
