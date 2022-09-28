@@ -82,8 +82,6 @@ typedef struct LCDTag
     uint8_t numRows;
     uint8_t numCols;
     LCDMode mode;
-    uint8_t cursorRow; // TODO might move these to the subclass
-    uint8_t cursorCol;
 } LCD;
 
 /**

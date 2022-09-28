@@ -83,6 +83,8 @@ typedef struct LCD_ParallelTag
     uint8_t lineBuffer2[40];
     bool updateAddressFlag;
     bool refreshCursor;
+    uint8_t cursorRow;
+    uint8_t cursorCol;
     uint8_t currentIndex;
     uint8_t count;
     uint8_t currentRefreshMask;

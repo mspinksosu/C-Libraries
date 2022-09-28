@@ -135,19 +135,19 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
         {
             self->refreshCursor = false;
             while(LCD_Parallel_IsBusy(self)){}
-            switch(self->super->cursorRow)
+            switch(self->cursorRow)
             {
                 case 1:
-                    LCD_Parallel_WriteCommand(self, 0x80 + self->super->cursorCol - 1);
+                    LCD_Parallel_WriteCommand(self, 0x80 + self->cursorCol - 1);
                     break;
                 case 2:
-                    LCD_Parallel_WriteCommand(self, 0xC0 + self->super->cursorCol - 1);
+                    LCD_Parallel_WriteCommand(self, 0xC0 + self->cursorCol - 1);
                     break;
                 case 3:
-                    LCD_Parallel_WriteCommand(self, 0x80 + self->super->cursorCol + 19);
+                    LCD_Parallel_WriteCommand(self, 0x80 + self->cursorCol + 19);
                     break;
                 case 4:
-                    LCD_Parallel_WriteCommand(self, 0xC0 + self->super->cursorCol + 19);
+                    LCD_Parallel_WriteCommand(self, 0xC0 + self->cursorCol + 19);
                     break;
             }
         }
@@ -343,8 +343,8 @@ void LCD_Parallel_ClearDisplay(LCD_Parallel *self)
         self->lineBuffer1[i] = 0;
         self->lineBuffer2[i] = 0;
     }
-    self->super->cursorRow = 0;
-    self->super->cursorCol = 0;
+    self->cursorRow = 0;
+    self->cursorCol = 0;
     self->refreshCursor = true;
     self->currentRefreshMask = 0xFF; // TODO figure out if this is necessary
     LCD_Parallel_WriteCommand(self, 0x01);
@@ -426,8 +426,8 @@ void LCD_Parallel_MoveCursor(LCD_Parallel *self, uint8_t row, uint8_t col)
     else if(col > self->super->numCols)
         col = self->super->numCols;
 
-    self->super->cursorRow = row;
-    self->super->cursorCol = col;
+    self->cursorRow = row;
+    self->cursorCol = col;
 
     self->refreshCursor = true;
 }
@@ -436,15 +436,15 @@ void LCD_Parallel_MoveCursor(LCD_Parallel *self, uint8_t row, uint8_t col)
 
 void LCD_Parallel_MoveCursorForward(LCD_Parallel *self)
 {
-    self->super->cursorCol + 1;
-    if(self->super->cursorCol > self->super->numCols)
+    self->cursorCol + 1;
+    if(self->cursorCol > self->super->numCols)
     {
-        self->super->cursorCol = 1;
-        self->super->cursorRow++;
+        self->cursorCol = 1;
+        self->cursorRow++;
     }
 
-    if(self->super->cursorRow > self->super->numRows)
-        self->super->cursorRow = 1;
+    if(self->cursorRow > self->super->numRows)
+        self->cursorRow = 1;
 
     self->refreshCursor = true;
 }
@@ -453,15 +453,15 @@ void LCD_Parallel_MoveCursorForward(LCD_Parallel *self)
 
 void LCD_Parallel_MoveCursorBackward(LCD_Parallel *self)
 {
-    self->super->cursorCol - 1;
-    if(self->super->cursorCol < 1)
+    self->cursorCol - 1;
+    if(self->cursorCol < 1)
     {
-        self->super->cursorCol = self->super->numCols;
-        self->super->cursorRow--;
+        self->cursorCol = self->super->numCols;
+        self->cursorRow--;
     }
 
-    if(self->super->cursorRow < 1)
-        self->super->cursorRow = self->super->numRows;
+    if(self->cursorRow < 1)
+        self->cursorRow = self->super->numRows;
     
     self->refreshCursor = true;
 }
@@ -473,21 +473,21 @@ void LCD_Parallel_PutChar(LCD_Parallel *self, uint8_t character)
     uint8_t index = 0;
     uint8_t bitmask = LCD_PAR_LEFT;
     uint8_t *lineBuffer;
-    uint8_t bitPos = rowToBitPos[self->super->cursorRow];
+    uint8_t bitPos = rowToBitPos[self->cursorRow];
 
     /* The memory addresses of a 4 line display are stored in two contiguous 
     address ranges. Row 3 begins after row 1 and row 4 begins after row 2. */
-    if(self->super->cursorRow == 3 || self->super->cursorRow == 4)
-        index = self->super->cursorCol + 19;
+    if(self->cursorRow == 3 || self->cursorRow == 4)
+        index = self->cursorCol + 19;
     else
-        index = self->super->cursorCol - 1;
+        index = self->cursorCol - 1;
 
     /* If we are further than halfway across, update the right side. Else, just
     the left side. For the bitmask, left side = 0x01 and right side = 0x02 */
-    if(self->super->cursorCol > (self->super->numCols+1) / 2)
+    if(self->cursorCol > (self->super->numCols+1) / 2)
         bitmask = LCD_PAR_RIGHT;
 
-    if(self->super->cursorRow == 1 || self->super->cursorRow == 3)
+    if(self->cursorRow == 1 || self->cursorRow == 3)
     {
         /* Single line displays split the line in half. If we are on the 
         right side, go to the line 2 buffer, left side. */
@@ -520,26 +520,26 @@ void LCD_Parallel_PutString(LCD_Parallel *self, uint8_t *ptrToString)
     uint8_t index = 0;
     uint8_t bitmask = 0;
     uint8_t *lineBuffer = self->lineBuffer1;
-    uint8_t bitPos = rowToBitPos[self->super->cursorRow];
+    uint8_t bitPos = rowToBitPos[self->cursorRow];
 
-    if(self->super->cursorRow == 2 || self->super->cursorRow == 4)
+    if(self->cursorRow == 2 || self->cursorRow == 4)
         lineBuffer = self->lineBuffer2;
 
     /* The memory addresses of a 4 line display are stored in two contiguous 
     address ranges. Row 3 begins after row 1 and row 4 begins after row 2. */
-    if(self->super->cursorRow == 3 || self->super->cursorRow == 4)
-        index = self->super->cursorCol + 19;
+    if(self->cursorRow == 3 || self->cursorRow == 4)
+        index = self->cursorCol + 19;
     else
-        index = self->super->cursorCol - 1;
+        index = self->cursorCol - 1;
 
     /* flag left side for update */
-    if(self->super->cursorCol <= (self->super->numCols+1) / 2)
+    if(self->cursorCol <= (self->super->numCols+1) / 2)
         self->currentRefreshMask |= (LCD_PAR_LEFT << bitPos);
 
     /* Copy the data over. Stop when we hit the end of the row. Cursor will 
     stop at the next position. */
     do {
-        if(self->super->cursorCol == ((self->super->numCols+1) / 2) + 1)
+        if(self->cursorCol == ((self->super->numCols+1) / 2) + 1)
         {
             /* Single line displays split the line in half. If we cross the 
             halfway boundry, go to the line 2 buffer, left side. */
@@ -557,8 +557,8 @@ void LCD_Parallel_PutString(LCD_Parallel *self, uint8_t *ptrToString)
         }
         lineBuffer[index] = *ptrToString;
         index++;
-        self->super->cursorCol++;
-    } while(*ptrToString != '\0' || self->super->cursorCol < self->super->numCols);
+        self->cursorCol++;
+    } while(*ptrToString != '\0' || self->cursorCol < self->super->numCols);
     LCD_Parallel_MoveCursorForward(self); // TODO decide where to put the cursor
 }
 
