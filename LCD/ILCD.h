@@ -40,11 +40,10 @@ typedef struct LCDInitTypeTag
     uint8_t numCols;
     LCDMode mode;
     struct {
-        unsigned busyFlag   :1;
         unsigned displayOn  :1;
         unsigned cursorOn   :1;
         unsigned blinkOn    :1;
-        unsigned            :4;
+        unsigned            :5;
     };
 } LCDInitType;
 
@@ -83,15 +82,8 @@ typedef struct LCDTag
     uint8_t numRows;
     uint8_t numCols;
     LCDMode mode;
-    uint8_t cursorRow;
+    uint8_t cursorRow; // TODO might move these to the subclass
     uint8_t cursorCol;
-    struct {
-        unsigned busyFlag   :1;
-        unsigned displayOn  :1;
-        unsigned cursorOn   :1;
-        unsigned blinkOn    :1;
-        unsigned            :4;
-    };
 } LCD;
 
 /**

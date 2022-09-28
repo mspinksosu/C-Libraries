@@ -53,6 +53,21 @@ enum displayRefreshMask
     LCD_PAR_REFRESH_ROW4_RIGHT,
 };
 
+typedef struct LCDParTimerTag
+{
+    uint16_t period;
+    uint16_t count;
+    union {
+        struct {
+            unsigned start      :1;
+            unsigned active     :1;
+            unsigned expired    :1;
+            unsigned            :5;
+        };
+        uint8_t all;
+    } flags;
+} LCDParTimer;
+
 /* If you need to extend the base class, then declare your processor specific
 class here. Your processor specific functions should all use this type in place 
 of the base class type. */
@@ -62,16 +77,23 @@ typedef struct LCD_ParallelTag
     void (*SetSelectPins)(bool rsPinHigh, bool rwPinHigh);
     void (*SetEnablePin)(bool setPinHigh);
     void (*SetDataPins)(uint8_t data, bool nibble);
+    LCDParTimer clearDisplayTimer;
     uint8_t (*ReadDataPins)(void);
     uint8_t lineBuffer1[40];
     uint8_t lineBuffer2[40];
-    bool use4BitMode;
     bool updateAddressFlag;
     bool refreshCursor;
     uint8_t currentIndex;
     uint8_t count;
     uint8_t currentRefreshMask;
     displayState currentState;
+    struct {
+        unsigned displayOn      :1;
+        unsigned cursorOn       :1;
+        unsigned blinkOn        :1;
+        unsigned use4BitMode    :1;
+        unsigned                :4;
+    };
 } LCD_Parallel;
 
 /** 

@@ -88,19 +88,48 @@ void LCD_Parallel_ReadDataPinsFunc(LCD_Parallel *self, uint8_t (*Function)(void)
 
 void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint8_t tickMs)
 {
-    // do some stuff
+    // Set timer period
+
+    // set up variables
+
+    // call base class constructor
 }
+
+// *****************************************************************************
 
 void LCD_Parallel_Tick(LCD_Parallel *self)
 {
     static displayState nextState;
 
+    if(self->clearDisplayTimer.flags.start && self->clearDisplayTimer.period != 0)
+    {
+        self->clearDisplayTimer.flags.start = 0;
+        self->clearDisplayTimer.count = self->clearDisplayTimer.period;
+        self->clearDisplayTimer.flags.active = 1;
+    }
+    
+    if(self->clearDisplayTimer.flags.active)
+    {
+        /* Non-blocking wait function. It takes at least 1 ms for the clear
+        display command to execute. Do nothing until the timer is done. */
+        self->clearDisplayTimer.count--;
+
+        if(self->clearDisplayTimer.count == 0)
+        {
+            self->clearDisplayTimer.flags.active = 0;
+            self->clearDisplayTimer.flags.expired = 1;
+        }
+        else
+        {
+            return;
+        }
+    }
     /* TODO Replace LCD busy while loop with some sort of non-blocking function
     or a retry */
     if(self->currentRefreshMask == 0)
     {
         /* We've finished updating the screen. There is nothing else to do 
-        except place the cursor before returning if needed. 
+        except place the cursor if needed before returning. 
         The command is 0x80 + row addr + col */
         if(self->refreshCursor)
         {
@@ -196,11 +225,15 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
     }
 }
 
+// *****************************************************************************
+
 bool LCD_Parallel_IsBusy(LCD_Parallel *self)
 {
+    if(self->clearDisplayTimer.flags.active)
+        return true;
+
     uint8_t data = 0;
     bool isBusy = false;
-
     /* The best way to check if the LCD is busy is to read the address counter
     and look at bit 7. If for some reason I can't do that, I'll use a delay. */
     if(self->super->mode == LCD_READ_WRITE && self->SetEnablePin && 
@@ -228,6 +261,8 @@ bool LCD_Parallel_IsBusy(LCD_Parallel *self)
     return isBusy;
 }
 
+// *****************************************************************************
+
 void LCD_Parallel_WriteCommand(LCD_Parallel *self, uint8_t command)
 {
     if(self->SetEnablePin && self->SetSelectPins && self->SetDataPins)
@@ -249,6 +284,8 @@ void LCD_Parallel_WriteCommand(LCD_Parallel *self, uint8_t command)
     }
 }
 
+// *****************************************************************************
+
 void LCD_Parallel_WriteData(LCD_Parallel *self, uint8_t data)
 {
     if(self->SetEnablePin && self->SetSelectPins && self->SetDataPins)
@@ -269,6 +306,8 @@ void LCD_Parallel_WriteData(LCD_Parallel *self, uint8_t data)
         (self->SetEnablePin)(false);
     }
 }
+
+// *****************************************************************************
 
 uint8_t LCD_Parallel_ReadData(LCD_Parallel *self)
 {
@@ -295,6 +334,8 @@ uint8_t LCD_Parallel_ReadData(LCD_Parallel *self)
     return data;
 }
 
+// *****************************************************************************
+
 void LCD_Parallel_ClearDisplay(LCD_Parallel *self)
 {
     for(uint8_t i = 0; i < sizeof(self->lineBuffer1); i++)
@@ -302,43 +343,96 @@ void LCD_Parallel_ClearDisplay(LCD_Parallel *self)
         self->lineBuffer1[i] = 0;
         self->lineBuffer2[i] = 0;
     }
-    //self->currentRefreshMask = 0xFF;
-    //self->refreshCursor = true;
+    self->super->cursorRow = 0;
+    self->super->cursorCol = 0;
+    self->refreshCursor = true;
+    self->currentRefreshMask = 0xFF; // TODO figure out if this is necessary
     LCD_Parallel_WriteCommand(self, 0x01);
+    self->clearDisplayTimer.flags.start = 1;
 }
+
+// *****************************************************************************
 
 void LCD_Parallel_DisplayOn(LCD_Parallel *self)
 {
-
+    uint8_t command = 0x08;
+    if(self->blinkOn) command |= 0x01;
+    if(self->cursorOn) command |= 0x02;
+    command |= 0x0C; // display on
+    self->displayOn = 1;
+    LCD_Parallel_WriteCommand(self, command);
 }
+
+// *****************************************************************************
 
 void LCD_Parallel_DisplayOff(LCD_Parallel *self)
 {
-
+    uint8_t command = 0x08;
+    if(self->blinkOn) command |= 0x01;
+    if(self->cursorOn) command |= 0x02;
+    self->displayOn = 0;
+    LCD_Parallel_WriteCommand(self, command);
 }
+
+// *****************************************************************************
 
 void LCD_Parallel_SetDisplayCursor(LCD_Parallel *self, bool cursorOn)
 {
-
+    uint8_t command = 0x08;
+    if(self->blinkOn) command |= 0x01;
+    if(cursorOn) 
+    {
+        command |= 0x02;
+        self->cursorOn = 1;
+    }
+    else
+    {
+        self->cursorOn = 0;
+    }
+    if(self->displayOn) command |= 0x04;
+    LCD_Parallel_WriteCommand(self, command);
 }
+
+// *****************************************************************************
 
 void LCD_Parallel_SetCursorBlink(LCD_Parallel *self, bool blinkEnabled)
 {
-
+    uint8_t command = 0x08;
+    if(blinkEnabled) 
+    {
+        command |= 0x01;
+        self->blinkOn = 1;
+    }
+    else
+    {
+        self->blinkOn = 0;
+    }
+    if(self->cursorOn) command |= 0x02;
+    if(self->displayOn) command |= 0x04;
+    LCD_Parallel_WriteCommand(self, command);
 }
+
+// *****************************************************************************
 
 void LCD_Parallel_MoveCursor(LCD_Parallel *self, uint8_t row, uint8_t col)
 {
-    // check rows and columns
-    if(row == 0 || col == 0 || 
-        row > self->super->numRows || col > self->super->numCols)
-            return;
+    if(row == 0) 
+        row = 1;
+    else if(row > self->super->numRows)
+        row = self->super->numRows;
+
+    if(col == 0)
+        col = 1; 
+    else if(col > self->super->numCols)
+        col = self->super->numCols;
 
     self->super->cursorRow = row;
     self->super->cursorCol = col;
 
     self->refreshCursor = true;
 }
+
+// *****************************************************************************
 
 void LCD_Parallel_MoveCursorForward(LCD_Parallel *self)
 {
@@ -355,6 +449,8 @@ void LCD_Parallel_MoveCursorForward(LCD_Parallel *self)
     self->refreshCursor = true;
 }
 
+// *****************************************************************************
+
 void LCD_Parallel_MoveCursorBackward(LCD_Parallel *self)
 {
     self->super->cursorCol - 1;
@@ -369,6 +465,8 @@ void LCD_Parallel_MoveCursorBackward(LCD_Parallel *self)
     
     self->refreshCursor = true;
 }
+
+// *****************************************************************************
 
 void LCD_Parallel_PutChar(LCD_Parallel *self, uint8_t character)
 {
@@ -411,6 +509,8 @@ void LCD_Parallel_PutChar(LCD_Parallel *self, uint8_t character)
     self->currentRefreshMask |= (bitmask << bitPos);
     LCD_Parallel_MoveCursorForward(self); // TODO decide where to put the cursor
 }
+
+// *****************************************************************************
 
 void LCD_Parallel_PutString(LCD_Parallel *self, uint8_t *ptrToString)
 {
@@ -461,6 +561,8 @@ void LCD_Parallel_PutString(LCD_Parallel *self, uint8_t *ptrToString)
     } while(*ptrToString != '\0' || self->super->cursorCol < self->super->numCols);
     LCD_Parallel_MoveCursorForward(self); // TODO decide where to put the cursor
 }
+
+// *****************************************************************************
 
 void LCD_Parallel_WriteFullLine(LCD_Parallel *self, uint8_t lineNum, uint8_t *array, uint8_t size)
 {
