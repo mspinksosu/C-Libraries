@@ -13,7 +13,7 @@
  * 
  ******************************************************************************/
 
-#include "IFoo.h"
+#include "ILCD.h"
 #include <stdio.h>
 
 // ***** Defines ***************************************************************
@@ -32,11 +32,54 @@ static uint8_t str[10];
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void Foo_Create(Foo *self, void *instanceOfSubClass, Foo_Interface *interface)
+void LCD_Create(LCD *self, void *instanceOfSubclass, LCDInterface *interface)
 {
-    self->instance = instanceOfSubClass;
     self->interface = interface;
+    self->instance = instanceOfSubclass;
 }
+
+// *****************************************************************************
+
+void LCD_CreateInitType(LCDInitType *params, void *instanceOfSubclass)
+{
+    params->instance = instanceOfSubclass;
+}
+
+// *****************************************************************************
+
+void LCD_SetInitTypeToDefaultParams(LCDInitType *params)
+{
+    params->numRows = 2;
+    params->numCols = 16;
+    params->mode = LCD_READ_WRITE;
+    params->displayOn = 1;
+    params->cursorOn = 0;
+    params->blinkOn = 0;
+}
+
+// *****************************************************************************
+
+void LCD_SetInitTypeParams(LCDInitType *params, LCDMode mode, uint8_t numRows, 
+    uint8_t numCols, bool displayOn, bool cursorOn, bool blinkOn)
+{
+    if(numRows < 1) numRows = 1;
+    if(numCols < 1) numCols = 12;
+    params->numRows = numRows;
+    params->numCols = numCols;
+    params->mode = mode;
+    params->displayOn = displayOn;
+    params->cursorOn = cursorOn;
+    params->blinkOn = blinkOn;
+}
+
+// *****************************************************************************
+
+void LCD_SetDelayUsFunc(LCD *self, void (*Function)(uint16_t delayInUs))
+{
+    self->DelayUs = Function;
+}
+
+// *****************************************************************************
 
 void LCD_PutInt(LCD *self, int16_t num, uint8_t width)
 {
@@ -45,9 +88,13 @@ void LCD_PutInt(LCD *self, int16_t num, uint8_t width)
         int n = sprintf(str, "%*d", width, num);
         
         if(n > 0)
-            (self->interface->LCD_PutString)(str);
+        {
+            (self->interface->LCD_PutString)(self->instance, str);
+        }
     }
 }
+
+// *****************************************************************************
 
 void LCD_PutFloat(LCD *self, float num, uint8_t precision)
 {
@@ -72,8 +119,11 @@ void LCD_PutFloat(LCD *self, float num, uint8_t precision)
             num += round;
             n = sprintf(str, "%.*f", precision, num);
         }
+        
         if(n > 0)
-            (self->interface->LCD_PutString)(str);
+        {
+            (self->interface->LCD_PutString)(self->instance, str);
+        }
     }
 }
 
@@ -83,24 +133,66 @@ void LCD_PutFloat(LCD *self, float num, uint8_t precision)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void Foo_Func(Foo *self)
+void LCD_Init(LCD *self, LCDInitType *params, uint8_t tickMs)
 {
-    /* Check the function table is set up properly before calling the processor
-    specific function */
-    if(self->interface->Foo_Func != NULL && self->instance != NULL)
+    if(self->interface->LCD_Init != NULL && self->instance != NULL 
+            && params->instance != NULL)
     {
-        /* Dispatch the function using indirection */
-        (self->interface->Foo_Func)(self->instance);
+        (self->interface->LCD_Init)(self->instance, params->instance, tickMs);
     }
 }
 
 // *****************************************************************************
 
-uint16_t Foo_GetValue(Foo *self)
+void LCD_Tick(LCD *self)
 {
-    if(self->interface->Foo_GetValue != NULL && self->instance != NULL)
+    if(self->interface->LCD_Tick != NULL && self->instance != NULL)
     {
-        return (self->interface->Foo_GetValue)(self->instance);
+        (self->interface->LCD_Tick)(self->instance);
+    }
+}
+
+// *****************************************************************************
+
+bool LCD_IsBusy(LCD *self)
+{
+    if(self->interface->LCD_IsBusy != NULL && self->instance != NULL)
+    {
+        return (self->interface->LCD_IsBusy)(self->instance);
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// *****************************************************************************
+
+void LCD_WriteCommand(LCD *self, uint8_t command)
+{
+    if(self->interface->LCD_WriteCommand != NULL && self->instance != NULL)
+    {
+        (self->interface->LCD_WriteCommand)(self->instance, command);
+    }
+}
+
+// *****************************************************************************
+
+void LCD_WriteData(LCD *self, uint8_t data)
+{
+    if(self->interface->LCD_WriteData != NULL && self->instance != NULL)
+    {
+        (self->interface->LCD_WriteData)(self->instance, data);
+    }
+}
+
+// *****************************************************************************
+
+uint8_t LCD_ReadData(LCD *self)
+{
+    if(self->interface->LCD_ReadData != NULL && self->instance != NULL)
+    {
+        return (self->interface->LCD_ReadData)(self->instance);
     }
     else
     {
@@ -110,11 +202,111 @@ uint16_t Foo_GetValue(Foo *self)
 
 // *****************************************************************************
 
-void Foo_SetValue(Foo *self, uint16_t data)
+void LCD_ClearDisplay(LCD *self)
 {
-    if(self->interface->Foo_SetValue != NULL && self->instance != NULL)
+    if(self->interface->LCD_ClearDisplay != NULL && self->instance != NULL)
     {
-        (self->interface->Foo_SetValue)(self->instance, data);
+        (self->interface->LCD_ClearDisplay)(self->instance);
+    }
+}
+
+// *****************************************************************************
+
+void LCD_DisplayOn(LCD *self)
+{
+    if(self->interface->LCD_DisplayOn != NULL && self->instance != NULL)
+    {
+        (self->interface->LCD_DisplayOn)(self->instance);
+    }
+}
+
+// *****************************************************************************
+
+void LCD_DisplayOff(LCD *self)
+{
+    if(self->interface->LCD_DisplayOff != NULL && self->instance != NULL)
+    {
+        (self->interface->LCD_DisplayOff)(self->instance);
+    }
+}
+
+// *****************************************************************************
+
+void LCD_SetDisplayCursor(LCD *self, bool cursorOn)
+{
+    if(self->interface->LCD_SetDisplayCursor != NULL && self->instance != NULL)
+    {
+        (self->interface->LCD_SetDisplayCursor)(self->instance, cursorOn);
+    }
+}
+
+// *****************************************************************************
+
+void LCD_SetCursorBlink(LCD *self, bool blinkEnabled)
+{
+    if(self->interface->LCD_SetCursorBlink != NULL && self->instance != NULL)
+    {
+        (self->interface->LCD_SetCursorBlink)(self->instance, blinkEnabled);
+    }
+}
+
+// *****************************************************************************
+
+void LCD_MoveCursor(LCD *self, uint8_t row, uint8_t col)
+{
+    if(self->interface->LCD_MoveCursor != NULL && self->instance != NULL)
+    {
+        (self->interface->LCD_MoveCursor)(self->instance, row, col);
+    }
+}
+
+// *****************************************************************************
+
+void LCD_MoveCursorForward(LCD *self)
+{
+    if(self->interface->LCD_MoveCursorForward != NULL && self->instance != NULL)
+    {
+        (self->interface->LCD_MoveCursorForward)(self->instance);
+    }
+}
+
+// *****************************************************************************
+
+void LCD_MoveCursorBackward(LCD *self)
+{
+    if(self->interface->LCD_MoveCursorBackward != NULL && self->instance != NULL)
+    {
+        (self->interface->LCD_MoveCursorBackward)(self->instance);
+    }
+}
+
+// *****************************************************************************
+
+void LCD_PutChar(LCD *self, uint8_t character)
+{
+    if(self->interface->LCD_PutChar != NULL && self->instance != NULL)
+    {
+        (self->interface->LCD_PutChar)(self->instance, character);
+    }
+}
+
+// *****************************************************************************
+
+void LCD_PutString(LCD *self, uint8_t *ptrToString)
+{
+    if(self->interface->LCD_PutString != NULL && self->instance != NULL)
+    {
+        (self->interface->LCD_PutString)(self->instance, ptrToString);
+    }
+}
+
+// *****************************************************************************
+
+void LCD_WriteFullLine(LCD *self, uint8_t lineNum, uint8_t *array, uint8_t size)
+{
+    if(self->interface->LCD_WriteFullLine != NULL && self->instance != NULL)
+    {
+        (self->interface->LCD_WriteFullLine)(self->instance, lineNum, array, size);
     }
 }
 

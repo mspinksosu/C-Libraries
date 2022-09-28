@@ -299,11 +299,12 @@ void LCD_Parallel_ClearDisplay(LCD_Parallel *self)
 {
     for(uint8_t i = 0; i < sizeof(self->lineBuffer1); i++)
     {
-        self->lineBuffer1[i] = ' ';
-        self->lineBuffer2[i] = ' ';
+        self->lineBuffer1[i] = 0;
+        self->lineBuffer2[i] = 0;
     }
-    self->currentRefreshMask = 0xFF;
-    self->refreshCursor = true;
+    //self->currentRefreshMask = 0xFF;
+    //self->refreshCursor = true;
+    LCD_Parallel_WriteCommand(self, 0x01);
 }
 
 void LCD_Parallel_DisplayOn(LCD_Parallel *self)
@@ -411,11 +412,6 @@ void LCD_Parallel_PutChar(LCD_Parallel *self, uint8_t character)
     LCD_Parallel_MoveCursorForward(self); // TODO decide where to put the cursor
 }
 
-void LCD_Parallel_PutDigit(LCD_Parallel *self, uint8_t digit)
-{
-    
-}
-
 void LCD_Parallel_PutString(LCD_Parallel *self, uint8_t *ptrToString)
 {
     if(*ptrToString == '\0')
@@ -497,16 +493,6 @@ void LCD_Parallel_WriteFullLine(LCD_Parallel *self, uint8_t lineNum, uint8_t *ar
             memcpy(self->lineBuffer2, array, size);
             break;
     }
-}
-
-void LCD_Parallel_ScrollLine(LCD_Parallel *self, uint8_t lineNum, uint8_t *array, uint8_t size)
-{
-
-}
-
-void LCD_Parallel_SetCGRAMAddress(LCD_Parallel *self, uint8_t address)
-{
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////

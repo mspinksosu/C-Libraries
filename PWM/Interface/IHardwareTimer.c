@@ -73,9 +73,9 @@ void HWTimer_ComputePeriodUs(HWTimer *self, HWTimerInitType *params,
 
 void HWTimer_Init(HWTimer *self, HWTimerInitType *params)
 {
-    if(self->interface->HWTimer_Init != NULL && params != NULL)
+    if(self->interface->HWTimer_Init != NULL && params->instance != NULL)
     {
-        (self->interface->HWTimer_Init)(params);
+        (self->interface->HWTimer_Init)(params->instance);
     }
 }
 

@@ -139,8 +139,8 @@ void LCD_Parallel_PutString(LCD_Parallel *self, uint8_t *ptrToString);
 
 void LCD_Parallel_WriteFullLine(LCD_Parallel *self, uint8_t lineNum, uint8_t *array, uint8_t size);
 
-void LCD_Parallel_ScrollLine(LCD_Parallel *self, uint8_t lineNum, uint8_t *array, uint8_t size);
+//void LCD_Parallel_ScrollLine(LCD_Parallel *self, uint8_t lineNum, uint8_t *array, uint8_t size);
 
-void LCD_Parallel_SetCGRAMAddress(LCD_Parallel *self, uint8_t address);
+//void LCD_Parallel_SetCGRAMAddress(LCD_Parallel *self, uint8_t address);
 
 #endif  /* LCD_PAR_H */

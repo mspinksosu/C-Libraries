@@ -39,6 +39,13 @@ typedef struct LCDInitTypeTag
     uint8_t numRows;
     uint8_t numCols;
     LCDMode mode;
+    struct {
+        unsigned busyFlag   :1;
+        unsigned displayOn  :1;
+        unsigned cursorOn   :1;
+        unsigned blinkOn    :1;
+        unsigned            :4;
+    };
 } LCDInitType;
 
 typedef struct LCDInterfaceTag
@@ -47,11 +54,25 @@ typedef struct LCDInterfaceTag
     interface object for your class that will have these function signatures.
     Set each of your functions equal to one of these pointers. The void pointer
     will be set to the sub class object. Typecasting will be needed. */
-    void (*Foo_Func)(void *instance);
-    uint16_t (*Foo_GetValue)(void *instance);
-    void (*Foo_SetValue)(void *instance, uint16_t data);
-
-    // Add more functions below
+    void (*LCD_Init)(void *instance, void *params, uint8_t tickMs);
+    void (*LCD_Tick)(void *instance);
+    bool (*LCD_IsBusy)(void *instance);
+    void (*LCD_WriteCommand)(void *instance, uint8_t command);
+    void (*LCD_WriteData)(void *instance, uint8_t data);
+    uint8_t (*LCD_ReadData)(void *instance);
+    void (*LCD_ClearDisplay)(void *instance);
+    void (*LCD_DisplayOn)(void *instance);
+    void (*LCD_DisplayOff)(void *instance);
+    void (*LCD_SetDisplayCursor)(void *instance, bool cursorOn);
+    void (*LCD_SetCursorBlink)(void *instance, bool blinkEnabled);
+    void (*LCD_MoveCursor)(void *instance, uint8_t row, uint8_t col);
+    void (*LCD_MoveCursorForward)(void *instance);
+    void (*LCD_MoveCursorBackward)(void *instance);
+    void (*LCD_PutChar)(void *instance, uint8_t character);
+    void (*LCD_PutString)(void *instance, uint8_t *ptrToString);
+    void (*LCD_WriteFullLine)(void *instance, uint8_t lineNum, uint8_t *array, uint8_t size);
+    //void (*LCD_ScrollLine)(void *instance, uint8_t lineNum, uint8_t *array, uint8_t size);
+    //void (*LCD_SetCGRAMAddress)(void *instance, uint8_t address);
 } LCDInterface;
 
 typedef struct LCDTag
@@ -89,7 +110,8 @@ void LCD_CreateInitType(LCDInitType *params, void *instanceOfSubclass);
 
 void LCD_SetInitTypeToDefaultParams(LCDInitType *params);
 
-void LCD_SetInitTypeParams(LCDInitType *params, uint8_t numRows, uint8_t numCols);
+void LCD_SetInitTypeParams(LCDInitType *params, LCDMode mode, uint8_t numRows, 
+    uint8_t numCols, bool displayOn, bool cursorOn, bool blinkOn);
 
 void LCD_SetDelayUsFunc(LCD *self, void (*Function)(uint16_t delayInUs));
 
