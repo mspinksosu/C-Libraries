@@ -70,7 +70,7 @@ void GPIO_SetPointerToAnalogValue(GPIO *self, uint16_t *ptr)
 void GPIO_InitPin(GPIO *self, GPIOInitType *params)
 {
     if(interface->GPIO_InitPin != NULL && self->instance != NULL 
-            && params->instance != NULL)
+        && params->instance != NULL)
     {
         (interface->GPIO_InitPin)(self->instance, params->instance);
     }

@@ -219,7 +219,7 @@ HWTimerPrescaleOptions HWTimer_GetPrescaleOptions(HWTimer *self);
  * 
  * @param self  pointer to the HWTimer you are using
  * @param retParams  pointer to the HWTimerInitType that you are using
- * @param desiredPeriodUs  the period that you want
+ * @param desiredPeriodUs  the period that you want in microseconds
  * @param clkInHz  the frequency of your timer peripheral's clock in Hertz
  * @param retDiffInTicks  difference in ticks subtracted from the max count
  */
