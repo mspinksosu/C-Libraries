@@ -32,7 +32,8 @@ LCDInterface LCD_ParallelFunctionTable = {
 
 };
 
-/* For use with the displayRefreshMask variable */
+/* Lookup table for use with the displayRefreshMask variable. Row number equals
+bit position: 4R 4L 2R 2L 3R 3L 1R 1L */
 static uint8_t rowToBitPos[4] = {0, 1, 5, 3, 7};
 
 // ***** Static Function Prototypes ********************************************
@@ -205,20 +206,14 @@ bool LCD_Parallel_IsBusy(LCD_Parallel *self)
     if(self->super->mode == LCD_READ_WRITE && self->SetEnablePin && 
         self->SetSelectPins && self->ReadDataPins)
     {
-        (self->SetEnablePin)(false);
-
-        // RS = 0: instruction, RW = 1: read
-        (self->SetSelectPins)(false, true);
-
+        (self->SetEnablePin)(false); // RS and RW must be set while E is low
+        (self->SetSelectPins)(false, true); // RS = 0: instruction, RW = 1: read
         (self->SetEnablePin)(true);
-        
         data = self->ReadDataPins();
-        
         (self->SetEnablePin)(false);
 
         if(data & 0x80)
             isBusy = true;
-        self->updateAddressFlag = true;
     }
     else if(self->super->DelayUs)
     {
@@ -235,17 +230,69 @@ bool LCD_Parallel_IsBusy(LCD_Parallel *self)
 
 void LCD_Parallel_WriteCommand(LCD_Parallel *self, uint8_t command)
 {
+    if(self->SetEnablePin && self->SetSelectPins && self->SetDataPins)
+    {
+        (self->SetEnablePin)(false); // RS and RW must be set while E is low
+        (self->SetSelectPins)(false, false); // RS = 0: instruction, RW = 0: write
+        (self->SetEnablePin)(true);
+        
+        if(self->super->DelayUs)
+            (self->super->DelayUs)(1);
 
+        // TODO add 4-bit mode
+        (self->SetDataPins)(command, false);
+        
+        if(self->super->DelayUs)
+            (self->super->DelayUs)(1);
+        
+        (self->SetEnablePin)(false);
+    }
 }
 
 void LCD_Parallel_WriteData(LCD_Parallel *self, uint8_t data)
 {
+    if(self->SetEnablePin && self->SetSelectPins && self->SetDataPins)
+    {
+        (self->SetEnablePin)(false); // RS and RW must be set while E is low
+        (self->SetSelectPins)(true, false); // RS = 1: data, RW = 0: write
+        (self->SetEnablePin)(true);
+        
+        if(self->super->DelayUs)
+            (self->super->DelayUs)(1);
 
+        // TODO add 4-bit mode
+        (self->SetDataPins)(data, false);
+        
+        if(self->super->DelayUs)
+            (self->super->DelayUs)(1);
+        
+        (self->SetEnablePin)(false);
+    }
 }
 
 uint8_t LCD_Parallel_ReadData(LCD_Parallel *self)
 {
+    uint8_t data = 0;
 
+    if(self->super->mode == LCD_READ_WRITE && self->SetEnablePin && 
+        self->SetSelectPins && self->ReadDataPins)
+    {
+        (self->SetEnablePin)(false); // RS and RW must be set while E is low
+        (self->SetSelectPins)(true, true); // RS = 1: data, RW = 1: read
+
+        /* The minimum acquisition time is 520 ns after rising edge of E pin. 
+        I imagine this code will take longer, but just in case, I will use a 
+        small delay */
+        (self->SetEnablePin)(true);
+        
+        if(self->super->DelayUs)
+            (self->super->DelayUs)(1);
+
+        data = self->ReadDataPins();
+        (self->SetEnablePin)(false);
+        self->updateAddressFlag = true;
+    }
+    return data;
 }
 
 void LCD_Parallel_ClearDisplay(LCD_Parallel *self)
