@@ -196,7 +196,14 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
         self->updateAddressFlag = false;
     }
     while(LCD_Parallel_IsBusy(self)){}
-    LCD_Parallel_WriteData(self, self->lineBuffer1[self->currentIndex]);
+    if(self->cursorRow == 1 || self->cursorRow == 3)
+    {
+        LCD_Parallel_WriteData(self, self->lineBuffer1[self->currentIndex]);
+    }
+    else
+    {
+        LCD_Parallel_WriteData(self, self->lineBuffer2[self->currentIndex]);
+    }
     self->currentIndex++;
     self->count++;
 
