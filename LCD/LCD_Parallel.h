@@ -55,8 +55,8 @@ enum displayRefreshMask
 
 typedef struct LCDParTimerTag
 {
-    uint16_t period;
-    uint16_t count;
+    uint8_t period;
+    uint8_t count;
     union {
         struct {
             unsigned start      :1;

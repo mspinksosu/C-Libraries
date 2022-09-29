@@ -22,9 +22,10 @@
 #define LCD_PAR_ROW3_ADDR   LCD_PAR_ROW1_ADDR + 20
 #define LCD_PAR_ROW4_ADDR   LCD_PAR_ROW2_ADDR + 20
 
-#define LCD_PAR_LEFT        0x01
-#define LCD_PAR_RIGHT       0x02
-#define LCD_PAR_DELAY_US    70
+#define LCD_PAR_LEFT                0x01
+#define LCD_PAR_RIGHT               0x02
+#define LCD_PAR_DELAY_US            70
+#define LCD_PAR_CLEAR_DISPLAY_MS    2
 
 // ***** Global Variables ******************************************************
 
@@ -113,7 +114,11 @@ void LCD_Parallel_ReadDataPinsFunc(LCD_Parallel *self, uint8_t (*Function)(void)
 
 void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint8_t tickMs)
 {
-    // Set timer period
+    if(tickMs != 0)
+        self->clearDisplayTimer.period = LCD_PAR_CLEAR_DISPLAY_MS / tickMs;
+
+    if(self->clearDisplayTimer.period == 0)
+        self->clearDisplayTimer.period = 1;
 
     // set up variables
 
@@ -168,62 +173,35 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
         }
         return;
     }
-
-    /* If there is a refresh flag set, and it's not the one belonging to the 
-    state we are currently in, go find it. */
-    if(!(self->currentRefreshMask & (1 << self->currentState)))
+    else if(!(self->currentRefreshMask & (1 << self->currentState)))
     {
+        /* There is a refresh flag set, and it's not the one belonging to the 
+        state we are currently in. Go find it. */
         self->currentState = GetNextState(self);
     }
-    /* Dvide the screen into quadrants. Most people are going to have some
-    sort of static image on the screen somewhere. If I don't see any change
-    in the buffer, I will skip it in order to reduce the number of writes. The
-    states go in order of address. First row 1, then 3, then 2, then 4. If 
-    there was an LCD_Read or we skip a state, then we re-write the cursor. 
-    This also reduces the time spent here by only doing an extra write command 
-    when necessary. */
-    switch(self->currentState)
+    /* I've divided the rows into left and right sides. Most people are going 
+    to have some sort of static image on the screen somewhere. If I don't see 
+    any change in the buffer, I will skip it in order to reduce the number of 
+    writes. The states go in order of address. First row 1, then 3, then 2, 
+    then 4. If there was an LCD_Read or we skip a state, then we re-write the 
+    cursor. This also reduces the time spent here by only doing an extra write 
+    command when necessary. */
+    if(self->currentIndex == 0 || self->updateAddressFlag)
     {
-        case LCD_PAR_REFRESH_ROW1_LEFT:
-        case LCD_PAR_REFRESH_ROW1_RIGHT:
-        case LCD_PAR_REFRESH_ROW3_LEFT:
-        case LCD_PAR_REFRESH_ROW3_RIGHT:
-            if(self->currentIndex == 0 || self->updateAddressFlag)
-            {
-                /* Set the DDRAM address to the row + column.
-                Row 1 address is 0x00. Column address is 0-39
-                Cmd = 0x80 + row addr + col index = 0x80 + 0x00 + col index */
-                while(LCD_Parallel_IsBusy(self)){}
-                LCD_Parallel_WriteCommand(self, 0x80 + self->currentIndex);
-                self->updateAddressFlag = false;
-            }
-            while(LCD_Parallel_IsBusy(self)){}
-            LCD_Parallel_WriteData(self, self->lineBuffer1[self->currentIndex]);
-            self->currentIndex++;
-            self->count++;
-            break;
-        case LCD_PAR_REFRESH_ROW2_LEFT:
-        case LCD_PAR_REFRESH_ROW2_RIGHT:
-        case LCD_PAR_REFRESH_ROW4_LEFT:
-        case LCD_PAR_REFRESH_ROW4_RIGHT:
-            if(self->currentIndex == 0 || self->updateAddressFlag)
-            {
-                /* Set the DDRAM address to the row + column.
-                Row 2 address is 0x40. Column address is 0 - 39
-                Cmd = 0x80 + row addr + col index = 0x80 + 0x40 + col index */
-                while(LCD_Parallel_IsBusy(self)){}
-                LCD_Parallel_WriteCommand(self, 0xC0 + self->currentIndex);
-                self->updateAddressFlag = false;
-            }
-            while(LCD_Parallel_IsBusy(self)){}
-            LCD_Parallel_WriteData(self, self->lineBuffer2[self->currentIndex]);
-            self->currentIndex++;
-            self->count++;
-            break;
+        /* Set the DDRAM address to the row + column.
+        Row 1 address is 0x00. Row 2 address ix 0x40. Column address is 0-39
+        Cmd = 0x80 + row addr + col index = 0x80 + 0x00 + col index */
+        while(LCD_Parallel_IsBusy(self)){}
+        LCD_Parallel_WriteCommand(self, 0x80 + cursorToAddress(self->cursorRow, self->cursorCol));
+        self->updateAddressFlag = false;
     }
+    while(LCD_Parallel_IsBusy(self)){}
+    LCD_Parallel_WriteData(self, self->lineBuffer1[self->currentIndex]);
+    self->currentIndex++;
+    self->count++;
 
-    /* If we're done writing, find the next state. If the next state is not
-    continuous, then set a flag to rewrite the cursor. */
+    /* If we are finished with this section, find the next state. If the next 
+    state is not continuous, then set a flag to rewrite the cursor. */
     if(self->count > (self->super->numCols-1) / 2)
     {
         self->count = 0;
