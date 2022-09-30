@@ -22,10 +22,24 @@
 #define LCD_PAR_ROW3_ADDR   LCD_PAR_ROW1_ADDR + 20
 #define LCD_PAR_ROW4_ADDR   LCD_PAR_ROW2_ADDR + 20
 
-#define LCD_PAR_LEFT                0x01
-#define LCD_PAR_RIGHT               0x02
-#define LCD_PAR_DELAY_US            70
-#define LCD_PAR_CLEAR_DISPLAY_MS    2
+/* Flags used to update either the left or right side of the screen */
+#define LCD_PAR_LEFT        0x01
+#define LCD_PAR_RIGHT       0x02
+
+/* It takes more than 1 ms to execute the clear display command */
+#define LCD_PAR_CLEAR_DISPLAY_US    1500
+
+/* I will try reading the busy flag this many times */
+#define LCD_PAR_BUSY_TRY_COUNT      3
+
+/* If I can't use the read function I will delay for this time. The maximum 
+delay should be 100 us. I think 50 us to 70 us works best. */
+#define LCD_PAR_DELAY_US            50
+
+/* If I can't read the busy flag and the user also didn't create a delay_us
+function like they should have, I'm going to take a rough guess and count to
+a number. Good luck. */
+#define LCD_PAR_ROUGH_DELAY_COUNT   1000
 
 // ***** Global Variables ******************************************************
 
@@ -54,7 +68,7 @@ static displayState GetNextState(LCD_Parallel *self);
 /* A function to convert the cursor row and column to the correct address.
 The memory addresses of a 4 line display are stored in two contiguous address 
 ranges. Row 3 begins after row 1 and row 4 begins after row 2. */
-static inline uint8_t cursorToAddress(uint8_t cursorRow, uint8_t cursorCol)
+static inline uint8_t CursorToAddress(uint8_t cursorRow, uint8_t cursorCol)
 {
     return rowToAddr[cursorRow] + cursorCol - 1;
 }
@@ -62,9 +76,21 @@ static inline uint8_t cursorToAddress(uint8_t cursorRow, uint8_t cursorCol)
 /* A function to convert the cursor row and column to the buffer index. I have
 two buffers that mirror the addresses of the LCD. Rows 2 and 4 are the same as
 rows 1 and 3 but with an added offset. */
-static inline uint8_t cursorToIndex(uint8_t cursorRow, uint8_t cursorCol)
+static inline uint8_t CursorToIndex(uint8_t cursorRow, uint8_t cursorCol)
 {
     return (rowToAddr[cursorRow] + cursorCol - 1) & ~LCD_PAR_ROW2_ADDR;
+}
+
+/* This just guarantees that we don't get stuck in a loop for "too" long. After
+so many tries, we're just going to have to assume that the LCD is finished
+doing its command. Most commands will execute in under 50 microseconds */
+static inline void CheckIfBusyAndRetry(LCD_Parallel *self)
+{
+    for(uint8_t i = 0; i < LCD_PAR_BUSY_TRY_COUNT; i++)
+    {
+        if(!LCD_Parallel_IsBusy(self))
+            break;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -96,16 +122,6 @@ void LCD_Parallel_SetEnablePinFunc(LCD_Parallel *self, void (*Function)(bool set
     self->SetEnablePin = Function;
 }
 
-void LCD_Parallel_SetDataPinsFunc(LCD_Parallel *self, void (*Function)(uint8_t data, bool nibble))
-{
-    self->SetDataPins = Function;
-}
-
-void LCD_Parallel_ReadDataPinsFunc(LCD_Parallel *self, uint8_t (*Function)(void))
-{
-    self->ReadDataPins = Function;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Interface Functions *************************************************//
@@ -115,7 +131,7 @@ void LCD_Parallel_ReadDataPinsFunc(LCD_Parallel *self, uint8_t (*Function)(void)
 void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint8_t tickMs)
 {
     if(tickMs != 0)
-        self->clearDisplayTimer.period = LCD_PAR_CLEAR_DISPLAY_MS / tickMs;
+        self->clearDisplayTimer.period = LCD_PAR_CLEAR_DISPLAY_US / tickMs;
 
     if(self->clearDisplayTimer.period == 0)
         self->clearDisplayTimer.period = 1;
@@ -158,8 +174,7 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
             return;
         }
     }
-    /* TODO Replace LCD busy while loop with some sort of non-blocking function
-    or a retry */
+
     if(self->currentRefreshMask == 0)
     {
         /* We've finished updating the screen. There is nothing else to do 
@@ -168,8 +183,8 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
         if(self->refreshCursor)
         {
             self->refreshCursor = false;
-            while(LCD_Parallel_IsBusy(self)){}
-            LCD_Parallel_WriteCommand(self, 0x80 + cursorToAddress(self->cursorRow, self->cursorCol));
+            CheckIfBusyAndRetry(self);
+            LCD_Parallel_WriteCommand(self, 0x80 + CursorToAddress(self->cursorRow, self->cursorCol));
         }
         return;
     }
@@ -191,11 +206,12 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
         /* Set the DDRAM address to the row + column.
         Row 1 address is 0x00. Row 2 address ix 0x40. Column address is 0-39
         Cmd = 0x80 + row addr + col index = 0x80 + 0x00 + col index */
-        while(LCD_Parallel_IsBusy(self)){}
-        LCD_Parallel_WriteCommand(self, 0x80 + cursorToAddress(self->cursorRow, self->cursorCol));
+        CheckIfBusyAndRetry(self);
+        LCD_Parallel_WriteCommand(self, 0x80 + CursorToAddress(self->cursorRow, self->cursorCol));
         self->updateAddressFlag = false;
     }
-    while(LCD_Parallel_IsBusy(self)){}
+    
+    CheckIfBusyAndRetry(self);
     if(self->cursorRow == 1 || self->cursorRow == 3)
     {
         LCD_Parallel_WriteData(self, self->lineBuffer1[self->currentIndex]);
@@ -234,15 +250,16 @@ bool LCD_Parallel_IsBusy(LCD_Parallel *self)
 
     uint8_t data = 0;
     bool isBusy = false;
+    
     /* The best way to check if the LCD is busy is to read the address counter
     and look at bit 7. If for some reason I can't do that, I'll use a delay. */
     if(self->super->mode == LCD_READ_WRITE && self->SetEnablePin 
-        && self->SetSelectPins && self->ReadDataPins)
+        && self->SetSelectPins && self->super->ReceiveByte)
     {
         (self->SetEnablePin)(false); // RS and RW must be set while E is low
         (self->SetSelectPins)(false, true); // RS = 0: instruction, RW = 1: read
         (self->SetEnablePin)(true);
-        data = self->ReadDataPins();
+        data = self->super->ReceiveByte();
         (self->SetEnablePin)(false);
 
         if(data & 0x80)
@@ -254,8 +271,8 @@ bool LCD_Parallel_IsBusy(LCD_Parallel *self)
     }
     else
     {
-        /* I'm going to attempt to make a delay of some kind. This is going to 
-        vary a lot based on your processor */
+        /* Last resort. I'm going to attempt to make a delay of some kind. 
+        This is going to vary a lot based on your processor */
         for(uint16_t i = 0; i < 1000; i++) continue;
     }
     return isBusy;
@@ -265,7 +282,7 @@ bool LCD_Parallel_IsBusy(LCD_Parallel *self)
 
 void LCD_Parallel_WriteCommand(LCD_Parallel *self, uint8_t command)
 {
-    if(self->SetEnablePin && self->SetSelectPins && self->SetDataPins)
+    if(self->SetEnablePin && self->SetSelectPins && self->super->TransmitByte)
     {
         (self->SetEnablePin)(false); // RS and RW must be set while E is low
         (self->SetSelectPins)(false, false); // RS = 0: instruction, RW = 0: write
@@ -275,7 +292,7 @@ void LCD_Parallel_WriteCommand(LCD_Parallel *self, uint8_t command)
             (self->super->DelayUs)(1);
 
         // TODO add 4-bit mode
-        (self->SetDataPins)(command, false);
+        (self->super->TransmitByte)(command);
         
         if(self->super->DelayUs)
             (self->super->DelayUs)(1);
@@ -288,7 +305,7 @@ void LCD_Parallel_WriteCommand(LCD_Parallel *self, uint8_t command)
 
 void LCD_Parallel_WriteData(LCD_Parallel *self, uint8_t data)
 {
-    if(self->SetEnablePin && self->SetSelectPins && self->SetDataPins)
+    if(self->SetEnablePin && self->SetSelectPins && self->super->TransmitByte)
     {
         (self->SetEnablePin)(false); // RS and RW must be set while E is low
         (self->SetSelectPins)(true, false); // RS = 1: data, RW = 0: write
@@ -298,7 +315,7 @@ void LCD_Parallel_WriteData(LCD_Parallel *self, uint8_t data)
             (self->super->DelayUs)(1);
 
         // TODO add 4-bit mode
-        (self->SetDataPins)(data, false);
+        (self->super->TransmitByte)(data);
         
         if(self->super->DelayUs)
             (self->super->DelayUs)(1);
@@ -314,7 +331,7 @@ uint8_t LCD_Parallel_ReadData(LCD_Parallel *self)
     uint8_t data = 0;
 
     if(self->super->mode == LCD_READ_WRITE && self->SetEnablePin 
-        && self->SetSelectPins && self->ReadDataPins)
+        && self->SetSelectPins && self->super->ReceiveByte)
     {
         (self->SetEnablePin)(false); // RS and RW must be set while E is low
         (self->SetSelectPins)(true, true); // RS = 1: data, RW = 1: read
@@ -327,7 +344,7 @@ uint8_t LCD_Parallel_ReadData(LCD_Parallel *self)
         if(self->super->DelayUs)
             (self->super->DelayUs)(1);
 
-        data = self->ReadDataPins();
+        data = self->super->ReceiveByte();
         (self->SetEnablePin)(false);
         self->updateAddressFlag = true;
     }
@@ -470,7 +487,7 @@ void LCD_Parallel_MoveCursorBackward(LCD_Parallel *self)
 
 void LCD_Parallel_PutChar(LCD_Parallel *self, uint8_t character)
 {
-    uint8_t index = cursorToIndex(self->cursorRow, self->cursorCol);
+    uint8_t index = CursorToIndex(self->cursorRow, self->cursorCol);
     uint8_t bitmask = LCD_PAR_LEFT;
     uint8_t *lineBuffer;
     uint8_t bitPos = rowToBitPos[self->cursorRow];
@@ -510,7 +527,7 @@ void LCD_Parallel_PutString(LCD_Parallel *self, uint8_t *ptrToString)
     if(*ptrToString == '\0')
         return;
         
-    uint8_t index = cursorToIndex(self->cursorRow, self->cursorCol);
+    uint8_t index = CursorToIndex(self->cursorRow, self->cursorCol);
     uint8_t bitmask = 0;
     uint8_t *lineBuffer = self->lineBuffer1;
     uint8_t bitPos = rowToBitPos[self->cursorRow];
@@ -528,7 +545,7 @@ void LCD_Parallel_PutString(LCD_Parallel *self, uint8_t *ptrToString)
         if(self->cursorCol == ((self->super->numCols+1) / 2) + 1)
         {
             /* Single line displays split the line in half. If we cross the 
-            halfway boundry, go to the line 2 buffer, left side. */
+            halfway boundary, go to the line 2 buffer, left side. */
             if(self->super->numRows == 1)
             {
                 lineBuffer = self->lineBuffer2;

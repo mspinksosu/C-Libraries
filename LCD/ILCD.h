@@ -49,7 +49,7 @@ typedef struct LCDInterfaceTag
     interface object for your class that will have these function signatures.
     Set each of your functions equal to one of these pointers. The void pointer
     will be set to the sub class object. Typecasting will be needed. */
-    void (*LCD_Init)(void *instance, void *params, uint8_t tickMs);
+    void (*LCD_Init)(void *instance, void *params, uint8_t tickUs);
     void (*LCD_Tick)(void *instance);
     bool (*LCD_IsBusy)(void *instance);
     void (*LCD_WriteCommand)(void *instance, uint8_t command);
@@ -75,6 +75,8 @@ typedef struct LCDTag
     LCDInterface *interface;
     void *instance;
     void (*DelayUs)(uint8_t delayInUs);
+    void (*TransmitByte)(uint8_t byte);
+    uint8_t (*ReceiveByte)(void);
     uint8_t numRows;
     uint8_t numCols;
     LCDMode mode;
@@ -101,6 +103,10 @@ void LCD_SetInitTypeParams(LCDInitType *params, LCDMode mode, uint8_t numRows,
 
 void LCD_SetDelayUsFunc(LCD *self, void (*Function)(uint16_t delayInUs));
 
+void LCD_SetTransmitByteFunc(LCD *self, void (*Function)(uint8_t data));
+
+void LCD_SetReceiveByteFunc(LCD *self, uint8_t (*Function)(void));
+
 void LCD_PutInt(LCD *self, int16_t num, uint8_t width);
 
 void LCD_PutFloat(LCD *self, float num, uint8_t precision);
@@ -111,10 +117,51 @@ void LCD_PutFloat(LCD *self, float num, uint8_t precision);
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void LCD_Init(LCD *self, LCDInitType *params, uint8_t tickMs);
+/***************************************************************************//**
+ * @brief Initialize the LCD and the tick rate in us
+ * 
+ * The tick rate should preferably be greater than 100 us. The write functions
+ * will each have a small delay of about 1 us. But the busy function could 
+ * delay up to 100 us. The maximum amount of delay should 100 us. Once the 
+ * screen is written to, there is no need to continuously update it. The 
+ * controller in the LCD will hold the characters being displayed. I think a 
+ * 1 or 2 millisecond (1000 - 2000 us) tick rate works best.
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param params  pointer to the LCDInitType that you are using
+ * 
+ * @param tickUs  the tick rate in microseconds
+ */
+void LCD_Init(LCD *self, LCDInitType *params, uint8_t tickUs);
 
+/***************************************************************************//**
+ * @brief Update the characters on the display
+ * 
+ * The maximum amount of time spent in this function should preferably be 
+ * 200 us or less. Typically, you will call the IsBusy function to generate a 
+ * read. Then afterwards a write. Then exit, and come back and write the next 
+ * character to be displayed on the next function call. The LCD read and write
+ * commands will have a slight delay of 1 to 2 us. This is to allow time for 
+ * the E,RS,RW pins. In reality, this time will be longer though, because it 
+ * takes a little extra time to set the pins themselves.
+ * 
+ * @param self  pointer to the LCD that you are using
+ */
 void LCD_Tick(LCD *self);
 
+/***************************************************************************//**
+ * @brief Check if the LCD is currently busy
+ * 
+ * Perform an LCD read to check the busy flag of the LCD. If you cannot perform
+ * an LCD read, then call the DelayUs function pointer and use a short delay.
+ * (preferrably less than 100 us). If the DelayUs function isn't set, then just
+ * take a shot in the dark and generate some sort of delay as a last resort.
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @return true if the LCD is busy
+ */
 bool LCD_IsBusy(LCD *self);
 
 void LCD_WriteCommand(LCD *self, uint8_t command);

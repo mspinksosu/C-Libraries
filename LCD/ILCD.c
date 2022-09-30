@@ -83,6 +83,20 @@ void LCD_SetDelayUsFunc(LCD *self, void (*Function)(uint16_t delayInUs))
 
 // *****************************************************************************
 
+void LCD_SetTransmitByteFunc(LCD *self, void (*Function)(uint8_t data))
+{
+    self->TransmitByte = Function;
+}
+
+// *****************************************************************************
+
+void LCD_SetReceiveByteFunc(LCD *self, uint8_t (*Function)(void))
+{
+    self->ReceiveByte = Function;
+}
+
+// *****************************************************************************
+
 void LCD_PutInt(LCD *self, int16_t num, uint8_t width)
 {
     if(self->interface->LCD_PutString != NULL && self->instance != NULL)

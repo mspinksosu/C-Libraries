@@ -29,11 +29,11 @@ typedef enum displayStateTag
 {
     LCD_PAR_STATE_ROW1_LEFT = 0,
     LCD_PAR_STATE_ROW1_RIGHT,
-    LCD_PAR_STATE_ROW3_LEFT, // address 0x14
+    LCD_PAR_STATE_ROW3_LEFT,
     LCD_PAR_STATE_ROW3_RIGHT,
-    LCD_PAR_STATE_ROW2_LEFT, // address 0x40
+    LCD_PAR_STATE_ROW2_LEFT,
     LCD_PAR_STATE_ROW2_RIGHT,
-    LCD_PAR_STATE_ROW4_LEFT, // address 0x54
+    LCD_PAR_STATE_ROW4_LEFT,
     LCD_PAR_STATE_ROW4_RIGHT,
 } displayState;
 
@@ -47,7 +47,7 @@ enum displayRefreshMask
     LCD_PAR_REFRESH_ROW1_RIGHT,
     LCD_PAR_REFRESH_ROW3_LEFT,
     LCD_PAR_REFRESH_ROW3_RIGHT,
-    LCD_PAR_REFRESH_ROW2_LEFT, // 0x40
+    LCD_PAR_REFRESH_ROW2_LEFT,
     LCD_PAR_REFRESH_ROW2_RIGHT,
     LCD_PAR_REFRESH_ROW4_LEFT,
     LCD_PAR_REFRESH_ROW4_RIGHT,
@@ -55,8 +55,8 @@ enum displayRefreshMask
 
 typedef struct LCDParTimerTag
 {
-    uint8_t period;
-    uint8_t count;
+    uint16_t period;
+    uint16_t count;
     union {
         struct {
             unsigned start      :1;
@@ -76,9 +76,7 @@ typedef struct LCD_ParallelTag
     LCD *super; // include the base class first
     void (*SetSelectPins)(bool rsPinHigh, bool rwPinHigh);
     void (*SetEnablePin)(bool setPinHigh);
-    void (*SetDataPins)(uint8_t data, bool nibble);
     LCDParTimer clearDisplayTimer;
-    uint8_t (*ReadDataPins)(void);
     uint8_t lineBuffer1[40];
     uint8_t lineBuffer2[40];
     bool updateAddressFlag;
@@ -119,17 +117,13 @@ void LCD_Parallel_SetSelectPinsFunc(LCD_Parallel *self, void (*Function)(bool rs
 
 void LCD_Parallel_SetEnablePinFunc(LCD_Parallel *self, void (*Function)(bool setPinHigh));
 
-void LCD_Parallel_SetDataPinsFunc(LCD_Parallel *self, void (*Function)(uint8_t data, bool nibble));
-
-void LCD_Parallel_ReadDataPinsFunc(LCD_Parallel *self, uint8_t (*Function)(void));
-
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Interface Functions *************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint8_t tickMs);
+void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint8_t tickUs);
 
 void LCD_Parallel_Tick(LCD_Parallel *self);
 
