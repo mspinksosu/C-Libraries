@@ -143,8 +143,8 @@ void LCD_Init(LCD *self, LCDInitType *params, uint8_t tickUs);
  * read. Then afterwards a write. Then exit, and come back and write the next 
  * character to be displayed on the next function call. The LCD read and write
  * commands will have a slight delay of 1 to 2 us. This is to allow time for 
- * the E,RS,RW pins. In reality, this time will be longer though, because it 
- * takes a little extra time to set the pins themselves.
+ * setup of pins (such as E,RS,RW). In reality, this time will be longer 
+ * though, because it takes a little extra time to set the pins themselves.
  * 
  * @param self  pointer to the LCD that you are using
  */
@@ -164,32 +164,131 @@ void LCD_Tick(LCD *self);
  */
 bool LCD_IsBusy(LCD *self);
 
+/***************************************************************************//**
+ * @brief Send a command to the LCD
+ * 
+ * Do any necessary setup for a write command operation, then call the 
+ * TransmitByte function.
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param command  the command or instruction for the LCD to execute
+ */
 void LCD_WriteCommand(LCD *self, uint8_t command);
 
+/***************************************************************************//**
+ * @brief Send a command to the LCD
+ * 
+ * Do any necessary setup for a write data operation. Set the E,RS,RW pins if
+ * applicable, then call the TransmitByte function.
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param data  the data to be written to the LCD
+ */
 void LCD_WriteData(LCD *self, uint8_t data);
 
+/***************************************************************************//**
+ * @brief Send a command to the LCD
+ * 
+ * Do any necessary setup for a read data operation. Set the E,RS,RW pins if
+ * applicable. Call the ReceiveByte function, then return that data to the user.
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param data  the data to be written to the LCD
+ */
 uint8_t LCD_ReadData(LCD *self);
 
+/***************************************************************************//**
+ * @brief Clear the display
+ * 
+ * Usually this means sending a clear display instruction. If needed, set a 
+ * busy flag, for the tick function. Do not block if possible.
+ * 
+ * @param self  pointer to the LCD that you are using
+ */
 void LCD_ClearDisplay(LCD *self);
 
+/***************************************************************************//**
+ * @brief Turn the entire display on
+ * 
+ * @param self  pointer to the LCD that you are using
+ */
 void LCD_DisplayOn(LCD *self);
 
+/***************************************************************************//**
+ * @brief Turn the entire display on
+ * 
+ * @param self  pointer to the LCD that you are using
+ */
 void LCD_DisplayOff(LCD *self);
 
+/***************************************************************************//**
+ * @brief Turn the cursor on or off
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param cursorOn  turn the cursor on if true
+ */
 void LCD_SetDisplayCursor(LCD *self, bool cursorOn);
 
+/***************************************************************************//**
+ * @brief Enable or disable the cursor blink
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param cursorOn  enable cursor blink if true
+ */
 void LCD_SetCursorBlink(LCD *self, bool blinkEnabled);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param row 
+ * @param col 
+ */
 void LCD_MoveCursor(LCD *self, uint8_t row, uint8_t col);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ */
 void LCD_MoveCursorForward(LCD *self);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ */
 void LCD_MoveCursorBackward(LCD *self);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param character 
+ */
 void LCD_PutChar(LCD *self, uint8_t character);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param ptrToString 
+ */
 void LCD_PutString(LCD *self, uint8_t *ptrToString);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param lineNum 
+ * @param array 
+ * @param size 
+ */
 void LCD_WriteFullLine(LCD *self, uint8_t lineNum, uint8_t *array, uint8_t size);
 
 // TODO
