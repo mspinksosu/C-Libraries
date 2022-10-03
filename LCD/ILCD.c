@@ -122,7 +122,8 @@ void LCD_PutFloat(LCD *self, float num, uint8_t precision)
         if(precision > 6)
             precision = 6;
         
-        for(uint8_t i = 0; i < precision; i++) round = round / 10.0f;
+        for(uint8_t i = 0; i < precision; i++) 
+            round = round / 10.0f;
         
         if(num < 0.0)
         {
@@ -149,12 +150,12 @@ void LCD_PutFloat(LCD *self, float num, uint8_t precision)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void LCD_Init(LCD *self, LCDInitType *params, uint8_t tickMs)
+void LCD_Init(LCD *self, LCDInitType *params, uint16_t tickUs)
 {
     if(self->interface->LCD_Init != NULL && self->instance != NULL 
         && params->instance != NULL)
     {
-        (self->interface->LCD_Init)(self->instance, params->instance, tickMs);
+        (self->interface->LCD_Init)(self->instance, params->instance, tickUs);
     }
 }
 

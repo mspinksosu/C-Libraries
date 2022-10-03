@@ -31,7 +31,8 @@ typedef enum LCDModeTag
 
 typedef enum LCDRowOverflowTag
 {
-    LCD_CHARACTER_WRAP = 0,
+    LCD_WRAP_NONE = 0,
+    LCD_CHARACTER_WRAP,
     LCD_WORD_WRAP,
 } LCDRowOverflow;
 
@@ -48,14 +49,9 @@ typedef struct LCDInitTypeTag
     uint8_t numRows;
     uint8_t numCols;
     LCDMode mode;
-    LCDRowOverflow rowOverflow;
-    LCDScreenOverflow screenOverflow;
-    struct {
-        unsigned displayOn  :1;
-        unsigned cursorOn   :1;
-        unsigned blinkOn    :1;
-        unsigned            :5;
-    };
+    bool displayOn;
+    bool cursorOn;
+    bool blinkOn;
 } LCDInitType;
 
 typedef struct LCDInterfaceTag
@@ -98,7 +94,7 @@ typedef struct LCDTag
     uint8_t numRows;
     uint8_t numCols;
     LCDMode mode;
-    LCDRowOverflow rowOverflow;
+    LCDRowOverflow rowOverflow; // TODO
     LCDScreenOverflow screenOverflow;
 } LCD;
 
@@ -112,23 +108,127 @@ typedef struct LCDTag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+/***************************************************************************//**
+ * @brief Link the base class, sub class, and function table
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param instanceOfSubclass  the child object that inherits from LCD
+ * 
+ * @param interface  pointer to the function table that your LCD uses
+ */
 void LCD_Create(LCD *self, void *instanceOfSubclass, LCDInterface *interface);
 
+/***************************************************************************//**
+ * @brief Combine the base class and sub class LCDInitType
+ * 
+ * My preferred method is to call this function from a sub class constructor. 
+ * To do so, create a sub class constructor that needs an instance of the sub 
+ * class and base class. This makes the create function more type safe.
+ * 
+ * @param params  pointer to the LCDInitType that you are using
+ * 
+ * @param instanceOfSubclass  the child object that inherits from LCDInitType
+ */
 void LCD_CreateInitType(LCDInitType *params, void *instanceOfSubclass);
 
+/***************************************************************************//**
+ * @brief Set the init type object to its default values
+ * 
+ * numRows = 2, numCols = 16, mode = LCD_READ_WRITE, 
+ * LCDRowOverflow = LCD_CHARACTER_WRAP, screenOverflow = LCD_OVERFLOW_STOP,
+ * display = ON, cursor = ON, cursor blink = OFF
+ * 
+ * @param params  pointer to the LCDInitType that you are using
+ */
 void LCD_SetInitTypeToDefaultParams(LCDInitType *params);
 
+/***************************************************************************//**
+ * @brief Set the initial values for the LCDInitType
+ * 
+ * Alternatively, you can set the values of the type members directly. But 
+ * sometimes not every member is meant to be set by the user initially, so 
+ * please read the decscription of the struct members if you do it that way.
+ * 
+ * @param params  pointer to the LCDInitType that you are using
+ * @param mode  LCD_READ_WRITE or LCD_WRITE_ONLY
+ * @param numRows  the number of rows
+ * @param numCols  the number of columns
+ * @param displayOn  if true, turn the display on initially
+ * @param cursorOn  if true, turn the cursor on
+ * @param blinkOn  if true, turn the cursor blink on
+ */
 void LCD_SetInitTypeParams(LCDInitType *params, LCDMode mode, uint8_t numRows, 
     uint8_t numCols, bool displayOn, bool cursorOn, bool blinkOn);
 
+/***************************************************************************//**
+ * @brief Set a function to allow the LCD to call for a delay (in us)
+ * 
+ * The LCD library should only delay a few microseconds at most. Normally, when
+ * setting pins such as E, RS, RW, or the data pins. It is possible, that it
+ * could delay up to 100 us when trying to read from the LCD. You should never
+ * be delaying more than this. Your function should follow the format listed
+ * below. It should accept the number of microseconds to delay as a uint16_t.
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param Function  format: void someFunction(uint16_t delayInUs)
+ */
 void LCD_SetDelayUsFunc(LCD *self, void (*Function)(uint16_t delayInUs));
 
+/***************************************************************************//**
+ * @brief Set a function to transmit a byte to the LCD
+ * 
+ * Your function should follow the format listed below. It will give a byte to 
+ * LCD when it is called.
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param Function  format: void someFunction(uint8_t dataToSend)
+ */
 void LCD_SetTransmitByteFunc(LCD *self, void (*Function)(uint8_t data));
 
+/***************************************************************************//**
+ * @brief Set a function to receive a byte from the LCD
+ * 
+ * Your function should follow the format listed below. It will return a byte to
+ * the LCD when it is called. 
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param Function  format: uint8_t SomeFunction(void)
+ */
 void LCD_SetReceiveByteFunc(LCD *self, uint8_t (*Function)(void));
 
+/***************************************************************************//**
+ * @brief Print an int at the current cursor position
+ * 
+ * A simple function that will print numbers for you. This function will call 
+ * your implementation of PutString and give it a null terminated string.
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param num  the number you wish to print
+ * 
+ * @param width  the minimum number of digits to print
+ */
 void LCD_PutInt(LCD *self, int16_t num, uint8_t width);
 
+/***************************************************************************//**
+ * @brief Print a float at the current cursor position
+ * 
+ * A simple function that will print a float for you with limited precision. 
+ * This function will call your implementation of PutString and give it a null 
+ * terminated string. It has a maximum precision of 6 decimal places. It will
+ * round your number to the number of decimals you specify. If you need more 
+ * options when printing a float, consider using sprintf instead.
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param num  the number you wish to print
+ * 
+ * @param precision  the number of digits after the decimal (0 to 6)
+ */
 void LCD_PutFloat(LCD *self, float num, uint8_t precision);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -313,9 +413,9 @@ void LCD_MoveCursorBackward(LCD *self);
  * 
  * @param self  pointer to the LCD that you are using
  * 
- * @param retRow  pointer to return the row number (1 - numRows)
+ * @param retRow  pointer to return the row number (1 to numRows)
  * 
- * @param retCol  pointer to return the col number (1 - numCols)
+ * @param retCol  pointer to return the col number (1 to numCols)
  */
 void LCD_GetCursorPosition(LCD *self, uint8_t *retRow, uint8_t *retCol);
 
