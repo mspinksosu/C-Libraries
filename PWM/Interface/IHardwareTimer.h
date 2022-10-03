@@ -173,15 +173,17 @@ void HWTimer_Create(HWTimer *self, HWTimerInterface *interface);
 void HWTimer_CreateInitType(HWTimerInitType *params, void *instanceOfSubclass);
 
 /***************************************************************************//**
- * @brief Set the initial parameters of your HWTimerInitType object
+ * @brief Set the initial values for the LCDInitType
  * 
- * // TODO
+ * Alternatively, you can set the values of the type members directly. But 
+ * sometimes not every member is meant to be set by the user initially, so 
+ * please read the decscription of the struct members if you do it that way.
  * 
- * @param params 
- * @param prescaleSelect 
- * @param prescaleCounter 
- * @param useOverflowInterrupt 
- * @param useCompareMatchInterrupts 
+ * @param params  pointer to the HWTimerInitType you are using
+ * @param prescaleSelect  the preselect options you want to use
+ * @param prescaleCounter  value used if counter is selected as prescale option
+ * @param useOverflowInterrupt  if true, enable overflow interrupt if available
+ * @param useCompareMatchInterrupts  if true, enable CM interrupts if available
  */
 void HWTimer_SetInitTypeParams(HWTimerInitType *params, HWTimerPrescaleSelect prescaleSelect,
     uint16_t prescaleCounter, bool useOverflowInterrupt, bool useCompareMatchInterrupts);

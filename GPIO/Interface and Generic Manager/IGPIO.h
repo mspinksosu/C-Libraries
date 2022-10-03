@@ -191,8 +191,7 @@ void GPIO_DriverSetInterface(GPIOInterface *thisInterface);
  * 
  * @param self  pointer to the GPIO you are using
  * 
- * @param instanceOfSubClass  the child object that implements the GPIO
- * 
+ * @param instanceOfSubClass  the child object that inherits from GPIO
  */
 void GPIO_Create(GPIO *self, void *instanceOfSubClass);
 
@@ -207,7 +206,7 @@ void GPIO_Create(GPIO *self, void *instanceOfSubClass);
  * 
  * @param params  pointer to the GPIOInit type you are using
  * 
- * @param instanceOfSubClass  the child object that implements the GPIOInitType
+ * @param instanceOfSubClass  the child object that inherits from GPIOInitType
  */
 void GPIO_CreateInitType(GPIOInitType *params, void *instanceOfSubClass);
 
