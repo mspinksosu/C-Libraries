@@ -608,6 +608,18 @@ void LCD_Parallel_WriteFullLine(LCD_Parallel *self, uint8_t lineNum, uint8_t *ar
     }
 }
 
+void LCD_Parallel_ScrollDown(LCD_Parallel *self)
+{
+
+}
+
+// *****************************************************************************
+
+void LCD_Parallel_ScrollUp(LCD_Parallel *self)
+{
+    
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Local Functions *****************************************************//

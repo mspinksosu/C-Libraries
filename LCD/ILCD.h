@@ -48,6 +48,8 @@ typedef struct LCDInitTypeTag
     uint8_t numRows;
     uint8_t numCols;
     LCDMode mode;
+    LCDRowOverflow rowOverflow;
+    LCDScreenOverflow screenOverflow;
     struct {
         unsigned displayOn  :1;
         unsigned cursorOn   :1;
@@ -80,6 +82,8 @@ typedef struct LCDInterfaceTag
     void (*LCD_PutChar)(void *instance, uint8_t character);
     void (*LCD_PutString)(void *instance, uint8_t *ptrToString);
     void (*LCD_WriteFullLine)(void *instance, uint8_t lineNum, uint8_t *array, uint8_t size);
+    void (*LCD_ScrollDown)(void *instance);
+    void (*LCD_ScrollUp)(void *instance);
     //void (*LCD_ScrollLine)(void *instance, uint8_t lineNum, uint8_t *array, uint8_t size);
     //void (*LCD_SetCGRAMAddress)(void *instance, uint8_t address);
 } LCDInterface;
@@ -94,6 +98,8 @@ typedef struct LCDTag
     uint8_t numRows;
     uint8_t numCols;
     LCDMode mode;
+    LCDRowOverflow rowOverflow;
+    LCDScreenOverflow screenOverflow;
 } LCD;
 
 /**
@@ -280,9 +286,10 @@ void LCD_MoveCursor(LCD *self, uint8_t row, uint8_t col);
  * 
  * Movement goes from left to right, top to bottom. Limit the value of the row 
  * or column to be between 1 and the number of rows or columns. When at the end
- * of a row, go the beginning of the next row.
- * 
- * // TODO Options for wrap around or stop
+ * of a row, go the beginning of the next row. At the end of the screen, if 
+ * LCD_OVERFLOW_WRAP_AROUND is set, go back to position (1,1). If 
+ * LCD_OVERFLOW_SCROLL_DOWN is set, move whatever is on the display up one row
+ * and begin a new row with the cursor at (1,numCols).
  * 
  * @param self  pointer to the LCD that you are using
  */
@@ -292,8 +299,10 @@ void LCD_MoveCursorForward(LCD *self);
  * @brief Move the cursor backwards once
  * 
  * Movement goes from right to left, bottom to top. Limit the value of the row 
- * or column to be between 1 and the number of rows or columns. When at the end
- * of a row, go the beginning of the next row.
+ * or column to be between 1 and the number of rows or columns. When at the
+ * beginning of a row, go the end of the next row. At the beginning of the 
+ * screen, if LCD_OVERFLOW_WRAP_AROUND is set, go back to position 
+ * (numRows,numCols). 
  * 
  * @param self  pointer to the LCD that you are using
  */
@@ -352,8 +361,28 @@ void LCD_PutString(LCD *self, uint8_t *ptrToString);
  */
 void LCD_WriteFullLine(LCD *self, uint8_t lineNum, uint8_t *array, uint8_t size);
 
+/***************************************************************************//**
+ * @brief Scroll the screen down once
+ * 
+ * Move all the characters displayed up one row and have a blank line at the 
+ * bottom row.
+ * 
+ * @param self 
+ */
+void LCD_ScrollDown(LCD *self);
+
+/***************************************************************************//**
+ * @brief Scroll the screen up once
+ * 
+ * Move all the characters displayed down one row and have a blank line at the 
+ * top row.
+ * 
+ * @param self 
+ */
+void LCD_ScrollUp(LCD *self);
+
 // TODO
-void LCD_ScrollLine(LCD *self, uint8_t lineNum, uint8_t *array, uint8_t size);
+void LCD_ScrollLine(LCD *self, bool forward, uint8_t lineNum, uint8_t *array, uint8_t size);
 
 void LCD_SetCGRAMAddress(LCD *self, uint8_t address);
 
