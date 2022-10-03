@@ -29,6 +29,19 @@ typedef enum LCDModeTag
     LCD_WRITE_ONLY,
 } LCDMode;
 
+typedef enum LCDRowOverflowTag
+{
+    LCD_CHARACTER_WRAP = 0,
+    LCD_WORD_WRAP,
+} LCDRowOverflow;
+
+typedef enum LCDScreenOverflowTag
+{
+    LCD_OVERFLOW_STOP = 0,
+    LCD_OVERFLOW_WRAP_AROUND,
+    LCD_OVERFLOW_SCROLL_DOWN,
+} LCDScreenOverflow;
+
 typedef struct LCDInitTypeTag
 {
     void *instance;
@@ -49,7 +62,7 @@ typedef struct LCDInterfaceTag
     interface object for your class that will have these function signatures.
     Set each of your functions equal to one of these pointers. The void pointer
     will be set to the sub class object. Typecasting will be needed. */
-    void (*LCD_Init)(void *instance, void *params, uint8_t tickUs);
+    void (*LCD_Init)(void *instance, void *params, uint16_t tickUs);
     void (*LCD_Tick)(void *instance);
     bool (*LCD_IsBusy)(void *instance);
     void (*LCD_WriteCommand)(void *instance, uint8_t command);
@@ -63,6 +76,7 @@ typedef struct LCDInterfaceTag
     void (*LCD_MoveCursor)(void *instance, uint8_t row, uint8_t col);
     void (*LCD_MoveCursorForward)(void *instance);
     void (*LCD_MoveCursorBackward)(void *instance);
+    void (*LCD_GetCursorPosition)(void *instance, uint8_t *retRow, uint8_t *retCol);
     void (*LCD_PutChar)(void *instance, uint8_t character);
     void (*LCD_PutString)(void *instance, uint8_t *ptrToString);
     void (*LCD_WriteFullLine)(void *instance, uint8_t lineNum, uint8_t *array, uint8_t size);
@@ -118,14 +132,16 @@ void LCD_PutFloat(LCD *self, float num, uint8_t precision);
 ////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
- * @brief Initialize the LCD and the tick rate in us
+ * @brief Initialize the LCD and the tick rate in microseconds
  * 
  * The tick rate should preferably be greater than 100 us. The write functions
- * will each have a small delay of about 1 us. But the busy function could 
+ * will each have a small delay of about 1 us, but the busy function could 
  * delay up to 100 us. The maximum amount of delay should 100 us. Once the 
  * screen is written to, there is no need to continuously update it. The 
  * controller in the LCD will hold the characters being displayed. I think a 
- * 1 or 2 millisecond (1000 - 2000 us) tick rate works best.
+ * 1 or 2 millisecond (1000 - 2000 us) tick rate works best. The number of rows
+ * and columns begins with 1 and goes to numRows and numCols. By default, after
+ * a write to the LCD, the address should increment.
  * 
  * @param self  pointer to the LCD that you are using
  * 
@@ -133,7 +149,7 @@ void LCD_PutFloat(LCD *self, float num, uint8_t precision);
  * 
  * @param tickUs  the tick rate in microseconds
  */
-void LCD_Init(LCD *self, LCDInitType *params, uint8_t tickUs);
+void LCD_Init(LCD *self, LCDInitType *params, uint16_t tickUs);
 
 /***************************************************************************//**
  * @brief Update the characters on the display
@@ -167,8 +183,8 @@ bool LCD_IsBusy(LCD *self);
 /***************************************************************************//**
  * @brief Send a command to the LCD
  * 
- * Do any necessary setup for a write command operation, then call the 
- * TransmitByte function.
+ * Do any necessary setup for a write command operation. Set the E, RS, RW pins 
+ * if applicable, then call the TransmitByte function.
  * 
  * @param self  pointer to the LCD that you are using
  * 
@@ -179,7 +195,7 @@ void LCD_WriteCommand(LCD *self, uint8_t command);
 /***************************************************************************//**
  * @brief Send a command to the LCD
  * 
- * Do any necessary setup for a write data operation. Set the E,RS,RW pins if
+ * Do any necessary setup for a write data operation. Set the E, RS, RW pins if
  * applicable, then call the TransmitByte function.
  * 
  * @param self  pointer to the LCD that you are using
@@ -191,8 +207,8 @@ void LCD_WriteData(LCD *self, uint8_t data);
 /***************************************************************************//**
  * @brief Send a command to the LCD
  * 
- * Do any necessary setup for a read data operation. Set the E,RS,RW pins if
- * applicable. Call the ReceiveByte function, then return that data to the user.
+ * Do any necessary setup for a read data operation. Set the E, RS, RW pins if
+ * applicable. Call ReceiveByte, then return that data to the user.
  * 
  * @param self  pointer to the LCD that you are using
  * 
@@ -204,7 +220,7 @@ uint8_t LCD_ReadData(LCD *self);
  * @brief Clear the display
  * 
  * Usually this means sending a clear display instruction. If needed, set a 
- * busy flag, for the tick function. Do not block if possible.
+ * busy flag for the tick function, and a counter. Do not use a delay.
  * 
  * @param self  pointer to the LCD that you are using
  */
@@ -243,51 +259,96 @@ void LCD_SetDisplayCursor(LCD *self, bool cursorOn);
 void LCD_SetCursorBlink(LCD *self, bool blinkEnabled);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Move the cursor
  * 
- * @param self 
- * @param row 
- * @param col 
+ * The number of rows and columns begin at 1, not 0. This is because the 
+ * datasheets will number the rows and columns this way. Setting the cursor
+ * position usually means performing a write command to set the DDRAM address. 
+ * As a general rule, the cursor should never leave the screen. Limit the value
+ * of the row or column to be between 1 and the number of rows or columns.
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param row  row number from 1 to numRows
+ * 
+ * @param col  column number from 1 to numCols
  */
 void LCD_MoveCursor(LCD *self, uint8_t row, uint8_t col);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Move the cursor forward once
  * 
- * @param self 
+ * Movement goes from left to right, top to bottom. Limit the value of the row 
+ * or column to be between 1 and the number of rows or columns. When at the end
+ * of a row, go the beginning of the next row.
+ * 
+ * // TODO Options for wrap around or stop
+ * 
+ * @param self  pointer to the LCD that you are using
  */
 void LCD_MoveCursorForward(LCD *self);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Move the cursor backwards once
  * 
- * @param self 
+ * Movement goes from right to left, bottom to top. Limit the value of the row 
+ * or column to be between 1 and the number of rows or columns. When at the end
+ * of a row, go the beginning of the next row.
+ * 
+ * @param self  pointer to the LCD that you are using
  */
 void LCD_MoveCursorBackward(LCD *self);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Return the current position of the cursor
  * 
- * @param self 
- * @param character 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param retRow  pointer to return the row number (1 - numRows)
+ * 
+ * @param retCol  pointer to return the col number (1 - numCols)
+ */
+void LCD_GetCursorPosition(LCD *self, uint8_t *retRow, uint8_t *retCol);
+
+/***************************************************************************//**
+ * @brief Place a character on the screen at the current cursor position
+ * 
+ * The cursor should automatically move to the next position after placing the
+ * character.
+ * 
+ * // TODO options for character wrap
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param character  the character you want to display
  */
 void LCD_PutChar(LCD *self, uint8_t character);
 
 /***************************************************************************//**
- * @brief 
+ * @brief  Write a string of characters at the current cursor position
  * 
- * @param self 
- * @param ptrToString 
+ * // TODO options for stopping at end of screen
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param ptrToString  pointer to a null terminated string
  */
 void LCD_PutString(LCD *self, uint8_t *ptrToString);
 
 /***************************************************************************//**
- * @brief 
+ * @brief  Write a string of characters beginning at column 1
  * 
- * @param self 
- * @param lineNum 
- * @param array 
- * @param size 
+ * Null terminators do not matter in this function. Keep writing characters 
+ * until either size has been reached or we hit the end of the row then stop. 
+ * If the line number given does not exist, write nothing.
+ * 
+ * @param self  pointer to the LCD that you are using
+ * 
+ * @param lineNum  the line number from 1 to numRows
+ * 
+ * @param array  pointer to the array of characters
+ * 
+ * @param size  the size of the array
  */
 void LCD_WriteFullLine(LCD *self, uint8_t lineNum, uint8_t *array, uint8_t size);
 

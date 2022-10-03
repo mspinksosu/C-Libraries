@@ -128,10 +128,10 @@ void LCD_Parallel_SetEnablePinFunc(LCD_Parallel *self, void (*Function)(bool set
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint8_t tickMs)
+void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint16_t tickUs)
 {
-    if(tickMs != 0)
-        self->clearDisplayTimer.period = LCD_PAR_CLEAR_DISPLAY_US / tickMs;
+    if(tickUs != 0)
+        self->clearDisplayTimer.period = LCD_PAR_CLEAR_DISPLAY_US / tickUs;
 
     if(self->clearDisplayTimer.period == 0)
         self->clearDisplayTimer.period = 1;
@@ -285,7 +285,7 @@ void LCD_Parallel_WriteCommand(LCD_Parallel *self, uint8_t command)
     if(self->SetEnablePin && self->SetSelectPins && self->super->TransmitByte)
     {
         (self->SetEnablePin)(false); // RS and RW must be set while E is low
-        (self->SetSelectPins)(false, false); // RS = 0: instruction, RW = 0: write
+        (self->SetSelectPins)(false, false); // RS = 0: instruct, RW = 0: write
         (self->SetEnablePin)(true);
         
         if(self->super->DelayUs)
@@ -481,6 +481,14 @@ void LCD_Parallel_MoveCursorBackward(LCD_Parallel *self)
         self->cursorRow = self->super->numRows;
     
     self->refreshCursor = true;
+}
+
+// *****************************************************************************
+
+void LCD_Parallel_GetCursorPosition(LCD_Parallel *self, uint8_t *retRow, uint8_t *retCol)
+{
+    *retRow = self->cursorRow;
+    *retCol = self->cursorCol;
 }
 
 // *****************************************************************************

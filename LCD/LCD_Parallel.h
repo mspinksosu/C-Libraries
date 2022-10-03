@@ -123,7 +123,7 @@ void LCD_Parallel_SetEnablePinFunc(LCD_Parallel *self, void (*Function)(bool set
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint8_t tickUs);
+void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint16_t tickUs);
 
 void LCD_Parallel_Tick(LCD_Parallel *self);
 
@@ -150,6 +150,8 @@ void LCD_Parallel_MoveCursor(LCD_Parallel *self, uint8_t row, uint8_t col);
 void LCD_Parallel_MoveCursorForward(LCD_Parallel *self);
 
 void LCD_Parallel_MoveCursorBackward(LCD_Parallel *self);
+
+void LCD_Parallel_GetCursorPosition(LCD_Parallel *self, uint8_t *retRow, uint8_t *retCol);
 
 void LCD_Parallel_PutChar(LCD_Parallel *self, uint8_t character);
 
