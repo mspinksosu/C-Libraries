@@ -206,6 +206,8 @@ void UART_SetInitTypeToDefaultParams(UARTInitType *params);
 /***************************************************************************//**
  * @brief Change the initial parameters of your UARTInitType object
  * 
+ * Alternatively, you can set the values of the members directly.
+ * 
  * If UART_FLOW_CALLBACKS is chosen for flow control, you must implement
  * functions to set the RTS and CTS pins, and setup callbacks functions by
  * using the UART_SetRTSPinFunc and UART_SetIsCTSPinLowFunc functions. If you

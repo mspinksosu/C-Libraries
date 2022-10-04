@@ -141,7 +141,7 @@ void LCD_Create(LCD *self, void *instanceOfSubclass, LCDInterface *interface);
 void LCD_CreateInitType(LCDInitType *params, void *instanceOfSubclass);
 
 /***************************************************************************//**
- * @brief Set the init type object to its default values
+ * @brief Set the LCDInitType object to its default values
  * 
  * mode = LCD_READ_WRITE, numRows = 2, numCols = 16, 
  * display = ON, cursor = OFF, cursor blink = OFF,
@@ -152,14 +152,12 @@ void LCD_CreateInitType(LCDInitType *params, void *instanceOfSubclass);
 void LCD_SetInitTypeToDefaultParams(LCDInitType *params);
 
 /***************************************************************************//**
- * @brief Set the initial values for the LCDInitType
+ * @brief Change the initial parameters for the LCDInitType
  * 
  * There are some extra parameters as part of an argument list to reduce the 
  * size of the function. Make sure to list your arguments in the order given.
  * 
- * Alternatively, you can set the values of the type members directly. But 
- * sometimes not every member is meant to be set by the user initially, so 
- * please read the decscription of the struct members if you do it that way.
+ * Alternatively, you can set the values of the LCDInitType members directly.
  * 
  * @param params  pointer to the LCDInitType that you are using
  * @param mode  LCD_READ_WRITE or LCD_WRITE_ONLY
@@ -179,7 +177,7 @@ void LCD_SetInitTypeParams(LCDInitType *params, LCDMode mode, uint8_t numRows,
  * @brief Set a function to allow the LCD to call for a delay (in us)
  * 
  * The LCD library should only delay a few microseconds at most. Normally, when
- * setting pins such as E, RS, RW, or the data pins. It is possible, that it
+ * setting pins such as E, RS, RW, or the data pins. It is possible that it
  * could delay up to 100 us when trying to read from the LCD. You should never
  * be delaying more than this. Your function should follow the format listed
  * below. It should accept the number of microseconds to delay as a uint16_t.
@@ -205,8 +203,8 @@ void LCD_SetTransmitByteFunc(LCD *self, void (*Function)(uint8_t data));
 /***************************************************************************//**
  * @brief Set a function to receive a byte from the LCD
  * 
- * Your function should follow the format listed below. It will return a byte to
- * the LCD when it is called. 
+ * Your function should follow the format listed below. It will return a byte 
+ * to the LCD when it is called. 
  * 
  * @param self  pointer to the LCD that you are using
  * 

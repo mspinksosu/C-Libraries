@@ -174,11 +174,10 @@ void HWTimer_Create(HWTimer *self, HWTimerInterface *interface);
 void HWTimer_CreateInitType(HWTimerInitType *params, void *instanceOfSubclass);
 
 /***************************************************************************//**
- * @brief Set the initial values for the LCDInitType
+ * @brief Set the initial values for the HWTimerInitType
  * 
- * Alternatively, you can set the values of the type members directly. But 
- * sometimes not every member is meant to be set by the user initially, so 
- * please read the decscription of the struct members if you do it that way.
+ * Alternatively, you can set the values of the HWTimerInitType members 
+ * directly.
  * 
  * @param params  pointer to the HWTimerInitType you are using
  * @param prescaleSelect  the preselect options you want to use
