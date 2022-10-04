@@ -19,6 +19,7 @@
         "uart1.h": "c",
         "hwtimer_stm32g0.h": "c",
         "hwtimer1_stm32g0.h": "c",
-        "lcd_parallel.h": "c"
+        "lcd_parallel.h": "c",
+        "stdio.h": "c"
     }
 }

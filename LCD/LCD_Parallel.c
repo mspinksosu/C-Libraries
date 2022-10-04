@@ -107,6 +107,11 @@ void LCD_Parallel_Create(LCD_Parallel *self, LCD *base)
     LCD_Create(base, self, &LCD_ParallelFunctionTable);
 }
 
+void LCD_Parallel_CreateInitType(LCDInitType *base)
+{
+    LCD_CreateInitType(base, base);
+}
+
 void LCD_Parallel_Set4BitMode(LCD_Parallel *self, bool use4BitMode)
 {
     self->use4BitMode = use4BitMode;

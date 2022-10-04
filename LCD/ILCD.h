@@ -52,6 +52,8 @@ typedef struct LCDInitTypeTag
     bool displayOn;
     bool cursorOn;
     bool blinkOn;
+    LCDRowOverflow rowOverflow; // TODO
+    LCDScreenOverflow screenOverflow;
 } LCDInitType;
 
 typedef struct LCDInterfaceTag
@@ -111,6 +113,11 @@ typedef struct LCDTag
 /***************************************************************************//**
  * @brief Link the base class, sub class, and function table
  * 
+ * My preferred method is to call this function from a sub class constructor. 
+ * This makes the create function more type safe. To create a sub class 
+ * constructor, make your own Create function that takes your sub class and 
+ * base class as arguments. Set your variables then call this function from it.
+ * 
  * @param self  pointer to the LCD that you are using
  * 
  * @param instanceOfSubclass  the child object that inherits from LCD
@@ -123,8 +130,9 @@ void LCD_Create(LCD *self, void *instanceOfSubclass, LCDInterface *interface);
  * @brief Combine the base class and sub class LCDInitType
  * 
  * My preferred method is to call this function from a sub class constructor. 
- * To do so, create a sub class constructor that needs an instance of the sub 
- * class and base class. This makes the create function more type safe.
+ * This makes the create function more type safe. To create a sub class 
+ * constructor, make your own Create function that takes your sub class and 
+ * base class as arguments. Set your variables then call this function from it.
  * 
  * @param params  pointer to the LCDInitType that you are using
  * 
@@ -135,9 +143,9 @@ void LCD_CreateInitType(LCDInitType *params, void *instanceOfSubclass);
 /***************************************************************************//**
  * @brief Set the init type object to its default values
  * 
- * numRows = 2, numCols = 16, mode = LCD_READ_WRITE, 
- * LCDRowOverflow = LCD_CHARACTER_WRAP, screenOverflow = LCD_OVERFLOW_STOP,
- * display = ON, cursor = ON, cursor blink = OFF
+ * mode = LCD_READ_WRITE, numRows = 2, numCols = 16, 
+ * display = ON, cursor = OFF, cursor blink = OFF,
+ * LCDRowOverflow = LCD_WRAP_NONE, screenOverflow = LCD_OVERFLOW_STOP
  * 
  * @param params  pointer to the LCDInitType that you are using
  */
@@ -145,6 +153,9 @@ void LCD_SetInitTypeToDefaultParams(LCDInitType *params);
 
 /***************************************************************************//**
  * @brief Set the initial values for the LCDInitType
+ * 
+ * There are some extra parameters as part of an argument list to reduce the 
+ * size of the function. Make sure to list your arguments in the order given.
  * 
  * Alternatively, you can set the values of the type members directly. But 
  * sometimes not every member is meant to be set by the user initially, so 
@@ -154,12 +165,15 @@ void LCD_SetInitTypeToDefaultParams(LCDInitType *params);
  * @param mode  LCD_READ_WRITE or LCD_WRITE_ONLY
  * @param numRows  the number of rows
  * @param numCols  the number of columns
- * @param displayOn  if true, turn the display on initially
- * @param cursorOn  if true, turn the cursor on
- * @param blinkOn  if true, turn the cursor blink on
+ * @param numArgs  remaining number of arguments (0 to 5)
+ * @param displayOn  bool: if true, turn display on initially (default true)
+ * @param cursorOn  bool: if true, turn the cursor on (default false)
+ * @param blinkOn  bool: if true, turn the cursor blink on (default false)
+ * @param rowOverflow  type LCDRowOverflow. Default = LCD_WRAP_NONE
+ * @param screenOverflow  type LCDScreenOverflow. Default = LCD_OVERFLOW_STOP
  */
 void LCD_SetInitTypeParams(LCDInitType *params, LCDMode mode, uint8_t numRows, 
-    uint8_t numCols, bool displayOn, bool cursorOn, bool blinkOn);
+    uint8_t numCols, uint8_t numArgs, ... );
 
 /***************************************************************************//**
  * @brief Set a function to allow the LCD to call for a delay (in us)

@@ -109,12 +109,50 @@ typedef struct LCD_ParallelTag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+/***************************************************************************//**
+ * @brief Connects the sub class to the base class
+ * 
+ * Calls the base class LCD_Create function. Each sub class object must have 
+ * a base class.
+ * 
+ * @param self  pointer to the sub class LCD_Parallel that you are using
+ * 
+ * @param base  pointer to the base class LCD that you are using
+ */
 void LCD_Parallel_Create(LCD_Parallel *self, LCD *base);
 
+/***************************************************************************//**
+ * @brief Initialize the base class pointer
+ * 
+ * There is no sub class InitType needed for this implementation. But we must
+ * still set the sub class pointer to something.
+ * 
+ * @param base  pointer to the LCDInitType you are using
+ */
+void LCD_Parallel_CreateInitType(LCDInitType *base);
+
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param use4BitMode 
+ */
 void LCD_Parallel_Set4BitMode(LCD_Parallel *self, bool use4BitMode);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param Function 
+ */
 void LCD_Parallel_SetSelectPinsFunc(LCD_Parallel *self, void (*Function)(bool rsPinHigh, bool rwPinHigh));
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param Function 
+ */
 void LCD_Parallel_SetEnablePinFunc(LCD_Parallel *self, void (*Function)(bool setPinHigh));
 
 ////////////////////////////////////////////////////////////////////////////////

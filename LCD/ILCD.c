@@ -14,7 +14,8 @@
  ******************************************************************************/
 
 #include "ILCD.h"
-#include <stdio.h>
+#include <stdio.h> // needed for NULL
+#include <stdarg.h>
 
 // ***** Defines ***************************************************************
 
@@ -60,7 +61,7 @@ void LCD_SetInitTypeToDefaultParams(LCDInitType *params)
 // *****************************************************************************
 
 void LCD_SetInitTypeParams(LCDInitType *params, LCDMode mode, uint8_t numRows, 
-    uint8_t numCols, bool displayOn, bool cursorOn, bool blinkOn)
+    uint8_t numCols, uint8_t numArgs, ... )
 {
     if(numRows < 1)
         numRows = 1;
@@ -69,9 +70,25 @@ void LCD_SetInitTypeParams(LCDInitType *params, LCDMode mode, uint8_t numRows,
     params->numRows = numRows;
     params->numCols = numCols;
     params->mode = mode;
-    params->displayOn = displayOn;
-    params->cursorOn = cursorOn;
-    params->blinkOn = blinkOn;
+
+    if(numArgs == 0)
+        return;
+    va_list list;
+    va_start(list, numArgs);
+    params->displayOn = va_arg(list, bool); // get the next argument
+    if(--numArgs == 0)
+        return;
+    params->cursorOn = va_arg(list, bool); // get the next argument
+    if(--numArgs == 0)
+        return;
+    params->blinkOn = va_arg(list, bool); // get the next argument
+    if(--numArgs == 0)
+        return;
+    params->rowOverflow = va_arg(list, LCDRowOverflow); // get next argument
+    if(--numArgs == 0)
+        return;
+    params->screenOverflow = va_arg(list, LCDScreenOverflow);
+    va_end(list);
 }
 
 // *****************************************************************************
@@ -155,6 +172,11 @@ void LCD_Init(LCD *self, LCDInitType *params, uint16_t tickUs)
     if(self->interface->LCD_Init != NULL && self->instance != NULL 
         && params->instance != NULL)
     {
+        self->numRows = params->numRows;
+        self->numCols = params->numCols;
+        self->mode = params->mode;
+        self->rowOverflow = params->rowOverflow;
+        self->screenOverflow = params->screenOverflow;
         (self->interface->LCD_Init)(self->instance, params->instance, tickUs);
     }
 }
