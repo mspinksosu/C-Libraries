@@ -163,8 +163,9 @@ void HWTimer_Create(HWTimer *self, HWTimerInterface *interface);
  * @brief Combine the base class and sub class HWTimerInitType
  * 
  * My preferred method is to call this function from a sub class constructor. 
- * To do so, create a sub class constructor that needs an instance of the sub 
- * class and base class. This makes the create function more type safe.
+ * This makes the create function more type safe. To create a sub class 
+ * constructor, make your own Create function that takes your sub class and 
+ * base class as arguments. Set your variables then call this function from it.
  * 
  * @param params  pointer to the HWTimerInitType you are using
  * 
