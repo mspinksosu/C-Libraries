@@ -184,7 +184,7 @@ void LCD_SetInitTypeParams(LCDInitType *params, LCDMode mode, uint8_t numRows,
  * 
  * @param self  pointer to the LCD that you are using
  * 
- * @param Function  format: void someFunction(uint16_t delayInUs)
+ * @param Function  format: void SomeFunction(uint16_t delayInUs)
  */
 void LCD_SetDelayUsFunc(LCD *self, void (*Function)(uint16_t delayInUs));
 
@@ -196,7 +196,7 @@ void LCD_SetDelayUsFunc(LCD *self, void (*Function)(uint16_t delayInUs));
  * 
  * @param self  pointer to the LCD that you are using
  * 
- * @param Function  format: void someFunction(uint8_t dataToSend)
+ * @param Function  format: void SomeFunction(uint8_t dataToSend)
  */
 void LCD_SetTransmitByteFunc(LCD *self, void (*Function)(uint8_t data));
 

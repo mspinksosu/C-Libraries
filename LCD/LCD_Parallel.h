@@ -25,7 +25,7 @@
 
 /* These are in order based on DDRAM address. First is row 1, then row 3, then 
 row 2 starting at address 0x40, then row 4. */
-typedef enum displayStateTag
+typedef enum LCDParDisplayStateTag
 {
     LCD_PAR_STATE_ROW1_LEFT = 0,
     LCD_PAR_STATE_ROW1_RIGHT,
@@ -35,13 +35,13 @@ typedef enum displayStateTag
     LCD_PAR_STATE_ROW2_RIGHT,
     LCD_PAR_STATE_ROW4_LEFT,
     LCD_PAR_STATE_ROW4_RIGHT,
-} displayState;
+} LCDParDisplayState;
 
 /* This is a bit mask that will match the typedef above starting from the LSb. 
 I'm dividing the display into sections. Most people will keep a static image
 somewhere on the screen. If I see that there is no change for that section of 
 the display, I will skip over it to reduce the amount of writes. */
-enum displayRefreshMask
+enum LCDParDisplayRefreshMask
 {
     LCD_PAR_REFRESH_ROW1_LEFT = 0,
     LCD_PAR_REFRESH_ROW1_RIGHT,
@@ -92,7 +92,7 @@ typedef struct LCD_ParallelTag
     uint8_t currentIndex;
     uint8_t count;
     uint8_t currentRefreshMask;
-    displayState currentState;
+    LCDParDisplayState currentState;
     LCDParInitState initState;
     struct {
         unsigned displayOn          :1;
@@ -105,6 +105,12 @@ typedef struct LCD_ParallelTag
         unsigned                    :1;
     };
 } LCD_Parallel;
+
+typedef struct LCDInitType_ParallelTag
+{
+    LCDInitType *super;
+    bool use4BitMode;
+} LCDInitType_Parallel;
 
 /** 
  * Description of struct
@@ -132,36 +138,52 @@ typedef struct LCD_ParallelTag
 void LCD_Parallel_Create(LCD_Parallel *self, LCD *base);
 
 /***************************************************************************//**
- * @brief Initialize the base class pointer
+ * @brief Connects the sub class to the base class
  * 
- * There is no sub class InitType needed for this implementation. But we must
- * still set the sub class pointer to something.
+ * Calls the base class LCD_CreateInitType function. Each sub class object 
+ * must have a base class.
  * 
- * @param base  pointer to the LCDInitType you are using
+ * @param self  pointer to the sub class InitType_Parallel you are using
+ * 
+ * @param base  pointer to the base class LCDInitType that you are using
  */
-void LCD_Parallel_CreateInitType(LCDInitType *base);
+void LCD_Parallel_CreateInitType(LCDInitType_Parallel *self, LCDInitType *base);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Set the initial mode to 4-bit
  * 
- * @param self 
- * @param use4BitMode 
+ * The default mode is 8-bit. In 4-bit mode the LCD only uses the upper pins 
+ * (DB4 - DB7). The data should be made left justified to match. Every data 
+ * transfer will require two calls to TransmitByte or ReceiveByte. First, 
+ * the upper nibble is transmitted or received. Then the lower nibble.
+ * 
+ * @param self  pointer to the LCDInitType_Parallel that you are using
+ * 
+ * @param use4BitMode  if true, use 4-bit mode
  */
-void LCD_Parallel_Set4BitMode(LCD_Parallel *self, bool use4BitMode);
+void LCD_Parallel_Set4BitMode(LCDInitType_Parallel *self, bool use4BitMode);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Set a function to allow the LCD control of the RS and RW pins
  * 
- * @param self 
- * @param Function 
+ * Your function should follow the format listed below. If the argument passed 
+ * in is true, set the corresponding pin high. Else, low.
+ * 
+ * @param self  pointer to the LCD_Parallel that you are using
+ * 
+ * @param Function format: void someFunction(bool rsPinHigh, bool rwPinHigh)
  */
 void LCD_Parallel_SetSelectPinsFunc(LCD_Parallel *self, void (*Function)(bool rsPinHigh, bool rwPinHigh));
 
 /***************************************************************************//**
- * @brief 
+ * @brief Set a function to allow the LCD control of the E pins
  * 
- * @param self 
- * @param Function 
+ * Your function should follow the format listed below. If the argument passed 
+ * in is true, set the corresponding pin high. Else, low.
+ * 
+ * @param self  pointer to the LCD_Parallel that you are using
+ * 
+ * @param Function format: void someFunction(bool setEnablePinHigh)
  */
 void LCD_Parallel_SetEnablePinFunc(LCD_Parallel *self, void (*Function)(bool setPinHigh));
 
@@ -171,7 +193,7 @@ void LCD_Parallel_SetEnablePinFunc(LCD_Parallel *self, void (*Function)(bool set
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint16_t tickUs);
+void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType_Parallel *params, uint16_t tickUs);
 
 void LCD_Parallel_Tick(LCD_Parallel *self);
 

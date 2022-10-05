@@ -68,8 +68,8 @@ LCDInterface LCD_ParallelFunctionTable = {
     .LCD_ScrollUp = (void (*)(void *))LCD_Parallel_ScrollUp,
 };
 
-/* A lookup table for use with the displayRefreshMask variable. Row number 
-equals bit position: 4R 4L 2R 2L 3R 3L 1R 1L */
+/* A lookup table for use with the LCDParDisplayRefreshMask variable. 
+Row number equals bit position: 4R 4L 2R 2L 3R 3L 1R 1L */
 static uint8_t rowToBitPos[4] = {0, 1, 5, 3, 7};
 
 /* Another lookup table for converting the row number to the address */
@@ -78,7 +78,7 @@ static uint8_t rowToAddr[4] = {0, LCD_PAR_ROW1_ADDR, LCD_PAR_ROW2_ADDR,
 
 // ***** Static Function Prototypes ********************************************
 
-static displayState GetNextState(LCD_Parallel *self);
+static LCDParDisplayState GetNextState(LCD_Parallel *self);
 
 /* A function to convert the cursor row and column to the correct address.
 The memory addresses of a 4 line display are stored in two contiguous address 
@@ -122,12 +122,12 @@ void LCD_Parallel_Create(LCD_Parallel *self, LCD *base)
     LCD_Create(base, self, &LCD_ParallelFunctionTable);
 }
 
-void LCD_Parallel_CreateInitType(LCDInitType *base)
+void LCD_Parallel_CreateInitType(LCDInitType_Parallel *self, LCDInitType *base)
 {
-    LCD_CreateInitType(base, base);
+    LCD_CreateInitType(base, self);
 }
 
-void LCD_Parallel_Set4BitMode(LCD_Parallel *self, bool use4BitMode)
+void LCD_Parallel_Set4BitMode(LCDInitType_Parallel *self, bool use4BitMode)
 {
     self->use4BitMode = use4BitMode;
 }
@@ -148,7 +148,7 @@ void LCD_Parallel_SetEnablePinFunc(LCD_Parallel *self, void (*Function)(bool set
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint16_t tickUs)
+void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType_Parallel *params, uint16_t tickUs)
 {
     if(tickUs != 0)
         self->clearDisplayTimer.period = LCD_PAR_CLEAR_DISPLAY_US / tickUs;
@@ -158,9 +158,10 @@ void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint16_t tickUs)
 
     // set up variables
     self->clearDisplayTimer.flags.start = 0;
-    self->displayOn = params->displayOn;
-    self->cursorOn = params->cursorOn;
-    self->blinkOn = params->blinkOn;
+    self->displayOn = params->super->displayOn;
+    self->cursorOn = params->super->cursorOn;
+    self->blinkOn = params->super->blinkOn;
+    self->use4BitMode = params->use4BitMode;
     self->currentIndex = 0;
     self->count = 0;
     self->cursorRow = 1;
@@ -177,7 +178,7 @@ void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint16_t tickUs)
 
 void LCD_Parallel_Tick(LCD_Parallel *self)
 {
-    static displayState nextState;
+    static LCDParDisplayState nextState;
 
 // ----- Wait Timer ------------------------------------------------------------
 
@@ -239,7 +240,7 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
                 CheckIfBusyAndRetry(self);
                 // 8-bit, 2 lines, single height
                 uint8_t command = 0x38;
-                if(self->use4BitMode) command &= ~0x10; // TODO 4-bit mode
+                if(self->use4BitMode) command &= ~0x10;
                 LCD_Parallel_WriteCommand(self, command);
                 self->initState = LCD_PAR_INIT_HOME;
                 self->initialize = 0; // finished
@@ -369,7 +370,24 @@ void LCD_Parallel_WriteCommand(LCD_Parallel *self, uint8_t command)
         if(self->super->DelayUs)
             (self->super->DelayUs)(1);
 
-        // TODO add 4-bit mode
+        /* In 4-bit mode, the upper nibble is sent first, followed immediately
+        by the lower nibble. */
+        if(self->use4BitMode)
+        {
+            (self->super->TransmitByte)(command & 0xF0);
+            command <<= 4;
+
+            if(self->super->DelayUs)
+                (self->super->DelayUs)(1);
+
+            (self->SetEnablePin)(false);
+
+            if(self->super->DelayUs)
+                (self->super->DelayUs)(1);
+
+            (self->SetEnablePin)(true);
+        }
+
         (self->super->TransmitByte)(command);
         
         if(self->super->DelayUs)
@@ -392,7 +410,24 @@ void LCD_Parallel_WriteData(LCD_Parallel *self, uint8_t data)
         if(self->super->DelayUs)
             (self->super->DelayUs)(1);
 
-        // TODO add 4-bit mode
+        /* In 4-bit mode, the upper nibble is sent first, followed immediately
+        by the lower nibble. */
+        if(self->use4BitMode)
+        {
+            (self->super->TransmitByte)(data & 0xF0);
+            data <<= 4;
+
+            if(self->super->DelayUs)
+                (self->super->DelayUs)(1);
+
+            (self->SetEnablePin)(false);
+
+            if(self->super->DelayUs)
+                (self->super->DelayUs)(1);
+
+            (self->SetEnablePin)(true);
+        }
+
         (self->super->TransmitByte)(data);
         
         if(self->super->DelayUs)
@@ -422,9 +457,24 @@ uint8_t LCD_Parallel_ReadData(LCD_Parallel *self)
         if(self->super->DelayUs)
             (self->super->DelayUs)(1);
 
-        // TODO add 4-bit mode
         data = self->super->ReceiveByte();
         (self->SetEnablePin)(false);
+        
+        /* In 4-bit mode, the upper nibble is read first, followed immediately
+        by the lower nibble. */
+        if(self->use4BitMode)
+        {
+            if(self->super->DelayUs)
+                (self->super->DelayUs)(1);
+
+            (self->SetEnablePin)(true);
+
+            uint8_t lowerNibble = self->super->ReceiveByte();
+
+            (self->SetEnablePin)(false);
+
+            data |= (lowerNibble >> 4);
+        }
         self->updateAddressFlag = 1;
     }
     return data;
@@ -705,11 +755,11 @@ void LCD_Parallel_ScrollUp(LCD_Parallel *self)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-static displayState GetNextState(LCD_Parallel *self)
+static LCDParDisplayState GetNextState(LCD_Parallel *self)
 {
     /* The states go from 0 to 7. This is just a quick method of doing modulo
     division */
-    displayState nextState = (self->currentState + 1) & 0x07;
+    LCDParDisplayState nextState = (self->currentState + 1) & 0x07;
 
     while(nextState != self->currentState)
     {
