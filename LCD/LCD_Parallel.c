@@ -26,8 +26,9 @@
 #define LCD_PAR_LEFT        0x01
 #define LCD_PAR_RIGHT       0x02
 
-/* It takes more than 1 ms to execute the clear display command */
-#define LCD_PAR_CLEAR_DISPLAY_US    1500
+/* It takes a little more than 1.5 ms to execute the clear display and 
+return home commands */
+#define LCD_PAR_CLEAR_DISPLAY_US    2000
 
 /* I will try reading the busy flag this many times */
 #define LCD_PAR_BUSY_TRY_COUNT      3
@@ -43,13 +44,28 @@ a number. Good luck. */
 
 // ***** Global Variables ******************************************************
 
-/*  The sub class must implement the functions provided in the interface. In 
-    this case we are declaring an interface struct and initializing its members 
-    (which are function pointers) the our local functions. Typecasting is 
-    necessary. When a new sub class object is created, we will set its interface
-    member equal to this table. */
+/*  Create the function table */
 LCDInterface LCD_ParallelFunctionTable = {
-
+    .LCD_Init = (void (*)(void *, void *, uint16_t))LCD_Parallel_Init,
+    .LCD_Tick = (void (*)(void *))LCD_Parallel_Tick,
+    .LCD_IsBusy = (void (*)(void *))LCD_Parallel_IsBusy,
+    .LCD_WriteCommand = (void (*)(void *, uint8_t))LCD_Parallel_WriteCommand,
+    .LCD_WriteData = (void (*)(void *, uint8_t))LCD_Parallel_WriteData,
+    .LCD_ReadData = (uint8_t (*)(void *))LCD_Parallel_ReadData,
+    .LCD_ClearDisplay = (void (*)(void *))LCD_Parallel_ClearDisplay,
+    .LCD_DisplayOn = (void (*)(void *))LCD_Parallel_DisplayOn,
+    .LCD_DisplayOff = (void (*)(void *))LCD_Parallel_DisplayOff,
+    .LCD_SetDisplayCursor = (void (*)(void *, bool))LCD_Parallel_SetDisplayCursor,
+    .LCD_SetCursorBlink = (void (*)(void *, bool))LCD_Parallel_SetCursorBlink,
+    .LCD_MoveCursor = (void (*)(void *, uint8_t, uint8_t))LCD_Parallel_MoveCursor,
+    .LCD_MoveCursorForward = (void (*)(void *))LCD_Parallel_MoveCursorForward,
+    .LCD_MoveCursorBackward = (void (*)(void *))LCD_Parallel_MoveCursorBackward,
+    .LCD_GetCursorPosition = (void (*)(void *, uint8_t *, uint8_t *))LCD_Parallel_GetCursorPosition,
+    .LCD_PutChar = (void (*)(void *, uint8_t))LCD_Parallel_PutChar,
+    .LCD_PutString = (void (*)(void *, uint8_t *))LCD_Parallel_PutString,
+    .LCD_WriteFullLine = (void (*)(void *, uint8_t, uint8_t *, uint8_t))LCD_Parallel_WriteFullLine,
+    .LCD_ScrollDown = (void (*)(void *))LCD_Parallel_ScrollDown,
+    .LCD_ScrollUp = (void (*)(void *))LCD_Parallel_ScrollUp,
 };
 
 /* A lookup table for use with the displayRefreshMask variable. Row number 
@@ -62,7 +78,6 @@ static uint8_t rowToAddr[4] = {0, LCD_PAR_ROW1_ADDR, LCD_PAR_ROW2_ADDR,
 
 // ***** Static Function Prototypes ********************************************
 
-/* Put static function prototypes here */
 static displayState GetNextState(LCD_Parallel *self);
 
 /* A function to convert the cursor row and column to the correct address.
@@ -142,12 +157,20 @@ void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint16_t tickUs)
         self->clearDisplayTimer.period = 1;
 
     // set up variables
-
-    // call base class constructor
+    self->clearDisplayTimer.flags.start = 0;
+    self->displayOn = params->displayOn;
+    self->cursorOn = params->cursorOn;
+    self->blinkOn = params->blinkOn;
+    self->currentIndex = 0;
+    self->count = 0;
+    self->cursorRow = 1;
+    self->cursorCol = 1;
+    self->currentRefreshMask = 0;
+    self->currentState = LCD_PAR_STATE_ROW1_LEFT;
 
     // Send initial LCD commands
-
-    // Start busy wait timer
+    self->initState = LCD_PAR_INIT_HOME;
+    self->initialize = 1;
 }
 
 // *****************************************************************************
@@ -155,6 +178,8 @@ void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType *params, uint16_t tickUs)
 void LCD_Parallel_Tick(LCD_Parallel *self)
 {
     static displayState nextState;
+
+// ----- Wait Timer ------------------------------------------------------------
 
     if(self->clearDisplayTimer.flags.start && self->clearDisplayTimer.period != 0)
     {
@@ -165,7 +190,7 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
     
     if(self->clearDisplayTimer.flags.active)
     {
-        /* Non-blocking wait function. It takes at least 1 ms for the clear
+        /* Non-blocking wait function. It takes at least 1.5 ms for the clear
         display command to execute. Do nothing until the timer is done. */
         self->clearDisplayTimer.count--;
 
@@ -180,14 +205,62 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
         }
     }
 
+// ----- Initialize ------------------------------------------------------------
+
+    if(self->initialize)
+    {
+        switch(self->initState)
+        {
+            case LCD_PAR_INIT_HOME:
+                CheckIfBusyAndRetry(self);
+                LCD_Parallel_WriteCommand(self, 0x30); // return home
+                self->clearDisplayTimer.flags.start = 1;
+                self->initState = LCD_PAR_INIT_ENTRY;
+                break;
+            case LCD_PAR_INIT_ENTRY:
+                if(self->clearDisplayTimer.flags.expired)
+                {
+                    self->clearDisplayTimer.flags.expired = 0;
+                    // increment address (move cursor right), shift = 0
+                    LCD_Parallel_WriteCommand(self, 0x06);
+                    self->initState = LCD_PAR_INIT_DISPLAY;
+                }
+                break;
+            case LCD_PAR_INIT_DISPLAY:
+                CheckIfBusyAndRetry(self);
+                uint8_t command = 0x08;
+                if(self->blinkOn) command |= 0x01;
+                if(self->cursorOn) command |= 0x02;
+                if(self->displayOn) command |= 0x04;
+                LCD_Parallel_WriteCommand(self, command);
+                self->initState = LCD_PAR_INIT_FUNCTION;
+                break;
+            case LCD_PAR_INIT_FUNCTION:
+                CheckIfBusyAndRetry(self);
+                // 8-bit, 2 lines, single height
+                uint8_t command = 0x38;
+                if(self->use4BitMode) command &= ~0x10; // TODO 4-bit mode
+                LCD_Parallel_WriteCommand(self, command);
+                self->initState = LCD_PAR_INIT_HOME;
+                self->initialize = 0; // finished
+                break;
+            default:
+                self->initState = LCD_PAR_INIT_HOME;
+                self->initialize = 0;
+                break;
+        }
+    }
+
+// ----- Update Display --------------------------------------------------------
+
     if(self->currentRefreshMask == 0)
     {
         /* We've finished updating the screen. There is nothing else to do 
-        except place the cursor if needed before returning. 
+        except place the cursor if needed before returning.
         The command is 0x80 + row addr + col - 1 */
         if(self->refreshCursor)
         {
-            self->refreshCursor = false;
+            self->refreshCursor = 0;
             CheckIfBusyAndRetry(self);
             LCD_Parallel_WriteCommand(self, 0x80 + CursorToAddress(self->cursorRow, self->cursorCol));
         }
@@ -210,10 +283,10 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
     {
         /* Set the DDRAM address to the row + column.
         Row 1 address is 0x00. Row 2 address ix 0x40. Column address is 0-39
-        Cmd = 0x80 + row addr + col index = 0x80 + 0x00 + col index */
+        The command is 0x80 + row addr + col - 1 */
         CheckIfBusyAndRetry(self);
         LCD_Parallel_WriteCommand(self, 0x80 + CursorToAddress(self->cursorRow, self->cursorCol));
-        self->updateAddressFlag = false;
+        self->updateAddressFlag = 0;
     }
     
     CheckIfBusyAndRetry(self);
@@ -241,7 +314,7 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
             self->currentIndex = 0;
         }
         if(nextState != self->currentState + 1)
-            self->updateAddressFlag = true;
+            self->updateAddressFlag = 1;
         self->currentState = nextState;
     }
 }
@@ -278,7 +351,7 @@ bool LCD_Parallel_IsBusy(LCD_Parallel *self)
     {
         /* Last resort. I'm going to attempt to make a delay of some kind. 
         This is going to vary a lot based on your processor */
-        for(uint16_t i = 0; i < 1000; i++) continue;
+        for(uint16_t i = 0; i < LCD_PAR_ROUGH_DELAY_COUNT; i++) continue;
     }
     return isBusy;
 }
@@ -349,9 +422,10 @@ uint8_t LCD_Parallel_ReadData(LCD_Parallel *self)
         if(self->super->DelayUs)
             (self->super->DelayUs)(1);
 
+        // TODO add 4-bit mode
         data = self->super->ReceiveByte();
         (self->SetEnablePin)(false);
-        self->updateAddressFlag = true;
+        self->updateAddressFlag = 1;
     }
     return data;
 }
@@ -367,7 +441,7 @@ void LCD_Parallel_ClearDisplay(LCD_Parallel *self)
     }
     self->cursorRow = 0;
     self->cursorCol = 0;
-    self->refreshCursor = true;
+    self->refreshCursor = 1;
     self->currentRefreshMask = 0xFF; // TODO figure out if this is necessary
     LCD_Parallel_WriteCommand(self, 0x01);
     self->clearDisplayTimer.flags.expired = 0;
@@ -451,7 +525,7 @@ void LCD_Parallel_MoveCursor(LCD_Parallel *self, uint8_t row, uint8_t col)
 
     self->cursorRow = row;
     self->cursorCol = col;
-    self->refreshCursor = true;
+    self->refreshCursor = 1;
 }
 
 // *****************************************************************************
@@ -468,7 +542,7 @@ void LCD_Parallel_MoveCursorForward(LCD_Parallel *self)
     if(self->cursorRow > self->super->numRows)
         self->cursorRow = 1;
 
-    self->refreshCursor = true;
+    self->refreshCursor = 1;
 }
 
 // *****************************************************************************
@@ -485,7 +559,7 @@ void LCD_Parallel_MoveCursorBackward(LCD_Parallel *self)
     if(self->cursorRow < 1)
         self->cursorRow = self->super->numRows;
     
-    self->refreshCursor = true;
+    self->refreshCursor = 1;
 }
 
 // *****************************************************************************

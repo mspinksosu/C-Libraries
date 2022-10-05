@@ -254,12 +254,12 @@ void LCD_PutFloat(LCD *self, float num, uint8_t precision);
  * 
  * The tick rate should preferably be greater than 100 us. The write functions
  * will each have a small delay of about 1 us, but the busy function could 
- * delay up to 100 us. The maximum amount of delay should 100 us. Once the 
- * screen is written to, there is no need to continuously update it. The 
- * controller in the LCD will hold the characters being displayed. I think a 
- * 1 or 2 millisecond (1000 - 2000 us) tick rate works best. The number of rows
- * and columns begins with 1 and goes to numRows and numCols. By default, after
- * a write to the LCD, the address should increment.
+ * delay up to 100 us. Once the screen is written to, there is no need to 
+ * continuously update it. The controller in the LCD will hold the characters 
+ * being displayed. I think a 1 or 2 millisecond (1000 - 2000 us) tick rate 
+ * works best. The number of rows and columns begins with 1 and goes to numRows
+ * and numCols. By default, after a write to the LCD, the address should 
+ * increment.
  * 
  * @param self  pointer to the LCD that you are using
  * 

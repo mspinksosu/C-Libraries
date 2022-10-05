@@ -53,6 +53,14 @@ enum displayRefreshMask
     LCD_PAR_REFRESH_ROW4_RIGHT,
 };
 
+typedef enum LCDParInitStateTag
+{
+    LCD_PAR_INIT_HOME = 0,
+    LCD_PAR_INIT_ENTRY,
+    LCD_PAR_INIT_DISPLAY,
+    LCD_PAR_INIT_FUNCTION,
+} LCDParInitState;
+
 typedef struct LCDParTimerTag
 {
     uint16_t period;
@@ -79,20 +87,22 @@ typedef struct LCD_ParallelTag
     LCDParTimer clearDisplayTimer;
     uint8_t lineBuffer1[40];
     uint8_t lineBuffer2[40];
-    bool updateAddressFlag;
-    bool refreshCursor;
     uint8_t cursorRow;
     uint8_t cursorCol;
     uint8_t currentIndex;
     uint8_t count;
     uint8_t currentRefreshMask;
     displayState currentState;
+    LCDParInitState initState;
     struct {
-        unsigned displayOn      :1;
-        unsigned cursorOn       :1;
-        unsigned blinkOn        :1;
-        unsigned use4BitMode    :1;
-        unsigned                :4;
+        unsigned displayOn          :1;
+        unsigned cursorOn           :1;
+        unsigned blinkOn            :1;
+        unsigned use4BitMode        :1;
+        unsigned updateAddressFlag  :1;
+        unsigned refreshCursor      :1;
+        unsigned initialize         :1;
+        unsigned                    :1;
     };
 } LCD_Parallel;
 
