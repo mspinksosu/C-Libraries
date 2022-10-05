@@ -476,7 +476,7 @@ void UART_SetReceivedDataCallback(UART *self, void (*Function)(uint8_t (*CallToG
  * 
  * If the CTS pin is asserted (low) it means we are okay to send data to the 
  * other device. Your function should follow the format listed below. Your 
- * function should return true if the CTS pin is low
+ * function should return true if the CTS pin is low, and false if it is high.
  * 
  * @param self  pointer to the UART you are using
  * 
@@ -490,7 +490,7 @@ void UART_SetIsCTSPinLowFunc(UART *self, bool (*Function)(void));
  * The RTS pin is asserted (low) whenever we are ready to receive data and
  * de-asserted (high) whenever we are not ready to receive data. Your function 
  * should follow the format listed below. If the argument passed in is true, 
- * set the RTS pin high.
+ * set the RTS pin high. Else, low.
  * 
  * @param self  pointer to the UART you are using
  * 
