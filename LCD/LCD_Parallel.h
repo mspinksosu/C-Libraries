@@ -8,7 +8,8 @@
  * @file LCD_Parallel.h
  * 
  * @details
- *      TODO
+ *      // TODO details. A basic implementation for a HD44780 or similar LCD
+ * character display
  * 
  ******************************************************************************/
 
@@ -76,9 +77,7 @@ typedef struct LCDParTimerTag
     } flags;
 } LCDParTimer;
 
-/* If you need to extend the base class, then declare your processor specific
-class here. Your processor specific functions should all use this type in place 
-of the base class type. */
+/* Create the sub class */
 typedef struct LCD_ParallelTag
 {
     LCD *super; // include the base class first
@@ -113,9 +112,46 @@ typedef struct LCDInitType_ParallelTag
 } LCDInitType_Parallel;
 
 /** 
- * Description of struct
+ * Description of LCD_Parallel struct:
  * 
- * member1      description of variable member1
+ * You shouldn't need to mess with any of these variables. That is why I have
+ * made functions for you to use.
+ * 
+ * super  A pointer to the base class. Set by using the Create function
+ * 
+ * SetSelectPins  A pointer to a function that sets the RW, RS pins. This 
+ *                function is required.
+ * 
+ * SetEnablePin  A pointer to a function that sets the E pin. This function is
+ *               required.
+ * 
+ * clearDisplayTimer  A timer for waiting for the clear display or return home
+ *                    commands to finish executing.
+ * 
+ * lineBuffer  Holds up to 80 characters to be displayed. Mimics the internal 
+ *             memory of the LCD.
+ * 
+ * cursorRow  The row that the cursor is currently on
+ * 
+ * cursorCol  The column that the cursor is currently on
+ * 
+ * currentIndex  Keeps track of where we are in the lineBuffer array
+ * 
+ * count  Keeps track of how many characters we have written, so that we know
+ *        when to go to the next section of the screen.
+ * 
+ * currentRefreshMask  Keeps track of which parts of the screen need updating
+ * 
+ * currentState  Used in conjunction with the refresh mask
+ * 
+ * initState  A smaller state machine that is used to send the inital commands
+ *            to the LCD on startup
+ * 
+ * Description of LCDInitType_Parallel struct:
+ * 
+ * use4BitMode  Uses only the upper pins of the LCD (DB4 - DB7). Likewise, only
+ *              uses the upper bits of the data byte. Each command is to be 
+ *              sent twice.
  * 
  */
 
@@ -176,7 +212,7 @@ void LCD_Parallel_Set4BitMode(LCDInitType_Parallel *self, bool use4BitMode);
 void LCD_Parallel_SetSelectPinsFunc(LCD_Parallel *self, void (*Function)(bool rsPinHigh, bool rwPinHigh));
 
 /***************************************************************************//**
- * @brief Set a function to allow the LCD control of the E pins
+ * @brief Set a function to allow the LCD control of the E pin
  * 
  * Your function should follow the format listed below. If the argument passed 
  * in is true, set the corresponding pin high. Else, low.

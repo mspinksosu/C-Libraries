@@ -86,6 +86,8 @@ typedef struct ADCChannelTag
 } ADCChannel;
 
 /** 
+ * Description of struct members:
+ * 
  * channelNumber    The ADC channel number. Can vary between MCU's
  * 
  * value            The ADC value for that channel

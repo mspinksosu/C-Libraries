@@ -349,6 +349,26 @@ void LCD_WriteFullLine(LCD *self, uint8_t lineNum, uint8_t *array, uint8_t size)
     }
 }
 
+// *****************************************************************************
+
+void LCD_ScrollDown(LCD *self)
+{
+    if(self->interface->LCD_ScrollDown != NULL && self->instance != NULL)
+    {
+        (self->interface->LCD_ScrollDown)(self->instance);
+    }
+}
+
+// *****************************************************************************
+
+void LCD_ScrollUp(LCD *self)
+{
+    if(self->interface->LCD_ScrollUp != NULL && self->instance != NULL)
+    {
+        (self->interface->LCD_ScrollUp)(self->instance);
+    }
+}
+
 /*
  End of File
  */

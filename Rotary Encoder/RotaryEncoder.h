@@ -89,6 +89,13 @@ typedef struct RotaryEncoderTag
     } flags;
 } RotaryEncoder;
 
+/** 
+ * Description of struct members: // TODO description
+ * 
+ * member1      description of variable member1
+ * 
+ */
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Function Prototypes *************************************************//

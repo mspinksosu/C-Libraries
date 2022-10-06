@@ -138,10 +138,9 @@ typedef struct GPIOInitTypeTag
 } GPIOInitType;
 
 /**
- * Description of struct members. You shouldn't really mess with any of these
- * variables directly. That is why I made functions for you to use.
+ * Description of struct members:
  * 
- * GPIOInterface The table of functions that need to be implemented
+ * GPIOInterface  The table of functions that need to be implemented
  * 
  * GPIO  The base class pin object
  * 

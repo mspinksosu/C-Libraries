@@ -9,7 +9,7 @@
  * 
  * @details
  *      An interface to make use of a hardware timer peripheral features.
- * // TODO more details
+ * // TODO details
  * 
  ******************************************************************************/
 
@@ -141,6 +141,8 @@ typedef struct HWTimerTag
 /**
  * Description of struct members. You shouldn't really mess with any of these
  * variables directly. That is why I made functions for you to use.
+ * 
+ * // TODO description
  * 
  */
 

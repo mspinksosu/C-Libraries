@@ -96,12 +96,48 @@ typedef struct LCDTag
     uint8_t numRows;
     uint8_t numCols;
     LCDMode mode;
-    LCDRowOverflow rowOverflow; // TODO
+    LCDRowOverflow rowOverflow;
     LCDScreenOverflow screenOverflow;
 } LCD;
 
 /**
- * Foo_Interface The table of functions that need to be implemented
+ * Description of struct:
+ * 
+ * LCDInterface  The table of functions that need to be implemented
+ * 
+ * LCD  The base class pin object
+ * 
+ * LCDOInitType  The base class init object
+ * 
+ * instance  A pointer to the instance of the sub class being used. This will 
+ *           be set by means of the base class create function
+ * 
+ * DelayUs  A pointer to a function that will create a delay in microseconds.
+ *          This function is required.
+ * 
+ * TransmitByte  A pointer to a function that will send the byte to the LCD.
+ *               This function is required.
+ * 
+ * ReceiveByte  A pointer to a function that will read a byte from the LCD and 
+ *              then return it. This function is required.
+ * 
+ * numRows  The number of rows on the LCD (beginning from 1)
+ * 
+ * numCols  The number of columns on the LCD (beginning from 1)
+ * 
+ * mode  Whether the LCD supports read and write, or just write
+ * 
+ * rowOverflow  Determines what happens when the cursor is at the end of a row
+ * 
+ * screenOverflow  Determines what happens when the cursor is at the last row
+ *                 and last column
+ * 
+ * displayOn  Turn the entire display on or off
+ * 
+ * cursorOn  Make the cursor visible on screen or not
+ * 
+ * blinkOn  Make the cursor blink
+ * 
  */
 
 ////////////////////////////////////////////////////////////////////////////////

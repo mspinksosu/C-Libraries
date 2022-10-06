@@ -124,6 +124,9 @@ void LCD_Parallel_Create(LCD_Parallel *self, LCD *base)
 
 void LCD_Parallel_CreateInitType(LCDInitType_Parallel *self, LCDInitType *base)
 {
+    self->super = base;
+
+    /* Call base class constructor */
     LCD_CreateInitType(base, self);
 }
 
@@ -157,11 +160,11 @@ void LCD_Parallel_Init(LCD_Parallel *self, LCDInitType_Parallel *params, uint16_
         self->clearDisplayTimer.period = 1;
 
     // set up variables
-    self->clearDisplayTimer.flags.start = 0;
     self->displayOn = params->super->displayOn;
     self->cursorOn = params->super->cursorOn;
     self->blinkOn = params->super->blinkOn;
     self->use4BitMode = params->use4BitMode;
+    self->clearDisplayTimer.flags.all = 0;
     self->currentIndex = 0;
     self->count = 0;
     self->cursorRow = 1;
@@ -739,14 +742,14 @@ void LCD_Parallel_WriteFullLine(LCD_Parallel *self, uint8_t lineNum, uint8_t *ar
 
 void LCD_Parallel_ScrollDown(LCD_Parallel *self)
 {
-
+    // TODO scroll
 }
 
 // *****************************************************************************
 
 void LCD_Parallel_ScrollUp(LCD_Parallel *self)
 {
-    
+    // TODO scroll
 }
 
 ////////////////////////////////////////////////////////////////////////////////

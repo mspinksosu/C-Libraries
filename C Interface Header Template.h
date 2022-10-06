@@ -48,7 +48,9 @@ typedef struct FooTag
 } Foo;
 
 /**
- * Foo_Interface The table of functions that need to be implemented
+ * Description of struct members:
+ * 
+ * Foo_Interface  The table of functions that need to be implemented
  * 
  * Foo          The base class object
  * 
@@ -58,7 +60,6 @@ typedef struct FooTag
  * 
  * instance     A pointer to the instance of the sub class being used. This
  *              will be set by means of the base class create function
- * 
  */
 
 ////////////////////////////////////////////////////////////////////////////////

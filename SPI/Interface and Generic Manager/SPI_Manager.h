@@ -56,9 +56,8 @@ typedef struct SPIManagerTag
 } SPIManager;
 
 /**
- * Description of struct members. You shouldn't really mess with any of these
- * variables directly. That is why I made functions for you to use.
- * 
+ * Description of struct members:
+ * // TODO description
  * 
  */
 

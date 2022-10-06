@@ -143,8 +143,7 @@ typedef struct UARTTag
 } UART;
 
 /** 
- * Description of struct members. You shouldn't really mess with any of these
- * variables directly. That is why I made functions for you to use.
+ * Description of struct members:
  * 
  * UARTInterface  The table of functions that need to be implemented
  * 

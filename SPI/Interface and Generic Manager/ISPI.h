@@ -8,7 +8,7 @@
  * @file ISPI.h
  * 
  * @details
- *      TODO
+ *      // TODO details
  * 
  ******************************************************************************/
 
@@ -91,7 +91,7 @@ typedef struct SPIStatusBitsTag
 } SPIStatusBits;
 
 /** 
- * Description of struct members.
+ * Description of struct members: // TODO description
  * 
  * member1      description of variable member1
  * 
