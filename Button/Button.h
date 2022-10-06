@@ -69,13 +69,13 @@
  * give it your function as an argument.
  * 
  * Example Code:
- *      Button PushButton;
+ *      Button pushButton;
  *      DigitalButton digitalPushButton;
- *      Button_Digital_Create(&digitalPushButton, &PushButton, 20, 20, 10);
- *      Button_InitMs(&PushButton, 3000); // long press 3 seconds
+ *      Button_Digital_Create(&digitalPushButton, &pushButton, 20, 20, 10);
+ *      Button_InitMs(&pushButton, 3000); // long press 3 seconds
  *      uint16_t buttonIsPressed = GPIO_ReadPin(&pin1);
- *      Button_Tick(&PushButton, buttonIsPressed);
- *      if(Button_GetLongPress(&PushButton))
+ *      Button_Tick(&pushButton, buttonIsPressed);
+ *      if(Button_GetLongPress(&pushButton))
  *      { .... do something .... }
  * 
  ******************************************************************************/

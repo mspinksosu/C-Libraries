@@ -31,7 +31,7 @@
 /* The previous value of the phases is shifted left and combined with the
 current state. Using this, we can determine which direction we are going. The
 value of the output will look like this: 0000baba. The index of the table 
-corresponds to these values. A postive number indicates a clockwise transition
+corresponds to these values. A positive number indicates a clockwise transition
 and a negative number indicates a counter clockwise transition. A zero means
 there was no transition, or that it was invalid. */
 static int8_t rotaryLookupTable[] = { 0, 1, -1, 0, -1, 0, 0, 1,
@@ -160,7 +160,7 @@ void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh)
     }
     
     /* Decode the output using the state table. A state transition will occur
-    every quarter cycle. A postive number indicates a clockwise transition
+    every quarter cycle. A positive number indicates a clockwise transition
     and a negative number indicates a counter clockwise transition. A zero 
     means there was no transition, or that it was invalid. */
     int8_t newOutput = rotaryLookupTable[self->state];
@@ -177,10 +177,10 @@ void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh)
 
         /* Prevent overflow and underflow */
         if(newOutput == 1 && self->output == -128)
-            self->output = 0;
+            self->output = 2;
         
         if(newOutput == -1 && self->output == 127)
-            self->output = -1;
+            self->output = -2;
     }
     
     /* The typemask will cause an event to occur every quarter, half, or full

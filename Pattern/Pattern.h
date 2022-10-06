@@ -51,6 +51,13 @@
  * callback function, you can look at the context pointer to see which Pattern 
  * called the function and decide what to do.
  * 
+ * There is also a callback function which can be called anytime the output 
+ * changes. Look at the SetOutputChangedCallback function and make your 
+ * function match that format. 
+ * 
+ * After you've created your functions, call either SetFinishedCallback or
+ * SetOutputChangedCallback and give it your function as an argument.
+ * 
  * Example Code:
  *      Pattern ledBlink;
  *      PatternState pattern1Array[2] = {{.output = 1, .timeInMs = 32},

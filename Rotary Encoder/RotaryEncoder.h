@@ -37,12 +37,34 @@
  * with going slower. The maximum available debounce time for debouncing with 
  * software is 255 ms.
  * 
- * // TODO callback details
+ *      There are two callback functions for clockwise and counter clockwise 
+ * events. The function you create must follow the prototype listed as 
+ * RECallbackFunc. It must have a void pointer as an argument. When your 
+ * function gets called, you will get a pointer to the RotaryEncoder object 
+ * that initiated the call. This way, you can have multiple callbacks pointing
+ * to the same function if you desire. Then inside your callback function you 
+ * would compare the pointer with your RotaryEncoder object to determine which 
+ * one initiated the callback. You do not have to use the contextPointer if you
+ * do not want to. The reason it is a void pointer is so that you can have 
+ * your callback function in some other file without needing to include the
+ * RotaryEncoder.h header file. After you've created your function, call 
+ * SetClockwiseEventCallback or SetCounterClockwiseEventCallback and give it 
+ * your function as an argument.
+ * 
+ * Example Code:
+ *      RotaryEncoder myEncoder;
+ *      RE_InitWithType(&myEncoder, RE_FULL_CYCLE_PER_DETENT, 5, 1);
+ *      // call update phases once per tick
+ *      RE_UpdatePhases(&myEncoder, GPIO_ReadPin(&pinA), GPIO_ReadPin(&pinB));
+ *      if(RE_GetClockwise(&myEncoder))
+ *      { .... do something .... }
+ *      if(RE_GetCounterClockwise(&myEncoder))
+ *      { .... do something .... }
  * 
  * ****************************************************************************/
 
 #ifndef ROTARYENCODER_H
-#define	ROTARYENCODER_H
+#define ROTARYENCODER_H
 
 // ***** Includes **************************************************************
 
@@ -70,15 +92,12 @@ typedef struct RotaryEncoderTag
 {
     RECallbackFunc clockwiseEventCallback;
     RECallbackFunc counterClockwiseEventCallback;
-    
     uint8_t typeMask;
     uint8_t debouncePeriod;
     uint8_t phaseAIntegrator;
     uint8_t phaseBIntegrator;
-
     uint8_t state;
     int8_t output;
-    
     union {
         struct {
             unsigned clockwise        :1;
@@ -90,9 +109,34 @@ typedef struct RotaryEncoderTag
 } RotaryEncoder;
 
 /** 
- * Description of struct members: // TODO description
+ * Description of struct members: You shouldn't need to mess with any of these
+ * variables directly.
  * 
- * member1      description of variable member1
+ * clockwiseEventCallback  A function that is called when a clockwise event
+ *                         occurs.
+ * 
+ * counterClockwiseEventCallback  A function that is called when a counter
+ *                                clockwise event occurs.
+ * 
+ * typeMask  A variable that alters the output to be every 1/4, 1/2, or full
+ *           cycle.
+ * 
+ * debouncePeriod  How long to debounce the rotary encoder switches (in ticks)
+ * 
+ * phaseIntegrator  A counter that will smooth the input in order to debounce
+ *                  it. When it hits either 0 or the debounce period, the 
+ *                  output changes.
+ * 
+ * state  Stores the current state of the phase inputs, as well as the previous
+ *        state.
+ * 
+ * output  An int that indicates which direction the rotary encoder is turning.
+ *         If the rotary encoder is going clockwise, it will go from 1 to 127
+ *         then rollover. If counter clockwise, it will go from -1 to -128
+ * 
+ * clockwise  A flag that indicates a clockwise event occurred
+ * 
+ * counterClockwise  A flag that indicates a counter clockwise event occurred
  * 
  */
 
