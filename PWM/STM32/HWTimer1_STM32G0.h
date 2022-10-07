@@ -72,9 +72,9 @@ uint16_t HWTimer1_STM32_GetCompare16Bit(uint8_t compChan);
 
 void HWTimer1_STM32_SetComparePercent(uint8_t compChan, uint8_t percent);
 
-uint16_t HWTimer1_STM32_GetComparePercent(uint8_t compChan);
+uint8_t HWTimer1_STM32_GetComparePercent(uint8_t compChan);
 
-void HWTimer1_STM32_EnableCompare(uint8_t compChan);
+void HWTimer1_STM32_EnableCompare(uint8_t compChan, bool useInterrupt);
 
 void HWTimer1_STM32_DisableCompare(uint8_t compChan);
 
@@ -90,9 +90,9 @@ void HWTimer1_STM32_OverflowEvent(void);
 
 void HWTimer1_STM32_CompareMatchEvent(void);
 
-void HWTimer1_STM32_SetOverflowCallback(HWTimerOverflowCallbackFunc Function);
+void HWTimer1_STM32_SetOverflowCallback(void (*Function)(void));
 
-void HWTimer1_STM32_SetCompareMatchCallback(HWTimerCompareMatchCallbackFunc Function);
+void HWTimer1_STM32_SetCompareMatchCallback(void (*Function)(uint8_t compChan));
 
 // TODO This would require us to store our period in us. But it would be very convenient
 void HWTimer1_STM32_SetCompareInUs(uint8_t compChan, uint32_t desiredTimeInUs);

@@ -81,8 +81,8 @@ typedef struct HWTimerTag HWTimer;
 /* callback function pointer. The context is so that you can know which HWTimer 
 initiated the callback. This is so that you can service multiple timers 
 callbacks with the same function if you desire. */
-typedef void (*HWTimerOverflowCallbackFunc)(HWTimer *timerContext);
-typedef void (*HWTimerCompareMatchCallbackFunc)(HWTimer *timerContext, uint8_t compChan);
+typedef void (*HWTimerOverflowCallbackFunc)(void);
+typedef void (*HWTimerCompareMatchCallbackFunc)(uint8_t compChan); // TODO remove these
 
 typedef struct HWTimerInitTypeTag
 {
@@ -121,7 +121,7 @@ typedef struct HWTimerInterfaceTag
     uint16_t (*HWTimer_GetCompare16Bit)(uint8_t compChan);
     void (*HWTimer_SetComparePercent)(uint8_t compChan, uint8_t percent);
     uint8_t (*HWTimer_GetComparePercent)(uint8_t compChan);
-    void (*HWTimer_EnableCompare)(uint8_t compChan);
+    void (*HWTimer_EnableCompare)(uint8_t compChan, bool useInterrupt);
     void (*HWTimer_DisableCompare)(uint8_t compChan);
     bool (*HWTimer_GetOverflow)(void);
     bool (*HWTimer_GetCompareMatch)(uint8_t compChan);
@@ -129,8 +129,8 @@ typedef struct HWTimerInterfaceTag
     void (*HWTimer_ClearCompareMatchFlag)(uint8_t compChan);
     void (*HWTimer_OverflowEvent)(void);
     void (*HWTimer_CompareMatchEvent)(void);
-    void (*HWTimer_SetOverflowCallback)(HWTimerOverflowCallbackFunc Function);
-    void (*HWTimer_SetCompareMatchCallback)(HWTimerCompareMatchCallbackFunc Function);
+    void (*HWTimer_SetOverflowCallback)(void (*Function)(void));
+    void (*HWTimer_SetCompareMatchCallback)(void (*Function)(uint8_t compChan));
 } HWTimerInterface;
 
 typedef struct HWTimerTag
@@ -347,7 +347,7 @@ uint8_t HWTimer_GetNumCompareChannels(HWTimer *self);
  * 
  * @param self  pointer to the HWTimer you are using
  * 
- * @param compChan  the number of the compare channel
+ * @param compChan  the number of the compare channel (beginning with 0)
  * 
  * @param compValue  the value of the compare channel (0-65535)
  */
@@ -358,7 +358,7 @@ void HWTimer_SetCompare16Bit(HWTimer *self, uint8_t compChan, uint16_t compValue
  * 
  * @param self  pointer to the HWTimer you are using
  * 
- * @param compChan  the number of the compare channel
+ * @param compChan  the number of the compare channel (beginning with 0)
  * 
  * @return uint16_t  the value of the compare channel (0-65535)
  */
@@ -376,7 +376,7 @@ uint16_t HWTimer_GetCompare16Bit(HWTimer *self, uint8_t compChan);
  * 
  * @param self  pointer to the HWTimer you are using
  * 
- * @param compChan  the number of the compare channel
+ * @param compChan  the number of the compare channel (beginning with 0)
  * 
  * @param percent  the value of the compare channel (0-100)
  */
@@ -387,7 +387,7 @@ void HWTimer_SetComparePercent(HWTimer *self, uint8_t compChan, uint8_t percent)
  * 
  * @param self  pointer to the HWTimer you are using
  * 
- * @param compChan  the number of the compare channel
+ * @param compChan  the number of the compare channel (beginning with 0)
  * 
  * @return uint8_t  the value of the compare channel (0-100)
  */
@@ -398,19 +398,23 @@ uint8_t HWTimer_GetComparePercent(HWTimer *self, uint8_t compChan);
  * 
  * The compare match channels should be numbered in ascending order starting
  * with zero order. Sometimes microcontrollers will use letters 'A' 'B' etc.
+ * If you enable the compare match interrupt, you must utlize the 
+ * CompareMatchEvent function.
  * 
  * @param self  pointer to the HWTimer you are using
  * 
- * @param compChan  the number of the compare channel
+ * @param compChan  the number of the compare channel (beginning with 0)
+ * 
+ * @param useInterrupt  enable compare match channel interrupt
  */
-void HWTimer_EnableCompare(HWTimer *self, uint8_t compChan);
+void HWTimer_EnableCompare(HWTimer *self, uint8_t compChan, bool useInterrupt);
 
 /***************************************************************************//**
  * @brief Disable a compare match channel
  * 
  * @param self  pointer to the HWTimer you are using
  * 
- * @param compChan  the number of the compare channel
+ * @param compChan  the number of the compare channel (beginning with 0)
  */
 void HWTimer_DisableCompare(HWTimer *self, uint8_t compChan);
 
@@ -432,7 +436,7 @@ bool HWTimer_GetOverflow(HWTimer *self);
  * 
  * @param self  pointer to the HWTimer you are using
  * 
- * @param compChan  the number of the compare channel
+ * @param compChan  the number of the compare channel (beginning with 0)
  * 
  * @return true if the compare match flag is set
  */
@@ -441,8 +445,8 @@ bool HWTimer_GetCompareMatch(HWTimer *self, uint8_t compChan);
 /***************************************************************************//**
  * @brief Clear the overflow flag
  * 
- * If you are using an interrupt, this flag will be cleared when the interrupt 
- * is called.
+ * If you are using an interrupt, this flag will also be cleared when the 
+ * interrupt is called.
  * 
  * @param self  pointer to the HWTimer you are using
  */
@@ -451,12 +455,12 @@ void HWTimer_ClearOverflowFlag(HWTimer *self);
 /***************************************************************************//**
  * @brief Clear the compare match flag
  * 
- * If you are using an interrupt, this flag will be cleared when the interrupt 
- * is called.
+ * If you are using an interrupt, this flag will also be cleared when the 
+ * interrupt is called.
  * 
  * @param self  pointer to the HWTimer you are using
  * 
- * @param compChan  the number of the compare channel
+ * @param compChan  the number of the compare channel (beginning with 0)
  */
 void HWTimer_ClearCompareMatchFlag(HWTimer *self, uint8_t compChan);
 
@@ -490,27 +494,25 @@ void HWTimer_CompareMatchEvent(HWTimer *self);
  * @brief Set a function to be called whenever the timer overflows
  * 
  * This function is called from within the OverflowEvent function. Your 
- * function should follow the format listed below. The context pointer will be
- * set to the timer that initiated the callback.
+ * function should follow the format listed below.
  * 
  * @param self  pointer to the HWTimer you are using
  * 
- * @param Function  format: void SomeFunction(HWTimer *timerContext)
+ * @param Function  format: void SomeFunction(void)
  */
-void HWTimer_SetOverflowCallback(HWTimer *self, HWTimerOverflowCallbackFunc Function);
+void HWTimer_SetOverflowCallback(HWTimer *self, void (*Function)(void));
 
 /***************************************************************************//**
  * @brief Set a function to be called whenever a compare match happens
  * 
  * This function is called from within the CompareMatchEvent function. Your 
- * function should follow the format listed below. The context pointer will be
- * set to the timer that initiated the callback.
+ * function should follow the format listed below.
  * 
  * @param self  pointer to the HWTimer you are using
  * 
- * @param Function  format: void Function(HWTimer *context, uint8_t compChan)
+ * @param Function  format: void Function(uint8_t compChan)
  */
-void HWTimer_SetCompareMatchCallback(HWTimer *self, HWTimerCompareMatchCallbackFunc Function);
+void HWTimer_SetCompareMatchCallback(HWTimer *self, void (*Function)(uint8_t compChan));
 
 // TODO This would require us to store our period in us. But it would be very convenient
 void HWTimer_SetCompareInUs(HWTimer *self, uint8_t compChan, uint32_t desiredTimeInUs);

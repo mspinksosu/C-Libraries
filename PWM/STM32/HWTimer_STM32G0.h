@@ -31,7 +31,8 @@ of the base class type. */
 typedef struct HWTimer_STM32Tag
 {
     HWTimer *super; // include the base class first
-    /* Add any processor specific variables you need here */
+    // TODO add output pin enable and polarity
+    // TODO add preload
 } HWTimer_STM32;
 
 typedef struct HWTimerInitType_STM32Tag
