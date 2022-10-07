@@ -74,6 +74,26 @@ void SPI_Init(SPI *self, SPIInitType *params)
 
 // *****************************************************************************
 
+void SPI_Enable(SPI *self)
+{
+    if(self->interface->SPI_Enable != NULL)
+    {
+        (self->interface->SPI_Enable)();
+    }
+}
+
+// *****************************************************************************
+
+void SPI_Disable(SPI *self)
+{
+    if(self->interface->SPI_Disable != NULL)
+    {
+        (self->interface->SPI_Disable)();
+    }
+}
+
+// *****************************************************************************
+
 void SPI_ReceivedDataEvent(SPI *self)
 {
     if(self->interface->SPI_ReceivedDataEvent != NULL)
@@ -107,26 +127,6 @@ bool SPI_IsReceiveRegisterFull(SPI *self)
     else
     {
         return false;
-    }
-}
-
-// *****************************************************************************
-
-void SPI_ReceiveEnable(SPI *self)
-{
-    if(self->interface->SPI_ReceiveEnable != NULL)
-    {
-        (self->interface->SPI_ReceiveEnable)();
-    }
-}
-
-// *****************************************************************************
-
-void SPI_ReceiveDisable(SPI *self)
-{
-    if(self->interface->SPI_ReceiveDisable != NULL)
-    {
-        (self->interface->SPI_ReceiveDisable)();
     }
 }
 
@@ -166,26 +166,6 @@ bool SPI_IsTransmitRegisterEmpty(SPI *self)
 
 // *****************************************************************************
 
-void SPI_TransmitEnable(SPI *self)
-{
-    if(self->interface->SPI_TransmitEnable != NULL)
-    {
-        (self->interface->SPI_TransmitEnable)();
-    }
-}
-
-// *****************************************************************************
-
-void SPI_TransmitDisable(SPI *self)
-{
-    if(self->interface->SPI_TransmitDisable != NULL)
-    {
-        (self->interface->SPI_TransmitDisable)();
-    }
-}
-
-// *****************************************************************************
-
 SPIStatusBits SPI_GetStatus(SPI *self)
 {
     SPIStatusBits retVal = {0};
@@ -200,6 +180,16 @@ SPIStatusBits SPI_GetStatus(SPI *self)
 
 // *****************************************************************************
 
+void SPI_PendingEventHandler(SPI *self)
+{
+    if(self->interface->SPI_PendingEventHandler != NULL)
+    {
+        (self->interface->SPI_PendingEventHandler)();
+    }
+}
+
+// *****************************************************************************
+
 void SPI_SetTransmitFinishedCallback(SPI *self, void (*Function)(void))
 {
     if(self->interface->SPI_SetTransmitFinishedCallback != NULL)
@@ -210,7 +200,7 @@ void SPI_SetTransmitFinishedCallback(SPI *self, void (*Function)(void))
 
 // *****************************************************************************
 
-void SPI_SetReceivedDataCallback(SPI *self, void (*Function)(uint8_t (*CallToGetData)(void)))
+void SPI_SetReceivedDataCallback(SPI *self, void (*Function)(uint8_t data))
 {
     if(self->interface->SPI_SetReceivedDataCallback != NULL)
     {

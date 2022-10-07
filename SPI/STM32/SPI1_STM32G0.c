@@ -36,6 +36,7 @@ SPIInterface SPI1_FunctionTable = {
     .SPI_TransmitByte = SPI1_TransmitByte,
     .SPI_IsTransmitRegisterEmpty = SPI1_IsTransmitRegisterEmpty,
     .SPI_GetStatus = SPI1_GetStatus,
+    .SPI_PendingEventHandler = SPI1_PendingEventHandler,
     .SPI_SetTransmitFinishedCallback = SPI1_SetTransmitFinishedCallback,
     .SPI_SetReceivedDataCallback = SPI1_SetReceivedDataCallback,
     .SPI_SetSSPinFunc = SPI1_SetSSPinFunc,
@@ -121,6 +122,13 @@ bool SPI1_IsTransmitRegisterEmpty(void)
 // *****************************************************************************
 
 SPIStatusBits SPI1_GetStatus(void)
+{
+
+}
+
+// *****************************************************************************
+
+void SPI1_PendingEventHandler(void)
 {
 
 }

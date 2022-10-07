@@ -68,6 +68,7 @@ typedef struct SPIInterfaceTag
     void (*SPI_TransmitByte)(uint8_t);
     bool (*SPI_IsTransmitRegisterEmpty)(void);
     SPIStatusBits (*SPI_GetStatus)(void);
+    void (*SPI_PendingEventHandler)(void);
     void (*SPI_SetTransmitFinishedCallback)(void (*Function)(void));
     void (*SPI_SetReceivedDataCallback)(void (*Function)(uint8_t));
     void (*SPI_SetSSPinFunc)(void (*Function)(bool));
