@@ -9,12 +9,12 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
   - [x] STM32 DMA implementation finished! Testing in progress
   - [x] Update doxygen
   - [ ] PIC32 implementation in progress
-- [x] Bitfield: New library! Complete and tested!
+- [x] Bitfield: Complete and tested!
 - [x] Buffer: Complete!
 - [x] Button: Refactored! 99% tested
   - [x] Added analog button
   - [x] Update doxygen
-- [x] Button Group: New library! Tested and working!
+- [x] Button Group: Tested and working!
 - [ ] Comparator: New library! Ready for testing
   - [x] Update doxygen
 - [ ] GPIO: Redesigned!
@@ -22,8 +22,15 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
   - [x] Refactored STM32 G0 to get rid of ST library dependancy. Needs re-testing
   - [x] Update doxygen 
   - [ ] PIC32 implementation in progress
+- [ ] Hardware Timer: New library! Ready to start testing
+  - [ ] Add more STM32 sub class options
+  - [ ] Documentation
 - [ ] I2C: Old PIC32 library. Working. Needs updating
-- [x] Pattern: New library! Tested and working!
+- [ ] LCD: New library! Ready to start testing
+  - [ ] 4-bit mode
+  - [ ] Screen scroll
+  - [ ] Documentation
+- [x] Pattern: Tested and working!
   - [x] Update doxygen
 - [ ] Rotary Encoder: Redesigned! Testing in progress
   - [x] Add different types of rotary encoder
@@ -31,10 +38,10 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
     - [ ] Create STM32 implementation and test
     - [ ] Create PIC32 implementation and test
     - [ ] SPI Manager state machine
-    - [ ] Update doxygen
+    - [ ] Documentation
 - [x] Switch: Complete!
 - [x] Timer: Complete!
-- [ ] UART: Almost complete. STM32F1 tested
+- [ ] UART: STM32F1 tested and working
     - [x] STM32 G0 implementation finished! Testing in progress
     - [x] Added options for flow control and interrupts
     - [x] STM32 F1 implementation tested and working!
