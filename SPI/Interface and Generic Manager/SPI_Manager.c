@@ -72,7 +72,7 @@ void SPI_Manager_AddSlave(SPIManager *self, SPISlave *slave, uint8_t *writeBuffe
     {
         SPI_Manager_DevicePush(slave, self->endOfList);
     }
-    self->currentDevice = self->endOfList->next;
+    self->currentDevice = self->endOfList->next; // reset the index
 }
 
 // *****************************************************************************
@@ -196,7 +196,7 @@ void SPI_Manager_SetSSPinFunc(SPISlave *self, void (*Function)(bool setPinHigh, 
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// ***** Static Functions ****************************************************//
+// ***** Local Functions *****************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
