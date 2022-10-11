@@ -506,8 +506,13 @@ void LCD_Parallel_ClearDisplay(LCD_Parallel *self)
 void LCD_Parallel_DisplayOn(LCD_Parallel *self)
 {
     uint8_t command = 0x08;
-    if(self->blinkOn) command |= 0x01;
-    if(self->cursorOn) command |= 0x02;
+    
+    if(self->blinkOn)
+        command |= 0x01;
+    
+    if(self->cursorOn)
+        command |= 0x02;
+
     command |= 0x04; // display on
     self->displayOn = 1;
     LCD_Parallel_WriteCommand(self, command);
@@ -518,8 +523,13 @@ void LCD_Parallel_DisplayOn(LCD_Parallel *self)
 void LCD_Parallel_DisplayOff(LCD_Parallel *self)
 {
     uint8_t command = 0x08;
-    if(self->blinkOn) command |= 0x01;
-    if(self->cursorOn) command |= 0x02;
+    
+    if(self->blinkOn)
+        command |= 0x01;
+    
+    if(self->cursorOn)
+        command |= 0x02;
+
     self->displayOn = 0;
     LCD_Parallel_WriteCommand(self, command);
 }
@@ -529,7 +539,13 @@ void LCD_Parallel_DisplayOff(LCD_Parallel *self)
 void LCD_Parallel_SetDisplayCursor(LCD_Parallel *self, bool cursorOn)
 {
     uint8_t command = 0x08;
-    if(self->blinkOn) command |= 0x01;
+    
+    if(self->blinkOn)
+        command |= 0x01;
+    
+    if(self->displayOn)
+        command |= 0x04;
+
     if(cursorOn) 
     {
         command |= 0x02;
@@ -539,7 +555,6 @@ void LCD_Parallel_SetDisplayCursor(LCD_Parallel *self, bool cursorOn)
     {
         self->cursorOn = 0;
     }
-    if(self->displayOn) command |= 0x04;
     LCD_Parallel_WriteCommand(self, command);
 }
 
@@ -548,6 +563,13 @@ void LCD_Parallel_SetDisplayCursor(LCD_Parallel *self, bool cursorOn)
 void LCD_Parallel_SetCursorBlink(LCD_Parallel *self, bool blinkEnabled)
 {
     uint8_t command = 0x08;
+    
+    if(self->cursorOn)
+        command |= 0x02;
+    
+    if(self->displayOn)
+        command |= 0x04;
+    
     if(blinkEnabled) 
     {
         command |= 0x01;
@@ -557,8 +579,6 @@ void LCD_Parallel_SetCursorBlink(LCD_Parallel *self, bool blinkEnabled)
     {
         self->blinkOn = 0;
     }
-    if(self->cursorOn) command |= 0x02;
-    if(self->displayOn) command |= 0x04;
     LCD_Parallel_WriteCommand(self, command);
 }
 
@@ -649,7 +669,9 @@ void LCD_Parallel_PutChar(LCD_Parallel *self, uint8_t character)
             bitmask = LCD_PAR_LEFT;
         }
         else
+        {
             lineBuffer = self->lineBuffer1;
+        }
     }
     else
     {
@@ -702,6 +724,7 @@ void LCD_Parallel_PutString(LCD_Parallel *self, uint8_t *ptrToString)
         index++;
         self->cursorCol++;
     } while(*ptrToString != '\0' || self->cursorCol < self->super->numCols);
+    
     LCD_Parallel_MoveCursorForward(self); // TODO decide where to put the cursor
 }
 
@@ -714,28 +737,35 @@ void LCD_Parallel_WriteFullLine(LCD_Parallel *self, uint8_t lineNum, uint8_t *ar
 
     if(size > 20)
         size = 20;
+    
+    self->currentRefreshMask |= (LCD_PAR_LEFT << (rowToBitPos[lineNum]));
 
     switch(lineNum)
     {
         case 1:
             uint8_t leftEndCol = (self->super->numCols+1) / 2;
+            
             if(self->super->numRows == 1 && size > leftEndCol)
             {
                 /* Split the single row display in half */
                 memcpy(self->lineBuffer1, array, leftEndCol);
                 memcpy(self->lineBuffer2, &array[leftEndCol - 1], size - leftEndCol);
+                self->currentRefreshMask |= (LCD_PAR_LEFT << (rowToBitPos[2]));
             }
             else
             {
                 memcpy(self->lineBuffer1, array, size);
+                self->currentRefreshMask |= (LCD_PAR_RIGHT << (rowToBitPos[lineNum]));
             }
             break;
         case 3:
             memcpy(self->lineBuffer1, array, size);
+            self->currentRefreshMask |= (LCD_PAR_RIGHT << (rowToBitPos[lineNum]));
             break;
         case 2:
         case 4:
             memcpy(self->lineBuffer2, array, size);
+            self->currentRefreshMask |= (LCD_PAR_RIGHT << (rowToBitPos[lineNum]));
             break;
     }
 }
