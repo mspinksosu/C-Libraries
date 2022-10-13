@@ -71,9 +71,10 @@ typedef struct FooTag
 /***************************************************************************//**
  * @brief Combine the base class, sub class, and function table
  * 
- * This function shouldn't be called directly. It is preferred that it is 
- * called from within the sub class constructor. This makes the function more 
- * type safe with the use of the void pointer
+ * My preferred method is to call this function from a sub class constructor. 
+ * This makes the create function more type safe. To create a sub class 
+ * constructor, make your own Create function that takes your sub class and 
+ * base class as arguments. Set your variables then call this function from it.
  * 
  * @param self 
  * @param instanceOfSubClass 
