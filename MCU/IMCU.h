@@ -133,6 +133,6 @@ void MCU_DelayMs(uint16_t milliseconds);
  * 
  * @param powerMode  MCU_LPM_LEVEL_1, MCU_LPM_LEVEL_2, MCU_LPM_LEVEL_3
  */
-void MCU_EnterLowPowerMode(MCUPowerMode *powerMode);
+void MCU_EnterLowPowerMode(MCUPowerMode powerMode);
 
 #endif  /* IMCU_H */
