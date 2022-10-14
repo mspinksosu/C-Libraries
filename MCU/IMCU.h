@@ -97,6 +97,15 @@ void MCU_TaskTick(void);
 
 /* TODO Someday I might add suspend task */
 
+/***************************************************************************//**
+ * @brief Delay
+ * 
+ * Decrements the count and do nothing until the count hits zero.
+ * 
+ * @param count  how long to delay
+ */
+void MCU_Delay(uint32_t count);
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Interface Functions *************************************************//
