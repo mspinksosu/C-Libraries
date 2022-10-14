@@ -23,7 +23,7 @@
 
 // ***** Global Variables ******************************************************
 
-static uint32_t nvicIntReg0, nvicIntReg1, sysTickCount;
+static uint32_t nvicIntReg0, nvicIntReg1, sysTickCtrlReg, sysTickCount;
 
 // ***** Static Function Prototypes ********************************************
 
@@ -88,11 +88,12 @@ void MCU_DelayMs(uint16_t milliseconds)
     /* The SysTick timer should be set up to provide a 1 ms tick. The clock
     source of the SysTick timer is usually the processor clock / 8. The counter
     counts down to zero. Core Programming Manual 4.5.1 */
-    if(!(SysTick->CTRL & SysTick_CTRL_ENABLE))
-        SysTick->CTRL |= SysTick_CTRL_ENABLE;
+    sysTickCtrlReg = SysTick->CTRL;
+    SysTick->CTRL |= SysTick_CTRL_ENABLE;
 
     sysTickCount = SysTick->VAL + 1;
     while(sysTickCount > SysTick->VAL);
+    SysTick->CTRL = sysTickCtrlReg;
 }
 
 // *****************************************************************************
