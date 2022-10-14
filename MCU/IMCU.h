@@ -72,8 +72,8 @@ void MCU_AddTask(MCUTask *self, unsigned int period, void (*Function)(void));
 /***************************************************************************//**
  * @brief Main Task Timer
  * 
- * A simple timer that calls tasks. Each time it is called, it goes through the
- * list of tasks. Call this function in your main loop. 
+ * A simple timer that calls tasks. Call this function in your main loop. Each 
+ * time the Tick function is executed, TaskLoop goes through the list of tasks. 
  * 
  * Be aware that this is a "run to completion" scheduler. Tasks are not 
  * suspended and no context is saved. So, if you have a task running every 

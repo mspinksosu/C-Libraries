@@ -15,6 +15,7 @@
  ******************************************************************************/
 
 #include "IMCU.h"
+#include <stddef.h>
 
 // ***** Defines ***************************************************************
 
@@ -38,9 +39,9 @@ static unsigned int taskCounter = 0;
 
 void MCU_AddTask(MCUTask *self, unsigned int period, void (*Function)(void))
 {
-    /* Make new task point to the head of the list */
+    /* Make the new task point to the current head of the list */
     self->next = head;
-    /* Move head to point to the new task */
+    /* Move the head to point to the new task */
     head = self;
 
     self->period = period;
@@ -57,7 +58,7 @@ void MCU_TaskLoop(void)
     taskCounter++;
     task = head;
 
-    while(task->next != NULL)
+    while(task != NULL)
     {
         if(taskCounter == task->count && task->Function != NULL)
         {
