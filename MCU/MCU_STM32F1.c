@@ -23,7 +23,7 @@
 
 // ***** Global Variables ******************************************************
 
-static uint32_t nvicIntReg0, nvicIntReg1, sysTickCtrlReg, sysTickCount;
+static uint32_t nvicIntReg0, nvicIntReg1, sysTickCtrlReg, sysTickLoadReg, sysTickCount;
 
 // ***** Static Function Prototypes ********************************************
 
@@ -70,29 +70,61 @@ void MCU_STM32_EnterLPMAutowake(uint16_t timeInSeconds)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void MCU_DelayUs(uint16_t microseconds)
+void MCU_DelayUs(uint16_t microseconds, uint32_t clkInHz)
 {
-    while(microseconds)
+    /* The SysTick timer can be configured to use a prescale of 1 or 8. The 
+    counter is 24-bits. For a 1 ms tick the reload value at the maximum clock
+    speed of 72 MHz would be 1 ms / (1 / 72 MHz) = 72000. As soon as the 
+    counter is enabled, it loads the RELOAD value and begins counting down. 
+    The extra subtraction is to shave off some time that it takes to do the
+    instructions inside the delay loop. */
+    uint32_t period1us = clkInHz / 1000000UL - 15;
+    sysTickCtrlReg = SysTick->CTRL;
+    /* Store the reload value and change prescale to 1 */
+    SysTick->CTRL &= ~SysTick_CTRL_ENABLE;
+    sysTickLoadReg = SysTick->LOAD;
+    if(!(SysTick->CTRL & SysTick_CTRL_CLKSOURCE))
+        SysTick->LOAD <<= 3;
+    sysTickCount = SysTick->LOAD - period1us - 5;
+    /* Writing anything to the  value register will clear the count and the 
+    COUNTFLAG bit. When the enable bit is set, the count will be equal to the 
+    reload value */
+    SysTick->VAL = 0;
+    SysTick->CTRL |= (SysTick_CTRL_CLKSOURCE | SysTick_CTRL_ENABLE);
+    while(microseconds > 0)
     {
-        asm("NOP");
-        asm("NOP");
-        asm("NOP");
+        while(SysTick->VAL > sysTickCount);
+        if(period1us > sysTickCount)
+            SysTick->VAL = 0;
+        sysTickCount = SysTick->VAL - period1us;
         microseconds--;
     }
+    SysTick->CTRL &= ~SysTick_CTRL_ENABLE;
+    SysTick->LOAD >>= 3;
+    SysTick->LOAD = sysTickLoadReg;
+    SysTick->CTRL = sysTickCtrlReg;
 }
 
 // *****************************************************************************
 
-void MCU_DelayMs(uint16_t milliseconds)
+void MCU_DelayMs(uint16_t milliseconds, uint32_t clkInHz)
 {
-    /* The SysTick timer should be set up to provide a 1 ms tick. The clock
-    source of the SysTick timer is usually the processor clock / 8. The counter
-    counts down to zero. Core Programming Manual 4.5.1 */
+    /* The SysTick timer should be set up to provide a 1 ms tick. The counter
+    counts down to zero and automatically reloads the value in SysTick->LOAD.
+    When the counter hits zero the COUNTFLAG bit is set.
+    Core Programming Manual 4.5.1 */
     sysTickCtrlReg = SysTick->CTRL;
     SysTick->CTRL |= SysTick_CTRL_ENABLE;
-
-    sysTickCount = SysTick->VAL + 1;
-    while(sysTickCount > SysTick->VAL);
+    sysTickCount = SysTick->VAL;
+    SysTick->CTRL &= ~SysTick_CTRL_COUNTFLAG;
+    while(!(SysTick->CTRL & SysTick_CTRL_COUNTFLAG));
+    while(milliseconds > 1)
+    {
+        SysTick->CTRL &= ~SysTick_CTRL_COUNTFLAG;
+        while(!(SysTick->CTRL & SysTick_CTRL_COUNTFLAG));
+        milliseconds--;
+    }
+    while(SysTick->VAL > sysTickCount);
     SysTick->CTRL = sysTickCtrlReg;
 }
 

@@ -117,14 +117,14 @@ void MCU_Delay(uint32_t count);
  * 
  * @param microseconds  the number of microseconds to delay
  */
-void MCU_DelayUs(uint16_t microseconds);
+void MCU_DelayUs(uint16_t microseconds, uint32_t clkInHz);
 
 /***************************************************************************//**
  * @brief Delay milliseconds
  * 
  * @param milliseconds  the number of milliseconds to delay
  */
-void MCU_DelayMs(uint16_t milliseconds);
+void MCU_DelayMs(uint16_t milliseconds, uint32_t clkInHz);
 
 /***************************************************************************//**
  * @brief Enter low power mode
