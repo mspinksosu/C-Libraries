@@ -140,7 +140,6 @@ void MCU_EnterLowPowerMode(MCUPowerMode powerMode)
     not work. Also, the system tick interrupt must be disbaled as well. I also
     went ahead and cleared pending interrupts on the NVIC, although it hasn't 
     made any difference in my tests - MS */
-
     switch(powerMode)
     {
         case MCU_LPM_LEVEL_1:

@@ -115,14 +115,26 @@ void MCU_Delay(uint32_t count);
 /***************************************************************************//**
  * @brief Delay microseconds
  * 
+ * The clock frequency is the main system clock frequency in Hertz. Not just 
+ * the crystal, or fosc/4. Add a "UL" to the end of the number i.e. 32000000UL.
+ * It would also be wise to have a #define for this value.
+ * 
  * @param microseconds  the number of microseconds to delay
+ * 
+ * @param clkInHz  the clock frequency in Hz
  */
 void MCU_DelayUs(uint16_t microseconds, uint32_t clkInHz);
 
 /***************************************************************************//**
  * @brief Delay milliseconds
  * 
+ * The clock frequency is the main system clock frequency in Hertz. Not just 
+ * the crystal, or fosc/4. Add a "UL" to the end of the number i.e. 32000000UL.
+ * It would also be wise to have a #define for this value.
+ * 
  * @param milliseconds  the number of milliseconds to delay
+ * 
+ * @param clkInHz  the clock frequency in Hz
  */
 void MCU_DelayMs(uint16_t milliseconds, uint32_t clkInHz);
 
