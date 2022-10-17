@@ -109,9 +109,10 @@ void MCU_DelayUs(uint16_t microseconds, uint32_t clkInHz)
 
 void MCU_DelayMs(uint16_t milliseconds, uint32_t clkInHz)
 {
-    /* The SysTick timer should be set up to provide a 1 ms tick. The counter
-    counts down to zero and automatically reloads the value in SysTick->LOAD.
-    When the counter hits zero the COUNTFLAG bit is set.
+    /* In this implementation, the clock frequency is not needed, as the 
+    SysTick timer should be set up to provide a 1 ms tick. The counter counts 
+    down to zero and automatically reloads the value in SysTick->LOAD. When the
+    counter hits zero the COUNTFLAG bit is set.
     Core Programming Manual 4.5.1 */
     sysTickCtrlReg = SysTick->CTRL;
     SysTick->CTRL |= SysTick_CTRL_ENABLE;
