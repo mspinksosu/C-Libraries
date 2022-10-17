@@ -16,14 +16,22 @@
 #include "IMCU.h"
 #include "stm32f10x_map.h"
 #include "stm32f10x_nvic.h"
+#include "stm32f10x_rcc.h"
 #include "stm32f10x_systick.h"
 
 // ***** Defines ***************************************************************
 
+#define HSE_CRYSTAL_HZ  8000000UL
 
 // ***** Global Variables ******************************************************
 
-static uint32_t nvicIntReg0, nvicIntReg1, sysTickCtrlReg, sysTickLoadReg, sysTickCount;
+uint8_t pllDivArray[2] = {2, 1}, pllMulArray[6] = {4,5,6,7,8,9};
+uint32_t pllDivLookup[2] = {RCC_PLLSource_HSE_Div2, RCC_PLLSource_HSE_Div1};
+uint32_t pllMulLookup[6] = {RCC_PLLMul_4, RCC_PLLMul_5, RCC_PLLMul_6, 
+                            RCC_PLLMul_7, RCC_PLLMul_8, RCC_PLLMul_9};
+
+static uint32_t systemClockInHz, sysTickCtrlReg, sysTickLoadReg, sysTickCount, 
+                nvicIntReg0, nvicIntReg1, period1us;
 
 // ***** Static Function Prototypes ********************************************
 
@@ -70,6 +78,98 @@ void MCU_STM32_EnterLPMAutowake(uint16_t timeInSeconds)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+void MCU_InitSystemClock(uint32_t clkInHz)
+{
+    ErrorStatus HSEStartUpStatus;
+
+    if(clkInHz > 72000000UL)
+        clkInHz = 72000000UL;
+
+    systemClockInHz = clkInHz;
+    period1us = clkInHz / 1000000UL;
+
+    /* Enable external crystal (HSE) */
+    RCC->CR |= RCC_CR_HSEON;
+
+    /* Wait until HSE is ready */
+    HSEStartUpStatus = RCC_WaitForHSEStartUp();
+
+    /* Check if HSE is ready */
+    if(RCC->CR & RCC_CR_HSERDY)
+    {
+        /* PLL output will be used as system clock. Max SYSCLK is 72 MHz when 
+        using external crystal. Max SYSCLK is 36 MHz when using the internal
+        oscillator (HSI) */
+        int32_t difference, prev = 0x7FFFFFFF;
+        uint32_t divSelect = pllDivLookup[0], mulSelect = pllMulLookup[0];
+        int8_t d, m;
+        bool match = false;
+        for(d = sizeof(pllDivArray) - 1; d >= 0; d--)
+        {
+            for(m = sizeof(pllMulArray) - 1; m >= 0; m--)
+            {
+                difference = (HSE_CRYSTAL_HZ / pllDivArray[d] * pllMulArray[m]) - clkInHz;
+                if(difference < 0)
+                    difference *= -1;
+                if(difference < prev)
+                {
+                    divSelect = pllDivLookup[d];
+                    mulSelect = pllMulLookup[m];
+                    prev = difference;
+                }
+                if(difference == 0)
+                {
+                    match = true;
+                    break;
+                }
+            }
+            if(match)
+                break;
+        }
+        clkInHz = HSE_CRYSTAL_HZ / pllDivArray[d] * pllMulArray[m];
+        RCC_PLLConfig(divSelect, mulSelect);
+
+        /* Enable PLL */
+        RCC->CR |= RCC_CR_PLLON;
+
+        /* Wait until PLL is ready */
+        while(!(RCC->CR & RCC_CR_PLLRDY)){}
+
+        /* Perform clock switch to PLL */
+        uint32_t cfgrReg = RCC->CFGR & ~RCC_CFGR_SW; // clear SW bits
+        cfgrReg |= RCC_SYSCLKSource_PLLCLK;
+        RCC->CFGR = cfgrReg;
+
+        /* HCLK/AHB bus clock. Max is 72 MHz */
+        /* HCLK = SYSCLK / 1 = 36 MHz */
+        RCC_HCLKConfig(RCC_SYSCLK_Div1);
+
+        /* Max clock for APB2 / PCLK2 is 72 MHz */
+        /* PCLK2 = HCLK / 1 = 36 MHz */
+        RCC_PCLK2Config(RCC_HCLK_Div1);
+
+        /* Max clock for APB1 / PCLK1 is 36 MHz */
+        /* PCLK1 = HCLK / 1 = 36 MHz */
+        RCC_PCLK1Config(RCC_HCLK_Div1);
+
+        /* Max ADC clock is 14 MHz */
+        /* ADCCLK = PCLK2 / 4 = 36 MHz / 4 = 9 MHz */
+        RCC_ADCCLKConfig(RCC_PCLK2_Div4);
+
+        /* Wait until PLL is used as system clock source */
+        while(((RCC->CFGR & 0x0000000C) >> 2) != RCC_SYSCLKSource_PLLCLK){}
+    }
+
+    /* Set the SysTick reload value. SysTick clock is HCLK / 8 by default.
+    For SysTick = 1 ms: clkInHz / 8 / 1000 */
+    SysTick->LOAD = (clkInHz / 8 / 1000);
+
+    /* Enable SysTick interrupt and start the SysTick counter */
+    SysTick->CTRL |= (SysTick_CTRL_TICKINT | SysTick_CTRL_ENABLE);
+}
+
+// *****************************************************************************
+
 void MCU_DelayUs(uint16_t microseconds, uint32_t clkInHz)
 {
     /* The SysTick timer can be configured to use a prescale of 1 or 8. The 
@@ -78,7 +178,7 @@ void MCU_DelayUs(uint16_t microseconds, uint32_t clkInHz)
     counter is enabled, it loads the RELOAD value and begins counting down. 
     The extra subtraction is to shave off some time that it takes to do the
     instructions inside the delay loop. */
-    uint32_t period1us = clkInHz / 1000000UL - 15;
+    uint32_t period = period1us - 15;
     sysTickCtrlReg = SysTick->CTRL;
     /* Store the reload value and change prescale to 1 */
     SysTick->CTRL &= ~SysTick_CTRL_ENABLE;
@@ -94,9 +194,9 @@ void MCU_DelayUs(uint16_t microseconds, uint32_t clkInHz)
     while(microseconds > 0)
     {
         while(SysTick->VAL > sysTickCount);
-        if(period1us > sysTickCount)
+        if(period > sysTickCount)
             SysTick->VAL = 0;
-        sysTickCount = SysTick->VAL - period1us;
+        sysTickCount = SysTick->VAL - period;
         microseconds--;
     }
     SysTick->CTRL &= ~SysTick_CTRL_ENABLE;

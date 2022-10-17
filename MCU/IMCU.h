@@ -113,6 +113,23 @@ void MCU_Delay(uint32_t count);
 ////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
+ * @brief Initialize the system clock
+ * 
+ * You may use this function to initialize your main clock and all of your 
+ * peripheral clocks, or just the main clock if desired. At the very least, I
+ * like to store the value passed in so I can use it with the DelayUs function
+ * if needed.
+ * 
+ * The value passed in is whatever the clock is that goes to the CPU. If you 
+ * have a PLL before the CPU, then this is what the output of that PLL should 
+ * be. The reason I say this is sometimes Microchip will have a Fosc/4 
+ * instruction clock. In that case the system clock is just Fosc, not Fosc/4.
+ * 
+ * @param clkInHz  the clock frequency in Hz
+ */
+void MCU_InitSystemClock(uint32_t clkInHz);
+
+/***************************************************************************//**
  * @brief Delay microseconds
  * 
  * The clock frequency is the main system clock frequency in Hertz. Not just 
