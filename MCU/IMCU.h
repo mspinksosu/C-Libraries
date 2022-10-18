@@ -42,6 +42,7 @@ struct MCUTaskTag
     unsigned int count;
     bool pending; 
     uint8_t priority;
+    MCUTask *nextPending; // TODO
 };
 
 /**

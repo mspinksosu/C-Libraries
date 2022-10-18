@@ -22,7 +22,9 @@
 
 // ***** Global Variables ******************************************************
 
-static MCUTask *head = NULL;
+static MCUTask *taskList = NULL;
+static MCUTask *pendingTasks = NULL;
+static MCUTask *currentTask = NULL;
 static bool schedulerFlag = false;
 static unsigned int taskCounter = 0;
 static MCUTask EmptyTask = {.priority = 255, // impossible low priority level
@@ -31,7 +33,8 @@ static MCUTask EmptyTask = {.priority = 255, // impossible low priority level
 
 // ***** Static Function Prototypes ********************************************
 
-static MCUTask* GetNextTask(void);
+static void GetTasks(void);
+static void AddToPending(MCUTask *taskToAdd);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -42,9 +45,9 @@ static MCUTask* GetNextTask(void);
 void MCU_AddTask(MCUTask *self, unsigned int period, uint8_t priority, void (*Function)(void))
 {
     /* Make the new task point to the current head of the list */
-    self->next = head;
+    self->next = taskList;
     /* Move the head to point to the new task */
-    head = self;
+    taskList = self;
 
     if(period == 0)
         period = 1;
@@ -64,7 +67,7 @@ void MCU_TaskLoop(void)
     static MCUTask *task;
 
     /* GetNextTask will return an empty task if there are no tasks pending */
-    task = GetNextTask();
+    //task = GetNextTask();
 
     if(task != &EmptyTask && task->Function != NULL)
     {
@@ -79,7 +82,7 @@ void MCU_TaskLoop(void)
 void MCU_TaskTick(void)
 {
     static MCUTask *task;
-    task = head;
+    task = taskList;
 
     while(task != NULL)
     {
@@ -97,28 +100,43 @@ void MCU_TaskTick(void)
 
 // *****************************************************************************
 
-static MCUTask* GetNextTask(void)
+static void GetTasks(void)
 {
     static MCUTask *task;
     static MCUTask *retTask;
-    task = head;
-    retTask = &EmptyTask;
+    task = taskList;
 
-    /* Go through the list and look for pending tasks. If there is more than
-    one task pending, highest (lowest number) priority takes it. If two tasks
-    have equal priority, first come, first serve. */
+    /* Look for pending tasks and add them to the list. If two tasks have equal 
+    priority, then first come, first serve. */
     while(task != NULL)
     {
         if(task->pending == true)
         {
-            if(task->priority < retTask->priority)
-            {
-                retTask = task;
-            }
+            AddToPending(task);
         }
         task = task->next;
     }
     return retTask;
+}
+
+// *****************************************************************************
+
+static void AddToPending(MCUTask *taskToAdd)
+{
+    static MCUTask *task;
+    task = pendingTasks;
+
+    if(pendingTasks == NULL)
+    {
+        /* Make the new task point to the current head of the list */
+        taskToAdd->nextPending = pendingTasks;
+        /* Move the head to point to the new task */
+        pendingTasks = taskToAdd;
+    }
+    else
+    {
+        while(task != NULL)
+    }
 }
 
 // *****************************************************************************
