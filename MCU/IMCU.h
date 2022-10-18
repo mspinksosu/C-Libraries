@@ -40,7 +40,8 @@ struct MCUTaskTag
     void (*Function)(void);
     unsigned int period;
     unsigned int count;
-    // TODO add a pending flag and priority someday
+    bool pending; 
+    uint8_t priority;
 };
 
 /**
@@ -63,35 +64,44 @@ struct MCUTaskTag
  * 
  * @param self  pointer to the task to be added
  * 
- * @param period  the desired period in ticks
+ * @param period  the desired period in ticks (1 is lowest)
+ * 
+ * @param priority  from 0 to 127. 0 is highest priority
  * 
  * @param Function  the function to be called. Format: void someFunction(void)
  */
-void MCU_AddTask(MCUTask *self, unsigned int period, void (*Function)(void));
+void MCU_AddTask(MCUTask *self, unsigned int period, uint8_t priority, void (*Function)(void));
 
 /***************************************************************************//**
- * @brief Main Task Timer
+ * @brief Main Task Scheduler
  * 
- * A simple timer that calls tasks. Call this function in your main loop. Each 
- * time the Tick function is executed, TaskLoop goes through the list of tasks. 
+ * This is a simple non-preemptive, priority based scheduler. Call this 
+ * function in your main loop.
  * 
- * Be aware that this is a "run to completion" scheduler. Tasks are not 
- * suspended and no context is saved. So, if you have a task running every 
- * millisecond, be careful not to let any task take longer than that to execute.
+ * It will go through the list of tasks and look for any pending tasks. If 
+ * more than one task is pending, the one with highest priority (lowest number)
+ * gets executed next. If two tasks have the same priority, they are executed 
+ * on a first come, first serve basis.
  * 
- * The task scheduler is called via a flag. In the event that something does
- * block your fastest task, it will be called the next loop after the blocking
- * function finishes.
+ * Tasks are not suspended and no context is saved. Each task will run to 
+ * completion, so be careful not to let your task take too long. If you have a 
+ * high priority task that takes lots of time to execute, or you have a high 
+ * priority task executing every tick, you run the risk of starving the low 
+ * priority tasks.
  */
 void MCU_TaskLoop(void);
 
 /***************************************************************************//**
  * @brief Tick the Task Loop
  * 
- * Every time this function is called, it will set a flag to notify the 
- * TaskLoop function that it needs to run. The period that you tick the timer 
- * and the period for your tasks is entirely up to you. You could call this 
- * function via a 1 ms system tick or a hardware timer.
+ * Every time this function is called, each task's counter will be decremented.
+ * Any task that is ready will have a pending flag set. This function should
+ * ideally be called via an interrupt so that your task's counter are updated 
+ * regularly. 
+ * 
+ * The period that you tick the timer and the period for your tasks is entirely 
+ * up to you. You could call this function via a 1 ms system tick or a hardware 
+ * timer.
  */
 void MCU_TaskTick(void);
 
@@ -125,9 +135,13 @@ void MCU_Delay(uint32_t count);
  * be. The reason I say this is sometimes Microchip will have a Fosc/4 
  * instruction clock. In that case the system clock is just Fosc, not Fosc/4.
  * 
- * @param clkInHz  the clock frequency in Hz
+ * @param desiredClkInHz  the desired clock frequency in Hz
+ * 
+ * @param xtalInHz  the crystal in Hz (0 if not used)
+ * 
+ * @return uint32_t  the clock frequency chosen in Hz
  */
-void MCU_InitSystemClock(uint32_t clkInHz);
+uint32_t MCU_InitSystemClock(uint32_t desiredClkInHz, uint32_t xtalInHz);
 
 /***************************************************************************//**
  * @brief Delay microseconds

@@ -23,13 +23,15 @@
 // ***** Global Variables ******************************************************
 
 static MCUTask *head = NULL;
-static MCUTask *task;
 static bool schedulerFlag = false;
 static unsigned int taskCounter = 0;
-
+static MCUTask EmptyTask = {.priority = 255, // impossible low priority level
+                            .pending = false,
+                            .Function = NULL};
 
 // ***** Static Function Prototypes ********************************************
 
+static MCUTask* GetNextTask(void);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -37,45 +39,86 @@ static unsigned int taskCounter = 0;
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void MCU_AddTask(MCUTask *self, unsigned int period, void (*Function)(void))
+void MCU_AddTask(MCUTask *self, unsigned int period, uint8_t priority, void (*Function)(void))
 {
     /* Make the new task point to the current head of the list */
     self->next = head;
     /* Move the head to point to the new task */
     head = self;
 
+    if(period == 0)
+        period = 1;
+
+    if(priority > 127)
+        priority = 127;
+    
     self->period = period;
     self->count = period;
+    self->priority = priority;
 }
 
 // *****************************************************************************
 
 void MCU_TaskLoop(void)
 {
-    if(!schedulerFlag)
-        return;
+    static MCUTask *task;
 
-    taskCounter++;
-    task = head;
+    /* GetNextTask will return an empty task if there are no tasks pending */
+    task = GetNextTask();
 
-    while(task != NULL)
+    if(task != &EmptyTask && task->Function != NULL)
     {
-        if(taskCounter == task->count && task->Function != NULL)
-        {
-            task->Function();
-            task->count += task->period;
-        }
-        task = task->next;
+        task->Function();
+        task->pending = false;
+        task->count = task->period;
     }
-    
-    schedulerFlag = false;
 }
 
 // *****************************************************************************
 
 void MCU_TaskTick(void)
 {
-    schedulerFlag = true;
+    static MCUTask *task;
+    task = head;
+
+    while(task != NULL)
+    {
+        if(task->count > 0)
+        {
+            task->count--;
+            if(task->count == 0)
+            {
+                task->pending = true;
+            }
+        }
+        task = task->next;
+    }
+}
+
+// *****************************************************************************
+
+static MCUTask* GetNextTask(void)
+{
+    static MCUTask *task;
+    static MCUTask *retTask;
+    task = head;
+    retTask = &EmptyTask;
+
+    /* Go through the list and look for pending tasks. If there is more than
+    one task pending, highest (lowest number) priority takes it. If two tasks
+    have equal priority, first come, first serve. */
+    while(task != NULL)
+    {
+        if(task->pending == true)
+        {
+            if(task->priority < retTask->priority)
+            {
+                retTask = task;
+            }
+        }
+        task = task->next;
+    }
+    return retTask;
 }
 
 // *****************************************************************************

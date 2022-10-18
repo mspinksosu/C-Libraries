@@ -21,7 +21,9 @@
 
 // ***** Defines ***************************************************************
 
-#define HSE_CRYSTAL_HZ  8000000UL
+#define HSI_HZ          8000000UL
+#define HSI_TO_PLL_HZ   4000000UL
+#define HSE_STARTUP     16000  // 2 ms at 8 MHz
 
 // ***** Global Variables ******************************************************
 
@@ -78,56 +80,101 @@ void MCU_STM32_EnterLPMAutowake(uint16_t timeInSeconds)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void MCU_InitSystemClock(uint32_t clkInHz)
+uint32_t MCU_InitSystemClock(uint32_t desiredClkInHz, uint32_t xtalInHz)
 {
-    ErrorStatus HSEStartUpStatus;
+    if(desiredClkInHz > 72000000UL)
+        desiredClkInHz = 72000000UL;
 
-    if(clkInHz > 72000000UL)
-        clkInHz = 72000000UL;
+    systemClockInHz = desiredClkInHz;
+    uint32_t selectedClkSource = RCC_SYSCLKSource_HSI; // HSI default
+    uint32_t pllInputClk = HSI_TO_PLL_HZ;              // PLL input default 
 
-    systemClockInHz = clkInHz;
-    period1us = clkInHz / 1000000UL;
-
-    /* Enable external crystal (HSE) */
-    RCC->CR |= RCC_CR_HSEON;
-
-    /* Wait until HSE is ready */
-    HSEStartUpStatus = RCC_WaitForHSEStartUp();
-
-    /* Check if HSE is ready */
-    if(RCC->CR & RCC_CR_HSERDY)
+    /* If there is an external cystal, it gets priority */
+    if(xtalInHz > 0)
     {
-        /* PLL output will be used as system clock. Max SYSCLK is 72 MHz when 
-        using external crystal. Max SYSCLK is 36 MHz when using the internal
-        oscillator (HSI) */
+        /* Enable external crystal (HSE) */
+        RCC->CR |= RCC_CR_HSEON;
+
+        /* Wait until HSE is ready */
+        for(uint16_t count = HSE_STARTUP; count > 0; count--)
+        {
+            if(RCC->CR & RCC_CR_HSERDY)
+                break;
+        }
+
+        if(RCC->CR & RCC_CR_HSERDY)
+        {
+            /* Update variables */
+            selectedClkSource = RCC_SYSCLKSource_HSE;
+            pllInputClk = xtalInHz;
+            systemClockInHz = xtalInHz;
+
+            /* Perform clock switch to HSE */
+            uint32_t cfgrReg = RCC->CFGR & ~RCC_CFGR_SW; // clear SW bits
+            cfgrReg |= RCC_SYSCLKSource_HSE;
+            RCC->CFGR = cfgrReg;
+        }
+    }
+    
+    if(desiredClkInHz > pllInputClk)
+    {
+        /* Prepare the PLL. Max SYSCLK is 72 MHz when using external crystal. 
+        Max SYSCLK is 36 MHz when using the internal oscillator (HSI). */
         int32_t difference, prev = 0x7FFFFFFF;
         uint32_t divSelect = pllDivLookup[0], mulSelect = pllMulLookup[0];
-        int8_t d, m;
         bool match = false;
-        for(d = sizeof(pllDivArray) - 1; d >= 0; d--)
+        int8_t d, m;
+
+        if(selectedClkSource == RCC_SYSCLKSource_HSI)
         {
+            if(desiredClkInHz > 36000000UL)
+                desiredClkInHz = 36000000UL;
+
+            /* For HSI, the input to the PLL can only be 4 MHz */
             for(m = sizeof(pllMulArray) - 1; m >= 0; m--)
             {
-                difference = (HSE_CRYSTAL_HZ / pllDivArray[d] * pllMulArray[m]) - clkInHz;
+                difference = (pllInputClk * pllMulArray[m]) - desiredClkInHz;
                 if(difference < 0)
                     difference *= -1;
                 if(difference < prev)
                 {
-                    divSelect = pllDivLookup[d];
                     mulSelect = pllMulLookup[m];
                     prev = difference;
                 }
                 if(difference == 0)
                 {
-                    match = true;
                     break;
                 }
             }
-            if(match)
-                break;
+            RCC_PLLConfig(RCC_PLLSource_HSI_Div2, mulSelect);
         }
-        clkInHz = HSE_CRYSTAL_HZ / pllDivArray[d] * pllMulArray[m];
-        RCC_PLLConfig(divSelect, mulSelect);
+        else
+        {
+            /* Else, our selected clock source was HSE */
+            for(d = sizeof(pllDivArray) - 1; d >= 0; d--)
+            {
+                for(m = sizeof(pllMulArray) - 1; m >= 0; m--)
+                {
+                    difference = (pllInputClk / pllDivArray[d] * pllMulArray[m]) - desiredClkInHz;
+                    if(difference < 0)
+                        difference *= -1;
+                    if(difference < prev)
+                    {
+                        divSelect = pllDivLookup[d];
+                        mulSelect = pllMulLookup[m];
+                        prev = difference;
+                    }
+                    if(difference == 0)
+                    {
+                        match = true;
+                        break;
+                    }
+                }
+                if(match)
+                    break;
+            }
+            RCC_PLLConfig(divSelect, mulSelect);
+        }
 
         /* Enable PLL */
         RCC->CR |= RCC_CR_PLLON;
@@ -136,36 +183,49 @@ void MCU_InitSystemClock(uint32_t clkInHz)
         while(!(RCC->CR & RCC_CR_PLLRDY)){}
 
         /* Perform clock switch to PLL */
+        selectedClkSource = RCC_SYSCLKSource_PLLCLK;
         uint32_t cfgrReg = RCC->CFGR & ~RCC_CFGR_SW; // clear SW bits
         cfgrReg |= RCC_SYSCLKSource_PLLCLK;
         RCC->CFGR = cfgrReg;
 
-        /* HCLK/AHB bus clock. Max is 72 MHz */
-        /* HCLK = SYSCLK / 1 = 36 MHz */
-        RCC_HCLKConfig(RCC_SYSCLK_Div1);
+        /* Update the global variable */
+        systemClockInHz = pllInputClk / pllDivArray[d] * pllMulArray[m];
+    }
 
-        /* Max clock for APB2 / PCLK2 is 72 MHz */
-        /* PCLK2 = HCLK / 1 = 36 MHz */
-        RCC_PCLK2Config(RCC_HCLK_Div1);
+    /* HCLK/AHB bus clock. Max is 72 MHz */
+    RCC_HCLKConfig(RCC_SYSCLK_Div1);
 
-        /* Max clock for APB1 / PCLK1 is 36 MHz */
-        /* PCLK1 = HCLK / 1 = 36 MHz */
+    /* Max clock for APB2 (PCLK2) is 72 MHz */
+    /* PCLK2 = HCLK / 1 = 36 MHz */
+    RCC_PCLK2Config(RCC_HCLK_Div1);
+
+    /* Max clock for APB1 (PCLK1) is 36 MHz */
+    if(systemClockInHz > 36000000UL)
+        RCC_PCLK1Config(RCC_HCLK_Div2);
+    else
         RCC_PCLK1Config(RCC_HCLK_Div1);
 
-        /* Max ADC clock is 14 MHz */
-        /* ADCCLK = PCLK2 / 4 = 36 MHz / 4 = 9 MHz */
+    /* Max ADC clock is 14 MHz */
+    if(systemClockInHz > 50000000UL)
+        RCC_ADCCLKConfig(RCC_PCLK2_Div6);
+    else if(systemClockInHz > 26000000UL)
         RCC_ADCCLKConfig(RCC_PCLK2_Div4);
+    else
+        RCC_ADCCLKConfig(RCC_PCLK2_Div2);
 
-        /* Wait until PLL is used as system clock source */
-        while(((RCC->CFGR & 0x0000000C) >> 2) != RCC_SYSCLKSource_PLLCLK){}
-    }
+    /* Wait until selected clock source is ready */
+    while(((RCC->CFGR & 0x0000000C) >> 2) != selectedClkSource){}
 
     /* Set the SysTick reload value. SysTick clock is HCLK / 8 by default.
     For SysTick = 1 ms: clkInHz / 8 / 1000 */
-    SysTick->LOAD = (clkInHz / 8 / 1000);
+    SysTick->LOAD = (systemClockInHz / 8 / 1000);
 
     /* Enable SysTick interrupt and start the SysTick counter */
     SysTick->CTRL |= (SysTick_CTRL_TICKINT | SysTick_CTRL_ENABLE);
+
+    period1us = systemClockInHz / 1000000UL;
+
+    return systemClockInHz;
 }
 
 // *****************************************************************************
