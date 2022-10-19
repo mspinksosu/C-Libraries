@@ -37,20 +37,36 @@ typedef struct MCUTaskTag MCUTask;
 struct MCUTaskTag
 {
     MCUTask *next;
+    MCUTask *nextPending;
     void (*Function)(void);
     uint16_t period;
     uint16_t count;
     bool addToPending;
     bool pending;
     uint8_t priority;
-    MCUTask *nextPending;
 };
 
 /**
- * Description of struct members:
+ * Description of struct members: You shouldn't need to mess with any of these
+ * variables directly. That is why I made functions for you to use.
  * 
- * // TODO details
+ * next  A pointer to the next task in the list of tasks
  * 
+ * nextPending  A pointer to the next task in the pending task list. The
+ *              pending task is a sorted list of the functions to be called by 
+ *              the task loop.
+ * 
+ * Function  A pointer to the function/task that you wish to have called
+ * 
+ * period  How often you wish to call your function (in ticks)
+ * 
+ * count  How long until it's time to call your function (in ticks)
+ * 
+ * addToPending  Signals to the task loop to insert this task into the pending
+ *               task list to be executed
+ * 
+ * pending  Set to true when a task is added to the pending task list. Set to
+ *          false after the task/function has finished
  */
 
 ////////////////////////////////////////////////////////////////////////////////

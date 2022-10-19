@@ -196,7 +196,6 @@ uint32_t MCU_InitSystemClock(uint32_t desiredClkInHz, uint32_t xtalInHz)
     RCC_HCLKConfig(RCC_SYSCLK_Div1);
 
     /* Max clock for APB2 (PCLK2) is 72 MHz */
-    /* PCLK2 = HCLK / 1 = 36 MHz */
     RCC_PCLK2Config(RCC_HCLK_Div1);
 
     /* Max clock for APB1 (PCLK1) is 36 MHz */
