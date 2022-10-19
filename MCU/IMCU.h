@@ -38,15 +38,17 @@ struct MCUTaskTag
 {
     MCUTask *next;
     void (*Function)(void);
-    unsigned int period;
-    unsigned int count;
-    bool pending; 
+    uint16_t period;
+    uint16_t count;
+    bool pending;
     uint8_t priority;
-    MCUTask *nextPending; // TODO
+    MCUTask *nextPending;
 };
 
 /**
  * Description of struct members:
+ * 
+ * // TODO details
  * 
  */
 
@@ -71,7 +73,7 @@ struct MCUTaskTag
  * 
  * @param Function  the function to be called. Format: void someFunction(void)
  */
-void MCU_AddTask(MCUTask *self, unsigned int period, uint8_t priority, void (*Function)(void));
+void MCU_AddTask(MCUTask *self, uint16_t period, uint8_t priority, void (*Function)(void));
 
 /***************************************************************************//**
  * @brief Main Task Scheduler
@@ -92,6 +94,8 @@ void MCU_AddTask(MCUTask *self, unsigned int period, uint8_t priority, void (*Fu
  */
 void MCU_TaskLoop(void);
 
+/* TODO Someday I might add suspend task */
+
 /***************************************************************************//**
  * @brief Tick the Task Loop
  * 
@@ -105,8 +109,6 @@ void MCU_TaskLoop(void);
  * timer.
  */
 void MCU_TaskTick(void);
-
-/* TODO Someday I might add suspend task */
 
 /***************************************************************************//**
  * @brief Delay

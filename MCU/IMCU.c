@@ -22,19 +22,13 @@
 
 // ***** Global Variables ******************************************************
 
-static MCUTask *taskList = NULL;
-static MCUTask *pendingTasks = NULL;
-static MCUTask *currentTask = NULL;
-static bool schedulerFlag = false;
-static unsigned int taskCounter = 0;
-static MCUTask EmptyTask = {.priority = 255, // impossible low priority level
-                            .pending = false,
-                            .Function = NULL};
+static MCUTask *taskList = NULL;    // the head of the task list
+static MCUTask *currentTask = NULL; // the head of the pending task list
 
 // ***** Static Function Prototypes ********************************************
 
-static void GetTasks(void);
-static void AddToPending(MCUTask *taskToAdd);
+static void FindTasks(void);
+static void AddToPending(MCUTask *newTask);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -42,7 +36,7 @@ static void AddToPending(MCUTask *taskToAdd);
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void MCU_AddTask(MCUTask *self, unsigned int period, uint8_t priority, void (*Function)(void))
+void MCU_AddTask(MCUTask *self, uint16_t period, uint8_t priority, void (*Function)(void))
 {
     /* Make the new task point to the current head of the list */
     self->next = taskList;
@@ -64,16 +58,15 @@ void MCU_AddTask(MCUTask *self, unsigned int period, uint8_t priority, void (*Fu
 
 void MCU_TaskLoop(void)
 {
-    static MCUTask *task;
-
-    /* GetNextTask will return an empty task if there are no tasks pending */
-    //task = GetNextTask();
-
-    if(task != &EmptyTask && task->Function != NULL)
+    FindTasks();
+    
+    if(currentTask != NULL)
     {
-        task->Function();
-        task->pending = false;
-        task->count = task->period;
+        if(currentTask->Function != NULL)
+            (currentTask->Function)();
+        
+        currentTask->pending = false;
+        currentTask = currentTask->nextPending;
     }
 }
 
@@ -98,16 +91,18 @@ void MCU_TaskTick(void)
     }
 }
 
-// *****************************************************************************
-
-static void GetTasks(void)
+/***************************************************************************//**
+ * @brief Find pending tasks
+ * 
+ * Go through the lists of tasks and look for pending tasks and add them to the
+ * pending task list. If two tasks have equal priority then it will be first
+ * come, first serve.
+ */
+static void FindTasks(void)
 {
     static MCUTask *task;
-    static MCUTask *retTask;
     task = taskList;
 
-    /* Look for pending tasks and add them to the list. If two tasks have equal 
-    priority, then first come, first serve. */
     while(task != NULL)
     {
         if(task->pending == true)
@@ -116,26 +111,47 @@ static void GetTasks(void)
         }
         task = task->next;
     }
-    return retTask;
 }
 
-// *****************************************************************************
-
-static void AddToPending(MCUTask *taskToAdd)
+/***************************************************************************//**
+ * @brief Add a task to the pending list
+ * 
+ * Go through the list of pending tasks and find where to insert the new task 
+ * based on priority. The currentTask pointer will always point to the task to 
+ * be executed. I've made a pending list within the list of tasks and made it 
+ * so that no task can jump all the way to the front of the queue. If the 
+ * pending task list is empty, the new task becomes the head of the list.
+ * 
+ * @param newTask  the pending task to be added
+ */
+static void AddToPending(MCUTask *newTask)
 {
     static MCUTask *task;
-    task = pendingTasks;
+    task = currentTask;
 
-    if(pendingTasks == NULL)
+    if(task == NULL)
     {
         /* Make the new task point to the current head of the list */
-        taskToAdd->nextPending = pendingTasks;
+        newTask->nextPending = currentTask;
         /* Move the head to point to the new task */
-        pendingTasks = taskToAdd;
+        currentTask = newTask;
     }
     else
     {
-        while(task != NULL)
+        MCUTask *tmp;
+        while(task->nextPending != NULL)
+        {
+            tmp = task->nextPending;
+
+            if(newTask->priority < tmp->priority)
+                break;
+
+            task = tmp;
+        }
+        /* Insert after task. Make new task point to previous->nextPending */
+        newTask->nextPending = task->nextPending;
+        /* Make previous pending task point to our new task */
+        task->nextPending = newTask;
     }
 }
 
