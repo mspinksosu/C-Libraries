@@ -59,7 +59,7 @@ void MCU_AddTask(MCUTask *self, uint16_t period, uint8_t priority, void (*Functi
 void MCU_TaskLoop(void)
 {
     FindTasks();
-    
+
     if(currentTask != NULL)
     {
         if(currentTask->Function != NULL)
@@ -84,7 +84,7 @@ void MCU_TaskTick(void)
             task->count--;
             if(task->count == 0)
             {
-                task->pending = true;
+                task->addToPending = true;
             }
         }
         task = task->next;
@@ -96,7 +96,8 @@ void MCU_TaskTick(void)
  * 
  * Go through the lists of tasks and look for pending tasks and add them to the
  * pending task list. If two tasks have equal priority then it will be first
- * come, first serve.
+ * come, first serve. A task cannot be added to the pending list if it is
+ * already in it.
  */
 static void FindTasks(void)
 {
@@ -105,9 +106,10 @@ static void FindTasks(void)
 
     while(task != NULL)
     {
-        if(task->pending == true)
+        if(task->addToPending == true && task->pending == false)
         {
             AddToPending(task);
+            task->addToPending = false;
         }
         task = task->next;
     }
@@ -153,6 +155,7 @@ static void AddToPending(MCUTask *newTask)
         /* Make previous pending task point to our new task */
         task->nextPending = newTask;
     }
+    newTask->pending = true;
 }
 
 // *****************************************************************************

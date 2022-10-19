@@ -40,6 +40,7 @@ struct MCUTaskTag
     void (*Function)(void);
     uint16_t period;
     uint16_t count;
+    bool addToPending;
     bool pending;
     uint8_t priority;
     MCUTask *nextPending;
