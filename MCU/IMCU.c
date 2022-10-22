@@ -121,8 +121,8 @@ static void FindTasks(void)
  * Go through the list of pending tasks and find where to insert the new task 
  * based on priority. The currentTask pointer will always point to the task to 
  * be executed. I've made a pending list within the list of tasks and made it 
- * so that no task can jump all the way to the front of the queue. If the 
- * pending task list is empty, the new task becomes the head of the list.
+ * so that no task can jump in front of the current task. Except if the pending
+ * task list is empty. Then the new task becomes the head of the list.
  * 
  * @param newTask  the pending task to be added
  */

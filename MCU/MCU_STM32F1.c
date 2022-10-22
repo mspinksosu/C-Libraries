@@ -121,7 +121,7 @@ uint32_t MCU_InitSystemClock(uint32_t desiredClkInHz, uint32_t xtalInHz)
         /* Prepare the PLL. Max SYSCLK is 72 MHz when using external crystal. 
         Max SYSCLK is 36 MHz when using the internal oscillator (HSI). */
         int32_t difference, prev = 0x7FFFFFFF;
-        uint32_t divSelect = pllDivLookup[0], mulSelect = pllMulLookup[0];
+        uint32_t divSelect = pllDivLookup[1], mulSelect = pllMulLookup[0];
         bool match = false;
         int8_t d, m;
 
@@ -229,7 +229,7 @@ uint32_t MCU_InitSystemClock(uint32_t desiredClkInHz, uint32_t xtalInHz)
 
 // *****************************************************************************
 
-void MCU_DelayUs(uint16_t microseconds, uint32_t clkInHz)
+void MCU_DelayUs(uint16_t microseconds)
 {
     /* The SysTick timer can be configured to use a prescale of 1 or 8. The 
     counter is 24-bits. For a 1 ms tick the reload value at the maximum clock
@@ -266,7 +266,7 @@ void MCU_DelayUs(uint16_t microseconds, uint32_t clkInHz)
 
 // *****************************************************************************
 
-void MCU_DelayMs(uint16_t milliseconds, uint32_t clkInHz)
+void MCU_DelayMs(uint16_t milliseconds)
 {
     /* In this implementation, the clock frequency is not needed, as the 
     SysTick timer should be set up to provide a 1 ms tick. The counter counts 

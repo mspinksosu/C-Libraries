@@ -67,6 +67,8 @@ struct MCUTaskTag
  * 
  * pending  Set to true when a task is added to the pending task list. Set to
  *          false after the task/function has finished
+ * 
+ * priority  The priority of the task. 0 is the highest priority.
  */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,9 +80,10 @@ struct MCUTaskTag
 /***************************************************************************//**
  * @brief Add a task to the list
  * 
- * A task is just a function that you want to call periodically. The time 
- * period is completely arbitrary. Each call to the TaskTick function is one 
- * tick.
+ * A task is just a function that you want to call periodically. The time
+ * period is just an arbitrary number measured in ticks. It could be in
+ * milliseconds, or whatever you want it to be. Each call to the TaskTick 
+ * function is one tick.
  * 
  * @param self  pointer to the task to be added
  * 
@@ -166,28 +169,16 @@ uint32_t MCU_InitSystemClock(uint32_t desiredClkInHz, uint32_t xtalInHz);
 /***************************************************************************//**
  * @brief Delay microseconds
  * 
- * The clock frequency is the main system clock frequency in Hertz. Not just 
- * the crystal, or fosc/4. Add a "UL" to the end of the number i.e. 32000000UL.
- * It might also help to have a #define for this value.
- * 
  * @param microseconds  the number of microseconds to delay
- * 
- * @param clkInHz  the clock frequency in Hz
  */
-void MCU_DelayUs(uint16_t microseconds, uint32_t clkInHz);
+void MCU_DelayUs(uint16_t microseconds);
 
 /***************************************************************************//**
  * @brief Delay milliseconds
  * 
- * The clock frequency is the main system clock frequency in Hertz. Not just 
- * the crystal, or fosc/4. Add a "UL" to the end of the number i.e. 32000000UL.
- * It might also help to have a #define for this value.
- * 
  * @param milliseconds  the number of milliseconds to delay
- * 
- * @param clkInHz  the clock frequency in Hz
  */
-void MCU_DelayMs(uint16_t milliseconds, uint32_t clkInHz);
+void MCU_DelayMs(uint16_t milliseconds);
 
 /***************************************************************************//**
  * @brief Enter low power mode
