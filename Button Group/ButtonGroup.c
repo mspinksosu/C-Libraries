@@ -105,7 +105,7 @@ void BG_Tick(ButtonGroup *self)
 
 // *****************************************************************************
 
-void BG_UpdateButtonValue(ButtonGroup *self, uint8_t index, bool isPressed)
+void BG_UpdateValue(ButtonGroup *self, uint8_t index, bool isPressed)
 {
     if(index > 7)
         return;

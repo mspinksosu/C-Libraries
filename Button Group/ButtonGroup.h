@@ -51,9 +51,9 @@
  *      for(i=0; i<NUM_BUTTON_GROUPS; i++) {
  *          BG_Init(&arrayOfButtons[i], DEBOUNCE_MS, TICKS_MS); }
  * 
- *      BG_UpdateButtonValue(&oneButtonGroup, INPUT1, true); // pressed
+ *      BG_UpdateValue(&oneButtonGroup, INPUT1, true); // pressed
  *      
- *      BG_UpdateButtonValue(&arrayOfButtons[InputGroup(INPUT20)], 
+ *      BG_UpdateValue(&arrayOfButtons[InputGroup(INPUT20)], 
  *          InputBit(INPUT20), true);
  * 
  *      BG_Tick(&oneButtonGroup);
@@ -147,11 +147,11 @@ void BG_Tick(ButtonGroup *self);
  * 
  * @param self   pointer to the Button Group that you are using
  * 
- * @param index  button index 0 - 7
+ * @param index  the button you are updating (0 - 7)
  * 
- * @param isPressed  true if button is pressed.
+ * @param isPressed  true if that button is pressed
  */
-void BG_UpdateButtonValue(ButtonGroup *self, uint8_t index, bool isPressed);
+void BG_UpdateValue(ButtonGroup *self, uint8_t index, bool isPressed);
 
 /***************************************************************************//**
  * @brief Check if a button was pressed
