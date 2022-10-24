@@ -110,7 +110,8 @@ uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz)
 
     /* The fractional part is 4-bits. If the rounding goes over 16, add it to
     the "mantissa part" (uartDiv). Example 3. Page 799 */
-    if(divFraction > 0x000F) carry = 1;
+    if(divFraction > 0x000F)
+        carry = 1;
     divFraction &= 0x0F;
     uartDiv += carry;
     uartDiv <<= 4;
@@ -136,9 +137,7 @@ void UART1_Init(UARTInitType *params)
     /* Turn off module before making changes */
     UART1_ADDR->CR1 &= ~USART_CR1_UE;
 
-    /* Turn off tx and rx interrupts and other bits that I'm going to adjust.
-    I will not mess with any others that the user may have changed prior to
-    calling this function */
+    /* Turn off tx/rx interrupts and other bits that I'm going to adjust */
     UART1_ADDR->CR1 &= ~(USART_CR1_RXNEIE | USART_CR1_TXEIE | USART_CR1_M | USART_CR1_PCE);
 
     /* Set number of data bits, stop bits, and parity */
