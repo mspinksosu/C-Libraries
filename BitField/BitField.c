@@ -182,10 +182,17 @@ uint32_t BitField_GetBitRange(BitField *self, uint8_t endBitPos, uint8_t startBi
 
 // *****************************************************************************
 
+uint8_t BitField_CompareRange(BitField *bf1, BitField *bf2, uint8_t endBitPos, uint8_t startBitPos)
+{
+    
+}
+
+// *****************************************************************************
+
 void BitField_LogicalNot(BitField *bf1, BitField *result)
 {
     if(bf1->sizeOfArray != result->sizeOfArray)
-            return;
+        return;
 
     for(uint8_t i = 0; i < result->sizeOfArray; i++)
     {
