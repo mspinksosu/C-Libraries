@@ -185,7 +185,7 @@ uint32_t BitField_GetBitRange(BitField *self, uint8_t endBitPos, uint8_t startBi
 
 uint8_t BitField_Compare(BitField *bf1, BitField *bf2)
 {
-    if(memcmp((uint8_t)(bf1->ptrToArray), (const uint8_t)(bf2->ptrToArray), bf1->sizeOfArray) == 0)
+    if(memcmp((uint8_t*)(bf1->ptrToArray), (uint8_t*)(bf2->ptrToArray), bf1->sizeOfArray) == 0)
         return 0;
     else
         return 1;
