@@ -66,6 +66,7 @@ void MCU_TaskLoop(void)
             (currentTask->Function)();
         
         currentTask->pending = false;
+        currentTask->count = currentTask->period;
         currentTask = currentTask->nextPending;
     }
 }
