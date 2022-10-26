@@ -165,13 +165,9 @@ uint32_t BitField_GetBitRange(BitField *self, uint8_t endBitPos, uint8_t startBi
  * 
  * @param bf2  pointer to the second BitField
  * 
- * @param endBitPos  the bit number of the start of the range
- * 
- * @param startBitPos  the bit number of the end of the range
- * 
  * @return uint8_t  0 bf1 is equal to bf2
  */
-uint8_t BitField_CompareRange(BitField *bf1, BitField *bf2, uint8_t endBitPos, uint8_t startBitPos);
+uint8_t BitField_Compare(BitField *bf1, BitField *bf2);
 
 /***************************************************************************//**
  * @brief  Invert a Bitfield and store the result
