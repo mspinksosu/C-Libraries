@@ -86,6 +86,9 @@ void Pattern_LoadAtomic(Pattern *self, PatternState *arrayOfStates, uint8_t numO
 
 void Pattern_Start(Pattern *self)
 {
+    if(self->numOfStates == 0)
+        return;
+
     self->flags.start = 1;
     self->flags.stopWhenFinished = 0;
 }
