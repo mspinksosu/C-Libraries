@@ -83,13 +83,14 @@ void BitField_InvertBit(BitField *self, uint8_t bitPos)
 
 uint8_t BitField_GetBit(BitField *self, uint8_t bitPos)
 {
-    uint8_t result;
+    uint8_t result = 0;
 
     if(bitPos < (self->sizeOfArray) * 8)
     {
         uint8_t i = bitPos / 8;
         uint8_t bit = bitPos % 8;
-        result = self->ptrToArray[i] & (1 << bit);
+        if(self->ptrToArray[i] & (1 << bit))
+            result = 1;
     }
     return result;
 }
