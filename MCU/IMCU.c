@@ -63,7 +63,7 @@ void MCU_TaskLoop(void)
     if(currentTask != NULL)
     {
         if(currentTask->Function != NULL)
-            (currentTask->Function)();
+            currentTask->Function();
         
         currentTask->pending = false;
         currentTask->count = currentTask->period;
