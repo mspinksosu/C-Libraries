@@ -44,7 +44,7 @@ void BitField_Init(BitField *self, uint8_t *ptrToArray, uint8_t sizeOfArray)
 
 void BitField_SetBit(BitField *self, uint8_t bitPos)
 {
-    if(bitPos >= (self->sizeOfArray) * 8)
+    if(self->ptrToArray == NULL || bitPos >= (self->sizeOfArray) * 8)
         return;
 
     uint8_t i = bitPos / 8;
@@ -57,7 +57,7 @@ void BitField_SetBit(BitField *self, uint8_t bitPos)
 
 void BitField_ClearBit(BitField *self, uint8_t bitPos)
 {
-    if(bitPos >= (self->sizeOfArray) * 8)
+    if(self->ptrToArray == NULL || bitPos >= (self->sizeOfArray) * 8)
         return;
 
     uint8_t i = bitPos / 8;
@@ -70,7 +70,7 @@ void BitField_ClearBit(BitField *self, uint8_t bitPos)
 
 void BitField_InvertBit(BitField *self, uint8_t bitPos)
 {
-    if(bitPos >= (self->sizeOfArray) * 8)
+    if(self->ptrToArray == NULL || bitPos >= (self->sizeOfArray) * 8)
         return;
 
     uint8_t i = bitPos / 8;
