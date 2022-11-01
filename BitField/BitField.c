@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include "BitField.h"
+#include <stdarg.h>
 #include <string.h>
 
 // ***** Defines ***************************************************************
@@ -180,6 +181,78 @@ uint32_t BitField_GetBitRange(BitField *self, uint8_t endBitPos, uint8_t startBi
         }
     }
     return result;
+}
+
+// *****************************************************************************
+
+void BitField_SetBits(BitField *self, uint8_t numBitsToSet, ... )
+{
+    if(self->ptrToArray == NULL)
+        return;
+    
+    va_list list;
+    uint8_t bitPos, bit, i;
+
+    while(numBitsToSet > 0)
+    {
+        bitPos = va_arg(list, uint8_t);
+        if(bitPos < (self->sizeOfArray) * 8)
+        {
+            i = bitPos / 8;
+            bit = bitPos % 8;
+            self->ptrToArray[i] |= (1 << bit);
+        }
+        numBitsToSet--;
+    }
+    va_end(list);
+}
+
+// *****************************************************************************
+
+void BitField_ClearBits(BitField *self, uint8_t numBitsToSet, ... )
+{
+    if(self->ptrToArray == NULL)
+        return;
+    
+    va_list list;
+    uint8_t bitPos, bit, i;
+
+    while(numBitsToSet > 0)
+    {
+        bitPos = va_arg(list, uint8_t);
+        if(bitPos < (self->sizeOfArray) * 8)
+        {
+            i = bitPos / 8;
+            bit = bitPos % 8;
+            self->ptrToArray[i] &= ~(1 << bit);
+        }
+        numBitsToSet--;
+    }
+    va_end(list);
+}
+
+// *****************************************************************************
+
+void BitField_InvertBits(BitField *self, uint8_t numBitsToSet, ... )
+{
+    if(self->ptrToArray == NULL)
+        return;
+    
+    va_list list;
+    uint8_t bitPos, bit, i;
+
+    while(numBitsToSet > 0)
+    {
+        bitPos = va_arg(list, uint8_t);
+        if(bitPos < (self->sizeOfArray) * 8)
+        {
+            i = bitPos / 8;
+            bit = bitPos % 8;
+            self->ptrToArray[i] ^= (1 << bit);
+        }
+        numBitsToSet--;
+    }
+    va_end(list);
 }
 
 // *****************************************************************************

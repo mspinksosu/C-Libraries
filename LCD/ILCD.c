@@ -14,7 +14,7 @@
  ******************************************************************************/
 
 #include "ILCD.h"
-#include <stdio.h> // needed for NULL
+#include <stddef.h> // needed for NULL
 #include <stdarg.h>
 
 // ***** Defines ***************************************************************

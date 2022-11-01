@@ -159,6 +159,51 @@ void BitField_SetBitRangeEqualTo(BitField *self, uint8_t endBitPos, uint8_t star
 uint32_t BitField_GetBitRange(BitField *self, uint8_t endBitPos, uint8_t startBitPos);
 
 /***************************************************************************//**
+ * @brief Set multiple bits
+ * 
+ * You must provide the number of bits you want to set followed by a comma
+ * separated list of the bits. The bit numbers must be smaller than the size of
+ * the bitfield.
+ * 
+ * @param self  pointer to the BitField you are using
+ * 
+ * @param numBitsToSet  how many bits you want to modify
+ * 
+ * @param ...  comma separated list bit positions. LSB = 0
+ */
+void BitField_SetBits(BitField *self, uint8_t numBitsToSet, ... );
+
+/***************************************************************************//**
+ * @brief Clear multiple bits
+ * 
+ * You must provide the number of bits you want to clear followed by a comma
+ * separated list of the bits. The bit numbers must be smaller than the size of
+ * the bitfield.
+ * 
+ * @param self  pointer to the BitField you are using
+ * 
+ * @param numBitsToSet  how many bits you want to modify
+ * 
+ * @param ...  comma separated list bit positions. LSB = 0
+ */
+void BitField_ClearBits(BitField *self, uint8_t numBitsToSet, ... );
+
+/***************************************************************************//**
+ * @brief Invert multiple bits
+ * 
+ * You must provide the number of bits you want to invert followed by a comma
+ * separated list of the bits. The bit numbers must be smaller than the size of
+ * the bitfield.
+ * 
+ * @param self  pointer to the BitField you are using
+ * 
+ * @param numBitsToSet  how many bits you want to modify
+ * 
+ * @param ...  comma separated list bit positions. LSB = 0
+ */
+void BitField_InvertBits(BitField *self, uint8_t numBitsToSet, ... );
+
+/***************************************************************************//**
  * @brief Compare two BitFields
  * 
  * @param bf1  pointer to the first BitField
