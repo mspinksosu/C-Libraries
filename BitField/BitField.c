@@ -3,7 +3,8 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 5/14/22  Original creation
+ * @date 5/14/22   Original creation
+ * @date 10/30/22  Added variadic functions to modify list of bits
  * 
  * @file BitField.c
  * 
@@ -189,14 +190,20 @@ void BitField_SetBits(BitField *self, uint8_t numBitsToSet, ... )
 {
     if(self->ptrToArray == NULL)
         return;
-    
+    /* va_arg will perform interger promotion on arguments. If we don't use int
+    we will usually get a compiler warning. It will convert the int to your 
+    type for you, however I think it's a good idea to check it rather than just 
+    typecasting it without verifying it. */
+
     va_list list;
-    uint8_t bitPos, bit, i;
+    int bitPos;
+    uint8_t bit, i;
+    va_start(list, numBitsToSet);
 
     while(numBitsToSet > 0)
     {
-        bitPos = va_arg(list, uint8_t);
-        if(bitPos < (self->sizeOfArray) * 8)
+        bitPos = va_arg(list, int);
+        if(bitPos > 0 && bitPos < (self->sizeOfArray) * 8)
         {
             i = bitPos / 8;
             bit = bitPos % 8;
@@ -213,14 +220,16 @@ void BitField_ClearBits(BitField *self, uint8_t numBitsToSet, ... )
 {
     if(self->ptrToArray == NULL)
         return;
-    
+
     va_list list;
-    uint8_t bitPos, bit, i;
+    int bitPos;
+    uint8_t bit, i;
+    va_start(list, numBitsToSet);
 
     while(numBitsToSet > 0)
     {
-        bitPos = va_arg(list, uint8_t);
-        if(bitPos < (self->sizeOfArray) * 8)
+        bitPos = va_arg(list, int);
+        if(bitPos > 0 && bitPos < (self->sizeOfArray) * 8)
         {
             i = bitPos / 8;
             bit = bitPos % 8;
@@ -237,14 +246,16 @@ void BitField_InvertBits(BitField *self, uint8_t numBitsToSet, ... )
 {
     if(self->ptrToArray == NULL)
         return;
-    
+
     va_list list;
-    uint8_t bitPos, bit, i;
+    int bitPos;
+    uint8_t bit, i;
+    va_start(list, numBitsToSet);
 
     while(numBitsToSet > 0)
     {
-        bitPos = va_arg(list, uint8_t);
-        if(bitPos < (self->sizeOfArray) * 8)
+        bitPos = va_arg(list, int);
+        if(bitPos > 0 && bitPos < (self->sizeOfArray) * 8)
         {
             i = bitPos / 8;
             bit = bitPos % 8;

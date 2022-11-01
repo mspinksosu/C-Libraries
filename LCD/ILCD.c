@@ -70,7 +70,8 @@ void LCD_SetInitTypeParams(LCDInitType *params, LCDMode mode, uint8_t numRows,
     params->numRows = numRows;
     params->numCols = numCols;
     params->mode = mode;
-
+    /* @follow-up va_arg promotes to int for char and short. If we don't use 
+    int, we sometimes get a warning depending on the compiler */
     if(numArgs == 0)
         return;
     va_list list;
