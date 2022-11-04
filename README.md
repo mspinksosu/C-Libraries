@@ -15,7 +15,7 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
   - [x] Added analog button
   - [x] Update doxygen
 - [x] Button Group: Tested and working!
-- [ ] Comparator: New library! Ready for testing
+- [x] Comparator: Tested and working!
   - [x] Update doxygen
 - [ ] GPIO: Redesigned!
   - [x] STM32 implementation finished! Testing in progress
@@ -41,7 +41,7 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
     - [ ] Documentation
 - [x] Switch: Complete!
 - [x] Timer: Complete!
-- [ ] UART: STM32F1 tested and working
+- [ ] UART: STM32F1 tested and working!
     - [x] STM32 G0 implementation finished! Testing in progress
     - [x] Added options for flow control and interrupts
     - [x] STM32 F1 implementation tested and working!

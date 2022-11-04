@@ -80,14 +80,15 @@ void Comp_Init(Comp *self, CompDeadzone *deadzones, uint8_t numDeadzones)
     unexpected. */
     for(uint8_t i = 0; i < numDeadzones - 1; i++)
     {
-        if(deadzones[i+1].lower > deadzones[i].upper)
+        if(deadzones[i+1].lower < deadzones[i].upper)
         {
             /* The higher deadzone is overlapping. Push it upwards. */
             deadzones[i+1].lower = deadzones[i].upper;
 
             if(deadzones[i+1].upper < deadzones[i+1].lower)
-            {   
-                /* What did you do? You should go double check your array... */
+            {
+                /* Push it up again. What did you do? You should probably
+                go double check your array... */
                 deadzones[i+1].upper = deadzones[i+1].lower;
             }
         }
@@ -100,13 +101,17 @@ void Comp_Init(Comp *self, CompDeadzone *deadzones, uint8_t numDeadzones)
 void Comp_Process(Comp *self, uint16_t analogInput)
 {
     uint8_t output = self->outputLevel;
-
-    if(analogInput <= self->deadzones[output].lower)
+    uint8_t i = output;
+    
+    if(output > 0)
+        i = output - 1;
+    
+    if(analogInput <= self->deadzones[i].lower)
     {
         if(output >= 1)
             output--;
     }
-    else if(analogInput >= self->deadzones[output].upper)
+    else if(analogInput >= self->deadzones[i].upper)
     {
         if(output < self->numDeadzones)
             output++;
