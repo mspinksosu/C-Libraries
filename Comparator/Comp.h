@@ -26,7 +26,7 @@
  * output comparator with a single deadzone, the output is either 0 or 1. If 
  * it has two deadzones, the output is 0, 1, 2 and so on.
  * 
- * A flag is set whenever the output level changes and can be checked by
+ *      A flag is set whenever the output level changes and can be checked by
  * calling the The get output changed event function. This flag is not cleared 
  * automatically.
  * 
