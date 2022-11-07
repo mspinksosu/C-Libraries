@@ -216,7 +216,7 @@ void BitField_SetBits(BitField *self, uint8_t numBitsToSet, ... )
 
 // *****************************************************************************
 
-void BitField_ClearBits(BitField *self, uint8_t numBitsToSet, ... )
+void BitField_ClearBits(BitField *self, uint8_t numBitsToClear, ... )
 {
     if(self->ptrToArray == NULL)
         return;
@@ -224,9 +224,9 @@ void BitField_ClearBits(BitField *self, uint8_t numBitsToSet, ... )
     va_list list;
     int bitPos;
     uint8_t bit, i;
-    va_start(list, numBitsToSet);
+    va_start(list, numBitsToClear);
 
-    while(numBitsToSet > 0)
+    while(numBitsToClear > 0)
     {
         bitPos = va_arg(list, int);
         if(bitPos > 0 && bitPos < (self->sizeOfArray) * 8)
@@ -235,14 +235,14 @@ void BitField_ClearBits(BitField *self, uint8_t numBitsToSet, ... )
             bit = bitPos % 8;
             self->ptrToArray[i] &= ~(1 << bit);
         }
-        numBitsToSet--;
+        numBitsToClear--;
     }
     va_end(list);
 }
 
 // *****************************************************************************
 
-void BitField_InvertBits(BitField *self, uint8_t numBitsToSet, ... )
+void BitField_InvertBits(BitField *self, uint8_t numBits, ... )
 {
     if(self->ptrToArray == NULL)
         return;
@@ -250,9 +250,9 @@ void BitField_InvertBits(BitField *self, uint8_t numBitsToSet, ... )
     va_list list;
     int bitPos;
     uint8_t bit, i;
-    va_start(list, numBitsToSet);
+    va_start(list, numBits);
 
-    while(numBitsToSet > 0)
+    while(numBits > 0)
     {
         bitPos = va_arg(list, int);
         if(bitPos > 0 && bitPos < (self->sizeOfArray) * 8)
@@ -261,7 +261,7 @@ void BitField_InvertBits(BitField *self, uint8_t numBitsToSet, ... )
             bit = bitPos % 8;
             self->ptrToArray[i] ^= (1 << bit);
         }
-        numBitsToSet--;
+        numBits--;
     }
     va_end(list);
 }
