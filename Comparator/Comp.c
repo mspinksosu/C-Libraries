@@ -101,19 +101,20 @@ void Comp_Init(Comp *self, CompDeadzone *deadzones, uint8_t numDeadzones)
 void Comp_Process(Comp *self, uint16_t analogInput)
 {
     uint8_t output = self->outputLevel;
-    uint8_t i = output;
+    uint16_t lowerThreshold = 0, upperThreshold = 0xFFFF;
     
     if(output > 0)
-        i = output - 1;
+        lowerThreshold = self->deadzones[output - 1].lower;
     
-    if(analogInput <= self->deadzones[i].lower)
+    if(output < self->numDeadzones)
+        upperThreshold = self->deadzones[output].upper;
+
+    if(analogInput < lowerThreshold)
     {
-        if(output >= 1)
             output--;
     }
-    else if(analogInput >= self->deadzones[i].upper)
+    else if(analogInput > upperThreshold)
     {
-        if(output < self->numDeadzones)
             output++;
     }
 
