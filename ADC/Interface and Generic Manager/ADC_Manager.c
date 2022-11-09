@@ -177,7 +177,7 @@ static void ADC_Manager_InsertChannelAfter(ADCChannelEntry *entryToInsert, ADCCh
     /* Insert the new entry */
     entryToInsert->next = prev->next;
     /* Change the previous entry to point to our new entry */
-    prev->next = entryToInsert->next;
+    prev->next = entryToInsert;
 }
 
 /*
