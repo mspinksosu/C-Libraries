@@ -54,51 +54,11 @@ void Comp_Init(Comp *self, CompDeadzone *deadzones, uint8_t numDeadzones)
             deadzones[i].upper = temp;
         }
     }
-
-    /* Sort the array (simple insertion sort) */
-    int16_t j;
-    CompDeadzone element;
-    for(uint8_t i = 1; i < numDeadzones; i++)
-    {
-        element = deadzones[i];
-        j = i - 1;
-
-         /* Going backwards, swap each element in the array with the next one 
-         until we find where array[i] is supposed to go. Then, insert element.
-         Note that j must be able to be negative. */
-        while(j >= 0 && deadzones[j].lower > element.lower)
-        {
-            deadzones[j+1] = deadzones[j];
-            j--;
-        }
-        deadzones[j+1] = element;
-    }
-
-    /* Go through the array and fix any overlapping bounds. If there is an 
-    overlap of two deadzones, precedence is given to the lower one. I hope you 
-    didn't make your deadzones overlap or the output will be something 
-    unexpected. */
-    for(uint8_t i = 0; i < numDeadzones - 1; i++)
-    {
-        if(deadzones[i+1].lower < deadzones[i].upper)
-        {
-            /* The higher deadzone is overlapping. Push it upwards. */
-            deadzones[i+1].lower = deadzones[i].upper;
-
-            if(deadzones[i+1].upper < deadzones[i+1].lower)
-            {
-                /* Push it up again. What did you do? You should probably
-                go double check your array... */
-                deadzones[i+1].upper = deadzones[i+1].lower;
-            }
-        }
-    }
-    /* I tried to fix your deadzone array. Don't blame me if it's not perfect.*/
 }
 
 // *****************************************************************************
 
-void Comp_Process(Comp *self, uint16_t analogInput)
+void Comp_UpdateValue(Comp *self, uint16_t analogInput)
 {
     uint8_t output = self->outputLevel;
     uint16_t lowerThreshold = 0, upperThreshold = 0xFFFF;

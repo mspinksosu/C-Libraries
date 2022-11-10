@@ -110,7 +110,7 @@ void Comp_Init(Comp *self, CompDeadzone *deadzones, uint8_t numDeadzones);
  * 
  * @param analogInput  0 to 65535
  */
-void Comp_Process(Comp *self, uint16_t analogInput);
+void Comp_UpdateValue(Comp *self, uint16_t analogInput);
 
 /***************************************************************************//**
  * @brief Check if there has been an output changed event
