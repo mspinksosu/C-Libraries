@@ -50,6 +50,8 @@ void BG_Init(ButtonGroup *self, uint16_t debounceMs, uint16_t tickMs)
         self->debouncePeriod = 1;
     }
 
+    self->analogThreshold = 0;
+    self->isAnalog = 0;
     self->output = 0;
     self->previousOutput = 0;
     self->pressed = 0;
@@ -105,12 +107,33 @@ void BG_Tick(ButtonGroup *self)
 
 // *****************************************************************************
 
-void BG_UpdateValue(ButtonGroup *self, uint8_t index, bool isPressed)
+void BG_SetAnalogThreshold(ButtonGroup *self, uint16_t threshold)
+{
+    self->analogThreshold = threshold;
+}
+
+// *****************************************************************************
+
+void BG_SetButtonType(ButtonGroup *self, uint8_t index, bool isAnalog)
 {
     if(index > 7)
         return;
     
-    if(isPressed)
+    if(isAnalog)
+        self->input |= (1 << index);
+    else
+        self->input &= ~(1 << index);
+}
+
+// *****************************************************************************
+
+void BG_UpdateValue(ButtonGroup *self, uint8_t index, uint16_t value)
+{
+    if(index > 7)
+        return;
+    
+    if(((self->isAnalog & (1 << index)) && value > self->analogThreshold) ||
+        (!(self->isAnalog & (1 << index)) && value != 0))
         self->input |= (1 << index);
     else
         self->input &= ~(1 << index);

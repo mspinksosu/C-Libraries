@@ -84,6 +84,8 @@ typedef struct ButtonGroupTag
 {
     uint16_t debouncePeriod;
     uint16_t integrator[8];
+    uint16_t analogThreshold;
+    uint8_t isAnalog;
     uint8_t input;
     uint8_t output;
     uint8_t previousOutput;
@@ -99,6 +101,10 @@ typedef struct ButtonGroupTag
  * 
  * integrator  A counter which changes the output variable when it saturates.
  *             Basically, it smooths the inputs.
+ * 
+ * analogThreshold  The threshold for all analog buttons in the group
+ * 
+ * isAnalog  Set to 1 if button is analog
  * 
  * input  The combined input of all 8 buttons
  * 
@@ -138,6 +144,32 @@ void BG_Init(ButtonGroup *self, uint16_t debounceMs, uint16_t tickMs);
 void BG_Tick(ButtonGroup *self);
 
 /***************************************************************************//**
+ * @brief Set the analog input thresholds
+ * 
+ * All buttons will be set as digital by default. All buttons in a group will
+ * share the same analog threshold.
+ * 
+ * @param self  pointer to the Button Group that you are using
+ * 
+ * @param threshold  not pressed: <= threshold, pressed: > threshold
+ */
+void BG_SetAnalogThreshold(ButtonGroup *self, uint16_t threshold);
+
+/***************************************************************************//**
+ * @brief Set the button type
+ * 
+ * All buttons will be set as digital by default. All buttons in a group will
+ * share the same analog threshold.
+ * 
+ * @param self  pointer to the Button Group that you are using
+ * 
+ * @param index  the button you are updating (0 - 7)
+ * 
+ * @param isAnalog  true = analog, false = digital
+ */
+void BG_SetButtonType(ButtonGroup *self, uint8_t index, bool isAnalog);
+
+/***************************************************************************//**
  * @brief Update the value of the buttons in the Button Group
  * 
  * You must update the button values at a rate equal to or faster than the 
@@ -149,9 +181,9 @@ void BG_Tick(ButtonGroup *self);
  * 
  * @param index  the button you are updating (0 - 7)
  * 
- * @param isPressed  true if that button is pressed
+ * @param value  if digital, 0 = not pressed
  */
-void BG_UpdateValue(ButtonGroup *self, uint8_t index, bool isPressed);
+void BG_UpdateValue(ButtonGroup *self, uint8_t index, uint16_t value);
 
 /***************************************************************************//**
  * @brief Check if a button was pressed
