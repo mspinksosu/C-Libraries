@@ -114,14 +114,12 @@ void MCU_AddTask(MCUTask *self, uint16_t period, uint8_t priority, void (*Functi
  */
 void MCU_TaskLoop(void);
 
-/* TODO Someday I might add suspend task */
-
 /***************************************************************************//**
  * @brief Tick the Task Loop
  * 
  * Every time this function is called, each task's counter will be decremented.
  * Any task that is ready will have a pending flag set. This function should
- * ideally be called via an interrupt so that your task's counter are updated 
+ * ideally be called via an interrupt so that your tasks' counters are updated 
  * regularly. 
  * 
  * The period that you tick the timer and the period for your tasks is entirely 
