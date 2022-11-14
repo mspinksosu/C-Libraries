@@ -166,6 +166,33 @@ void MCU_Delay(uint32_t count)
     while(count--);
 }
 
+// *****************************************************************************
+
+bool MCU_IsLittleEndian(void)
+{
+    uint16_t x = 1;
+    
+    return *((uint8_t *)&x);
+}
+
+// *****************************************************************************
+
+void *MCU_ReverseMemcpy(void *dst, const void *src, uint16_t n)
+{
+    uint8_t *pdst = (uint8_t*)dst;
+    const uint8_t *psrc = (const uint8_t*)src;
+    pdst += n - 1;
+
+    while(n)
+    {
+        *pdst = *psrc;
+        pdst--;
+        psrc++;
+        n--;
+    }
+    return dst;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Interface Functions *************************************************//
