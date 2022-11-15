@@ -4,6 +4,8 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
 
 ---
 #### Status
+A lot of these work just fine, but I haven't finished fully documenting them, or I haven't done the PIC implementaion yet so I don't consider those done yet.
+
 - [ ] ADC: Interface and generic manager complete! Needs field testing
   - [x] STM32 implementation finished!
   - [x] STM32 DMA implementation finished! Testing in progress
@@ -29,6 +31,8 @@ A collection of C libraries I've written targeted towards microcontrollers, usin
 - [ ] LCD: New library! Ready to start testing
   - [ ] 4-bit mode
   - [ ] Screen scroll
+  - [ ] Documentation
+- [ ] MCU: Scheduler tested working!
   - [ ] Documentation
 - [x] Pattern: Tested and working!
   - [x] Update doxygen
