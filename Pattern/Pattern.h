@@ -243,9 +243,10 @@ void Pattern_Stop(Pattern *self);
 /***************************************************************************//**
  * @brief Update the pattern
  * 
- * Once the pattern reaches the size that you specify it will go back to index
- * zero. If you have it set to stop when finished, it will stop. Otherwise, it
- * will loop around again.
+ * Once the pattern reaches the size that you specify, one of two things will
+ * happen. If the pattern is set to stop when finished, it will stop. The
+ * output will be whatever the last output is. If it set to loop, it will go
+ * back to index zero and start again.
  * 
  * After every loop through the pattern, there will be a callback function call
  * if it is enabled.
