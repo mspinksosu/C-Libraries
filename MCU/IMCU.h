@@ -120,7 +120,7 @@ void MCU_TaskLoop(void);
  * Every time this function is called, each task's counter will be decremented.
  * Any task that is ready will have a pending flag set. This function should
  * ideally be called via an interrupt so that your tasks' counters are updated 
- * regularly. 
+ * regularly even if one task is taking a bit too long. 
  * 
  * The period that you tick the timer and the period for your tasks is entirely 
  * up to you. You could call this function via a 1 ms system tick or a hardware 
@@ -131,11 +131,82 @@ void MCU_TaskTick(void);
 /***************************************************************************//**
  * @brief Delay
  * 
- * Decrements the count and do nothing until the count hits zero.
+ * Decrements the count and does nothing until the count hits zero.
  * 
  * @param count  how long to delay
  */
 void MCU_Delay(uint32_t count);
+
+/***************************************************************************//**
+ * @brief Test if your processor is little endian or big endian
+ * 
+ * @return true  little endian
+ */
+bool MCU_IsLittleEndian(void);
+
+/***************************************************************************//**
+ * @brief Copy bytes in reverse order
+ * 
+ * Useful if you need to send something like a float from a big endian 
+ * processor to a little endian processor or vice versa.
+ * 
+ * @param dst  destination address
+ * 
+ * @param src  source address
+ * 
+ * @param n  number of bytes to copy
+ * 
+ * @return void*  pointer to the destination
+ */
+void *MCU_ReverseMemcpy(void *dst, const void *src, uint16_t n);
+
+/***************************************************************************//**
+ * @brief Simple Max function
+ * 
+ * Avoids side effects of using preprocessor macro such as double evaluation
+ * 
+ * @param a 
+ * 
+ * @param b 
+ * 
+ * @return int32_t  the largest of the two parameters
+ */
+inline int32_t MCU_Max(int32_t a, int32_t b) { return ((a) > (b) ? a : b); }
+
+/***************************************************************************//**
+ * @brief Simple Min function
+ * 
+ * Avoids side effects of using preprocessor macro such as double evaluation
+ * 
+ * @param a 
+ * 
+ * @param b 
+ * 
+ * @return int32_t  the smallest of the two parameters
+ */
+inline int32_t MCU_Min(int32_t a, int32_t b) { return ((a) < (b) ? a : b); }
+
+/***************************************************************************//**
+ * @brief Simple Max function unsigned
+ * 
+ * @param a 
+ * 
+ * @param b 
+ * 
+ * @return uint32_t  the largest of the two parameters
+ */
+inline uint32_t MCU_MaxU32(uint32_t a, uint32_t b) { return ((a) > (b) ? a : b); }
+
+/***************************************************************************//**
+ * @brief Simple Min function unsigned
+ * 
+ * @param a 
+ * 
+ * @param b 
+ * 
+ * @return uint32_t  the smallest of the two parameters
+ */
+inline uint32_t MCU_MinU32(uint32_t a, uint32_t b) { return ((a) < (b) ? a : b); }
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //

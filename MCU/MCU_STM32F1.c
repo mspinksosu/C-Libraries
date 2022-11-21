@@ -33,7 +33,7 @@ uint32_t pllMulLookup[6] = {RCC_PLLMul_4, RCC_PLLMul_5, RCC_PLLMul_6,
                             RCC_PLLMul_7, RCC_PLLMul_8, RCC_PLLMul_9};
 
 static uint32_t systemClockInHz, sysTickCtrlReg, sysTickLoadReg, sysTickCount, 
-                nvicIntReg0, nvicIntReg1, period1us;
+                nvicIntReg0, nvicIntReg1, period1us = 8;
 
 // ***** Static Function Prototypes ********************************************
 
@@ -125,12 +125,14 @@ uint32_t MCU_InitSystemClock(uint32_t desiredClkInHz, uint32_t xtalInHz)
         bool match = false;
         int8_t d, m;
 
+        /* Go through the table of multipliers and dividers and find the 
+        combination that gets us closest to the desired clock frequency */
         if(selectedClkSource == RCC_SYSCLKSource_HSI)
         {
             if(desiredClkInHz > 36000000UL)
                 desiredClkInHz = 36000000UL;
 
-            /* For HSI, the input to the PLL can only be 4 MHz */
+            /* For HSI, the input to the PLL can only be 4 MHz. */
             for(m = sizeof(pllMulArray) - 1; m >= 0; m--)
             {
                 difference = (pllInputClk * pllMulArray[m]) - desiredClkInHz;
@@ -245,7 +247,7 @@ void MCU_DelayUs(uint16_t microseconds)
     if(!(SysTick->CTRL & SysTick_CTRL_CLKSOURCE))
         SysTick->LOAD <<= 3;
     sysTickCount = SysTick->LOAD - period1us - 5;
-    /* Writing anything to the  value register will clear the count and the 
+    /* Writing anything to the value register will clear the count and the 
     COUNTFLAG bit. When the enable bit is set, the count will be equal to the 
     reload value */
     SysTick->VAL = 0;
