@@ -251,8 +251,8 @@ void LCD_SetReceiveByteFunc(LCD *self, uint8_t (*Function)(void));
 /***************************************************************************//**
  * @brief Print an int at the current cursor position
  * 
- * A simple function that will print numbers for you. This function will call 
- * your implementation of PutString and give it a null terminated string.
+ * A simple function that will print numbers for you. This function will create
+ * a null terminated string and then call LCD_PutString.
  * 
  * @param self  pointer to the LCD that you are using
  * 
@@ -266,8 +266,8 @@ void LCD_PutInt(LCD *self, int16_t num, uint8_t width);
  * @brief Print a float at the current cursor position
  * 
  * A simple function that will print a float for you with limited precision. 
- * This function will call your implementation of PutString and give it a null 
- * terminated string. It has a maximum precision of 6 decimal places. It will
+ * This function will create a null terminated string and then call 
+ * LCD_PutString. It has a maximum precision of 6 decimal places. It will
  * round your number to the number of decimals you specify. If you need more 
  * options when printing a float, consider using sprintf instead.
  * 
@@ -448,7 +448,7 @@ void LCD_MoveCursorForward(LCD *self);
  * 
  * Movement goes from right to left, bottom to top. Limit the value of the row 
  * or column to be between 1 and the number of rows or columns. When at the
- * beginning of a row, go the end of the next row. At the beginning of the 
+ * beginning of a row, go the end of the previous row. At the beginning of the 
  * screen, if LCD_OVERFLOW_WRAP_AROUND is set, go back to position 
  * (numRows,numCols). 
  * 

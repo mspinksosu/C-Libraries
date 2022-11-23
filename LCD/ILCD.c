@@ -119,12 +119,8 @@ void LCD_PutInt(LCD *self, int16_t num, uint8_t width)
 {
     if(self->interface->LCD_PutString != NULL && self->instance != NULL)
     {
-        int n = sprintf(str, "%*d", width, num);
-        
-        if(n > 0)
-        {
-            (self->interface->LCD_PutString)(self->instance, str);
-        }
+        sprintf(str, "%*d", width, num);
+        (self->interface->LCD_PutString)(self->instance, str);
     }
 }
 
@@ -135,30 +131,29 @@ void LCD_PutFloat(LCD *self, float num, uint8_t precision)
     if(self->interface->LCD_PutString != NULL && self->instance != NULL)
     {
         float round = 0.5f;
-        int n = 0;
 
         if(precision > 6)
             precision = 6;
         
+        /* Create a float that is used for rounding up. If precision is 1, 
+        round becomes 0.05. If precsion is 2, round becomes 0.005 and so on. */
         for(uint8_t i = 0; i < precision; i++) 
             round = round / 10.0f;
         
         if(num < 0.0)
         {
-            /* If < 0, add 3 places for minus sign, 0, and decimal point */
+            /* If num is less than zero, add 3 places. One for a minus sign, 
+            a zero, and a decimal point */
             num -= round;
-            n = sprintf(str, "%0*.*f", precision + 3, precision, num);
+            sprintf(str, "%0*.*f", precision + 3, precision, num);
         }
         else
         {
             num += round;
-            n = sprintf(str, "%.*f", precision, num);
+            sprintf(str, "%.*f", precision, num);
         }
         
-        if(n > 0)
-        {
-            (self->interface->LCD_PutString)(self->instance, str);
-        }
+        (self->interface->LCD_PutString)(self->instance, str);
     }
 }
 
