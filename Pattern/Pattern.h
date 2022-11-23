@@ -65,13 +65,13 @@
  *      PatternState pattern2Array[3] = {{.output = 0x01, .timeInMs = 250},
  *                                       {.output = 0x02, .timeInMs = 250},
  *                                       {.output = 0x00, .timeInMs = 5}};
- *      Pattern_InitMs(&ledBlink, &pattern1Array[0], 2, TICK_ONE_MS);
+ *      Pattern_InitMs(&ledBlink, pattern1Array, 2, TICK_ONE_MS);
  *      Pattern_Tick(&ledBlink); // call every 1 ms
  *      ledOutput = Pattern_GetOutput(&ledBlink); // set GPIO
  *      if(stopBlinking == true)
  *          Pattern_StopAtomic(&ledBlink);
  *      if(changePattern == true)
- *          Pattern_LoadAtomic(&ledBlink, &pattern2Array[0], 3, TICK_ONE_MS);
+ *          Pattern_LoadAtomic(&ledBlink, pattern2Array, 3, TICK_ONE_MS);
  * 
  ******************************************************************************/
 
