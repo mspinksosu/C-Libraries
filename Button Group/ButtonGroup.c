@@ -112,15 +112,22 @@ void BG_SetAnalogThreshold(ButtonGroup *self, uint16_t threshold)
 
 // *****************************************************************************
 
-void BG_SetButtonType(ButtonGroup *self, uint8_t index, bool isAnalog)
+void BG_SetButtonTypeAnalog(ButtonGroup *self, uint8_t index)
 {
     if(index > 7)
         return;
-    
-    if(isAnalog)
-        self->isAnalog |= (1 << index);
-    else
-        self->isAnalog &= ~(1 << index);
+
+    self->isAnalog |= (1 << index);
+}
+
+// *****************************************************************************
+
+void BG_SetButtonTypeDigital(ButtonGroup *self, uint8_t index)
+{
+    if(index > 7)
+        return;
+
+    self->isAnalog &= ~(1 << index);
 }
 
 // *****************************************************************************

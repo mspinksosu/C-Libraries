@@ -156,18 +156,29 @@ void BG_Tick(ButtonGroup *self);
 void BG_SetAnalogThreshold(ButtonGroup *self, uint16_t threshold);
 
 /***************************************************************************//**
- * @brief Set the button type
+ * @brief Set the button type to analog
  * 
  * All buttons will be set as digital by default. All buttons in a group will
- * share the same analog threshold.
+ * share the same analog threshold. Don't forget to set an analog threshold.
  * 
  * @param self  pointer to the Button Group that you are using
  * 
  * @param index  the button you are updating (0 - 7)
- * 
- * @param isAnalog  true = analog, false = digital
  */
-void BG_SetButtonType(ButtonGroup *self, uint8_t index, bool isAnalog);
+void BG_SetButtonTypeAnalog(ButtonGroup *self, uint8_t index);
+
+/***************************************************************************//**
+ * @brief Set the button type to digital
+ * 
+ * All buttons will be set as digital by default. If for some reason, you need
+ * to set a button back to digital, you can call this function. This is mostly
+ * just for completeness.
+ * 
+ * @param self  pointer to the Button Group that you are using
+ * 
+ * @param index  the button you are updating (0 - 7)
+ */
+void BG_SetButtonTypeDigital(ButtonGroup *self, uint8_t index);
 
 /***************************************************************************//**
  * @brief Update the value of the buttons in the Button Group
