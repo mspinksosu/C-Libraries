@@ -20,6 +20,7 @@
 
 // ***** Defines ***************************************************************
 
+#define DEFAULT_I_REDUCE_FACTOR 0.05
 
 // ***** Global Variables ******************************************************
 
@@ -34,6 +35,7 @@ typedef struct PIDTag
     float setPoint;
     float controlVariable;
     float integral;
+    float iReductionFactor;
     float prevError;
     bool enable;
 } PID;
@@ -51,7 +53,7 @@ typedef struct PIDTag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void PID_Init(PID *self, float Kp, float Ki, float Kd, float min, float max);
+void PID_Create(PID *self, float Kp, float Ki, float Kd, float min, float max);
 
 void PID_AdjustSetPoint(PID *self, float setPoint);
 

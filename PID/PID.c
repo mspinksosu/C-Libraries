@@ -25,15 +25,17 @@
 
 // *****************************************************************************
 
-void PID_Init(PID *self, float Kp, float Ki, float Kd, float min, float max)
+void PID_Create(PID *self, float Kp, float Ki, float Kd, float min, float max)
 {
     self->Kp = Kp;
     self->Ki = Ki;
     self->Kd = Kd;
     self->min = min;
     self->max = max;
+    self->iReductionFactor = DEFAULT_I_REDUCE_FACTOR;
+    self->integral = 0;
+    self->prevError = 0;
     self->enable = false;
-    /* do some other stuff here */
 }
 
 // *****************************************************************************
@@ -51,14 +53,30 @@ float PID_Compute(PID *self, float processVariable)
         return;
 
     float error = self->setPoint - processVariable;
-    self->integral += error;
     float derivative = error - self->prevError;
 
-    /* TODO integral windup */
+    /* Limit output and integral windup. Sometimes clamping the integral term 
+    completely causes negative side effects. I'm going to use an extra term to 
+    adjust how it gets dampened. Setting it to 0.0 will clamp the integral 
+    hard. Setting it to a number greater than 0.0 will allow a little bit of 
+    overshoot. Setting it to 1.0 will apply no clamping. Don't do that.
+    @follow-up Try a value of 0.05 to 0.25 */
+    if(self->controlVariable >= self->max)
+    {
+        self->controlVariable = self->max; // limit output
+        self->integral += error * self->iReductionFactor; // dampen integral
+    }
+    else if(self->controlVariable <= self->min)
+    {
+        self->controlVariable = self->min; // limit output
+        self->integral += error * self->iReductionFactor; // dampen integral
+    }
+    else
+    {
+        self->integral += error; // Compute integral normally
+    }
 
-    /* TODO limit max and min */
-
-    /* Compute the output. Output = P_Term + I_Term + D_Term */
+    /* Compute the new output. Output = P_Term + I_Term + D_Term */
     self->controlVariable = (self->Kp * error) + (self->Ki * self->integral) +
                             (self->Kd * derivative);
     
@@ -96,6 +114,8 @@ void PID_Enable(PID *self)
 void PID_Disable(PID *self)
 {
     self->enable = false;
+    self->integral = 0;
+    self->prevError = 0;
 }
 
 /*
