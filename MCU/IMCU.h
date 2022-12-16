@@ -52,9 +52,9 @@ struct MCUTaskTag
  * 
  * next  A pointer to the next task in the list of tasks
  * 
- * nextPending  A pointer to the next task in the pending task list. The
- *              pending task is a sorted list of the functions to be called by 
- *              the task loop.
+ * nextPending  A pointer to the next task in the pending task list. This list
+ *              contains just the currently pending tasks sorted by their 
+ *              priority.
  * 
  * Function  A pointer to the function/task that you wish to have called
  * 
@@ -207,6 +207,38 @@ inline uint32_t MCU_MaxU32(uint32_t a, uint32_t b) { return ((a) > (b) ? a : b);
  * @return uint32_t  the smallest of the two parameters
  */
 inline uint32_t MCU_MinU32(uint32_t a, uint32_t b) { return ((a) < (b) ? a : b); }
+
+/***************************************************************************//**
+ * @brief Simple Limit function
+ * 
+ * @param a 
+ * 
+ * @param min
+ * 
+ * @param max
+ * 
+ * @return int32_t  the input limited by the two parameters
+ */
+inline int32_t MCU_Limit(int32_t a, int32_t min, int32_t max) 
+{
+    return ((a) > (max) ? max : (a) < (min) ? min : a);
+}
+
+/***************************************************************************//**
+ * @brief Simple Limit function unsigned
+ * 
+ * @param a 
+ * 
+ * @param min
+ * 
+ * @param max
+ * 
+ * @return uint32_t  the input limited by the two parameters
+ */
+inline uint32_t MCU_LimitU32(uint32_t a, uint32_t min, uint32_t max) 
+{
+    return ((a) > (max) ? max : (a) < (min) ? min : a);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
