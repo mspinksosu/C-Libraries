@@ -3,8 +3,8 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 12/2/14  Original creation
- * @date 8/6/22   Modified
+ * @date 12/2/14   Original creation
+ * @date 8/6/22    Modified
  * 
  * @file IFoo.c
  * 
