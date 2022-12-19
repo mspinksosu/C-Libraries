@@ -67,4 +67,6 @@ void PID_Enable(PID *self);
 
 void PID_Disable(PID *self);
 
+void PID_AdjustIReductionFactor(PID *self, float r);
+
 #endif  /* PID_H */

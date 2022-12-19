@@ -59,7 +59,7 @@ float PID_Compute(PID *self, float processVariable)
     completely causes negative side effects. I'm going to use an extra term to 
     adjust how it gets dampened. Setting it to 0.0 will clamp the integral 
     hard. Setting it to a number greater than 0.0 will allow a little bit of 
-    overshoot. Setting it to 1.0 will apply no clamping. Don't do that.
+    overshoot. Setting it to 1.0 will apply no clamping.
     @follow-up Try a value of 0.05 to 0.25 */
     if(self->controlVariable >= self->max)
     {
@@ -116,6 +116,13 @@ void PID_Disable(PID *self)
     self->enable = false;
     self->integral = 0;
     self->prevError = 0;
+}
+
+// *****************************************************************************
+
+void PID_AdjustIReductionFactor(PID *self, float r)
+{
+    self->iReductionFactor = r;
 }
 
 /*
