@@ -321,37 +321,37 @@ void HWTimer1_STM32_CompareMatchEvent(void)
 {
     if(TIMx->SR & TIM_SR_CC1IF)
     {
-        TIMx->SR &= TIM_SR_CC1IF;
+        TIMx->SR &= ~TIM_SR_CC1IF;
         if(CompareMatchCallback)
             CompareMatchCallback(0);
     }
     if(TIMx->SR & TIM_SR_CC2IF)
     {
-        TIMx->SR &= TIM_SR_CC2IF;
+        TIMx->SR &= ~TIM_SR_CC2IF;
         if(CompareMatchCallback)
             CompareMatchCallback(1);
     }
     if(TIMx->SR & TIM_SR_CC3IF)
     {
-        TIMx->SR &= TIM_SR_CC3IF;
+        TIMx->SR &= ~TIM_SR_CC3IF;
         if(CompareMatchCallback)
             CompareMatchCallback(2);
     }
     if(TIMx->SR & TIM_SR_CC4IF)
     {
-        TIMx->SR &= TIM_SR_CC4IF;
+        TIMx->SR &= ~TIM_SR_CC4IF;
         if(CompareMatchCallback)
             CompareMatchCallback(3);
     }
     if(TIMx->SR & TIM_SR_CC5IF)
     {
-        TIMx->SR &= TIM_SR_CC5IF;
+        TIMx->SR &= ~TIM_SR_CC5IF;
         if(CompareMatchCallback)
             CompareMatchCallback(4);
     }
     if(TIMx->SR & TIM_SR_CC6IF)
     {
-        TIMx->SR &= TIM_SR_CC6IF;
+        TIMx->SR &= ~TIM_SR_CC6IF;
         if(CompareMatchCallback)
             CompareMatchCallback(5);
     }
