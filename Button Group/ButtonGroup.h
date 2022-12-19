@@ -8,13 +8,13 @@
  * @file ButtonGroup.h
  * 
  * @details
- *      A stripped down version of my original button library with less
+ *      A stripped down version of my original button library with less 
  * features. In order to try and save a little bit of memory, buttons are 
- * grouped in eight. There are no analog button options, no long press feature,
- * and the debounce length is used for both the press and release. This library 
- * can also be used for things like inserting connectors or switches. Anything 
- * that requires debouncing. This library is most useful if you have a large 
- * number of inputs that need debouncing.
+ * grouped in eight. There are is no long press feature, and the debounce 
+ * length is used for both the press and release. This library can also be used 
+ * for things like inserting connectors or switches. Anything that requires 
+ * debouncing. This library is most useful if you have a large number of inputs 
+ * that need debouncing.
  * 
  *      To create a group of buttons, initialize the object with the debounce
  * time and the sample rate in milliseconds. This is how often you will call
@@ -34,34 +34,34 @@
  *        BUTTON2,
  *        TOTAL_BUTTONS};
  * 
- * #define NUM_BUTTON_GROUPS    (TOTAL_BUTTONS / 8 + 1)
+ * #define NUM_BUTTON_GROUPS (TOTAL_BUTTONS / 8 + 1)
  * 
  * Here are some more useful macros:
  * 
  * #define InputGroup(x) (x >> 3) // divide by 8
  * #define InputBit(x) (x & 0x07) // mod 8
- * #define ButtonArrayDecode(array, x) array[InputGroup(x)], InputBit(x)
  * 
  * Example Usage:
  *      ButtonGroup oneButtonGroup;
  *      ButtonGroup arrayOfButtons[NUM_BUTTON_GROUPS];
+ *      #define ButtonArray(x) &arrayOfButtons[InputGroup(x)], InputBit(x)
  *      
  *      BG_Init(&oneButtonGroup, DEBOUNCE_MS, TICK_MS);
  * 
  *      for(i=0; i<NUM_BUTTON_GROUPS; i++) {
  *          BG_Init(&arrayOfButtons[i], DEBOUNCE_MS, TICKS_MS); }
  * 
- *      BG_UpdateValue(&oneButtonGroup, INPUT1, true); // pressed
- *      
- *      BG_UpdateValue(&arrayOfButtons[InputGroup(INPUT20)], 
- *          InputBit(INPUT20), true);
+ *      BG_UpdateValue(&oneButtonGroup, BUTTON1, true); // pressed
+ * 
+ *      BG_UpdateValue(&arrayOfButtons[InputGroup(BUTTON20)], 
+ *          InputBit(BUTTON20), true);
  * 
  *      BG_Tick(&oneButtonGroup);
  * 
  *      for(i=0; i<NUM_BUTTON_GROUPS; i++) {
- *          BG_Tick(&arrayOfButtons[i]); } // update all of the button groups
+ *          BG_Tick(&arrayOfButtons[i]); } // update entire array
  *      
- *      if(BG_GetPress(ButtonArrayDecode(&arrayOfButtons, INPUT20)))
+ *      if(BG_GetPress(ButtonArray(BUTTON20)) // shorten with macro
  *      { .... }
  * 
  ******************************************************************************/
