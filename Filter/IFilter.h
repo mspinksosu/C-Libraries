@@ -1,20 +1,19 @@
 /***************************************************************************//**
- * @brief Foo Interface Header File
+ * @brief Filter Interface Header File
  * 
  * @author Matthew Spinks
  * 
  * @date 12/2/14   Original creation
- * @date 8/6/22    Modified
  * 
- * @file IFoo.h
+ * @file IFilter.h
  * 
  * @details
  *      TODO
  * 
  ******************************************************************************/
 
-#ifndef IFOO_H
-#define IFOO_H
+#ifndef IFILTER_H
+#define IFILTER_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -25,34 +24,32 @@
 // ***** Global Variables ******************************************************
 
 /* Create the function table */
-typedef struct FooInterfaceTag
+typedef struct FilterInterfaceTag
 {
     /* These are the functions that will be called. You will create your own
     interface object for your class that will have these function signatures.
     Set each of your functions equal to one of these pointers. The void pointer
     will be set to the sub class object. Typecasting will be needed. */
-    void (*Foo_Func)(void *instance);
-    uint16_t (*Foo_GetValue)(void *instance);
-    void (*Foo_SetValue)(void *instance, uint16_t data);
+    uint16_t (*Filter_ComputeU16)(void *instance, uint16_t input);
 
-    // Add more functions below
-} FooInterface;
+    // TODO add float?
+} FilterInterface;
 
 /* Create the base class */
-typedef struct FooTag
+typedef struct FilterTag
 {
-    FooInterface *interface;
+    FilterInterface *interface;
     void *instance;
 
     // Add more necessary members
-} Foo;
+} Filter;
 
 /**
  * Description of struct members:
  * 
- * Foo_Interface  The table of functions that need to be implemented
+ * FilterInterface  The table of functions that need to be implemented
  * 
- * Foo          The base class object
+ * Filter       The base class object
  * 
  * interface    A pointer to the interface that will be used. This will be set
  *              to the function table declared in the sub class, by means of
@@ -80,7 +77,7 @@ typedef struct FooTag
  * @param instanceOfSubClass 
  * @param interface 
  */
-void Foo_Create(Foo *self, void *instanceOfSubclass, FooInterface *interface);
+void Filter_Create(Filter *self, void *instanceOfSubclass, FilterInterface *interface);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -89,26 +86,17 @@ void Foo_Create(Foo *self, void *instanceOfSubclass, FooInterface *interface);
 ////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
- * @brief 
+ * @brief Compute the output of the filter with a given input
  * 
- * @param self 
- */
-void Foo_Func(Foo *self);
-
-/***************************************************************************//**
- * @brief 
+ * This function will need to be called periodically. How often you call it
+ * is up to you.
  * 
- * @param self 
- * @return uint16_t 
- */
-uint16_t Foo_GetValue(Foo *self);
-
-/***************************************************************************//**
- * @brief 
+ * @param self  pointer to the Filter you are using
  * 
- * @param self 
- * @param data 
+ * @param input  input to the filter
+ * 
+ * @return uint16_t  output of the filter
  */
-void Foo_SetValue(Foo *self, uint16_t data);
+uint16_t Filter_ComputeU16(Filter *self, uint16_t input);
 
-#endif  /* IFOO_H */
+#endif  /* IFILTER_H */

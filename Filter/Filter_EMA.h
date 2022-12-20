@@ -1,20 +1,20 @@
 /***************************************************************************//**
- * @brief Filter Library Implementation Header (SMA Filter)
+ * @brief Filter Library Implementation Header (EMA Filter)
  * 
  * @author Matthew Spinks
  * 
  * @date 12/2/14   Original creation
  * @date 2/4/22    Modified
  * 
- * @file Filter_SMA.h
+ * @file Filter_EMA.h
  * 
  * @details
  *      TODO
  * 
  ******************************************************************************/
 
-#ifndef FILTER_SMA_H
-#define FILTER_SMA_H
+#ifndef FILTER_EMA_H
+#define FILTER_EMA_H
 
 #include "IFilter.h"
 
@@ -23,12 +23,11 @@
 
 // ***** Global Variables ******************************************************
 
-typedef struct Filter_SMATag
+typedef struct Filter_EMATag
 {
     Filter *super;
     
-    // TODO add sum, index, buffer, length
-} Filter_SMA;
+} Filter_EMA;
 
 /** 
  * Description of struct
@@ -49,11 +48,11 @@ typedef struct Filter_SMATag
  * Calls the base class Filter_Create function. Each sub class object must have 
  * a base class.
  * 
- * @param self  pointer to the SMA Filter object you are using
+ * @param self  pointer to the EMA Filter object you are using
  * 
  * @param base  pointer to the base class object used for function calls
  */
-void Filter_SMA_Create(Filter_SMA *self, Filter *base);
+void Filter_EMA_Create(Filter_EMA *self, Filter *base);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -62,14 +61,14 @@ void Filter_SMA_Create(Filter_SMA *self, Filter *base);
 ////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
- * @brief Compute the output of the SMA filter with a given input
+ * @brief Compute the output of the EMA filter with a given input
  * 
- * @param self  pointer to the SMA Filter you are using
+ * @param self  pointer to the EMA Filter you are using
  * 
  * @param input  input to the filter
  * 
  * @return uint16_t  output of the filter
  */
-uint16_t Filter_SMA_ComputeU16(Filter *self, uint16_t input);
+uint16_t Filter_EMA_ComputeU16(Filter *self, uint16_t input);
 
-#endif  /* FILTER_SMA_H */
+#endif  /* FILTER_EMA_H */

@@ -1,22 +1,23 @@
 /***************************************************************************//**
- * @brief Filter Library Implementation (SMA Filter)
+ * @brief Filter Library Implementation (EMA Filter)
  * 
  * @author Matthew Spinks
  * 
  * @date 12/2/14   Original creation
  * @date 2/4/22    Modified
  * 
- * @file Filter_SMA.c
+ * @file Filter_EMA.c
  * 
  * @details
  *      TODO
  * 
  ******************************************************************************/
 
-#include "Filter_SMA.h"
+#include "Filter_EMA.h"
 
 // ***** Defines ***************************************************************
 
+#define ALPHA_16U(x) ((uint16_t)(x * 65535))
 
 // ***** Global Variables ******************************************************
 
@@ -24,7 +25,7 @@
     functions. Typecasting is necessary. When a new sub class object is 
     created, we will set its interface member equal to this table. */
 FilterInterface FilterFunctionTable = {
-    .Filter_ComputeU16 = (uint16_t (*)(void *, uint16_t))Filter_SMA_ComputeU16,
+    .Filter_ComputeU16 = (uint16_t (*)(void *, uint16_t))Filter_EMA_ComputeU16,
 };
 
 // ***** Static Function Prototypes ********************************************
@@ -38,7 +39,7 @@ FilterInterface FilterFunctionTable = {
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void Filter_SMA_Create(Filter_SMA *self, Filter *base)
+void Filter_EMA_Create(Filter_EMA *self, Filter *base)
 {
     self->super = base;
 
@@ -52,28 +53,20 @@ void Filter_SMA_Create(Filter_SMA *self, Filter *base)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-// TODO
-#define AVERAGE_LENGTH  8
-uint16_t Filter_SMA_ComputeU16(Filter *self, uint16_t input)
+uint16_t Filter_EMA_ComputeU16(Filter *self, uint16_t input)
 {
-    /* @note This is a type of filter called a simple moving average filter.
-    It makes a buffer of samples, and averages the samples. There is one clever
-    trick. There are only two values in the sum that change. Instead of summing
-    the buffer each loop, we subtract from the sum the current value in the 
-    buffer we are at. Then add the new input to the sum. - MS */
-    static uint8_t smaIndex = 0;
-    static uint32_t sum = 0;
-    static uint32_t buffer[AVERAGE_LENGTH];
+    static uint16_t prevOutput;
     uint16_t output;
-
-    sum -= buffer[smaIndex];
-    sum += input;
-    buffer[smaIndex] = input;
-    output = sum / AVERAGE_LENGTH;
-
-    smaIndex++;
-    if(smaIndex == AVERAGE_LENGTH)
-        smaIndex = 0;
+    /* @note Another experiment with different type of filter called an
+    exponential moving average filter, which is supposed to mimic a RC filter
+    and uses less memory. There is value called alpha that goes from 0 to 1.0. 
+    Values closer to 0 make the filter more aggressive. I converted the alpha 
+    value to a 16-bit number. I also used 16-bit inputs instead of 32. Then 
+    I shift the output back to a 16-bit number on the last step. */
+    static uint16_t alpha = ALPHA_16U(0.1);
+    uint32_t tmp = input * alpha + prevOutput * (65536 - alpha);
+    /* round the 32-bit number before converting to 16-bit */
+    output = (tmp + 0x8000) >> 16;
 }
 
 /*
