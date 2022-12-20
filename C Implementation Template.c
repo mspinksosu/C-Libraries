@@ -43,7 +43,7 @@ FooInterface FooFunctionTable = {
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void Foo_MCU1_Init(Foo_MCU1 *self, Foo *base, uint16_t data)
+void Foo_MCU1_Create(Foo_MCU1 *self, Foo *base)
 {
     self->super = base;
 
@@ -58,9 +58,10 @@ void Foo_MCU1_Init(Foo_MCU1 *self, Foo *base, uint16_t data)
 
 // *****************************************************************************
 
-void Foo_MCU1_ProcessorSpecificFunc(void)
+void Foo_MCU1_ProcessorSpecificNonInterfaceFunc(Foo_MCU1 *self, uint16_t data)
 {
-
+    /* Optional function to do some specific initialization or whatever else
+    you want to do */
 }
 
 ////////////////////////////////////////////////////////////////////////////////

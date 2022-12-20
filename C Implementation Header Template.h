@@ -51,19 +51,20 @@ typedef struct Foo_MCU1Tag
 ////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
- * @brief Initialize your object
+ * @brief Connects the sub class to the base class
  * 
- * @param self 
+ * @param self
  * @param base
- * @param data 
  */
-void Foo_MCU1_Init(Foo_MCU1 *self, uint16_t data);
+void Foo_MCU1_Create(Foo_MCU1 *self, Foo *base);
 
 /***************************************************************************//**
- * @brief 
+ * @brief
  * 
+ * @param self 
+ * @param data 
  */
-void Foo_MCU1_ProcessorSpecificNonInterfaceFunc(void);
+void Foo_MCU1_ProcessorSpecificNonInterfaceFunc(Foo_MCU1 *self, uint16_t data);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //

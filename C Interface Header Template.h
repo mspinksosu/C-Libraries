@@ -50,7 +50,7 @@ typedef struct FooTag
 /**
  * Description of struct members:
  * 
- * Foo_Interface  The table of functions that need to be implemented
+ * FooInterface The table of functions that need to be implemented
  * 
  * Foo          The base class object
  * 
