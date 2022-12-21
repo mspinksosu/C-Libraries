@@ -116,7 +116,7 @@ void SPI_Manager_Process(SPIManager *self)
     /* Go round-robin through the list of devices. Right now, I'm only going to 
     deal with SPI master mode. */
     // TODO add check for master mode, and eventually add slave mode
-    // TODO I may want to replace "busy" a state for the peripheral
+    // TODO I may want to replace "busy" with a state for the peripheral
     if(self->busy == false && self->currentDevice != NULL)
     {
         switch(self->currentDevice->state)
@@ -138,10 +138,12 @@ void SPI_Manager_Process(SPIManager *self)
                     /* Send empty data out for a slave read */
                     SPI_TransmitByte(self->peripheral, 0);
                 }
-                self->currentDevice->state = SPI_SS_SEND_BYTE;
+                self->currentDevice->state = SPI_SS_RECEIVE_BYTE;
                 break;
             case SPI_SS_RECEIVE_BYTE:
-                /* In master mode, there is always a read after a write. */
+                /* In master mode, there should always a receive after a send. 
+                // TODO I may want to add an option for the rare case where
+                there is master out, but no master in. */
                 if(SPI_IsTransmitRegisterEmpty(self->peripheral))
                 {
                     uint8_t data = SPI_GetReceivedByte(self->peripheral);
