@@ -53,7 +53,8 @@ typedef struct Filter_EMATag
  * 
  * @param base  pointer to the base class object used for function calls
  * 
- * @param alpha  0.0 to 1.0. Values closer to 0 make the filter more aggressive
+ * @param alpha  "smoothing factor" 0.0 to 1.0. Alters the Q of the filter
+ *               0 is no output and 1.0 is all-pass
  */
 void Filter_EMA_Create(Filter_EMA *self, Filter *base, float alpha);
 

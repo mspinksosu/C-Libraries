@@ -16,7 +16,8 @@
 
 // ***** Defines ***************************************************************
 
-#define ALPHA_16U(x) ((uint16_t)(x * 65535))
+#define DEFAULT_ALPHA 0.2
+#define ALPHA_U16(x) ((uint16_t)(x * 65535))
 
 // ***** Global Variables ******************************************************
 
@@ -38,7 +39,11 @@ FilterInterface FilterFunctionTable = {
 void Filter_EMA_Create(Filter_EMA *self, Filter *base, float alpha)
 {
     self->super = base;
-    self->alphaU16 = ALPHA_16U(alpha);
+
+    if(alpha < 0)
+        alpha = DEFAULT_ALPHA;
+
+    self->alphaU16 = ALPHA_U16(alpha);
     self->prevOutput = 0;
     /*  Call the base class constructor */
     Foo_Create(base, self, &FilterFunctionTable);
@@ -56,9 +61,11 @@ uint16_t Filter_EMA_ComputeU16(Filter_EMA *self, uint16_t input)
     /* This filter is called an exponential moving average filter, which is 
     supposed to mimic a RC filter and uses less memory than an SMA filter. 
     There is value called alpha that goes from 0 to 1.0. Values closer to 0 
-    make the filter more aggressive. 
+    make the filter roll off earlier. A value of 0 allows no output at all. A
+    value of 1.0 applies no filtering.
     
     y[i] = x[i] * alpha + y[i - 1] * (1 - alpha)
+    alpha = dt / (RC + dt)
 
     I converted the alpha value to a 16-bit number. Then I shift the output 
     from a 32-bit number to a 16-bit number on the last step. */
