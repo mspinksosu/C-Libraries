@@ -19,6 +19,9 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
 - [x] Button Group: Tested and working!
 - [x] Comparator: Tested and working!
   - [x] Update doxygen
+- [ ] Filter: Added two basic classes, SMA and EMA
+  - [x] Interface
+  - [ ] Documentation
 - [ ] GPIO: Redesigned!
   - [x] STM32 implementation finished! Testing in progress
   - [x] Refactored STM32 G0 to get rid of ST library dependancy. Needs re-testing
@@ -27,7 +30,7 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
 - [ ] Hardware Timer: New library! Ready to start testing
   - [ ] Add more STM32 sub class options
   - [ ] Documentation
-- [ ] I2C: Old PIC32 library. Working. Needs updating
+- [ ] I2C: Old PIC32 library. Worked before. Needs updating
 - [ ] LCD: New library! Ready to start testing
   - [ ] 4-bit mode
   - [ ] Screen scroll

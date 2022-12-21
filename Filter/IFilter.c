@@ -3,17 +3,16 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 12/2/14   Original creation
- * @date 8/6/22    Modified
+ * @date 12/18/22  Original creation
  * 
- * @file IFoo.c
+ * @file IFilter.c
  * 
  * @details
  *      TODO
  * 
  ******************************************************************************/
 
-#include "IFoo.h"
+#include "IFilter.h"
 
 // ***** Defines ***************************************************************
 
@@ -30,9 +29,9 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void Foo_Create(Foo *self, void *instanceOfSubClass, Foo_Interface *interface)
+void Filter_Create(Filter *self, void *instanceOfSubclass, FilterInterface *interface)
 {
-    self->instance = instanceOfSubClass;
+    self->instance = instanceOfSubclass;
     self->interface = interface;
 }
 
@@ -42,38 +41,16 @@ void Foo_Create(Foo *self, void *instanceOfSubClass, Foo_Interface *interface)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void Foo_Func(Foo *self)
+uint16_t Filter_ComputeU16(Filter *self, uint16_t input)
 {
-    /* Check the function table is set up properly before calling the processor
-    specific function */
-    if(self->interface->Foo_Func != NULL && self->instance != NULL)
+    if(self->interface->Filter_ComputeU16 != NULL && self->instance != NULL)
     {
         /* Dispatch the function using indirection */
-        (self->interface->Foo_Func)(self->instance);
-    }
-}
-
-// *****************************************************************************
-
-uint16_t Foo_GetValue(Foo *self)
-{
-    if(self->interface->Foo_GetValue != NULL && self->instance != NULL)
-    {
-        return (self->interface->Foo_GetValue)(self->instance);
+        return (self->interface->Filter_ComputeU16)(self->instance, input);
     }
     else
     {
         return 0;
-    }
-}
-
-// *****************************************************************************
-
-void Foo_SetValue(Foo *self, uint16_t data)
-{
-    if(self->interface->Foo_SetValue != NULL && self->instance != NULL)
-    {
-        (self->interface->Foo_SetValue)(self->instance, data);
     }
 }
 

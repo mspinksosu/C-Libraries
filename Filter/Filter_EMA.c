@@ -3,8 +3,7 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 12/2/14   Original creation
- * @date 2/4/22    Modified
+ * @date 12/18/22  Original creation
  * 
  * @file Filter_EMA.c
  * 

@@ -3,7 +3,7 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 12/2/14   Original creation
+ * @date 12/18/22  Original creation
  * 
  * @file IFilter.h
  * 
