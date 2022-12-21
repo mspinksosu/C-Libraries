@@ -26,7 +26,8 @@
 typedef struct Filter_EMATag
 {
     Filter *super;
-    
+    uint16_t alphaU16;
+    uint16_t prevOutput;
 } Filter_EMA;
 
 /** 
@@ -51,8 +52,10 @@ typedef struct Filter_EMATag
  * @param self  pointer to the EMA Filter object you are using
  * 
  * @param base  pointer to the base class object used for function calls
+ * 
+ * @param alpha  0.0 to 1.0. Values closer to 0 make the filter more aggressive
  */
-void Filter_EMA_Create(Filter_EMA *self, Filter *base);
+void Filter_EMA_Create(Filter_EMA *self, Filter *base, float alpha);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -69,6 +72,6 @@ void Filter_EMA_Create(Filter_EMA *self, Filter *base);
  * 
  * @return uint16_t  output of the filter
  */
-uint16_t Filter_EMA_ComputeU16(Filter *self, uint16_t input);
+uint16_t Filter_EMA_ComputeU16(Filter_EMA *self, uint16_t input);
 
 #endif  /* FILTER_EMA_H */

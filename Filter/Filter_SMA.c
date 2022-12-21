@@ -21,15 +21,12 @@
 // ***** Global Variables ******************************************************
 
 /*  Declare an interface struct and initialize its members the our local 
-    functions. Typecasting is necessary. When a new sub class object is 
-    created, we will set its interface member equal to this table. */
+    functions. */
 FilterInterface FilterFunctionTable = {
     .Filter_ComputeU16 = (uint16_t (*)(void *, uint16_t))Filter_SMA_ComputeU16,
 };
 
 // ***** Static Function Prototypes ********************************************
-
-/* Put static function prototypes here */
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -38,10 +35,12 @@ FilterInterface FilterFunctionTable = {
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void Filter_SMA_Create(Filter_SMA *self, Filter *base)
+void Filter_SMA_Create(Filter_SMA *self, Filter *base, uint16_t *buffer, uint8_t bufferLength)
 {
     self->super = base;
-
+    self->buffer = buffer;
+    self->bufferLength = bufferLength;
+    self->index = 0;
     /*  Call the base class constructor */
     Foo_Create(base, self, &FilterFunctionTable);
 }
@@ -52,28 +51,29 @@ void Filter_SMA_Create(Filter_SMA *self, Filter *base)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-// TODO
-#define AVERAGE_LENGTH  8
-uint16_t Filter_SMA_ComputeU16(Filter *self, uint16_t input)
+uint16_t Filter_SMA_ComputeU16(Filter_SMA *self, uint16_t input)
 {
-    /* @note This is a type of filter called a simple moving average filter.
+    if(self->buffer == NULL || self->bufferLength == 0)
+        return;
+    
+    /* This is a type of filter called a simple moving average filter.
     It makes a buffer of samples, and averages the samples. There is one clever
-    trick. There are only two values in the sum that change. Instead of summing
-    the buffer each loop, we subtract from the sum the current value in the 
-    buffer we are at. Then add the new input to the sum. - MS */
-    static uint8_t smaIndex = 0;
-    static uint32_t sum = 0;
-    static uint32_t buffer[AVERAGE_LENGTH];
+    trick. There are only two values in the buffer that change; the newest 
+    value and the oldest value. So, rather than summing the entire buffer each 
+    loop, we subtract from the sum the current value in the buffer we are at, 
+    then add the new input to the sum. */
     uint16_t output;
 
-    sum -= buffer[smaIndex];
-    sum += input;
-    buffer[smaIndex] = input;
-    output = sum / AVERAGE_LENGTH;
+    self->sum -= self->buffer[self->index];
+    self->sum += input;
+    self->buffer[self->index] = input;
+    output = self->sum / self->bufferLength;
 
-    smaIndex++;
-    if(smaIndex == AVERAGE_LENGTH)
-        smaIndex = 0;
+    self->index++;
+    if(self->index == self->bufferLength)
+        self->index = 0;
+
+    return output;
 }
 
 /*

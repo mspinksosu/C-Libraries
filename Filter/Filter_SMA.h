@@ -26,8 +26,10 @@
 typedef struct Filter_SMATag
 {
     Filter *super;
-    
-    // TODO add sum, index, buffer, length
+    uint16_t *buffer;
+    uint32_t sum;
+    uint8_t bufferLength;
+    uint8_t index;
 } Filter_SMA;
 
 /** 
@@ -52,8 +54,12 @@ typedef struct Filter_SMATag
  * @param self  pointer to the SMA Filter object you are using
  * 
  * @param base  pointer to the base class object used for function calls
+ * 
+ * @param buffer  pointer to an array for storing samples
+ * 
+ * @param bufferLength  the length of the array
  */
-void Filter_SMA_Create(Filter_SMA *self, Filter *base);
+void Filter_SMA_Create(Filter_SMA *self, Filter *base, uint16_t *buffer, uint8_t bufferLength);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -70,6 +76,6 @@ void Filter_SMA_Create(Filter_SMA *self, Filter *base);
  * 
  * @return uint16_t  output of the filter
  */
-uint16_t Filter_SMA_ComputeU16(Filter *self, uint16_t input);
+uint16_t Filter_SMA_ComputeU16(Filter_SMA *self, uint16_t input);
 
 #endif  /* FILTER_SMA_H */
