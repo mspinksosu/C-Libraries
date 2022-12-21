@@ -10,11 +10,11 @@
  * @details
  *      A stripped down version of my original button library with less 
  * features. In order to try and save a little bit of memory, buttons are 
- * grouped in eight. There are is no long press feature, and the debounce 
- * length is used for both the press and release. This library can also be used 
- * for things like inserting connectors or switches. Anything that requires 
- * debouncing. This library is most useful if you have a large number of inputs 
- * that need debouncing.
+ * grouped in eight. There are is no long press feature, no callback functions
+ * and the debounce length is used for both the press and release. This library 
+ * can also be used for things like inserting connectors or switches. Anything 
+ * that requires debouncing. This library is most useful if you have a large 
+ * number of inputs that need debouncing.
  * 
  *      To create a group of buttons, initialize the object with the debounce
  * time and the sample rate in milliseconds. This is how often you will call
