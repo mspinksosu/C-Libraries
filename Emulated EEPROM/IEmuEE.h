@@ -63,6 +63,13 @@ typedef enum EmuEEErrorTag
     EMUEE_ERROR_PAGE_FULL,
 } EmuEEError;
 
+typedef enum EmuEEFlashDataTypeTag
+{
+    EMUEE_FLASH_DATA_TYPE_BYTE,
+    EMUEE_FLASH_DATA_TYPE_2_BYTE_WORD,
+    EMUEE_FLASH_DATA_TYPE_4_BYTE_WORD,
+} EmuEEFlashDataType;
+
 /**
  * Description of struct members:
  * 
@@ -96,6 +103,7 @@ EmuEEError EmuEE_Write(uint16_t virtualAddress, uint8_t *src, uint16_t srcSize);
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+EmuEEError EmuEE_ReadFlashWord(uint32_t address, uint32_t *retData);
 
-
+EmuEEError EmuEE_WriteFlashWord(uint32_t address, uint32_t data);
 #endif  /* IEMUEE_H */

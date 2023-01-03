@@ -98,14 +98,67 @@ EmuEEError EmuEE_Init(uint32_t page0Address, uint32_t page1Address,
 
 EmuEEError EmuEE_GetFormat(uint32_t pageAddress, EmuEEFormat *retFormatType)
 {
-    // TODO check if address is valid
-    uint16_t pageHeader = 0;
+    EmuEEError error = 0;
+    uint32_t dataBuffer[4], pageFormat = 0;
 
     // Read first eight bytes
+    switch(emueeFlashWordSize)
+    {
+        case EMUEE_WORD_SIZE_2_BYTES:
+            for(uint8_t i = 0; i < 4; pageAddress += 2)
+            {
+                error = EmuEE_ReadFlashWord(pageAddress, &dataBuffer[i]);
+                if(error != EMUEE_ERROR_NONE)
+                    break;
+            }
+            /* Get the format byte out of the word (byte 2) */
+            if(error == EMUEE_ERROR_NONE)
+            {
+                if(littleEndian)
+                {
+                    pageFormat = dataBuffer[1] & 0x000000FF;
+                }
+                else
+                {
+                    pageFormat = (dataBuffer[1] >> 8) & 0x000000FF;
+                }
+            }
+            break;
+        case EMUEE_WORD_SIZE_4_BYTES:
+            for(uint8_t i = 0; i < 2; pageAddress += 4)
+            {
+                error = EmuEE_ReadFlashWord(pageAddress, &dataBuffer[i]);
+                if(error != EMUEE_ERROR_NONE)
+                    break;
+            }
+            /* Get the format byte out of the word (byte 2) */
+            if(error == EMUEE_ERROR_NONE)
+            {
+                if(littleEndian)
+                {
+                    pageFormat = (dataBuffer[0] >> 16) & 0x000000FF;
+                }
+                else
+                {
+                    pageFormat = (dataBuffer[0] >> 8) & 0x000000FF;
+                }
+            }
+            break;
+    }
 
-    // Reorder bytes into words
+    if(error != EMUEE_ERROR_NONE)
+        return error;
 
-    // Check status and check if format is valid
+    /* Check the entry format. All entries use 14 bits. Format_13_1 is not a 
+    valid format because a flash word is going to be at least two bytes long */
+    uint8_t upperNibble = pageFormat >> 4;
+    uint8_t lowerNibble = pageFormat & 0x0F;
+    if(upperNibble > 12 || (upperNibble + lowerNibble > 14))
+    {
+        error = EMUEE_ERROR_INVALID_FORMAT;
+    }
+
+    return error;
 }
 
 void EmuEE_Format(uint32_t page0Address, uint32_t page1Address, EmuEEFormat format)
@@ -154,14 +207,6 @@ EmuEEError EmuEE_Write(uint16_t virtualAddress, uint8_t *src, uint16_t srcSize)
 static enum EmuEntryStatus GetEntryStatus(uint16_t header)
 {
     return ((header & EMUEE_ENTRY_STATUS_MASK) >> 14);
-}
-
-static bool IsEntryFormatValid(uint16_t header)
-{
-    /* Check the entry format. All entries use 14 bits. Format_13_1 is not a 
-    valid format because a flash word is going to be at least two bytes long
-    possibly more. */
-
 }
 
 /*
