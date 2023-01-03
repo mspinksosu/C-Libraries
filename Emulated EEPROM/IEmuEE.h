@@ -29,7 +29,7 @@
 typedef enum EmuEEFormatTag
 {
     /* Format is X.Y bits, where
-    X = virtual address (2^(X-1) number of entries)
+    X = virtual address (2^X available entries)
     Y = max size of each entry (2^Y bytes)
     Total is 14 bits. Bits [15:14] are reserved 
     Your flash page may not be able to hold the desired number of entries
