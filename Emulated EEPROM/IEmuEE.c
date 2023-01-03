@@ -54,13 +54,15 @@ enum EmuEntryStatus // TODO leave as enum or change to define?
     EMUEE_ENTRY_STATUS_UNKOWN = 0,
     EMUEE_ENTRY_STATUS_VALID,
     EMUEE_ENTRY_STATUS_ERASED,
+    EMUEE_ENTRY_STATUS_EMPTY,
 };
 
 static EmuEEFormat emueeFormat = EMUEE_FORMAT_7_7;
 static EmuEEFlashWordSize emueeFlashWordSize = EMUEE_WORD_SIZE_2_BYTES;
 static uint16_t emueePageSizeInBytes = EMUEE_PAGE_SIZE_1KB;
 static bool littleEndian = true;
-static uint32_t emueePage0Address, emueePage1Address;
+static uint32_t emueePage0Address, emueePage1Address, currentPageAddress;
+static uint16_t virtualAddressCount = 0;
 
 // TODO check virtual address against format and page size to find end of page
 
@@ -95,6 +97,8 @@ EmuEEError EmuEE_Init(uint32_t page0Address, uint32_t page1Address,
 
     return EMUEE_ERROR_NONE;
 }
+
+// *****************************************************************************
 
 EmuEEError EmuEE_GetFormat(uint32_t pageAddress, EmuEEFormat *retFormatType)
 {
@@ -153,13 +157,15 @@ EmuEEError EmuEE_GetFormat(uint32_t pageAddress, EmuEEFormat *retFormatType)
     valid format because a flash word is going to be at least two bytes long */
     uint8_t upperNibble = pageFormat >> 4;
     uint8_t lowerNibble = pageFormat & 0x0F;
-    if(upperNibble > 12 || (upperNibble + lowerNibble > 14))
+    if(upperNibble > 12 || (upperNibble + lowerNibble != 14))
     {
         error = EMUEE_ERROR_INVALID_FORMAT;
     }
 
     return error;
 }
+
+// *****************************************************************************
 
 void EmuEE_Format(uint32_t page0Address, uint32_t page1Address, EmuEEFormat format)
 {
@@ -168,20 +174,46 @@ void EmuEE_Format(uint32_t page0Address, uint32_t page1Address, EmuEEFormat form
     // Write the page header
 }
 
+// *****************************************************************************
+
 uint16_t EmuEE_AddEntry(uint8_t *src, uint16_t size)
 {
-    // returns virtual address
+    /* Find the number of words our entry will take up. Include 2 bytes for 
+    the entry header */
+    uint8_t numWords = (2 + size) / emueeFlashWordSize + 
+                       (2 + size) % emueeFlashWordSize;
+
+    /* Go to the end of the list and look for space. The first entry begins at
+    the page address plus 8 (The page header is 8 bytes long) */
+    uint32_t address = currentPageAddress + 8;
+    
+    switch(emueeFlashWordSize)
+    {
+        case EMUEE_WORD_SIZE_2_BYTES:
+
+            break;
+        case EMUEE_WORD_SIZE_4_BYTES:
+
+            break;
+    }
+    // return virtual address
 } 
+
+// *****************************************************************************
 
 uint16_t EmuEE_GetEntrySizeBytes(uint16_t virtualAddress)
 {
 
 }
 
+// *****************************************************************************
+
 EmuEEError EmuEE_Read(uint16_t virtualAddress, uint8_t *dst, uint16_t dstSize)
 {
 
 }
+
+// *****************************************************************************
 
 EmuEEError EmuEE_Write(uint16_t virtualAddress, uint8_t *src, uint16_t srcSize)
 {

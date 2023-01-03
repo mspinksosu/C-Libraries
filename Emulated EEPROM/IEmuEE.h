@@ -29,7 +29,7 @@
 typedef enum EmuEEFormatTag
 {
     /* Format is X.Y bits, where
-    X = num of entries (2^X)
+    X = virtual address (2^(X-1) number of entries)
     Y = max size of each entry (2^Y bytes)
     Total is 14 bits. Bits [15:14] are reserved 
     Your flash page may not be able to hold the desired number of entries
@@ -60,6 +60,7 @@ typedef enum EmuEEErrorTag
     EMUEE_ERROR_INVALID_ADDRESS,
     EMUEE_ERROR_INVALID_FORMAT,
     EMUEE_ERROR_PAGE_UNFORMATTED,
+    EMUEE_ERROR_DATA_NOT_FOUND,
     EMUEE_ERROR_PAGE_FULL,
 } EmuEEError;
 
@@ -106,4 +107,5 @@ EmuEEError EmuEE_Write(uint16_t virtualAddress, uint8_t *src, uint16_t srcSize);
 EmuEEError EmuEE_ReadFlashWord(uint32_t address, uint32_t *retData);
 
 EmuEEError EmuEE_WriteFlashWord(uint32_t address, uint32_t data);
+
 #endif  /* IEMUEE_H */
