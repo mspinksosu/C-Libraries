@@ -110,7 +110,8 @@ uint32_t UART2_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz)
 
     /* The fractional part is 4-bits. If the rounding goes over 16, add it to
     the "mantissa part" (uartDiv). Example 3. Page 799 */
-    if(divFraction > 0x000F) carry = 1;
+    if(divFraction > 0x000F)
+        carry = 1;
     divFraction &= 0x0F;
     uartDiv += carry;
     uartDiv <<= 4;
@@ -133,16 +134,18 @@ void UART2_Init(UARTInitType *params)
     useRxInterrupt = params->useRxInterrupt;
     useTxInterrupt = params->useTxInterrupt;
 
+    /* Peripheral clock must be enabled before you can write any registers */
+    UART2_CLK_REG |= UART2_CLK_EN_MSK;
+
     /* Turn off module before making changes */
     UART2_ADDR->CR1 &= ~USART_CR1_UE;
 
-    /* Turn off tx and rx interrupts and other bits that I'm going to adjust.
-    I will not mess with any others that the user may have changed prior to
-    calling this function */
+    /* Turn off tx/rx interrupts and other bits that I'm going to adjust */
     UART2_ADDR->CR1 &= ~(USART_CR1_RXNEIE | USART_CR1_TXEIE | USART_CR1_M | USART_CR1_PCE);
 
     /* Set number of data bits, stop bits, and parity */
-    if(use9Bit) UART2_ADDR->CR1 |= USART_CR1_M;
+    if(use9Bit)
+        UART2_ADDR->CR1 |= USART_CR1_M;
 
     switch(stopBits)
     {
@@ -186,9 +189,6 @@ void UART2_Init(UARTInitType *params)
     /* Set prescale and baud rate. For this processor, prescale is reserved
     for low power (IrDa) use only*/
     UART2_ADDR->BRR = (0x0000FFFF & params->BRGValue);
-
-    /* Peripheral clock enable */
-    UART2_CLK_REG |= UART2_CLK_EN_MSK;
 
     /* If you turn on the transmit interrupt during initialization, it could
     fire off repeatedly. It's best to turn it on after placing data in the 
@@ -274,7 +274,7 @@ void UART2_ReceiveEnable(void)
 {
     UART2_ADDR->CR1 |= USART_CR1_RE;
 
-        /* RTS is asserted (low) whenever we are ready to receive data. */
+    /* RTS is asserted (low) whenever we are ready to receive data. */
     if(flowControl == UART_FLOW_CALLBACKS && SetRTSPin != NULL)
     {
         SetRTSPin(false); // set low
@@ -286,7 +286,7 @@ void UART2_ReceiveEnable(void)
 void UART2_ReceiveDisable(void)
 {
     UART2_ADDR->CR1 &= ~USART_CR1_RE;
-    
+
     /* RTS is deasserted (high) whenever we are not ready to receive data. */
     if(flowControl == UART_FLOW_CALLBACKS && SetRTSPin != NULL)
     {
@@ -328,10 +328,10 @@ void UART2_TransmitByte(uint8_t data)
     {
         return; // CTS was high
     }
-
+    
     /* Clear the transmission complete flag if implemented */
     UART2_ADDR->SR &= ~USART_SR_TC;
-    
+
     UART2_ADDR->DR = data;
 
     /* Enable transmit interrupt here if needed */
@@ -375,8 +375,8 @@ bool UART2_IsTransmitFinished(void)
         txReady = true;
 
     /* This function will behave the same as the transmit register empty 
-    function. If the user chooses to poll this function, we want to try and 
-    prevent transmission if CTS is asserted */
+    function. If the user chooses to poll this function, we want to make sure 
+    we block input to the transmit register when CTS is asserted */
     if(flowControl == UART_FLOW_CALLBACKS && IsCTSPinLow != NULL &&
         IsCTSPinLow() == false)
     {

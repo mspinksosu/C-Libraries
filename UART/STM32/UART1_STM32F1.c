@@ -134,6 +134,9 @@ void UART1_Init(UARTInitType *params)
     useRxInterrupt = params->useRxInterrupt;
     useTxInterrupt = params->useTxInterrupt;
 
+    /* Peripheral clock must be enabled before you can write any registers */
+    UART1_CLK_REG |= UART1_CLK_EN_MSK;
+
     /* Turn off module before making changes */
     UART1_ADDR->CR1 &= ~USART_CR1_UE;
 
@@ -141,7 +144,8 @@ void UART1_Init(UARTInitType *params)
     UART1_ADDR->CR1 &= ~(USART_CR1_RXNEIE | USART_CR1_TXEIE | USART_CR1_M | USART_CR1_PCE);
 
     /* Set number of data bits, stop bits, and parity */
-    if(use9Bit) UART1_ADDR->CR1 |= USART_CR1_M;
+    if(use9Bit)
+        UART1_ADDR->CR1 |= USART_CR1_M;
 
     switch(stopBits)
     {
@@ -184,10 +188,7 @@ void UART1_Init(UARTInitType *params)
 
     /* Set prescale and baud rate. For this processor, prescale is reserved
     for low power (IrDa) use only*/
-    UART1_ADDR->BRR = (0x0000FFFF & params->BRGValue);
-
-    /* Peripheral clock enable */
-    UART1_CLK_REG |= UART1_CLK_EN_MSK;
+    UART1_ADDR->BRR = (uint16_t)(params->BRGValue);
 
     /* If you turn on the transmit interrupt during initialization, it could
     fire off repeatedly. It's best to turn it on after placing data in the 
