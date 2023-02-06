@@ -41,12 +41,10 @@
 
 // ***** Global Variables ******************************************************
 
-typedef struct Buffer Buffer;
-
 /* overflow callback function. Make your function pointer follow this format */
 typedef void (*BufferOverflowCallbackFunc)(void);
 
-struct Buffer
+typedef struct Buffer
 {
     uint8_t count;
     bool overflow;
@@ -60,7 +58,7 @@ struct Buffer
         uint8_t tail;
         BufferOverflowCallbackFunc bufferOverflowCallbackFunc;
     } private;
-};
+} Buffer;
 
 /** 
  * The variables below should be treated as private. You should only access 
