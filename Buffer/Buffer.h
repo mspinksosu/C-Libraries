@@ -53,9 +53,9 @@ typedef struct Buffer
     struct
     { //  Yo dawg. I heard you liked structs...
         uint8_t *buffer;
-        uint8_t size;
-        uint8_t head;
-        uint8_t tail;
+        uint16_t size;
+        uint16_t head;
+        uint16_t tail;
         BufferOverflowCallbackFunc bufferOverflowCallbackFunc;
     } private;
 } Buffer;
