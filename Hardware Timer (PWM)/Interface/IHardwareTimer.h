@@ -288,8 +288,6 @@ bool HWTimer_IsRunning(HWTimer *self);
 /***************************************************************************//**
  * @brief Set the counter of the Hardware Timer directly
  * 
- * The timer should count from 0 up to its maximum value, then rollover
- * 
  * @param self  pointer to the HWTimer you are using
  * 
  * @param count  the value to set the counter register to
@@ -298,8 +296,6 @@ void HWTimer_SetCount(HWTimer *self, uint16_t count);
 
 /***************************************************************************//**
  * @brief Get the current count of the Hardware Timer
- * 
- * The timer should count from 0 up to its maximum value, then rollover
  * 
  * @param self  pointer to the HWTimer you are using
  * 
@@ -310,9 +306,9 @@ uint16_t HWTimer_GetCount(HWTimer *self);
 /***************************************************************************//**
  * @brief Add a value to the current count directly
  * 
- * If you want to generate an overflow event every so many ticks, adding the 
- * current value of the counter to your value is a little bit more accurate 
- * than just loading the value at every overflow event. This function is 
+ * If you want to generate an overflow event every so many ticks, adding your 
+ * value to the current value of the counter is a little bit more accurate 
+ * than just loading your value at every overflow event. This function is 
  * provided to make it slightly faster, but don't expect it to be extremely
  * accurate.
  * 
@@ -468,8 +464,8 @@ void HWTimer_ClearCompareMatchFlag(HWTimer *self, uint8_t compChan);
  * @brief The timer has overflowed. Clear the flag, then call the callback
  * 
  * This event is called whenever the timer overflows and the overflow interrupt
- * is enabled. Place this function wherever your interrupt is at. It will clear
- * the interrupt flag and call the OverflowCallback function.
+ * is enabled. Place this function wherever your interrupt is at. It should 
+ * clear the interrupt flag and call the OverflowCallback function.
  * 
  * @param self  pointer to the HWTimer you are using
  */

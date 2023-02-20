@@ -213,6 +213,9 @@ void HWTimer1_STM32_SetComparePercent(uint8_t compChan, uint8_t percent)
 {
     if(compChan >= HW_TIM1_NUM_COMP_CHANNELS)
         return;
+    
+    if(percent > 100)
+        percent = 100;
 
     uint32_t *CCRx = compChanToAddress(compChan);
     uint32_t compValue = percent * 65535 / 100;
