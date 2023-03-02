@@ -26,7 +26,7 @@
 
 // *****************************************************************************
 
-uint8_t Checksum_TwosComp8Bit(uint8_t *array, uint16_t length)
+uint8_t Checksum_TwosComp8Bit(const uint8_t *array, uint16_t length)
 {
     uint8_t checksum = 0;
     
@@ -40,7 +40,7 @@ uint8_t Checksum_TwosComp8Bit(uint8_t *array, uint16_t length)
 
 // *****************************************************************************
 
-uint16_t Checksum_TwosComp16Bit(uint8_t *array, uint16_t length)
+uint16_t Checksum_TwosComp16Bit(const uint8_t *array, uint16_t length)
 {
     uint16_t checksum = 0;
     
@@ -56,7 +56,7 @@ uint16_t Checksum_TwosComp16Bit(uint8_t *array, uint16_t length)
 
 // *****************************************************************************
 
-uint8_t Checksum_OnesComp8Bit(uint8_t *array, uint16_t length)
+uint8_t Checksum_OnesComp8Bit(const uint8_t *array, uint16_t length)
 {
     /* I used to think a one's complement checksum was just the sum and then
     the one's complement. It's actually the one's complement sum and then you
@@ -83,7 +83,7 @@ uint8_t Checksum_OnesComp8Bit(uint8_t *array, uint16_t length)
 
 // *****************************************************************************
 
-uint16_t Checksum_OnesComp16Bit(uint8_t *array, uint16_t length)
+uint16_t Checksum_OnesComp16Bit(const uint8_t *array, uint16_t length)
 {
     uint32_t checksum = 0;
     
