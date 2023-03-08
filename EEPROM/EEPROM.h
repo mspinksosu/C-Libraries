@@ -57,7 +57,30 @@ void EEPROM_WriteByte(uint16_t address, uint8_t data);
  */
 uint8_t EEPROM_ReadByte(uint16_t address);
 
-// TODO add write and read data functions
+/***************************************************************************//**
+ * @brief Write multiple bytes to the EEPROM
+ * 
+ * This is a blocking function
+ * 
+ * @param address  the address in the EEPROM
+ * 
+ * @param data  pointer to the data to be written
+ * 
+ * @param size  the size of the data to be written
+ */
 void EEPROM_WriteData(uint16_t address, uint8_t *data, uint8_t size);
+
+/***************************************************************************//**
+ * @brief Read multiple bytes from the EEPROM
+ * 
+ * This is a blocking function
+ * 
+ * @param address  the address in the EEPROM
+ * 
+ * @param retData  pointer to the destination of the data read
+ * 
+ * @param size  the number of bytes to read
+ */
+void EEPROM_ReadData(uint16_t address, uint8_t *retData, uint8_t size);
 
 #endif  /* EEPROM__H */

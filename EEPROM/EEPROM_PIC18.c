@@ -3,23 +3,24 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 12/2/14   Original creation
- * @date 2/4/22    Modified
+ * @date 2/22/23   Original creation
  * 
- * @file Foo_MCU1.c
+ * @file EEPROM_PIC18.c
  * 
  * @details
- *      TODO
+ *      If you are using XC-8, it should have your chip selection defined in 
+ * your project settings. Including xc.h should do the trick. If not, processor 
+ * header files can be found in the install path of your compiler: 
+ * "Install_Path/xc8/v2.20/pic/include/proc/"
+ * Example: #include <proc/pic18lf4585.h>
  * 
  ******************************************************************************/
 
 #include "EEPROM.h"
 
-/* Include processor specific header files here. If you are using XC-8, it 
-should have your chip selection defined in your project settings. Including
-xc.h should do the trick. If not, processor header files can be found in the
-install path of your compiler: "Install_Path\xc8\v2.20\pic\include\proc\""   */
-#include <xc.h>
+/* Include processor specific header files here. */
+//#include <xc.h>
+#include </proc/pic18lf4585.h>
 
 // ***** Defines ***************************************************************
 
@@ -30,13 +31,6 @@ install path of your compiler: "Install_Path\xc8\v2.20\pic\include\proc\""   */
 // ***** Static Function Prototypes ********************************************
 
 /* Put static function prototypes here */
-
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// ***** Non-Interface Functions *********************************************//
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,10 +56,11 @@ void EEPROM_WriteByte(uint16_t address, uint8_t data)
     EECON2 = 0x55;
     EECON2 = 0xAA;
     EECON1bits.WR = 1;
+    
+    GIE = gieBit;           // restore interrupts
 
     while(EECON1bits.WR == 1);
 
-    GIE = gieBit;
     EECON1bits.WREN = 0;
     EECON1bits.EEPGD = 1;
 }
@@ -86,6 +81,69 @@ uint8_t EEPROM_ReadByte(uint16_t address)
     EECON1bits.EEPGD = 1;
 
     return EEDATA;
+}
+
+// *****************************************************************************
+
+void EEPROM_WriteData(uint16_t address, uint8_t *data, uint8_t size)
+{
+    if((address + size) > 0x400)
+        return;
+    
+    EECON1bits.CFGS = 0;  // access the program memory/EEPROM
+    EECON1bits.EEPGD = 0; // access the EEPROM
+
+    EECON1bits.WREN = 1;    // enable EEPROM write
+    uint8_t gieBit = GIE;   // store global interrupt status
+    GIE = 0;                // disable interrupts
+
+    /* Initiate EEPROM write sequence then wait for WR bit to clear. This 
+    sequence must be done for every byte. */
+    while(size > 0)
+    {
+        EEADRH = address >> 8;
+        EEADR = address;
+        EEDATA = *data;
+
+        EECON2 = 0x55;
+        EECON2 = 0xAA;
+        EECON1bits.WR = 1;
+
+        while(EECON1bits.WR == 1);
+        address++;
+        data++;
+        size--;
+    }
+
+    GIE = gieBit;
+    EECON1bits.WREN = 0;
+    EECON1bits.EEPGD = 1;
+}
+
+// *****************************************************************************
+
+void EEPROM_ReadData(uint16_t address, uint8_t *retData, uint8_t size)
+{
+    if((address + size) > 0x400)
+        return;
+
+    EECON1bits.CFGS = 0;  // access the program memory/EEPROM
+    EECON1bits.EEPGD = 0; // access the EEPROM
+
+    /* Initiate read */
+    while(size > 0)
+    {
+        EEADRH = address >> 8;
+        EEADR = address;
+        EECON1bits.RD = 1;
+        while(EECON1bits.RD == 1);
+        *retData = EEDATA;
+        address++;
+        data++;
+        size--;
+    }
+
+    EECON1bits.EEPGD = 1;
 }
 
 /*
