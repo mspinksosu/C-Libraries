@@ -15,6 +15,7 @@
  * 
  * ****************************************************************************/
 
+#include <stddef.h>
 #include "UART2.h"
 
 /* Include processor specific header files here */
@@ -25,44 +26,33 @@
 /* These will change the percent error of your baud rate generator based on 
 your crystal frequency. Typically, these are both set to 1 to reach 115200 
 baud. If you are unsure, check the reference manual. */
-#define UART2_BRG16     1   // use 16-bit baud rate generator
-#define UART2_BRGH      1   // high speed brg
+#define UART_BRG16     1   // use 16-bit baud rate generator
+#define UART_BRGH      1   // high speed brg
 
-// -----------------------------------------------------------------------------
-#if (UART2_BRG16 && UART2_BRGH)
-#define UART2_BRG_DIV   4
-#elif (UART2_BRGH)
-#define UART2_BRG_DIV   16
+#if (UART_BRG16 && UART_BRGH)
+#define UART_BRG_DIV   4
+#elif (UART_BRGH)
+#define UART_BRG_DIV   16
 #else
-#define UART2_BRG_DIV   64
+#define UART_BRG_DIV   64
 #endif
 
-//#define UART2_ComputeBRGValue(desiredBaudRate, clkInMHz) ((clkInMHz * 1000000UL) / (UART2_BRG_DIV * desiredBaudRate) - 1)
-
-/* Registers */
-#define UART2_PIExbits      PIE3bits
-#define UART2_PIRxbits      PIR3bits    
-#define UART2_RCxSTAbits    RC1STAbits
-#define UART2_TXxSTAbits    TX1STAbits
-#define UART2_BAUDxCONbits  BAUD1CONbits
-#define UART2_SPxBRGH       SP2BRGH
-#define UART2_SPxBRGL       SP1BRGL
-#define UART2_RCxREG        RC1REG
-#define UART2_TXxREG        TX1REG
-
-// ***** Static Function Prototypes ********************************************
-
-/* Put static function prototypes here */
-static inline uint32_t UART2_ComputeBRGValue(uint32_t desiredBaudRate, float clkInMHz)
-{
-    return ((clkInMHz * 1000000UL) / (UART1_BRG_DIV * desiredBaudRate) - 1);
-}
+/* Registers */ 	  // TODO update registers for UART2
+#define PIExbits      PIE3bits
+#define PIRxbits      PIR3bits
+#define RCxSTAbits    RC1STAbits
+#define TXxSTAbits    TX1STAbits
+#define BAUDxCONbits  BAUD1CONbits
+#define SPxBRGH       SP2BRGH
+#define SPxBRGL       SP1BRGL
+#define RCxREG        RC1REG
+#define TXxREG        TX1REG
 
 // ***** Global Variables ******************************************************
 
 /* Assign functions to the interface */
 UARTInterface UART2_FunctionTable = {
-    .UART_ComputeBRGValue = UART1_ComputeBRGValue,
+    .UART_ComputeBRGValue = UART2_ComputeBRGValue,
     .UART_Init = UART2_Init,
     .UART_ReceivedDataEvent = UART2_ReceivedDataEvent,
     .UART_GetReceivedByte = UART2_GetReceivedByte,
@@ -80,7 +70,8 @@ UARTInterface UART2_FunctionTable = {
     .UART_SetRTSPinFunc = UART2_SetRTSPinFunc,
 };
 
-static bool use9Bit = false, flowControl = false;
+static bool use9Bit = false, useRxInterrupt = false, useTxInterrupt = false;
+static UARTFlowControl flowControl = UART_FLOW_NONE;
 static UARTStopBits stopBits = UART_ONE_P;
 static UARTParity parity = UART_NO_PARITY;
 
@@ -90,67 +81,71 @@ static void (*UART_ReceivedDataCallback)(void);
 static void (*UART_CTSPinFunc)(void);
 static void (*UART_RTSPinFunc)(void);
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- */
-void UART2_Init(UART *self)
+// ***** Static Function Prototypes ********************************************
+
+/* Put static function prototypes here */
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Interface Functions *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, float clkInMHz)
 {
-    /* In case the user chooses to call this function directly instead of
-    calling the base UART_Init function */
-    if(self->interface == NULL)
-    {
-        UART_Create(self, &UART2_FunctionTable);
+    return ((clkInMHz * 1000000UL) / (UART1_BRG_DIV * desiredBaudRate) - 1);
     }
 
-    if(self->BRGValue == 0)
+// *****************************************************************************
+
+void UART1_Init(UARTInitType *params)
     {
+    if(params->BRGValue == 0)
         return;
-    }
 
-    use9Bit = self->use9Bit;
-    flowControl = self->flowControl;
-    stopBits = self->stopBits;
-    parity = self->parity;
+    use9Bit = params->use9Bit;
+    flowControl = params->flowControl;
+    stopBits = params->stopBits;
+    parity = params->parity;
+    useRxInterrupt = params->useRxInterrupt;
+    useTxInterrupt = params->useTxInterrupt;
 
     /* TODO Add code to alter parity and stop bits */
 
     // Disable interrupts before changing states
-    UART2_PIExbits.RCIE = 0;
-    UART2_PIExbits.TXIE = 0;
+    PIExbits.RCIE = 0;
+    PIExbits.TXIE = 0;
 
-    UART2_RCxSTAbits.RX9 = use9Bit;
-    UART2_RCxSTAbits.ADDEN = use9Bit;
-    UART2_RCxSTAbits.CREN = 1; // enable continuous receive
-    UART2_RCxSTAbits.SPEN = 1; // enable serial port
+    RCxSTAbits.RX9 = use9Bit;
+    RCxSTAbits.ADDEN = use9Bit;
+    RCxSTAbits.CREN = 1; // enable continuous receive
+    RCxSTAbits.SPEN = 1; // enable serial port
 
-    UART2_TXxSTAbits.SYNC = 0; // asynchronous
-    UART2_TXxSTAbits.TX9 = use9Bit;
-    UART2_TXxSTAbits.TXEN = 1; // enable transmitter
+    TXxSTAbits.SYNC = 0; // asynchronous
+    TXxSTAbits.TX9 = use9Bit;
+    TXxSTAbits.TXEN = 1; // enable transmitter
 
-    UART2_TXxSTAbits.BRGH = UART2_BRGH; // high baud rate, baudclk/4
-    UART2_BAUDxCONbits.BRG16 = UART2_BRG16; // 16-bit baud generator
+    TXxSTAbits.BRGH = UART1_BRGH; // high baud rate, baudclk/4
+    BAUDxCONbits.BRG16 = UART1_BRG16; // 16-bit baud generator
 
-    UART2_SPxBRGL = (uint8_t)self->BRGValue;
-    UART2_SPxBRGH = (uint8_t)(self->BRGValue >> 8);
+    SPxBRGL = (uint8_t)params->BRGValue;
+    SPxBRGH = (uint8_t)(params->BRGValue >> 8);
 
-    UART2_PIExbits.RCIE = 1; // enable receive interrupt
+    PIExbits.RCIE = 1; // enable receive interrupt
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void UART2_ReceivedDataEvent(void)
 {
     /* Clear any interrupt flags here if needed */
 
-    if(1 == UART2_RCxSTAbits.OERR)
+    if(1 == RCxSTAbits.OERR)
     {
         // EUSART error - restart
-        UART2_RCxSTAbits.CREN = 0;
-        UART2_RCxSTAbits.CREN = 1;
+        RCxSTAbits.CREN = 0;
+        RCxSTAbits.CREN = 1;
     }
 
     if(UART_ReceivedDataCallback)
@@ -159,34 +154,26 @@ void UART2_ReceivedDataEvent(void)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @return uint8_t 
- */
+// *****************************************************************************
+
 uint8_t UART2_GetReceivedByte(void)
 {
-    return UART2_RCxREG;
+    return RCxREG;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param data 
- */
+// *****************************************************************************
+
 void UART2_TransmitByte(uint8_t data)
 {
     /* For this function I will be making use of interrupts to transmit my data.
     Writing to TX_REG will clear the TXIF flag after one instruction cycle */
-    UART2_TXxREG = data;
+    TXxREG = data;
     
-    UART2_PIExbits.TXIE = 1; // enable transmit interrupt
+    PIExbits.TXIE = 1; // enable transmit interrupt
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void UART2_TransmitFinished(void)
 {
     /* Clear any interrupt flags here if needed */
@@ -197,112 +184,86 @@ void UART2_TransmitFinished(void)
     }
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void UART2_ReceiveEnable(void)
 {
-    UART2_PIExbits.RCIE = 1;
+    PIExbits.RCIE = 1;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void UART2_ReceiveDisable(void)
 {
-    UART2_PIExbits.RCIE = 0;
+    PIExbits.RCIE = 0;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @return true 
- */
+// *****************************************************************************
+
 bool UART2_IsReceiveRegisterFull(void)
 {
     /* The receive character interrupt flag is set whenever there is an unread
     character and is cleared by reading the character */
-    if(UART2_PIRxbits.RC1IF)
+    if(PIRxbits.RC1IF)
         return true;
     else
         return false;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void UART2_TransmitEnable(void)
 {
-    UART2_PIExbits.TXIE = 1;
+    PIExbits.TXIE = 1;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- */
+// *****************************************************************************
+
 void UART2_TransmitDisable(void)
 {
-    UART2_PIExbits.TXIE = 0;
+    PIExbits.TXIE = 0;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @return true 
- */
+// *****************************************************************************
+
 bool UART2_IsTransmitRegisterEmpty(void)
 {
     /* The transmit interrupt flag is set whenever the transmitter is enabled
     and there is no character in the register for transmission */
-    if(UART2_PIRxbits.TX1IF)
+    if(PIRxbits.TX1IF)
         return true;
     else
         return false;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param Function 
- */
+// *****************************************************************************
+
 void UART2_SetTransmitRegisterEmptyCallback(void (*Function)(void))
 {
     UART_TransmitRegisterEmptyCallback = Function;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param Function 
- */
+// *****************************************************************************
+
 void UART2_SetReceivedDataCallback(void (*Function)(void))
 {
     UART_ReceivedDataCallback = Function;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param Function 
- */
+// *****************************************************************************
+
 void UART2_SetCTSPinFunc(void (*Function)(bool))
 {
     UART_CTSPinFunc = Function;
 }
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param Function 
- */
+// *****************************************************************************
+
 void UART2_SetRTSPinFunc(void (*Function)(bool))
 {
     UART_RTSPinFunc = Function;
 }
 
-/**
+/*
  End of File
 */
