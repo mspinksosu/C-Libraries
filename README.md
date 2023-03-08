@@ -52,7 +52,7 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
     - [x] STM32 G0 implementation finished! Testing in progress
     - [x] Added options for flow control and interrupts
     - [x] STM32 F1 implementation tested and working!
-    - [ ] PIC16 implementation redesign
+    - [x] PIC16 implementation finished! Testing in progress
     - [x] Update doxygen
 
 ---

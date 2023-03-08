@@ -8,7 +8,7 @@
  * @date 3/9/22     Reformatted to use function table. Added preprocessor
  *                  macros and defines for PIC registers
  * 
- * @file UART1_PIC16_Int.c
+ * @file UART2_PIC16.c
  * 
  * @details
  *      TODO Add details, 9-bit, and different parity, hardware flow control
@@ -16,7 +16,7 @@
  * ****************************************************************************/
 
 #include <stddef.h>
-#include "UART1.h"
+#include "UART2.h"
 
 /* Include processor specific header files here */
 #include <xc.h>
@@ -51,23 +51,23 @@ baud. If you are unsure, check the reference manual. */
 // ***** Global Variables ******************************************************
 
 /* Assign functions to the interface */
-UARTInterface UART1_FunctionTable = {
-    .UART_ComputeBRGValue = UART1_ComputeBRGValue,
-    .UART_Init = UART1_Init,
-    .UART_ReceivedDataEvent = UART1_ReceivedDataEvent,
-    .UART_GetReceivedByte = UART1_GetReceivedByte,
-    .UART_IsReceiveRegisterFull = UART1_IsReceiveRegisterFull,
-    .UART_ReceiveEnable = UART1_ReceiveEnable,
-    .UART_ReceiveDisable = UART1_ReceiveDisable,
-    .UART_TransmitRegisterEmptyEvent = UART1_TransmitRegisterEmptyEvent,
-    .UART_TransmitByte = UART1_TransmitByte,
-    .UART_IsTransmitRegisterEmpty = UART1_IsTransmitRegisterEmpty,
-    .UART_TransmitEnable = UART1_TransmitEnable,
-    .UART_TransmitDisable = UART1_TransmitDisable,
-    .UART_SetTransmitRegisterEmptyCallback = UART1_SetTransmitRegisterEmptyCallback,
-    .UART_SetReceivedDataCallback = UART1_SetReceivedDataCallback,
-    .UART_SetCTSPinFunc = UART1_SetCTSPinFunc,
-    .UART_SetRTSPinFunc = UART1_SetRTSPinFunc,
+UARTInterface UART2_FunctionTable = {
+    .UART_ComputeBRGValue = UART2_ComputeBRGValue,
+    .UART_Init = UART2_Init,
+    .UART_ReceivedDataEvent = UART2_ReceivedDataEvent,
+    .UART_GetReceivedByte = UART2_GetReceivedByte,
+    .UART_IsReceiveRegisterFull = UART2_IsReceiveRegisterFull,
+    .UART_ReceiveEnable = UART2_ReceiveEnable,
+    .UART_ReceiveDisable = UART2_ReceiveDisable,
+    .UART_TransmitRegisterEmptyEvent = UART2_TransmitRegisterEmptyEvent,
+    .UART_TransmitByte = UART2_TransmitByte,
+    .UART_IsTransmitRegisterEmpty = UART2_IsTransmitRegisterEmpty,
+    .UART_TransmitEnable = UART2_TransmitEnable,
+    .UART_TransmitDisable = UART2_TransmitDisable,
+    .UART_SetTransmitRegisterEmptyCallback = UART2_SetTransmitRegisterEmptyCallback,
+    .UART_SetReceivedDataCallback = UART2_SetReceivedDataCallback,
+    .UART_SetCTSPinFunc = UART2_SetCTSPinFunc,
+    .UART_SetRTSPinFunc = UART2_SetRTSPinFunc,
 };
 
 static bool use9Bit = false, useRxInterrupt = false, useTxInterrupt = false;
@@ -92,15 +92,15 @@ static void (*UART_RTSPinFunc)(void);
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, float clkInMHz)
+uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, float pclkInHz)
 {
-    return ((clkInMHz * 1000000UL) / (UART1_BRG_DIV * desiredBaudRate) - 1);
-}
+    return ((pclkInHz * 1000000UL) / (UART1_BRG_DIV * desiredBaudRate) - 1);
+    }
 
 // *****************************************************************************
 
 void UART1_Init(UARTInitType *params)
-{
+    {
     if(params->BRGValue == 0)
         return;
 
@@ -137,7 +137,7 @@ void UART1_Init(UARTInitType *params)
 
 // *****************************************************************************
 
-void UART1_ReceivedDataEvent(void)
+void UART2_ReceivedDataEvent(void)
 {
     /* Clear any interrupt flags here if needed */
 
@@ -156,14 +156,14 @@ void UART1_ReceivedDataEvent(void)
 
 // *****************************************************************************
 
-uint8_t UART1_GetReceivedByte(void)
+uint8_t UART2_GetReceivedByte(void)
 {
     return RCxREG;
 }
 
 // *****************************************************************************
 
-void UART1_TransmitByte(uint8_t data)
+void UART2_TransmitByte(uint8_t data)
 {
     /* For this function I will be making use of interrupts to transmit my data.
     Writing to TX_REG will clear the TXIF flag after one instruction cycle */
@@ -174,7 +174,7 @@ void UART1_TransmitByte(uint8_t data)
 
 // *****************************************************************************
 
-void UART1_TransmitFinished(void)
+void UART2_TransmitFinished(void)
 {
     /* Clear any interrupt flags here if needed */
 
@@ -186,21 +186,21 @@ void UART1_TransmitFinished(void)
 
 // *****************************************************************************
 
-void UART1_ReceiveEnable(void)
+void UART2_ReceiveEnable(void)
 {
     PIExbits.RCIE = 1;
 }
 
 // *****************************************************************************
 
-void UART1_ReceiveDisable(void)
+void UART2_ReceiveDisable(void)
 {
     PIExbits.RCIE = 0;
 }
 
 // *****************************************************************************
 
-bool UART1_IsReceiveRegisterFull(void)
+bool UART2_IsReceiveRegisterFull(void)
 {
     /* The receive character interrupt flag is set whenever there is an unread
     character and is cleared by reading the character */
@@ -212,21 +212,21 @@ bool UART1_IsReceiveRegisterFull(void)
 
 // *****************************************************************************
 
-void UART1_TransmitEnable(void)
+void UART2_TransmitEnable(void)
 {
     PIExbits.TXIE = 1;
 }
 
 // *****************************************************************************
 
-void UART1_TransmitDisable(void)
+void UART2_TransmitDisable(void)
 {
     PIExbits.TXIE = 0;
 }
 
 // *****************************************************************************
 
-bool UART1_IsTransmitRegisterEmpty(void)
+bool UART2_IsTransmitRegisterEmpty(void)
 {
     /* The transmit interrupt flag is set whenever the transmitter is enabled
     and there is no character in the register for transmission */
@@ -238,28 +238,28 @@ bool UART1_IsTransmitRegisterEmpty(void)
 
 // *****************************************************************************
 
-void UART1_SetTransmitRegisterEmptyCallback(void (*Function)(void))
+void UART2_SetTransmitRegisterEmptyCallback(void (*Function)(void))
 {
     UART_TransmitRegisterEmptyCallback = Function;
 }
 
 // *****************************************************************************
 
-void UART1_SetReceivedDataCallback(void (*Function)(void))
+void UART2_SetReceivedDataCallback(void (*Function)(void))
 {
     UART_ReceivedDataCallback = Function;
 }
 
 // *****************************************************************************
 
-void UART1_SetCTSPinFunc(void (*Function)(bool))
+void UART2_SetCTSPinFunc(void (*Function)(bool))
 {
     UART_CTSPinFunc = Function;
 }
 
 // *****************************************************************************
 
-void UART1_SetRTSPinFunc(void (*Function)(bool))
+void UART2_SetRTSPinFunc(void (*Function)(bool))
 {
     UART_RTSPinFunc = Function;
 }
