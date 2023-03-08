@@ -3,10 +3,10 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 3/12/22    Original creation (G0 implementation)
- * @date 6/13/22    Ported settings for F1
- * @date 6/25/22    Updated receive callback function
- * @date 7/31/22    Added checks and handler for recursive function calls
+ * @date 3/12/22   Original creation (G0 implementation)
+ * @date 6/13/22   Ported settings for F1
+ * @date 6/25/22   Updated receive callback function
+ * @date 7/31/22   Added checks and handler for recursive function calls
  * 
  * @file UART2_STM32F1.c
  * 
@@ -34,9 +34,9 @@
 // ***** Defines ***************************************************************
 
 /* Peripheral addresses and registers */
-#define UART2_ADDR          USART2
-#define UART2_CLK_REG       RCC->APB1ENR
-#define UART2_CLK_EN_MSK    RCC_APB1ENR_USART2EN
+#define UART_ADDR       USART2
+#define UART_CLK_REG    RCC->APB1ENR
+#define UART_CLK_EN_MSK RCC_APB1ENR_USART2EN
 
 // ***** Global Variables ******************************************************
 
@@ -135,71 +135,71 @@ void UART2_Init(UARTInitType *params)
     useTxInterrupt = params->useTxInterrupt;
 
     /* Peripheral clock must be enabled before you can write any registers */
-    UART2_CLK_REG |= UART2_CLK_EN_MSK;
+    UART_CLK_REG |= UART_CLK_EN_MSK;
 
     /* Turn off module before making changes */
-    UART2_ADDR->CR1 &= ~USART_CR1_UE;
+    UART_ADDR->CR1 &= ~USART_CR1_UE;
 
     /* Turn off tx/rx interrupts and other bits that I'm going to adjust */
-    UART2_ADDR->CR1 &= ~(USART_CR1_RXNEIE | USART_CR1_TXEIE | USART_CR1_M | USART_CR1_PCE);
+    UART_ADDR->CR1 &= ~(USART_CR1_RXNEIE | USART_CR1_TXEIE | USART_CR1_M | USART_CR1_PCE);
 
     /* Set number of data bits, stop bits, and parity */
     if(use9Bit)
-        UART2_ADDR->CR1 |= USART_CR1_M;
+        UART_ADDR->CR1 |= USART_CR1_M;
 
     switch(stopBits)
     {
         case UART_HALF_P:
-            UART2_ADDR->CR2 |= USART_CR2_STOP_0; // [1:0] = 01
-            UART2_ADDR->CR2 &= ~(USART_CR2_STOP_1);
+            UART_ADDR->CR2 |= USART_CR2_STOP_0; // [1:0] = 01
+            UART_ADDR->CR2 &= ~(USART_CR2_STOP_1);
             break;
         case UART_ONE_PLUS_HALF_P:
-            UART2_ADDR->CR2 |= (USART_CR2_STOP_1 | USART_CR2_STOP_0);
+            UART_ADDR->CR2 |= (USART_CR2_STOP_1 | USART_CR2_STOP_0);
             break;
         case UART_TWO_P:
-            UART2_ADDR->CR2 &= ~(USART_CR2_STOP_0); // [1:0] = 10
-            UART2_ADDR->CR2 |= USART_CR2_STOP_1;
+            UART_ADDR->CR2 &= ~(USART_CR2_STOP_0); // [1:0] = 10
+            UART_ADDR->CR2 |= USART_CR2_STOP_1;
             break;
         default:
-            UART2_ADDR->CR2 &= ~(USART_CR2_STOP_1 | USART_CR2_STOP_0);
+            UART_ADDR->CR2 &= ~(USART_CR2_STOP_1 | USART_CR2_STOP_0);
             break;
     }
 
     if(parity == UART_EVEN_PARITY)
     {
-        UART2_ADDR->CR1 &= ~USART_CR1_PS;
-        UART2_ADDR->CR1 |= USART_CR1_PCE;
+        UART_ADDR->CR1 &= ~USART_CR1_PS;
+        UART_ADDR->CR1 |= USART_CR1_PCE;
     }
     else if(parity == UART_ODD_PARITY)
     {
-        UART2_ADDR->CR1 |= USART_CR1_PS;
-        UART2_ADDR->CR1 |= USART_CR1_PCE;
+        UART_ADDR->CR1 |= USART_CR1_PS;
+        UART_ADDR->CR1 |= USART_CR1_PCE;
     }
 
     /* TODO Implement software flow control some day */
     if(flowControl == UART_FLOW_HARDWARE)
     {
-        UART2_ADDR->CR3 |= (USART_CR3_CTSE | USART_CR3_RTSE);
+        UART_ADDR->CR3 |= (USART_CR3_CTSE | USART_CR3_RTSE);
     }
     else
     {
-        UART2_ADDR->CR3 &= ~(USART_CR3_CTSE | USART_CR3_RTSE);
+        UART_ADDR->CR3 &= ~(USART_CR3_CTSE | USART_CR3_RTSE);
     }
 
     /* Set prescale and baud rate. For this processor, prescale is reserved
     for low power (IrDa) use only*/
-    UART2_ADDR->BRR = (0x0000FFFF & params->BRGValue);
+    UART_ADDR->BRR = (uint16_t)(params->BRGValue);
 
     /* If you turn on the transmit interrupt during initialization, it could
     fire off repeatedly. It's best to turn it on after placing data in the 
     transmit register */
 
-    if(useRxInterrupt) 
-        UART2_ADDR->CR1 |= USART_CR1_RXNEIE; // rx register not empty interrupt
+    if(useRxInterrupt)
+        UART_ADDR->CR1 |= USART_CR1_RXNEIE; // rx register not empty interrupt
 
-    UART2_ADDR->CR1 |= USART_CR1_RE; // enable receiver
-    UART2_ADDR->CR1 |= USART_CR1_TE; // enable transmitter
-    UART2_ADDR->CR1 |= USART_CR1_UE; // enable UART 
+    UART_ADDR->CR1 |= USART_CR1_RE; // enable receiver
+    UART_ADDR->CR1 |= USART_CR1_TE; // enable transmitter
+    UART_ADDR->CR1 |= USART_CR1_UE; // enable UART 
 }
 
 // *****************************************************************************
@@ -232,7 +232,7 @@ void UART2_ReceivedDataEvent(void)
 
 uint8_t UART2_GetReceivedByte(void)
 {
-    uint8_t data = UART2_ADDR->DR;
+    uint8_t data = UART_ADDR->DR;
 
     /* RTS is asserted (low) whenever we are ready to receive data. It is 
     deasserted (high) when the receive register is full */
@@ -252,17 +252,14 @@ bool UART2_IsReceiveRegisterFull(void)
 
     /* The RX register not empty flag is set when the RDR has a character 
     placed in it. It is cleared by reading the character from RDR */
-    if(UART2_ADDR->SR & USART_SR_RXNE)
+    if(UART_ADDR->SR & USART_SR_RXNE)
         rxFull = true;
 
     /* If the user chooses to poll this function instead of using the receive 
     data event, we must still do something with the RTS pin. */
     if(flowControl == UART_FLOW_CALLBACKS && SetRTSPin != NULL)
     {
-        if(UART2_ADDR->SR & USART_SR_RXNE)
-            SetRTSPin(true); // "deassert" (high) when full
-        else
-            SetRTSPin(false);
+        SetRTSPin(rxFull); // "deassert" (high) when full
     }
 
     return rxFull;
@@ -272,7 +269,10 @@ bool UART2_IsReceiveRegisterFull(void)
 
 void UART2_ReceiveEnable(void)
 {
-    UART2_ADDR->CR1 |= USART_CR1_RE;
+    UART_ADDR->CR1 |= USART_CR1_RE;
+
+    if(useRxInterrupt) 
+        UART_ADDR->CR1 |= USART_CR1_RXNEIE;
 
     /* RTS is asserted (low) whenever we are ready to receive data. */
     if(flowControl == UART_FLOW_CALLBACKS && SetRTSPin != NULL)
@@ -285,7 +285,7 @@ void UART2_ReceiveEnable(void)
 
 void UART2_ReceiveDisable(void)
 {
-    UART2_ADDR->CR1 &= ~USART_CR1_RE;
+    UART_ADDR->CR1 &= ~USART_CR1_RE;
 
     /* RTS is deasserted (high) whenever we are not ready to receive data. */
     if(flowControl == UART_FLOW_CALLBACKS && SetRTSPin != NULL)
@@ -309,7 +309,7 @@ void UART2_TransmitRegisterEmptyEvent(void)
     lockTxFinishedEvent = true;
 
     /* Disable transmit interrupt here */
-    UART2_ADDR->CR1 &= ~USART_CR1_TXEIE;
+    UART_ADDR->CR1 &= ~USART_CR1_TXEIE;
 
     if(TransmitRegisterEmptyCallback)
     {
@@ -330,13 +330,13 @@ void UART2_TransmitByte(uint8_t data)
     }
     
     /* Clear the transmission complete flag if implemented */
-    UART2_ADDR->SR &= ~USART_SR_TC;
+    UART_ADDR->SR &= ~USART_SR_TC;
 
-    UART2_ADDR->DR = data;
+    UART_ADDR->DR = data;
 
     /* Enable transmit interrupt here if needed */
     if(useTxInterrupt)
-        UART2_ADDR->CR1 |= USART_CR1_TXEIE;
+        UART_ADDR->CR1 |= USART_CR1_TXEIE;
 }
 
 // *****************************************************************************
@@ -347,7 +347,7 @@ bool UART2_IsTransmitRegisterEmpty(void)
 
     /* The transmit register empty flag is set when the contents of the TDR 
     register are emptied. It is cleared when the TDR register is written to */
-    if(UART2_ADDR->SR & USART_SR_TXE)
+    if(UART_ADDR->SR & USART_SR_TXE)
         txReady = true;
 
     /* If the user chooses to poll this function instead of using the transmit
@@ -371,7 +371,7 @@ bool UART2_IsTransmitFinished(void)
     /* The transmit complete flag is set when a full data byte is shifted out 
     and the transmit register empty flag is set. It is cleared by writing a
     zero to it. */
-    if(UART2_ADDR->SR & USART_SR_TC)
+    if(UART_ADDR->SR & USART_SR_TC)
         txReady = true;
 
     /* This function will behave the same as the transmit register empty 
@@ -390,15 +390,20 @@ bool UART2_IsTransmitFinished(void)
 
 void UART2_TransmitEnable(void)
 {
-    UART2_ADDR->CR1 |= USART_CR1_TE;
+    UART_ADDR->CR1 |= USART_CR1_TE;
+
+    /* If the transmit register is full and interrupts are desired, 
+    enable them */
+    if(useTxInterrupt && !(UART_ADDR->SR & USART_SR_TXE))
+        UART_ADDR->CR1 |= USART_CR1_TXEIE;
 }
 
 // *****************************************************************************
 
 void UART2_TransmitDisable(void)
 {
-    while(!(UART2_ADDR->SR & USART_SR_TC)){} // wait for transmission to finish
-    UART2_ADDR->CR1 &= ~USART_CR1_TE;
+    while(!(UART_ADDR->SR & USART_SR_TC)){} // wait for transmission to finish
+    UART_ADDR->CR1 &= ~USART_CR1_TE;
 }
 
 // *****************************************************************************
