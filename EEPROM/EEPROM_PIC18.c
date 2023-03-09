@@ -139,7 +139,7 @@ void EEPROM_ReadData(uint16_t address, uint8_t *retData, uint8_t size)
         while(EECON1bits.RD == 1);
         *retData = EEDATA;
         address++;
-        data++;
+        retData++;
         size--;
     }
 
