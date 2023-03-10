@@ -94,8 +94,20 @@ static void (*UART_RTSPinFunc)(void);
 
 uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, float pclkInHz)
 {
-    return ((pclkInHz * 1000000UL) / (UART1_BRG_DIV * desiredBaudRate) - 1);
-    }
+    /* BRG = Clk / (Prescale * Baud) - 1 */
+    uint32_t tmp = 0;
+
+    /* Convert pclk to a 26.6 fixed point number */
+    pclkInHz <<= 6;
+    /* Divide by (Prescale * Baud) */
+    tmp = pclkInHz / (UART_BRG_DIV * desiredBaudRate);
+    /* Subtract 1 (1 is converted to a 26.6 fixed point number) */
+    tmp -= (1 << 6);
+    /* Add 0.5 to round up (0.5 converted to 26.6 fixed point number is 2^5) */
+    tmp += (1 << 5);
+    /* Shift back right to get the final result */
+    return (tmp >> 6);
+}
 
 // *****************************************************************************
 
