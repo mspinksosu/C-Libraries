@@ -43,18 +43,46 @@ FxpU16 FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart,
 {
     FxpU16 retFxp = {integerPart, 0};
 
+    /* interger * 2^b + (fractional * 2^b / 10^p)
+    Where b is the number of fractional bits and p is the precision */
+
     if(numFractionalBits < 16)
     {
         retFxp.numFracBits = numFractionalBits;
         retFxp.value <<= numFractionalBits;
         
-        uint32_t f32 = fractionalPart << numFractionalBits;
+        uint32_t frac32 = fractionalPart;
+
+        /* Maximum fractional part is 65535 which is 5 digits */
+        if(precision > 5)
+            precision = 5;
+
+        /* Reduce fractional part if it is too big */
+        for(uint8_t i = 5 - precision; i > 0; i--)
+        {
+            frac32 += 5; // round
+            frac32 /= 10;
+        }
+
+        /* Pad fractional part with zeros */
+        uint32_t tens = 1;
+        for(uint8_t i = 0; i < precision; i++)
+        {
+            tens *= 10;
+            if(fractionalPart < tens)
+            {
+                frac32 *= 10;
+            }
+        }
+
+        frac32 = fractionalPart << numFractionalBits;
 
         for(uint8_t i = 0; i < precision; i++)
         {
-            f32 = f32 / 10;
+            frac32 = frac32 / 10;
         }
-        retFxp.value += f32;
+
+        retFxp.value += frac32;
     }
     return retFxp;
 }
