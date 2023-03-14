@@ -58,7 +58,8 @@ typedef struct FxpU16Tag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-FxpU16 FXP_ConvertToFixedU16(uint16_t input, uint8_t numFractionalBits);
+FxpU16 FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart, 
+    uint8_t precision, uint8_t numFractionalBits);
 
 uint16_t FXP_ConvertToU16(FxpU16 input); // perform rounding
 

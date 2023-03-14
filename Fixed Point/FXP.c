@@ -38,14 +38,23 @@
 
 // *****************************************************************************
 
-FxpU16 FXP_ConvertToFixedU16(uint16_t input, uint8_t numFractionalBits)
+FxpU16 FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart, 
+    uint8_t precision, uint8_t numFractionalBits)
 {
-    FxpU16 retFxp = {input, 0};
+    FxpU16 retFxp = {integerPart, 0};
 
     if(numFractionalBits < 16)
     {
         retFxp.numFracBits = numFractionalBits;
         retFxp.value <<= numFractionalBits;
+        
+        uint32_t f32 = fractionalPart << numFractionalBits;
+
+        for(uint8_t i = 0; i < precision; i++)
+        {
+            f32 = f32 / 10;
+        }
+        retFxp.value += f32;
     }
     return retFxp;
 }
@@ -135,7 +144,7 @@ FxpU16 FXP_AddFixedU16(FxpU16 a, FxpU16 b)
     }
 
     /* Shift back right to get the final result */
-    retFxp.value = (uint16_t)(result >> shift);
+    retFxp.value = (uint16_t)(result >> retFxp.numFracBits);
     return retFxp;
 }
 
@@ -171,6 +180,14 @@ FxpU16 FXP_SubFixedU16(FxpU16 a, FxpU16 b)
 
 FxpU16 FXP_MulFixedU16(FxpU16 a, FxpU16 b)
 {
+    FxpU16 retFxp;
+    uint32_t result;
+    uint8_t shift;
+
+    /* When we multiply two fixed point numbers, the result has the same
+    number of decimals as the product of their fractional bits. So two 12.4
+    numbers multiplied will yield a 12.8 result. Then we round back to the 
+    original number of decimal places. */
 
 }
 
