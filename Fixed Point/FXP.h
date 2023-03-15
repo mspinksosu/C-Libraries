@@ -33,17 +33,17 @@
 // ***** Global Variables ******************************************************
 
 /* Class specific variables */
-typedef struct FxpU32Tag
-{
-    uint32_t value;
-    uint8_t numFracBits;
-} FxpU32;
-
 typedef struct FxpU16Tag
 {
     uint16_t value;
     uint8_t numFracBits;
 } FxpU16;
+
+typedef struct FxpU32Tag
+{
+    uint32_t value;
+    uint8_t numFracBits;
+} FxpU32;
 
 /** 
  * Description of struct
@@ -73,6 +73,6 @@ FxpU16 FXP_AddFixedU16(FxpU16 a, FxpU16 b);
 
 FxpU16 FXP_SubFixedU16(FxpU16 a, FxpU16 b);
 
-FxpU16 FXP_MulFixedU16(FxpU16 a, FxpU16 b);
+FxpU32 FXP_MulFixedU16(FxpU16 a, FxpU16 b);
 
 #endif  /* FXP_H */

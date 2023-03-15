@@ -222,17 +222,39 @@ FxpU16 FXP_SubFixedU16(FxpU16 a, FxpU16 b)
 
 // *****************************************************************************
 
-FxpU16 FXP_MulFixedU16(FxpU16 a, FxpU16 b)
+FxpU32 FXP_MulFixedU16(FxpU16 a, FxpU16 b)
 {
-    FxpU16 retFxp;
+    FxpU32 retFxp = {0, a.numFracBits};
     uint32_t result;
-    uint8_t shift;
+    uint8_t shift = b.numFracBits;
 
-    /* When we multiply two fixed point numbers, the result has the same
-    number of decimals as the product of their fractional bits. So two 12.4
-    numbers multiplied will yield a 12.8 result. Then we round back to the 
-    original number of decimal places. */
+    /* Fixed point multiplication is actually simpler than addition. When we 
+    multiply two fixed point numbers, the result has the same number of 
+    decimals as the sum of their fractional bits. So two 12.4 numbers 
+    multiplied will yield a 12.8 result. */
+    uint8_t sumFrac = a.numFracBits + b.numFracBits;
 
+    /* Whichever operand has less decimals is the limiting value to be used for
+    the result. We know the result will have the sum of the two fractional bits.
+    Then amount we have to shift back right is the sum minus our desired 
+    fractional bits. Which is simply the other value's fractional bits. */
+    if(b.numFracBits < a.numFracBits)
+    {
+        retFxp.numFracBits = b.numFracBits;
+        shift = a.numFracBits;
+    }
+
+    result = a.value * b.value;
+
+    if(sumFrac > 0)
+    {
+        /* Add 0.5 to round up */
+        result += (1 << (sumFrac - 1));
+    }
+
+    // TODO Add check for overflow
+    retFxp.value = (uint16_t)(result >> shift);
+    return retFxp;
 }
 
 /*
