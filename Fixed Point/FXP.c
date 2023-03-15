@@ -186,9 +186,13 @@ Fxp FXP_AddFixedU16(Fxp a, Fxp b)
         /* Add 0.5 to round up */
         result += (1 << (shift - 1));
     }
-    // TODO Add check for overflow
+
     /* Shift back right to get the final result */
     retFxp.value = (uint16_t)(result >> retFxp.numFracBits);
+
+    if(retFxp.value & 0xFFFF0000)
+        retFxp.carry = true;
+
     return retFxp;
 }
 
@@ -204,13 +208,19 @@ Fxp FXP_SubFixedU16(Fxp a, Fxp b)
     {
         retFxp.numFracBits = a.numFracBits;
         shift = b.numFracBits - a.numFracBits;
-        result = (a.value << shift) - b.value;
+        a.value <<= shift;
+        result = a.value - b.value;
+        if(b.value > a.value)
+            retFxp.carry = true;
     }
     else
     {
         retFxp.numFracBits = b.numFracBits;
         shift = a.numFracBits - b.numFracBits;
-        result = (b.value << shift) - a.value;
+        b.value <<= shift;
+        result = b.value - a.value;
+        if(a.value > b.value)
+            retFxp.carry = true;
     }
 
     if(shift > 0)
@@ -219,7 +229,6 @@ Fxp FXP_SubFixedU16(Fxp a, Fxp b)
         result += (1 << (shift - 1));
     }
 
-    // TODO Add check for underflow
     /* Shift back right to get the final result */
     retFxp.value = (uint16_t)(result >> shift);
     return retFxp;
@@ -257,8 +266,11 @@ Fxp FXP_MulFixedU16(Fxp a, Fxp b)
         result += (1 << (sumFrac - 1));
     }
 
-    // TODO Add check for overflow
     retFxp.value = (uint16_t)(result >> shift);
+
+    if(retFxp.value & 0xFFFF0000)
+        retFxp.carry = true;
+
     return retFxp;
 }
 
