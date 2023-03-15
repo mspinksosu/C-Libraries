@@ -32,18 +32,21 @@
 
 // ***** Global Variables ******************************************************
 
-/* Class specific variables */
-typedef struct FxpU16Tag
+typedef enum FxpTypeTag
 {
-    uint16_t value;
-    uint8_t numFracBits;
-} FxpU16;
+    FXP_U16,
+    FXP_U32,
+    // TODO add signed
+} FxpType;
 
-typedef struct FxpU32Tag
+/* Class specific variables */
+typedef struct FxpTag
 {
+    FxpType type;
     uint32_t value;
     uint8_t numFracBits;
-} FxpU32;
+    bool carry; // TODO
+} Fxp;
 
 /** 
  * Description of struct
@@ -58,21 +61,21 @@ typedef struct FxpU32Tag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-FxpU16 FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart, 
+Fxp FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart, 
     uint8_t precision, uint8_t numFractionalBits);
 
-uint16_t FXP_ConvertToU16(FxpU16 input); // perform rounding
+uint16_t FXP_ConvertToU16(Fxp input); // perform rounding
 
-void FXP_ConvertFixedU16(FxpU16 *input, uint8_t numFractionalBits); // This can probably be made a static function
+void FXP_ConvertFixedU16(Fxp *input, uint8_t numFractionalBits); // This can probably be made a static function
 
-FxpU16 FXP_ConvertFloatToFixedU16(float input, uint8_t numFractionalBits);
+Fxp FXP_ConvertFloatToFixedU16(float input, uint8_t numFractionalBits);
 
-float FXP_ConvertFixedU16ToFloat(FxpU16 input);
+float FXP_ConvertFixedU16ToFloat(Fxp input);
 
-FxpU16 FXP_AddFixedU16(FxpU16 a, FxpU16 b);
+Fxp FXP_AddFixedU16(Fxp a, Fxp b);
 
-FxpU16 FXP_SubFixedU16(FxpU16 a, FxpU16 b);
+Fxp FXP_SubFixedU16(Fxp a, Fxp b);
 
-FxpU32 FXP_MulFixedU16(FxpU16 a, FxpU16 b);
+Fxp FXP_MulFixedU16(Fxp a, Fxp b);
 
 #endif  /* FXP_H */

@@ -38,10 +38,10 @@
 
 // *****************************************************************************
 
-FxpU16 FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart, 
+Fxp FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart, 
     uint8_t precision, uint8_t numFractionalBits)
 {
-    FxpU16 retFxp = {integerPart, 0};
+    Fxp retFxp = {.type = FXP_U16, .value = integerPart, .carry = false};
 
     /* interger * 2^b + (fractional * 2^b / 10^p)
     Where b is the number of fractional bits and p is the precision */
@@ -93,9 +93,9 @@ FxpU16 FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart,
 
 // *****************************************************************************
 
-uint16_t FXP_ConvertToU16(FxpU16 input)
+uint16_t FXP_ConvertToU16(Fxp input)
 {
-    uint16_t result = input.value;
+    uint32_t result = input.value;
     /* Rounding is performed by adding 0.5 to a number. Imagine if a number 
     was in a 11.5 format, then the value 1 would be 2^5 or 1 << 5. The number
     0.5 is then 2^4 or 1 << 4. */
@@ -106,16 +106,16 @@ uint16_t FXP_ConvertToU16(FxpU16 input)
         /* Shift back right to get the final result */
         result >>= input.numFracBits;
     }
-    return result;
+    return (uint16_t)result;
 
-    /* TODO make routine for rounding negative numbers */
+    /* TODO make routine for rounding negative numbers eventually */
 }
 
 // *****************************************************************************
 
-void FXP_ConvertFixedU16(FxpU16 *input, uint8_t numFractionalBits)
+void FXP_ConvertFixedU16(Fxp *input, uint8_t numFractionalBits)
 {
-    if(numFractionalBits > 16)
+    if(numFractionalBits > 16) // TODO add type check for 32
         return;
 
     if(numFractionalBits > input->numFracBits)
@@ -130,9 +130,9 @@ void FXP_ConvertFixedU16(FxpU16 *input, uint8_t numFractionalBits)
 
 // *****************************************************************************
 
-FxpU16 FXP_ConvertFloatToFixedU16(float input, uint8_t numFractionalBits)
+Fxp FXP_ConvertFloatToFixedU16(float input, uint8_t numFractionalBits)
 {
-    FxpU16 retFxp = {(uint16_t)input, 0};
+    Fxp retFxp = {.value = (uint16_t)input};
 
     if(numFractionalBits < 16)
     {
@@ -148,14 +148,16 @@ FxpU16 FXP_ConvertFloatToFixedU16(float input, uint8_t numFractionalBits)
 
 // *****************************************************************************
 
-float FXP_ConvertFixedU16ToFloat(FxpU16 input)
+float FXP_ConvertFixedU16ToFloat(Fxp input)
 {
     return ((float)input.value / (float)(1 << input.numFracBits));
 }
 
-FxpU16 FXP_AddFixedU16(FxpU16 a, FxpU16 b)
+// *****************************************************************************
+
+Fxp FXP_AddFixedU16(Fxp a, Fxp b)
 {
-    FxpU16 retFxp;
+    Fxp retFxp = {.type = FXP_U16, .carry = false};
     uint32_t result;
     uint8_t shift;
 
@@ -182,7 +184,7 @@ FxpU16 FXP_AddFixedU16(FxpU16 a, FxpU16 b)
         /* Add 0.5 to round up */
         result += (1 << (shift - 1));
     }
-
+    // TODO Add check for overflow
     /* Shift back right to get the final result */
     retFxp.value = (uint16_t)(result >> retFxp.numFracBits);
     return retFxp;
@@ -190,9 +192,9 @@ FxpU16 FXP_AddFixedU16(FxpU16 a, FxpU16 b)
 
 // *****************************************************************************
 
-FxpU16 FXP_SubFixedU16(FxpU16 a, FxpU16 b)
+Fxp FXP_SubFixedU16(Fxp a, Fxp b)
 {
-    FxpU16 retFxp;
+    Fxp retFxp = {.type = FXP_U16, .carry = false};
     uint32_t result;
     uint8_t shift;
 
@@ -214,7 +216,7 @@ FxpU16 FXP_SubFixedU16(FxpU16 a, FxpU16 b)
         /* Add 0.5 to round up */
         result += (1 << (shift - 1));
     }
-
+    // TODO Add check for underflow
     /* Shift back right to get the final result */
     retFxp.value = (uint16_t)(result >> shift);
     return retFxp;
@@ -222,9 +224,9 @@ FxpU16 FXP_SubFixedU16(FxpU16 a, FxpU16 b)
 
 // *****************************************************************************
 
-FxpU32 FXP_MulFixedU16(FxpU16 a, FxpU16 b)
+Fxp FXP_MulFixedU16(Fxp a, Fxp b)
 {
-    FxpU32 retFxp = {0, a.numFracBits};
+    Fxp retFxp = {.numFracBits = a.numFracBits};
     uint32_t result;
     uint8_t shift = b.numFracBits;
 
