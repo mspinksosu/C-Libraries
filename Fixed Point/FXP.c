@@ -163,9 +163,11 @@ Fxp FXP_AddFixedU16(Fxp a, Fxp b)
 
     /* The result should have the same number of decimal places as the operand
     with the least number of decimal places. Otherwise, our result may not 
-    fit. We have to assume the operand with the least number of decimals is 
-    sized correctly to fit it's largest expected value. First, I will make the
-    one with less decimal places match the other, then perform rounding. */
+    fit. We have to assume the operand with the least number of decimal places
+    is sized correctly to fit it's largest expected value. First I will 
+    make the one with less match the other, then perform rounding. */
+
+    // TODO check for 16 bit vs 32 bit
     if(a.numFracBits < b.numFracBits)
     {
         retFxp.numFracBits = a.numFracBits;
@@ -216,6 +218,7 @@ Fxp FXP_SubFixedU16(Fxp a, Fxp b)
         /* Add 0.5 to round up */
         result += (1 << (shift - 1));
     }
+
     // TODO Add check for underflow
     /* Shift back right to get the final result */
     retFxp.value = (uint16_t)(result >> shift);
