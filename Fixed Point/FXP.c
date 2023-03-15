@@ -57,35 +57,41 @@ FxpU16 FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart,
         if(precision > 5)
             precision = 5;
 
+        /* Calculate the precision of our fractional part input */
+        uint32_t tens = 1;
+        uint8_t p = 1;
+        for(; p < precision; p++)
+        {
+            tens *= 10;
+            if(fractionalPart < tens)
+                break;
+        }
+
         /* Reduce fractional part if it is too big */
-        for(uint8_t i = 5 - precision; i > 0; i--)
+        for(uint8_t i = precision; i < p; i++)
         {
             frac32 += 5; // round
             frac32 /= 10;
         }
 
-        /* Pad fractional part with zeros */
-        uint32_t tens = 1;
-        for(uint8_t i = 0; i < precision; i++)
-        {
-            tens *= 10;
-            if(fractionalPart < tens)
-            {
-                frac32 *= 10;
-            }
-        }
-
-        frac32 = fractionalPart << numFractionalBits;
+        /* Shift the fractional part up some before performing division. We are
+        doing integer division, but we still need to do this step or we could
+        lose even more precision. */
+        frac32 <<= 16;
 
         for(uint8_t i = 0; i < precision; i++)
         {
             frac32 = frac32 / 10;
         }
 
+        /* Shift the result back down and append it to the integer part */
+        frac32 >>= (16 - numFractionalBits);
         retFxp.value += frac32;
     }
     return retFxp;
 }
+
+// *****************************************************************************
 
 uint16_t FXP_ConvertToU16(FxpU16 input)
 {
@@ -105,6 +111,8 @@ uint16_t FXP_ConvertToU16(FxpU16 input)
     /* TODO make routine for rounding negative numbers */
 }
 
+// *****************************************************************************
+
 void FXP_ConvertFixedU16(FxpU16 *input, uint8_t numFractionalBits)
 {
     if(numFractionalBits > 16)
@@ -119,6 +127,8 @@ void FXP_ConvertFixedU16(FxpU16 *input, uint8_t numFractionalBits)
         input->value >>= (input->numFracBits - numFractionalBits);
     }
 }
+
+// *****************************************************************************
 
 FxpU16 FXP_ConvertFloatToFixedU16(float input, uint8_t numFractionalBits)
 {
@@ -135,6 +145,8 @@ FxpU16 FXP_ConvertFloatToFixedU16(float input, uint8_t numFractionalBits)
     }
     return retFxp;
 }
+
+// *****************************************************************************
 
 float FXP_ConvertFixedU16ToFloat(FxpU16 input)
 {
@@ -176,6 +188,8 @@ FxpU16 FXP_AddFixedU16(FxpU16 a, FxpU16 b)
     return retFxp;
 }
 
+// *****************************************************************************
+
 FxpU16 FXP_SubFixedU16(FxpU16 a, FxpU16 b)
 {
     FxpU16 retFxp;
@@ -205,6 +219,8 @@ FxpU16 FXP_SubFixedU16(FxpU16 a, FxpU16 b)
     retFxp.value = (uint16_t)(result >> shift);
     return retFxp;
 }
+
+// *****************************************************************************
 
 FxpU16 FXP_MulFixedU16(FxpU16 a, FxpU16 b)
 {
