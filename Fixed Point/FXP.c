@@ -43,6 +43,8 @@ Fxp FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart,
 {
     Fxp retFxp = {.type = FXP_U16, .value = integerPart, .carry = false};
 
+    // TODO check if integer part is too big
+
     /* interger * 2^b + (fractional * 2^b / 10^p)
     Where b is the number of fractional bits and p is the precision */
 
@@ -113,6 +115,34 @@ uint16_t FXP_ConvertToU16(Fxp input)
 
 // *****************************************************************************
 
+uint16_t FXP_GetInteger(Fxp input)
+{
+    return (uint16_t)(input.value >> input.numFracBits);
+}
+
+// *****************************************************************************
+
+uint32_t FXP_GetMantissa(Fxp input)
+{
+    uint32_t dividend = 1000000000UL; // can return up to 9 digits
+    uint8_t divisor = 1;
+    uint32_t result = 0;
+    uint8_t i = input.numFracBits;
+
+    while(i > 0 && divisor < 6)
+    {
+        if(input.value & (1 << i))
+        {
+            result += (dividend >> divisor);
+        }
+        i--;
+        divisor++;
+    }
+    return result;
+}
+
+// *****************************************************************************
+
 void FXP_ConvertFixedU16(Fxp *input, uint8_t numFractionalBits)
 {
     if(numFractionalBits > 16) // TODO add type check for 32
@@ -132,7 +162,7 @@ void FXP_ConvertFixedU16(Fxp *input, uint8_t numFractionalBits)
 
 Fxp FXP_ConvertFloatToFixedU16(float input, uint8_t numFractionalBits)
 {
-    Fxp retFxp = {.value = (uint16_t)input};
+    Fxp retFxp = {.type = FXP_U16, .value = (uint16_t)input, .carry = false};
 
     if(numFractionalBits < 16)
     {
@@ -188,7 +218,7 @@ Fxp FXP_AddFixedU16(Fxp a, Fxp b)
     }
 
     /* Shift back right to get the final result */
-    retFxp.value = (uint16_t)(result >> retFxp.numFracBits);
+    retFxp.value = (uint16_t)(result >> shift);
 
     if(retFxp.value & 0xFFFF0000)
         retFxp.carry = true;
@@ -238,13 +268,16 @@ Fxp FXP_SubFixedU16(Fxp a, Fxp b)
 
 Fxp FXP_MulFixedU16(Fxp a, Fxp b)
 {
-    Fxp retFxp = {.numFracBits = a.numFracBits};
+    Fxp retFxp = {.type = FXP_U16, .carry = false, 
+                  .numFracBits = a.numFracBits};
     uint32_t result;
     uint8_t shift = b.numFracBits;
 
+    // TODO limit input to 16 bits
+
     /* Fixed point multiplication is actually simpler than addition. When we 
     multiply two fixed point numbers, the result has the same number of 
-    decimals as the sum of their fractional bits. So two 12.4 numbers 
+    decimals places as the sum of their fractional bits. So two 12.4 numbers 
     multiplied will yield a 12.8 result. */
     uint8_t sumFrac = a.numFracBits + b.numFracBits;
 
@@ -271,6 +304,39 @@ Fxp FXP_MulFixedU16(Fxp a, Fxp b)
     if(retFxp.value & 0xFFFF0000)
         retFxp.carry = true;
 
+    return retFxp;
+}
+
+Fxp FXP_DivFixedU16(Fxp dividend, Fxp divisor)
+{
+    Fxp retFxp = {.type = FXP_U16, .carry = false};
+    uint32_t result;
+    uint8_t shift;
+
+    /* When we divide two fixed point numbers, the result will be the number
+    of fractional bits of the dividend minus the divisor. So a 12.4 number 
+    divided by a 14.2 number will have 2 fractional bits. First, I have
+    to make the dividend much larger than the divisor, otherwise we lose
+    precision. */
+    result = dividend.value << 16;
+    shift = 16 + dividend.numFracBits - divisor.numFracBits;
+
+    if(dividend.numFracBits < divisor.numFracBits)
+    {
+        retFxp.numFracBits = dividend.numFracBits;
+    }
+    else
+    {
+        retFxp.numFracBits = divisor.numFracBits;
+    }
+
+    // TODO Figure out which numbers, if any, need to be rounded
+    result = result / divisor.value;
+
+    /* Figure out how far to shift back to the right to get the result in the
+    same format as the limiting operand. */
+    shift =- retFxp.numFracBits;
+    retFxp.value = (uint16_t)(result >> shift);
     return retFxp;
 }
 

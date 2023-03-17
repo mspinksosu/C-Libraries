@@ -78,4 +78,6 @@ Fxp FXP_SubFixedU16(Fxp a, Fxp b);
 
 Fxp FXP_MulFixedU16(Fxp a, Fxp b);
 
+Fxp FXP_DivFixedU16(Fxp value, Fxp divisor);
+
 #endif  /* FXP_H */
