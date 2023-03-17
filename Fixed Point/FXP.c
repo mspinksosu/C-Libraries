@@ -282,7 +282,7 @@ Fxp FXP_MulFixedU16(Fxp a, Fxp b)
     uint8_t sumFrac = a.numFracBits + b.numFracBits;
 
     /* Whichever operand has less decimals is the limiting value to be used for
-    the result. We know the result will have the sum of the two fractional bits.
+    the result. The result will have the sum of the two fractional bit values. 
     Then amount we have to shift back right is the sum minus our desired 
     fractional bits. Which is simply the other value's fractional bits. */
     if(b.numFracBits < a.numFracBits)
@@ -307,6 +307,8 @@ Fxp FXP_MulFixedU16(Fxp a, Fxp b)
     return retFxp;
 }
 
+// *****************************************************************************
+
 Fxp FXP_DivFixedU16(Fxp dividend, Fxp divisor)
 {
     Fxp retFxp = {.type = FXP_U16, .carry = false};
@@ -321,6 +323,10 @@ Fxp FXP_DivFixedU16(Fxp dividend, Fxp divisor)
     result = dividend.value << 16;
     shift = 16 + dividend.numFracBits - divisor.numFracBits;
 
+    /* Whichever operand has less decimals is the limiting value to be used for
+    the result. The result of the division will have the dividend plus 16 minus
+    the divisor fractional bits. Then the amount to shift back is this value 
+    minus the lesser of the two. */
     if(dividend.numFracBits < divisor.numFracBits)
     {
         retFxp.numFracBits = dividend.numFracBits;
@@ -329,13 +335,9 @@ Fxp FXP_DivFixedU16(Fxp dividend, Fxp divisor)
     {
         retFxp.numFracBits = divisor.numFracBits;
     }
-
-    // TODO Figure out which numbers, if any, need to be rounded
+    shift =- retFxp.numFracBits;
     result = result / divisor.value;
 
-    /* Figure out how far to shift back to the right to get the result in the
-    same format as the limiting operand. */
-    shift =- retFxp.numFracBits;
     retFxp.value = (uint16_t)(result >> shift);
     return retFxp;
 }
