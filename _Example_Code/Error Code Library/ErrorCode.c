@@ -20,23 +20,21 @@
 
 // ***** Defines ***************************************************************
 
-// flash once
-#define ERROR_CODE_FLASH_SIZE       2
-#define ERROR_CODE_FLASH_PATT       {{.output = 1, .timeInMs = 250},\
-                                     {.output = 0, .timeInMs = 300}}
-
-// pause at the end of the pattern
-#define ERROR_CODE_PAUSE_1_SIZE     1
-#define ERROR_CODE_PAUSE_2_SIZE     2
-#define ERROR_CODE_PAUSE_PATT       {{.output = 0, .timeInMs = 450},\
-                                     {.output = 0, .timeInMs = 700}}
+#define ERROR_CODE_SHORT_PAUSE_SIZE     1
+#define ERROR_CODE_LONG_PAUSE_SIZE      2
 
 // ***** Global Variables ******************************************************
 
+static PatternState errorFlash[2] = {{.output = 1, .timeInMs = 250},
+                                     {.output = 0, .timeInMs = 300}};
+
+/* By changing the size that we load into the pattern, it can either pause for
+an extra 450 ms or 1250 ms. */
+static PatternState errorPause[2] = {{.output = 0, .timeInMs = 450},
+                                     {.output = 0, .timeInMs = 800}};
+
 static Pattern errorCodePattern;
-static PatternState errorFlash[ERROR_CODE_FLASH_SIZE] = ERROR_CODE_FLASH_PATT;
-static PatternState errorPause[ERROR_CODE_PAUSE_2_SIZE] = ERROR_CODE_PAUSE_PATT;
-static uint32_t activeErrorMask;
+static uint32_t activeErrorMask, errorCodesToDisplayMask;
 static uint8_t currentErrorCode, numFlashes, output;
 static uint8_t numErrorCodesToDisplay = 32;
 static bool errorCodeFinished = true, errorCodeRunning, stopSignal;
@@ -53,6 +51,7 @@ void ErrorCode_InitMs(uint16_t tickMs)
 {
     activeErrorMask = 0;
     currentErrorCode = 0;
+    errorCodesToDisplayMask = 0xFFFFFFFF >> (32 - numErrorCodesToDisplay);
     Pattern_InitMs(&errorCodePattern, tickMs);
 }
 
@@ -105,6 +104,8 @@ bool ErrorCode_IsSet(uint8_t code)
 
 void ErrorCode_Tick(void)
 {
+    static uint8_t errorCodesDisplayCount = 0;
+
     Pattern_Tick(&errorCodePattern);
     output = Pattern_GetOutput(&errorCodePattern);
 
@@ -117,21 +118,21 @@ void ErrorCode_Tick(void)
             if(numFlashes > 0)
             {
                 /* We finished one flash. Load another */
-                Pattern_Load(&errorCodePattern, errorFlash, ERROR_CODE_FLASH_SIZE);
+                Pattern_Load(&errorCodePattern, errorFlash, 2);
                 Pattern_StopAtomic(&errorCodePattern);
             }
             else
             {
-                /* We finished the full sequence. Time to pause briefly. If the 
-                error code that we want to flash is more than 1, insert a longer 
-                pause at the end of the sequence */
-                if(currentErrorCode > 1)
+                /* We finished the full sequence. If the the only error code 
+                we need to flash is error code 1, insert a short pause at the 
+                end of the sequence */
+                if((activeErrorMask & errorCodesToDisplayMask) == 1)
                 {
-                    Pattern_Load(&errorCodePattern, errorPause, ERROR_CODE_PAUSE_2_SIZE);
+                    Pattern_Load(&errorCodePattern, errorPause, ERROR_CODE_SHORT_PAUSE_SIZE);
                 }
                 else
                 {
-                    Pattern_Load(&errorCodePattern, errorPause, ERROR_CODE_PAUSE_1_SIZE);
+                    Pattern_Load(&errorCodePattern, errorPause, ERROR_CODE_LONG_PAUSE_SIZE);
                 }
                 Pattern_StopAtomic(&errorCodePattern);
             }
@@ -145,10 +146,22 @@ void ErrorCode_Tick(void)
 
     if(activeErrorMask != 0 && errorCodeFinished && !stopSignal)
     {
-        /* Start another LED flash sequence. */
+        /* Start another LED flash sequence. First, check how many error codes 
+        we are supposed to display. If we reach our limit, skip to the end and
+        start over. We always take n number active errors codes of the lowest 
+        value. So in a sense, error codes are prioritized by number with lower 
+        numbers being higher priority. */
+        if(errorCodesDisplayCount >= numErrorCodesToDisplay)
+        {
+            errorCodesDisplayCount = 0;
+            currentErrorCode = 32;
+        }
+
         currentErrorCode = GetNextErrorCode();
+        errorCodesDisplayCount++;
+
         numFlashes = currentErrorCode;
-        Pattern_Load(&errorCodePattern, errorFlash, ERROR_CODE_FLASH_SIZE);
+        Pattern_Load(&errorCodePattern, errorFlash, 2);
         Pattern_StopAtomic(&errorCodePattern);
         errorCodeFinished = false;
         errorCodeRunning = true;
@@ -214,6 +227,8 @@ uint32_t ErrorCode_GetActiveMask(void)
     return activeErrorMask;
 }
 
+// *****************************************************************************
+
 void ErrorCode_SetDisplayTopNumOfCodes(uint8_t flashNumErrorCodes)
 {
     if(flashNumErrorCodes == 0)
@@ -222,6 +237,7 @@ void ErrorCode_SetDisplayTopNumOfCodes(uint8_t flashNumErrorCodes)
         flashNumErrorCodes = 32;
 
     numErrorCodesToDisplay = flashNumErrorCodes;
+    errorCodesToDisplayMask = 0xFFFFFFFF >> (32 - numErrorCodesToDisplay);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -230,32 +246,26 @@ void ErrorCode_SetDisplayTopNumOfCodes(uint8_t flashNumErrorCodes)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+/***************************************************************************//**
+ * @brief Get the Next Error Code
+ * 
+ * Loop through the error codes and find the next one that is set. If there 
+ * are none it will return whatever currentErrorCode is.
+ * 
+ * @return uint8_t the next error code (0 to 31)
+ */
 static uint8_t GetNextErrorCode(void)
 {
-    /* Check how many error codes we are supposed to display. If we reach our 
-    limit, start back over at index 0. We always take the n number active 
-    errors codes of lowest value. So in a sense, error codes are prioritized 
-    by number with lower numbers being higher priority. */
-    static uint8_t errorCodesDisplayCount = 0;
+    /* Error codes always go from 1 to 32, but the index goes from 0 to 31 */
+    uint8_t next = currentErrorCode & 0x1F;
 
-    if(errorCodesDisplayCount == numErrorCodesToDisplay)
-    {
-        errorCodesDisplayCount = 0;
-        currentErrorCode = 31;
-    }
-
-    uint8_t next = (currentErrorCode + 1) & 0x1F;
-
-    while(next != currentErrorCode)
+    while(next != (currentErrorCode - 1))
     {
         if(activeErrorMask & (1UL << next))
             break;
         next = (next + 1) & 0x1F;
     }
 
-    errorCodesDisplayCount++;
-
-    /* The index is 0 to 31, but error codes go from 1 to 32 */
     return next + 1;
 }
 

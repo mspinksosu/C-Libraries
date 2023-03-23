@@ -14,21 +14,21 @@
  * which you plan to call the Tick() function. Every tick, the library will
  * go through the list of error codes and set the LED output accordingly.
  * 
- * The error codes begin from 1 and go to 32. An error code of zero is
+ *      The error codes begin at 1 and go to 32. An error code of zero is
  * equivalent to having no errors. By default, the library will show each error 
  * code that is set, one by one. Once it finishes blinking an error code, it 
  * will insert a brief pause, then begin the next one. Calling the 
  * GetCurrentErrorCode function will tell you which one is being flashed at
  * that moment.
  * 
- * Calling GetActiveMask will give a 32-bit word of all the errors that are
- * currently set. The error code state machine is normally always running, even 
- * if there are no error codes. Do not use the IsRunning function to see if 
- * there are any error codes. Rather, get the active mask and check if it is 
+ *      Calling GetActiveMask will give a 32-bit word of all the errors that 
+ * are currently set. The error code state machine is normally always running, 
+ * even if there are no error codes. Do not use the IsRunning function to see 
+ * if there are any error codes. Rather, get the active mask and check if it is 
  * zero instead. The reason I have the Start, Stop, and IsRunning functions is 
  * so that you can pause the state machine briefly if you need to take control 
- * of the LED pin. When the error code state machine is restarted, it will 
- * start over on the current error code.
+ * of the LED pin. When restarting the error code, it will start over on the 
+ * current error code instead of in the middle of an error code.
  * 
  ******************************************************************************/
 
