@@ -374,8 +374,8 @@ void UART1_TransmitEnable(void)
     TXxSTAbits.TXEN = 1;
 
     /* If the transmit register is full and interrupts are desired, enable 
-    them. The transmit interrupt flag gets set whenever the transmitter is
-    enabled */
+    them. The transmit interrupt flag also gets set whenever the transmitter
+    is enabled on this processor, so I checked the flag first. */
     if(useTxInterrupt && txDataFull)
         PIExbits.TXIE = 1;
 }

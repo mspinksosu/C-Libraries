@@ -160,8 +160,8 @@ typedef struct UARTTag
  * flowControl  Hardware means the processor has some sort of dedicated flow
  *              control setting for that peripheral that takes control of the
  *              CTS and RTS pins. Callbacks allows the user make a simple 
- *              function to set the CTS and RTS pins. Software sends a special
- *              flow control message over the line.
+ *              function to handle the CTS and RTS pins. Software sends a 
+ *              special flow control message over the line.
  * 
  * useTxInterrupt  Enables or disables the transmit interrupt for you
  *                 automatically. Place the TransmitFinishedEvent function 
@@ -208,9 +208,9 @@ void UART_SetInitTypeToDefaultParams(UARTInitType *params);
  * Alternatively, you can set the values of the members directly.
  * 
  * If UART_FLOW_CALLBACKS is chosen for flow control, you must implement
- * functions to set the RTS and CTS pins, and setup callbacks functions by
+ * functions to handle the RTS and CTS pins, and set up callbacks functions by
  * using the UART_SetRTSPinFunc and UART_SetIsCTSPinLowFunc functions. If you
- * using interrupts, you will want to setup callback functions using the 
+ * are using interrupts, you will want to set up callback functions using the 
  * SetReceivedDataCallback and SetTransmitRegisterEmptyCallback functions.
  * 
  * @param params  pointer to the UARTInitType that you are going to use
@@ -250,7 +250,11 @@ void UART_SetInitBRGValue(UARTInitType *params, uint32_t BRGValue);
  * 
  * Computes the baud rate generator value that will loaded into the register
  * given the desired baud rate and the clock frequency in Hertz. You may then
- * take this value and call SetInitBRGValue.
+ * take this value and call SetInitBRGValue. You can make this function as 
+ * simple or as complex as you want. You could also make multiple 
+ * implementations. Maybe one that uses math and one that uses lookup table 
+ * for example. If you don't want to use this function have it return 0. 
+ * Then you could load a default BRG value in your application based on that.
  * 
  * @param self  pointer to the UART you are using
  * 
@@ -419,9 +423,10 @@ void UART_TransmitDisable(UART *self);
  * lead to multiple recursive function calls. You will need to have a flag of 
  * some kind set whenever the TransmitFinishedEvent function is entered. If 
  * another Tx interrupt is called then set a pending interrupt flag. This 
- * function will sit in a loop somewhere and check for a pending interrupt then 
- * call TransmitFinishedEvent for you. This will let the stack unwind. Note 
- * that this is really only an issue if you are using interrupts to transmit.
+ * function will sit in a loop somewhere and check for that pending interrupt 
+ * flag then call TransmitFinishedEvent for you. This will let the stack 
+ * unwind. Note that this is really only an issue if you are using interrupts 
+ * to transmit.
  * 
  * @param self  pointer to the UART you are using
  */
@@ -450,17 +455,24 @@ void UART_SetTransmitRegisterEmptyCallback(UART *self, void (*Function)(void));
  * UART. The reason I give you a function to call instead of the data itself, 
  * is because we don't want to mess up any flow control or interrupt flags in 
  * the UART before the user gets the actual data. Typically, the receive 
- * interrupt flag is cleared when the data is read out. So it's a simple method
- * of ensuring that the data stays in the UART until the user calls for it.
+ * interrupt flag is cleared when the data is read out. So it's a nice method
+ * of ensuring that the data doesn't get overwritten accidentally and the flow
+ * control pins don't change prematurely.
+ * 
  * When you issue the callback in your implementation you will typically give 
- * it a reference to the GetReceivedByte function.
+ * it a reference to the UARTx_GetReceivedByte function.
  * 
  * // callback function implementation:
  * void MyFunction(uint8_t (*CallToGetData)void) {
  *     uint8_t data = CallToGetData();
+ *     ....
  * }
  * 
+ * UART_SetReceivedDataCallback(MyFunction);
+ * 
  * // inside ReceivedDataEvent implementation:
+ * static void (*ReceivedDataCallbackFuncPtr)(uint8_t (*CallToGetData)(void));
+ * 
  * if(ReceivedDataCallbackFuncPtr != NULL)
  *     ReceivedDataCallbackFuncPtr(UART1_GetReceivedByte);
  * 

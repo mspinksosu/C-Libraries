@@ -23,7 +23,7 @@
  * can vary across different processors. All that matters is that the functions
  * listed in the table point to the correct functions for your implementation.
  * 
- * See IUART.h for a description of what each function should do.
+ * @see IUART.h for a description of what each function should do.
  * 
  ******************************************************************************/
 
@@ -46,6 +46,8 @@ extern UARTInterface UART1_FunctionTable;
 // ***** Interface Functions *************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
+
+/* See IUART.h for a description of what each function should do. */
 
 uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz);
 
