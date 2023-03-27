@@ -84,14 +84,15 @@ void GPIO_Manager_InitAllPins(void);
 
 /* Generic pin aliases. The upper nibble is the "port" A through N and the 
 lower nibble is the pin 0 through 15. The port is also provided separately so 
-you can take the upper nibble and compare to this value if you want: 
+you can take the upper nibble and compare to this value if you want. Example: 
 
-led1Pin.pinNumber = GPIO_PORTB_PIN5;
+led1Pin.pinNumber = GPIO_PORTB_PIN4; // 0x14
+GPIO_MCU1_SetPin(&led1Pin);
 
 GPIO_MCU1_SetPin(GPIO_MCU1 *self)
 {
-    portNibble = (self->pinNumber) >> 4;
-    pinNibble = (self->pinNumber) & 0x0F;
+    portNibble = ((self->pinNumber) >> 4) & 0x0F; // port 0x01
+    pinNibble = (self->pinNumber) & 0x0F; // pin 0x04
 
     switch(portNibble)
     {
