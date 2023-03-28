@@ -66,7 +66,7 @@ Fxp FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart,
 
 uint16_t FXP_ConvertToU16(Fxp input); // perform rounding
 
-uint16_t FXP_GetInteger(Fxp input)
+uint16_t FXP_GetInteger(Fxp input);
 
 uint32_t FXP_GetMantissa(Fxp input);
 

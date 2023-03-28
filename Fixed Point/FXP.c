@@ -268,13 +268,25 @@ Fxp FXP_SubFixedU16(Fxp a, Fxp b)
 
 Fxp FXP_MulFixedU16(Fxp a, Fxp b)
 {
-    Fxp retFxp = {.type = FXP_U16, .carry = false, 
-                  .numFracBits = a.numFracBits};
+    Fxp retFxp = {.type = FXP_U16, .carry = false};
     uint32_t result;
-    uint8_t shift = b.numFracBits;
+    uint8_t shift;
 
-    // TODO limit input to 16 bits
+    /* Limit input to 16 bits so that the result will fit in a 32-bit value */
+    while(a.value & 0xFFFF0000)
+    {
+        a.value >>= 1;
+        a.numFracBits--;
+    }
 
+    while(b.value & 0xFFFF0000)
+    {
+        b.value >>= 1;
+        b.numFracBits--;
+    }
+
+    retFxp.numFracBits = a.numFracBits;
+    shift = b.numFracBits;
     /* Fixed point multiplication is actually simpler than addition. When we 
     multiply two fixed point numbers, the result has the same number of 
     decimals places as the sum of their fractional bits. So two 12.4 numbers 
@@ -313,20 +325,33 @@ Fxp FXP_DivFixedU16(Fxp dividend, Fxp divisor)
 {
     Fxp retFxp = {.type = FXP_U16, .carry = false};
     uint32_t result;
-    uint8_t shift;
+    uint8_t i = 32, shiftLeft = 16, shiftRight;
 
     /* When we divide two fixed point numbers, the result will be the number
     of fractional bits of the dividend minus the divisor. So a 12.4 number 
     divided by a 14.2 number will have 2 fractional bits. First, I have
     to make the dividend much larger than the divisor, otherwise we lose
     precision. */
-    result = dividend.value << 16;
-    shift = 16 + dividend.numFracBits - divisor.numFracBits;
+    if(dividend.value & 0xFFFF0000)
+    {
+        /* If the number is already greater than 16-bits, figure out how far 
+        we can shift left. Otherwise, we just shift left 16 times. */
+        shiftLeft = 0;
+        while(i > 16)
+        {
+            if(dividend.value & (1 << i))
+                break;
+            i--;
+            shiftLeft++;
+        }
+    }
+    result = dividend.value << shiftLeft;
+    shiftRight = shiftLeft + dividend.numFracBits - divisor.numFracBits;
 
     /* Whichever operand has less decimals is the limiting value to be used for
-    the result. The result of the division will have the dividend plus 16 minus
-    the divisor fractional bits. Then the amount to shift back is this value 
-    minus the lesser of the two. */
+    the result. The result of the division will have the dividend plus the 
+    amount shifted left, minus the divisor fractional bits. Then the amount to 
+    shift back is this value minus the lesser of the two. */
     if(dividend.numFracBits < divisor.numFracBits)
     {
         retFxp.numFracBits = dividend.numFracBits;
@@ -335,10 +360,10 @@ Fxp FXP_DivFixedU16(Fxp dividend, Fxp divisor)
     {
         retFxp.numFracBits = divisor.numFracBits;
     }
-    shift =- retFxp.numFracBits;
+    shiftRight =- retFxp.numFracBits;
     result = result / divisor.value;
 
-    retFxp.value = (uint16_t)(result >> shift);
+    retFxp.value = (uint16_t)(result >> shiftRight);
     return retFxp;
 }
 
