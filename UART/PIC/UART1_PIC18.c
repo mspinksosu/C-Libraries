@@ -58,13 +58,13 @@ baud. If you are unsure, check the reference manual. */
 /* Registers */
 #define PIExbits     PIE1bits     // UART interrupt control TXIE and RXIE bits
 #define PIRxbits     PIR1bits     // UART interrupt status TXIF and RCIF bits
-#define RCxSTAbits   RC1STAbits   // receive status and control register
-#define TXxSTAbits   TX1STAbits   // transmit status and control register
-#define BAUDxCONbits BAUD1CONbits // baud rate control register
-#define SPxBRGH      SP1BRGH      // baud rate generator high register
-#define SPxBRGL      SP1BRGL      // baud rate generator low register
-#define RCxREG       RC1REG       // receive data register
-#define TXxREG       TX1REG       // transmit data register
+#define RCxSTAbits   RCSTAbits   // receive status and control register
+#define TXxSTAbits   TXSTAbits   // transmit status and control register
+#define BAUDxCONbits BAUDCONbits // baud rate control register
+#define SPxBRGH      SPBRGH      // baud rate generator high register
+#define SPxBRGL      SPBRG       // baud rate generator low register
+#define RCxREG       RCREG       // receive data register
+#define TXxREG       TXREG       // transmit data register
 
 // ***** Global Variables ******************************************************
 

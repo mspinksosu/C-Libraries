@@ -183,12 +183,9 @@ void *MCU_ReverseMemcpy(void *dst, const void *src, uint16_t n)
     const uint8_t *psrc = (const uint8_t*)src;
     pdst += n - 1;
 
-    while(n)
+    while(n--)
     {
-        *pdst = *psrc;
-        pdst--;
-        psrc++;
-        n--;
+        *pdst-- = *psrc++;
     }
     return dst;
 }
