@@ -141,9 +141,11 @@ void SPI_Manager_Process(SPIManager *self)
                 self->currentDevice->state = SPI_SS_RECEIVE_BYTE;
                 break;
             case SPI_SS_RECEIVE_BYTE:
-                /* In master mode, there should always a receive after a send. 
+                /* In master mode, there's normally a receive after a send. 
                 // TODO I may want to add an option for the rare case where
-                there is master out, but no master in. */
+                there is master out, but no master in. Or the get received
+                byte function could just return zero. Which is what it would
+                do if there's no line hooked up anyway. */
                 if(SPI_IsTransmitRegisterEmpty(self->peripheral))
                 {
                     uint8_t data = SPI_GetReceivedByte(self->peripheral);
