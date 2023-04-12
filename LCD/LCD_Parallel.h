@@ -25,7 +25,9 @@
 // ***** Global Variables ******************************************************
 
 /* These are in order based on DDRAM address. First is row 1, then row 3, then 
-row 2 starting at address 0x40, then row 4. */
+row 2 starting at address 0x40, then row 4. The refresh display mask uses this
+same order. It will set its bits according to which piece of the screen needs 
+to be updated. */
 typedef enum LCDParDisplayStateTag
 {
     LCD_PAR_STATE_ROW1_LEFT = 0,
@@ -37,22 +39,6 @@ typedef enum LCDParDisplayStateTag
     LCD_PAR_STATE_ROW4_LEFT,
     LCD_PAR_STATE_ROW4_RIGHT,
 } LCDParDisplayState;
-
-/* This is a bit mask that will match the typedef above starting from the LSb. 
-I'm dividing the display into sections. Most people will keep a static image
-somewhere on the screen. If I see that there is no change for that section of 
-the display, I will skip over it to reduce the amount of writes. */
-enum LCDParDisplayRefreshMask
-{
-    LCD_PAR_REFRESH_ROW1_LEFT = 0,
-    LCD_PAR_REFRESH_ROW1_RIGHT,
-    LCD_PAR_REFRESH_ROW3_LEFT,
-    LCD_PAR_REFRESH_ROW3_RIGHT,
-    LCD_PAR_REFRESH_ROW2_LEFT,
-    LCD_PAR_REFRESH_ROW2_RIGHT,
-    LCD_PAR_REFRESH_ROW4_LEFT,
-    LCD_PAR_REFRESH_ROW4_RIGHT,
-};
 
 typedef enum LCDParInitStateTag
 {
@@ -150,7 +136,7 @@ typedef struct LCDInitType_ParallelTag
  * Description of LCDInitType_Parallel struct:
  * 
  * use4BitMode  Uses only the upper pins of the LCD (DB4 - DB7). Likewise, only
- *              uses the upper bits of the data byte. Each command is to be 
+ *              uses the upper bits of the data byte. Each command has to be 
  *              sent twice.
  * 
  */

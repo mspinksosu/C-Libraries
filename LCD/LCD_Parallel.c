@@ -34,12 +34,11 @@ return home commands */
 #define LCD_PAR_BUSY_TRY_COUNT      3
 
 /* If I can't use the read function I will delay for this time. The maximum 
-delay should be 100 us. I think 50 us to 70 us works best. */
+delay should be 100 us. In my experience, 50 us to 70 us works best. */
 #define LCD_PAR_DELAY_US            50
 
 /* If I can't read the busy flag and the user also didn't create a delay_us
-function like they should have, I'm going to take a rough guess and count to
-a number. Good luck. */
+function, I'm going to take a rough guess and count to a number. Good luck. */
 #define LCD_PAR_ROUGH_DELAY_COUNT   1000
 
 // ***** Global Variables ******************************************************
@@ -233,9 +232,12 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
             case LCD_PAR_INIT_DISPLAY:
                 CheckIfBusyAndRetry(self);
                 uint8_t command = 0x08;
-                if(self->blinkOn) command |= 0x01;
-                if(self->cursorOn) command |= 0x02;
-                if(self->displayOn) command |= 0x04;
+                if(self->blinkOn)
+                    command |= 0x01;
+                if(self->cursorOn)
+                    command |= 0x02;
+                if(self->displayOn)
+                    command |= 0x04;
                 LCD_Parallel_WriteCommand(self, command);
                 self->initState = LCD_PAR_INIT_FUNCTION;
                 break;
@@ -243,7 +245,8 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
                 CheckIfBusyAndRetry(self);
                 // 8-bit, 2 lines, single height
                 uint8_t command = 0x38;
-                if(self->use4BitMode) command &= ~0x10;
+                if(self->use4BitMode)
+                    command &= ~0x10;
                 LCD_Parallel_WriteCommand(self, command);
                 self->initState = LCD_PAR_INIT_HOME;
                 self->initialize = 0; // finished
@@ -312,8 +315,8 @@ void LCD_Parallel_Tick(LCD_Parallel *self)
         self->count = 0;
         self->currentRefreshMask &= ~(1 << self->currentState);
         nextState = GetNextState(self);
-        if(nextState == LCD_PAR_REFRESH_ROW1_LEFT || 
-            nextState == LCD_PAR_REFRESH_ROW2_LEFT)
+        if(nextState == LCD_PAR_STATE_ROW1_LEFT || 
+            nextState == LCD_PAR_STATE_ROW2_LEFT)
         {
             self->currentIndex = 0;
         }
@@ -410,6 +413,9 @@ void LCD_Parallel_WriteData(LCD_Parallel *self, uint8_t data)
         (self->SetSelectPins)(true, false); // RS = 1: data, RW = 0: write
         (self->SetEnablePin)(true);
         
+         /* The minimum acquisition time is 520 ns after rising edge of E pin. 
+        I'm sure this code will take longer than that, but I will insert a 
+        small delay anyways. */
         if(self->super->DelayUs)
             (self->super->DelayUs)(1);
 
@@ -451,10 +457,6 @@ uint8_t LCD_Parallel_ReadData(LCD_Parallel *self)
     {
         (self->SetEnablePin)(false); // RS and RW must be set while E is low
         (self->SetSelectPins)(true, true); // RS = 1: data, RW = 1: read
-
-        /* The minimum acquisition time is 520 ns after rising edge of E pin. 
-        I imagine this code will take longer, but just in case, I will use a 
-        small delay */
         (self->SetEnablePin)(true);
         
         if(self->super->DelayUs)
@@ -654,7 +656,7 @@ void LCD_Parallel_PutChar(LCD_Parallel *self, uint8_t character)
 
     /* If we are further than halfway across, update the right side. Else, just
     the left side. For the bitmask, left side = 0x01 and right side = 0x02 */
-    if(self->cursorCol > (self->super->numCols+1) / 2)
+    if(self->cursorCol > (self->super->numCols + 1) / 2)
         bitmask = LCD_PAR_RIGHT;
 
     if(self->cursorRow == 1 || self->cursorRow == 3)
@@ -790,8 +792,12 @@ void LCD_Parallel_ScrollUp(LCD_Parallel *self)
 
 static LCDParDisplayState GetNextState(LCD_Parallel *self)
 {
-    /* The states go from 0 to 7. This is just a quick method of doing modulo
-    division */
+    /* The refresh mask matches the LCDParDisplayState beginning with the LSb.
+    If I see that there is no change for that section of the display, I will 
+    skip over it to reduce the amount of writes. */
+
+    /* The states go from 0 to 7. The "& 0x07" is just a quick method of doing 
+    modulo division */
     LCDParDisplayState nextState = (self->currentState + 1) & 0x07;
 
     while(nextState != self->currentState)
