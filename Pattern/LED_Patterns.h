@@ -3,7 +3,7 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 7/10/22  Original creation
+ * @date 7/10/22   Original creation
  * 
  * @file LED_Patterns.h
  * 
