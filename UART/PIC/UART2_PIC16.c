@@ -3,10 +3,9 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 12/1/15    Original creation
- * @date 2/4/22     Added Doxygen
- * @date 3/9/22     Reformatted to use function table. Added preprocessor
- *                  macros and defines for PIC registers
+ * @date 12/1/15   Original creation
+ * @date 2/4/22    Added Doxygen
+ * @date 3/9/22    Re-factored to use function table and interface
  * 
  * @file UART2_PIC16.c
  * 
