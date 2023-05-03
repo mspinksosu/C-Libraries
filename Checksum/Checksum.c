@@ -64,7 +64,7 @@ uint8_t Checksum_OnesComp8Bit(const uint8_t *array, uint16_t length)
     resulting from addition are not discarded like with a two's comp checksum.
     They are carried back around. This makes it stronger than a two's comp
     checksum. Bit shift carries are easy to do in assembly, but not so much in
-    C. The easiest way to take the upper half of your sum which contains all 
+    C. The easiest way is to take the upper half of your sum which contains all 
     the carries, then add it back into the bottom half. Then take the one's 
     comp of (invert) that result. When you do this operation again with the
     checksum value included, the result will be zero. */
@@ -76,9 +76,8 @@ uint8_t Checksum_OnesComp8Bit(const uint8_t *array, uint16_t length)
     }
     
     /* Add the carry bits back into the result. Then invert the result */
-    checksum = (checksum & 0xFF) + (checksum >> 8);
+    checksum = (checksum & 0x00FF) + (checksum >> 8);
     return (uint8_t)(~checksum);
-
 }
 
 // *****************************************************************************
@@ -93,7 +92,7 @@ uint16_t Checksum_OnesComp16Bit(const uint8_t *array, uint16_t length)
     }
     
     /* Add the carry bits back into the result. Then invert the result */
-    checksum = (checksum & 0xFFFF) + (checksum >> 16);
+    checksum = (checksum & 0x0000FFFF) + (checksum >> 16);
     return (uint16_t)(~checksum);
 }
 

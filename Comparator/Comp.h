@@ -27,8 +27,31 @@
  * it has two deadzones, the output is 0, 1, 2 and so on.
  * 
  *      A flag is set whenever the output level changes and can be checked by
- * calling the The get output changed event function. This flag is not cleared 
+ * calling the get output changed event function. This flag is not cleared 
  * automatically.
+ * 
+ * Example Usage:
+ *      Comp underVoltateComp;
+ *      CompDeadzone underVoltageThresholds[2] = {
+ *      {.lower = LOW_VOLTAGE_SHUTOFF_LOW_THRESHOLD, // lowest analog value
+ *       .upper = LOW_VOLTAGE_SHUTOFF_HIGH_THRESHOLD},
+ *      {.lower = LOW_VOLTAGE_WARNING_LOW_THRESHOLD,
+ *       .upper = LOW_VOLTAGE_WARNING_HIGH_THRESHOLD}}; // highest analog value
+ * 
+ *      Comp_Init(&underVoltageComp, underVoltageThresholds, 
+ *        (sizeof(underVoltageThresholds) / sizeof(underVoltageThresholds[0])));
+ * 
+ *      Comp_UpdateValue(&underVoltageComp, battVoltage);
+ * 
+ *      if(Comp_GetOutputChangeEvent(&underVoltageComp))
+ *      {
+ *          Comp_ClearOutputChangedFlag(&underVoltageComp);
+ *          uint8_t warningLevel = Comp_GetOutputLevel(&underVoltageComp);
+ * 
+ *          // warningLevel == 2: Okay
+ *          // warningLevel == 1: Low voltage warning
+ *          // warningLevel == 0: Shutdown now!
+ *      }
  * 
  ******************************************************************************/
 
@@ -64,8 +87,8 @@ typedef struct CompTag
  * upper  The upper boundry of the deadzone. It is a closed region which 
  *        includes this value.
  * 
- * lower  The lower boundry of the deadzone. Cannot be zero. It is a closed 
- *        region which includes this value.
+ * lower  The lower boundry of the deadzone. Should be greater than zero. It 
+ *        is a closed region which includes this value.
  * 
  * deadzone  Pointer to the deadzone or array of deadzones
  * 
@@ -87,8 +110,8 @@ typedef struct CompTag
  * @brief Initializes a Comparator object
  * 
  * Goes through the array of deadzones that you created and attempts to fix any
- * issues with it. Ideally, your deadzones should be in order from lowest to
- * highest and not overlap with one another.
+ * issues with it. Your deadzones should be in order from lowest to highest 
+ * and perferrably not overlap with one another.
  * 
  * The number of output levels is one greater than the deadzones. i.e. a basic
  * comparator has two outputs, low/high, and one deadzone in the middle.

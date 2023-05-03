@@ -12,7 +12,7 @@
  * timer with some special atomic functions added the make loading a new 
  * pattern very easy. It's not meant to be an extremely accurate timer, but it 
  * can work very well depending on the tick rate you choose and how well you 
- * stick to it. When the pattern gets ready to to go to the next state, it will 
+ * stick to it. When the pattern gets ready to go to the next state, it will 
  * calculate the period in ticks. The period in ticks is truncated based on the 
  * tick rate you initialized your pattern with. If your period ends up being 
  * smaller than your tick rate, the period will be set to one. If you 
@@ -163,7 +163,9 @@ void Pattern_Tick(Pattern *self)
                     self->flags.active = 0;
                 }
                 else
+                {
                     self->flags.start = 1;
+                }
             }
             else
             {

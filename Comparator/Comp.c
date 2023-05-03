@@ -71,11 +71,11 @@ void Comp_UpdateValue(Comp *self, uint16_t analogInput)
 
     if(analogInput < lowerThreshold)
     {
-            output--;
+        output--;
     }
     else if(analogInput > upperThreshold)
     {
-            output++;
+        output++;
     }
 
     if(self->outputLevel != output)
