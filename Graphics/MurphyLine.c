@@ -264,9 +264,7 @@ static void DrawLineY(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
     dx = x2 - x1;
     dy = y2 - y1;
     xStep = yStep = 1;
-   /* Find the direction for the left perpendicular line. The step direction
-    is the original xy direction rotated counter clockwise. The other 
-    perpendicular line will have its xStep and yStep inverted. */
+   /* Find the direction for the perpendicular lines. */
     if(dx < 0)
         pxStep = 1;
     else
