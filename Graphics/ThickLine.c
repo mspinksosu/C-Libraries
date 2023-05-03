@@ -1,12 +1,11 @@
 /***************************************************************************//**
- * @brief Blank C File Template
+ * @brief Murphy's Modified Bresenham Line Algorithm
  * 
  * @author Matthew Spinks
  * 
- * @date 12/2/14   Original creation
- * @date 2/4/22    Modified
+ * @date 5/3/23    Original creation
  * 
- * @file blank.c
+ * @file ThickLine.c
  * 
  * @details
  *      The basic algorithm is called Bresenham's line algorithm. For each 
@@ -21,7 +20,7 @@
  * 
  ******************************************************************************/
 
-#include "MurphyLine.h"
+#include "ThickLine.h"
 
 // ***** Defines ***************************************************************
 
@@ -29,7 +28,7 @@
 // ***** Global Variables ******************************************************
 
 // local function pointers
-static void (*Draw_Pixel)(uint16_t x, uint16_t y, uint16_t rgb565Color);
+static void (*DrawPixel)(uint16_t x, uint16_t y, uint16_t rgb565Color);
 
 
 // ***** Static Functions Prototypes *******************************************
@@ -348,7 +347,7 @@ static void DrawLineY(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
                     looping around. */
                     DrawPerpLinesY(x, y, dx, dy, pxStep, pyStep, 
                                    pError + errorDiag + errorSquare, 
-                                   widthLeft, widthRight, rgb565Color);
+                                   widthLeft, widthRight, error, rgb565Color);
                     pError += errorDiag;
                 }
                 pError += errorSquare;

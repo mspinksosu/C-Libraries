@@ -1,20 +1,19 @@
 /***************************************************************************//**
- * @brief Blank Library Header File
+ * @brief Murphy's Modified Bresenham Line Algorithm
  * 
  * @author Matthew Spinks
  * 
- * @date 12/2/14   Original creation
- * @date 2/4/22    Modified
+ * @date 5/3/23    Original creation
  * 
- * @file blank.h
+ * @file ThickLine.h
  * 
  * @details
  *      TODO
  * 
  ******************************************************************************/
 
-#ifndef BLANK_H
-#define BLANK_H
+#ifndef THICK_LINE_H
+#define THICK_LINE_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -39,5 +38,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+void Murphy_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, 
+    uint8_t width, uint16_t rgb565Color);
 
-#endif  /* BLANK_H */
+#endif  /* THICK_LINE_H */
