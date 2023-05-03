@@ -33,7 +33,10 @@ typedef enum EmuEEFormatTag
     Y = max size of each entry (2^Y bytes)
     Total is 14 bits. Bits [15:14] are reserved 
     Your flash page may not be able to hold the desired number of entries
-    depending on its size. Choose accordingly.*/
+    depending on its size. Choose according to your needs. For example, using 
+    the 7.7 format and a flash page size of 1kB would allow you to have up to 
+    128 entries of up to 8 bytes each. Or up to 8 entries with up to 128 bytes 
+    each. Or anywhere in between those two limits. */
     EMUEE_FORMAT_12_2 = 0xC2,
     EMUEE_FORMAT_11_3 = 0xB3,
     EMUEE_FORMAT_10_4 = 0xA4,
