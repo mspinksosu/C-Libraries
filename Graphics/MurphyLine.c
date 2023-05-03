@@ -53,7 +53,8 @@ static void DrawPerpLinesY(int16_t x1, int16_t y1, int16_t dx, int16_t dy,
 void Murphy_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, 
     uint8_t width, uint16_t rgb565Color)
 {
-    /* For a steep slope, y will increase by 1 step and x will increase by 
+    /* Normally x will increase by 1 step and y will increase by 0 or 1 step.
+    For a steep slope, y will increase by 1 step and x will increase by 
     0 or 1 step. All the equations for x and y will be interchanged. */
     if(abs(y2 - y1) > abs(x2 - x1))
     {
@@ -122,12 +123,12 @@ static void DrawLineX(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
     // errorSquare = 2*dy;
 
     /* Normally, the equations for the error would go like this:
-    error + dy/dx >= 0.5         error condition
+    error + dy/dx >= 0.5        error condition
     error = error + dy/dx - 1   diagonal move
     error = error + dy/dx       square move
     
     Multiplying everything by 2dx yields:
-    error + 2dy >= dx            error condition
+    error + 2dy >= dx           error condition
     error = error + 2dy - 2dx   diagonal move
     error = error + 2dy         square move
 
@@ -140,7 +141,7 @@ static void DrawLineX(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
     width >>= 1;
     /* Because there is a restricted domain for the values dx and dy, k can be
     approximated as dx + dy / 4, which should be fine for a microcontroller.
-    For more better results you can also use the following formula: */
+    For better results you can also use the following formula: */
     if((dy+dy+dy) > dx)
         k = dx - (dx >> 3) + (dy >> 1); // dx - (dx / 8) + (dy / 2)
     else
@@ -154,7 +155,8 @@ static void DrawLineX(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
         if(width == 0)
         {
             /* This is the basic algorithm for drawing a single line */
-            DrawPixel(x, y, rgb565Color);
+            if(DrawPixel)
+                DrawPixel(x, y, rgb565Color);
             if(error >= threshold)
             {
                 y += yStep;
@@ -216,7 +218,8 @@ static void DrawPerpLinesX(int16_t x1, int16_t y1, int16_t dx, int16_t dy,
 
     while(tk <= widthLeft)
     {
-        DrawPixel(x, y, rgb565Color);
+        if(DrawPixel)
+            DrawPixel(x, y, rgb565Color);
         if(error >= threshold)
         {
             x += xStep;
@@ -239,7 +242,8 @@ static void DrawPerpLinesX(int16_t x1, int16_t y1, int16_t dx, int16_t dy,
 
     while(tk <= widthRight)
     {
-        DrawPixel(x, y, rgb565Color);
+        if(DrawPixel)
+            DrawPixel(x, y, rgb565Color);
         if(error > threshold)
         {
             x += xStep;
@@ -314,8 +318,9 @@ static void DrawLineY(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
     {
         if(width == 0)
         {
-             /* This is the basic algorithm for drawing a single line */
-            DrawPixel(x, y, rgb565Color);
+            /* This is the basic algorithm for drawing a single line */
+            if(DrawPixel)
+                DrawPixel(x, y, rgb565Color);
             if(error >= threshold)
             {
                 x += xStep;
@@ -376,7 +381,8 @@ static void DrawPerpLinesY(int16_t x1, int16_t y1, int16_t dx, int16_t dy,
 
     while(tk <= widthLeft)
     {
-        DrawPixel(x, y, rgb565Color);
+        if(DrawPixel)
+            DrawPixel(x, y, rgb565Color);
         if(error > threshold)
         {
             y += yStep;
@@ -399,7 +405,8 @@ static void DrawPerpLinesY(int16_t x1, int16_t y1, int16_t dx, int16_t dy,
 
     while(tk <= widthRight)
     {
-        DrawPixel(x, y, rgb565Color);
+        if(DrawPixel)
+            DrawPixel(x, y, rgb565Color);
         if(error >= threshold)
         {
             y += yStep;
