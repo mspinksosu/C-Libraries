@@ -38,7 +38,7 @@ void numberToAscii(int16_t num, uint8_t *str, uint8_t strWidth, bool leftJust)
     a null terminator */
     if(strWidth < 2)
         strWidth = 1;
-    str[--strWidth] = '\0'; // string width is now just the string itself
+    str[--strWidth] = '\0';
     if(strWidth == 0)
         return;
 
