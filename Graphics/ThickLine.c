@@ -133,7 +133,7 @@ static void DrawLineX(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
 
     /* k is a constant whose value is ideally sqrt(dx^2 + dy^2). The width 
     of a single perpendicular line is pWidth*2k. We are drawing two
-    perpendicular lines, so we have divide width by 2 first. */
+    perpendicular lines, so we have divide the total width by 2 first. */
     uint8_t oddWidth = 0;
     if(width & 0x01)
         oddWidth = 1; // add one to right side for odd widths
@@ -166,9 +166,15 @@ static void DrawLineX(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
         }
         else
         {
-            /* Draw lines perpendicular to this one in order to draw a 
-            thicker line. This is Murphy's modified Bresenham algorithm. */
-            // TODO more notes on pError 
+            /* Draw lines perpendicular to this one in order to draw a thicker 
+            line. If we were to just draw a perpendicular line at each x y 
+            there would be a lot of holes in the line each time the sequence 
+            does a diagonal move. The solution is instead of the perpendicular 
+            line always starting with error = 0, we give it an initial error 
+            value. Whenever we make a square move, we need the perpendicular
+            line to keep the same error value so that the sequence doesn't 
+            shift up and create a gap. So we will only update this "pError" 
+            value whenever we make a diagonal move. */
             DrawPerpLinesX(x, y, dx, dy, pxStep, pyStep, pError,
                            widthLeft, widthRight, error, rgb565Color);
             if(error >= threshold)
@@ -177,11 +183,11 @@ static void DrawLineX(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
                 error += errorDiag;
                 if(pError >= threshold)
                 {
-                    /* When both the lines do a diagonal move at the same time
-                    the perpendicular line will be in the wrong place and a
-                    hole will be left in the line. To fix this we draw an extra
-                    perpendicular on the next phase to fill it in before 
-                    looping around. */
+                    /* When both the base loop and perpendicular lines do a 
+                    diagonal move at the same time the perpendicular line will 
+                    be too far on the next loop and hole will be left in the 
+                    line. To fix this, we draw a perpendicular on the next 
+                    phase to fill it in before we loop around. */
                     DrawPerpLinesX(x, y, dx, dy, pxStep, pyStep, 
                                    pError + errorDiag + errorSquare, 
                                    widthLeft, widthRight, error, rgb565Color);
