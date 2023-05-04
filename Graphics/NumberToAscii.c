@@ -22,10 +22,10 @@
 /***************************************************************************//**
  * @brief A simple function to convert an int to a string
  * 
- * You give it a pointer to a string and the width of the string and it will 
- * return a null terminated string for you. Make sure the width you give has 
- * enough room to hold your number plus a null terminator. The number will be
- * padded with blank spaces.
+ * Creates a null null terminated string of the number you give it. Accepts a
+ * pointer to a string and the width of the string. Make sure the width you 
+ * give has enough room to hold your number plus a null terminator. The number 
+ * will be padded with blank spaces.
  * 
  * @param num  number to be converted
  * @param str  pointer to a string where the output will be placed
@@ -38,11 +38,10 @@ void numberToAscii(int16_t num, uint8_t *str, uint8_t strWidth, bool leftJust)
     a null terminator */
     if(strWidth < 2)
         strWidth = 1;
-    str[--strWidth] = '\0';
+    str[--strWidth] = '\0'; // string width is now just the string itself
     if(strWidth == 0)
         return;
 
-    /* The string width is now equal to just the string itself */
     uint16_t temp = abs(num);
     uint8_t numDigits = 0, numStart = 0, numEnd = strWidth - 1;
 
@@ -75,7 +74,7 @@ void numberToAscii(int16_t num, uint8_t *str, uint8_t strWidth, bool leftJust)
         }
         else
         {
-            /* Push the number string to the right one */
+            /* Push the number string to the right one space */
             str[numStart] = '-';
             numStart++;
             if(numEnd < strWidth - 1)
