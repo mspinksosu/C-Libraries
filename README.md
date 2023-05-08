@@ -10,7 +10,7 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
   - [x] STM32 implementation finished!
   - [x] STM32 DMA implementation finished! Testing in progress
   - [x] Update doxygen
-  - [ ] PIC32 implementation in progress
+  - [ ] PIC32 implementation
 - [x] Bitfield: Complete and tested!
 - [x] Buffer: Complete!
 - [x] Button: Refactored! 99% tested
@@ -25,8 +25,11 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
 - [ ] GPIO: Redesigned!
   - [x] STM32 implementation finished! Testing in progress
   - [x] Refactored STM32 G0 to get rid of ST library dependancy. Needs re-testing
-  - [x] Update doxygen 
-  - [ ] PIC32 implementation in progress
+  - [x] Update doxygen
+  - [ ] PIC32 implementation
+- [ ] Graphics: New library! (to go with TFT display eventually)
+  - [ ] Line drawing algorithm working! Needs testing on octants 2, 3, 6, 7
+  - [x] Simple number to ascii string
 - [ ] Hardware Timer: New library! Ready to start testing
   - [ ] Add more STM32 sub class options
   - [ ] Documentation
@@ -41,10 +44,10 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
   - [x] Update doxygen
 - [ ] Rotary Encoder: Redesigned! Testing in progress
   - [x] Add different types of rotary encoder
-- [ ] SPI: Finished interface
-    - [ ] Create STM32 implementation and test
-    - [ ] Create PIC32 implementation and test
+- [ ] SPI: Interface created
+    - [ ] Basic STM32 implementation ready to start testing
     - [ ] SPI Manager state machine
+    - [ ] PIC32 implementation
     - [ ] Documentation
 - [x] Switch: Complete!
 - [x] Timer: Complete!
@@ -54,6 +57,7 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
     - [x] STM32 F1 implementation tested and working!
     - [x] PIC16 implementation finished! Testing in progress
     - [x] Update doxygen
+    - [ ] PIC32 implementation
 
 ---
 ### Introduction
