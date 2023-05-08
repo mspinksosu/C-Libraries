@@ -50,7 +50,7 @@ typedef struct SPIManagerTag
 {
     SPI *peripheral;
     SPISlave *endOfList; // circular linked list
-    SPISlave *currentDevice;
+    SPISlave *device;
     bool busy;
     // TODO state
 } SPIManager;

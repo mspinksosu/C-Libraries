@@ -72,7 +72,7 @@ void SPI_Manager_AddSlave(SPIManager *self, SPISlave *slave, uint8_t *writeBuffe
     {
         SPI_Manager_DevicePush(slave, self->endOfList);
     }
-    self->currentDevice = self->endOfList->next; // reset the index
+    self->device = self->endOfList->next; // reset the index
 }
 
 // *****************************************************************************
@@ -92,10 +92,10 @@ void SPI_Manager_BeginTransfer(SPISlave *self, uint16_t numBytesToSend, uint16_t
     if(self->state != SPI_SS_IDLE || (numBytesToRead == 0 && numBytesToSend == 0))
         return;
 
-    if(numBytesToSend > 0 && self->writeBuffer != NULL)
+    if(self->writeBuffer != NULL)
         self->numBytesToSend = numBytesToSend;
 
-    if(numBytesToRead > 0 && self->readBuffer != NULL)
+    if(self->readBuffer != NULL)
         self->numBytesToRead = numBytesToRead;
 
     self->transferFinished = false;
@@ -117,63 +117,70 @@ void SPI_Manager_Process(SPIManager *self)
     deal with SPI master mode. */
     // TODO add check for master mode, and eventually add slave mode
     // TODO I may want to replace "busy" with a state for the peripheral
-    if(self->busy == false && self->currentDevice != NULL)
+    if(self->busy == false && self->device != NULL)
     {
-        switch(self->currentDevice->state)
+        switch(self->device->state)
         {
             case SPI_SS_RQ_START:
                 /* Begin transfer. Set slave select line low */
-                if(self->currentDevice->SetSSPin != NULL)
-                    (self->currentDevice->SetSSPin)(false, self->currentDevice);
-                self->currentDevice->state = SPI_SS_SEND_BYTE;
+                if(self->device->SetSSPin != NULL)
+                    (self->device->SetSSPin)(false, self->device);
+                self->device->state = SPI_SS_SEND_BYTE;
                 break;
             case SPI_SS_SEND_BYTE:
-                if(self->currentDevice->readWriteCount < self->currentDevice->numBytesToSend)
+                if(self->device->readWriteCount < self->device->numBytesToSend)
                 {
                     SPI_TransmitByte(self->peripheral, 
-                        self->currentDevice->writeBuffer[self->currentDevice->readWriteCount]);
+                        self->device->writeBuffer[self->device->readWriteCount]);
                 }
                 else
                 {
                     /* Send empty data out for a slave read */
                     SPI_TransmitByte(self->peripheral, 0);
                 }
-                self->currentDevice->state = SPI_SS_RECEIVE_BYTE;
+                self->device->state = SPI_SS_RECEIVE_BYTE;
                 break;
             case SPI_SS_RECEIVE_BYTE:
-                /* In master mode, there's normally a receive after a send. 
-                // TODO I may want to add an option for the rare case where
-                there is master out, but no master in. Or the get received
-                byte function could just return zero. Which is what it would
-                do if there's no line hooked up anyway. */
-                if(SPI_IsTransmitRegisterEmpty(self->peripheral))
+                /* In master mode there is always a receive after a send, so 
+                I can use a single read/write index count. However, we do have 
+                to wait until the transmission is fully finished first before 
+                reading the data. If there is no master input, the get received 
+                byte function will just return zero. Which is what it would do 
+                if there was no data anyway. */
+
+                /* TODO try by just checking using the getreceivedbyte function 
+                by itself. As long as RXNE is cleared beforehand, we should be 
+                able to just watch it. */
+
+                /* Add option for no read buffer */
+                if(SPI_IsTransmitFinished(self->peripheral))
                 {
                     uint8_t data = SPI_GetReceivedByte(self->peripheral);
 
-                    if(self->currentDevice->readWriteCount < self->currentDevice->numBytesToRead)
+                    if(self->device->readWriteCount < self->device->numBytesToRead)
                     {
-                        self->currentDevice->readBuffer[self->currentDevice->readWriteCount] = data;
+                        self->device->readBuffer[self->device->readWriteCount] = data;
                     }
-                    self->currentDevice->readWriteCount++;
+                    self->device->readWriteCount++;
                     
-                    if(self->currentDevice->readWriteCount < self->currentDevice->numBytesToSend ||
-                        self->currentDevice->readWriteCount < self->currentDevice->numBytesToRead)
+                    if(self->device->readWriteCount < self->device->numBytesToSend ||
+                        self->device->readWriteCount < self->device->numBytesToRead)
                     {
                         /* There are more bytes to send */
-                        self->currentDevice->state = SPI_SS_SEND_BYTE;
+                        self->device->state = SPI_SS_SEND_BYTE;
                     }
                     else
                     {
                         /* Set slave select line high */
-                        if(self->currentDevice->SetSSPin != NULL)
-                            (self->currentDevice->SetSSPin)(true, self->currentDevice);
-                        self->currentDevice->transferFinished = true;
-                        self->currentDevice->state = SPI_SS_IDLE;
+                        if(self->device->SetSSPin != NULL)
+                            (self->device->SetSSPin)(true, self->device);
+                        self->device->transferFinished = true;
+                        self->device->state = SPI_SS_IDLE;
                     }
                 }
                 break;
         } // end switch
-        self->currentDevice = self->currentDevice->next;
+        self->device = self->device->next;
     }
 }
 
