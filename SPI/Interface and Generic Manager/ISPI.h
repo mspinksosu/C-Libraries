@@ -48,7 +48,7 @@ typedef struct SPIInitTypeTag
 {
     SPIRole role;
     SPIMode mode;
-    SPISSControl control;
+    SPISSControl ssControl;
     bool useTxInterrupt;
     bool useRxInterrupt;
 } SPIInitType;
