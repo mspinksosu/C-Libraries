@@ -116,7 +116,7 @@ void SPI_Manager_Process(SPIManager *self)
     /* Go round-robin through the list of devices. Right now, I'm only going to 
     deal with SPI master mode. */
     // TODO add check for master mode, and eventually add slave mode
-    // TODO I may want to replace "busy" with a state for the peripheral
+    // TODO busy flag isn't used yet. I may want to replace it with a state for the peripheral instead
     if(self->busy == false && self->device != NULL)
     {
         switch(self->device->state)
