@@ -43,7 +43,8 @@ void SPI_Manager_Create(SPIManager *self, SPI *peripheral)
 {
     self->peripheral = peripheral;
     self->endOfList = NULL;
-    self->busy = false;
+    self->device = NULL;
+    self->busy = false; // TODO busy flag isn't used right now
 }
 
 // *****************************************************************************
@@ -117,7 +118,7 @@ void SPI_Manager_Process(SPIManager *self)
     deal with SPI master mode. */
     // TODO add check for master mode, and eventually add slave mode
     // TODO busy flag isn't used yet. I may want to replace it with a state for the peripheral instead
-    if(self->busy == false && self->device != NULL)
+    if(self->device != NULL)
     {
         switch(self->device->state)
         {
@@ -171,15 +172,22 @@ void SPI_Manager_Process(SPIManager *self)
                     }
                     else
                     {
-                        /* Set slave select line high */
+                        /* Transfer finished */
                         if(self->device->SetSSPin != NULL)
                             (self->device->SetSSPin)(true, self->device);
+                        
                         self->device->transferFinished = true;
                         self->device->state = SPI_SS_IDLE;
+                        self->device = self->device->next;
                     }
                 }
+                // TODO get received byte try again count?
                 break;
         } // end switch
+    }
+    else
+    {
+        /* No device found */
         self->device = self->device->next;
     }
 }
