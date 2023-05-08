@@ -250,8 +250,9 @@ bool UART1_IsReceiveRegisterFull(void)
 {
     bool rxFull = false;
 
-    /* The RX register not empty flag is set when the RDR has a character 
-    placed in it. It is cleared by reading the character from RDR */
+    /* The RX register not empty flag is set when the receive data register has 
+    a character placed in it. It is cleared by reading the character from the
+    receive data register. */
     if(UART_ADDR->SR & USART_SR_RXNE)
         rxFull = true;
 
@@ -345,8 +346,9 @@ bool UART1_IsTransmitRegisterEmpty(void)
 {
     bool txReady = false;
 
-    /* The transmit register empty flag is set when the contents of the TDR 
-    register are emptied. It is cleared when the TDR register is written to */
+    /* The transmit register empty flag is set when the contents of the
+    transmit data register are emptied. It is cleared when the transmit data
+    register is written to */
     if(UART_ADDR->SR & USART_SR_TXE)
         txReady = true;
 

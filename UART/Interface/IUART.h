@@ -392,7 +392,7 @@ bool UART_IsTransmitRegisterEmpty(UART *self);
  * some situations when it would be nice to know exactly when the transmission 
  * has finished, such as with half-duplex communication. If your MCU doesn't
  * implement this feature, return the Tx register not empty status instead. 
- * Make sure to clear this flag every time you send a byte.
+ * Make sure to clear any related flags every time you send a byte.
  * 
  * @param self  pointer to the UART you are using
  * 
