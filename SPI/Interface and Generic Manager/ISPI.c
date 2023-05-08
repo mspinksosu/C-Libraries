@@ -132,11 +132,11 @@ bool SPI_IsReceiveRegisterFull(SPI *self)
 
 // *****************************************************************************
 
-void SPI_TransmitFinishedEvent(SPI *self)
+void SPI_TransmitRegisterEmptyEvent(SPI *self)
 {
-    if(self->interface->SPI_TransmitFinishedEvent != NULL)
+    if(self->interface->SPI_TransmitRegisterEmptyEvent != NULL)
     {
-        (self->interface->SPI_TransmitFinishedEvent)();
+        (self->interface->SPI_TransmitRegisterEmptyEvent)();
     }
 }
 
@@ -157,6 +157,20 @@ bool SPI_IsTransmitRegisterEmpty(SPI *self)
     if(self->interface->SPI_IsTransmitRegisterEmpty != NULL)
     {
         return (self->interface->SPI_IsTransmitRegisterEmpty)();
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// *****************************************************************************
+
+bool SPI_IsTransmitFinished(SPI *self)
+{
+    if(self->interface->SPI_IsTransmitFinished != NULL)
+    {
+        return (self->interface->SPI_IsTransmitFinished)();
     }
     else
     {

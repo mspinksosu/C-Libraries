@@ -8,7 +8,7 @@
  * @file ISPI.h
  * 
  * @details
- *      // TODO details
+ *      // TODO details. 8-bit, MSB first.
  * 
  ******************************************************************************/
 
@@ -64,9 +64,10 @@ typedef struct SPIInterfaceTag
     void (*SPI_ReceivedDataEvent)(void);
     uint8_t (*SPI_GetReceivedByte)(void);
     bool (*SPI_IsReceiveRegisterFull)(void);
-    void (*SPI_TransmitFinishedEvent)(void);
+    void (*SPI_TransmitRegisterEmptyEvent)(void);
     void (*SPI_TransmitByte)(uint8_t);
     bool (*SPI_IsTransmitRegisterEmpty)(void);
+    bool (*SPI_IsTransmitFinished)(void);
     SPIStatusBits (*SPI_GetStatus)(void);
     void (*SPI_PendingEventHandler)(void);
     void (*SPI_SetTransmitFinishedCallback)(void (*Function)(void));
@@ -233,7 +234,7 @@ bool SPI_IsReceiveRegisterFull(SPI *self);
  * 
  * @param self  pointer to the SPI you are using
  */
-void SPI_TransmitFinishedEvent(SPI *self);
+void SPI_TransmitRegisterEmptyEvent(SPI *self);
 
 /***************************************************************************//**
  * @brief Set the SS pin low, place data in the Tx register, send
@@ -253,15 +254,30 @@ void SPI_TransmitByte(SPI *self, uint8_t dataToSend);
  * 
  * This function will return true whenever the contents of the Tx register have
  * been loaded into the shift register. If you are not using interrupts, you 
- * can poll this function to know when it's okay to load another byte. This 
- * function will not tell you exactly when a transmission is completed though,
- * so be careful. For that, you should should check IsReceiveRegisterFull.
+ * can poll this function to know when it's okay to load another byte.
  * 
  * @param self  pointer to the SPI you are using
  * 
  * @return true if the transmit register is empty
  */
 bool SPI_IsTransmitRegisterEmpty(SPI *self);
+
+/***************************************************************************//**
+ * @brief Check if the data has finished being shifted out
+ * 
+ * Identical to IsTransmitRegisterEmpty except that this is only true when the 
+ * actual contents of the Tx register have been completely shifted out. This is
+ * sometimes called "transmit complete" or "shift register status". You should 
+ * use IsTransmitRegisterEmpty and TransmitRegisterEmptyEvent instead of this 
+ * function because not every MCU implements this feature. If your MCU doesn't
+ * implement this feature, return the Tx register not empty status instead. 
+ * Make sure to clear any related flags every time you send a byte.
+ * 
+ * @param self  pointer to the UART you are using
+ * 
+ * @return true if the transmission is fully completed
+ */
+bool SPI_IsTransmitFinished(SPI *self);
 
 /***************************************************************************//**
  * @brief Get the status bits of the SPI

@@ -3,8 +3,7 @@
  * 
  * @author Matthew Spinks
  * 
- * @date 12/2/14  Original creation
- * @date 2/4/22   Modified
+ * @date 5/6/23    Original creation
  * 
  * @file SPI1_STM32F1.c
  * 
@@ -36,9 +35,10 @@ SPIInterface SPI1_FunctionTable = {
     .SPI_ReceivedDataEvent = SPI1_ReceivedDataEvent,
     .SPI_GetReceivedByte = SPI1_GetReceivedByte,
     .SPI_IsReceiveRegisterFull = SPI1_IsReceiveRegisterFull,
-    .SPI_TransmitFinishedEvent = SPI1_TransmitFinishedEvent,
+    .SPI_TransmitRegisterEmptyEvent = SPI1_TransmitRegisterEmptyEvent,
     .SPI_TransmitByte = SPI1_TransmitByte,
     .SPI_IsTransmitRegisterEmpty = SPI1_IsTransmitRegisterEmpty,
+    .SPI_IsTransmitFinished = SPI1_IsTransmitFinished,
     .SPI_GetStatus = SPI1_GetStatus,
     .SPI_PendingEventHandler = SPI1_PendingEventHandler,
     .SPI_SetTransmitFinishedCallback = SPI1_SetTransmitFinishedCallback,
@@ -50,6 +50,8 @@ static bool useRxInterrupt = false, useTxInterrupt = false;
 SPIRole role = SPI_ROLE_MASTER;
 SPIMode mode = SPI_MODE_0;
 SPISSControl ssControl = SPI_SS_NONE;
+static bool lockTxFinishedEvent = false, txFinishedEventPending = false,
+    lockRxReceivedEvent = false;
 
 // local function pointers
 static void (*TransmitFinishedCallback)(void);
@@ -81,6 +83,9 @@ void SPI1_Init(SPIInitType *params)
 
     /* Turn off tx/rx interrupts */
     SPI_ADDR->CR1 &= ~(SPI_CR2_RXNEIE | SPI_CR2_TXEIE);
+
+    /* 8-bit data register width (default) */
+    SPI_ADDR->CR2 &= ~SPI_CR1_DFF;
 
     if(role == SPI_ROLE_MASTER)
     {
@@ -119,9 +124,6 @@ void SPI1_Init(SPIInitType *params)
         SPI_ADDR->CR2 &= ~SPI_CR2_SSOE;
     }
 
-    /* Set prescale value */
-    SPI_ADDR->CR1 &= ~SPI_CR1_BR; // default 000 (pclk / 2)
-
     /* If you turn on the transmit interrupt during initialization, it could
     fire off repeatedly. It's best to turn it on after placing data in the 
     transmit register */
@@ -152,9 +154,14 @@ void SPI1_Enable(void)
 
 void SPI1_Disable(void)
 {
+    /* Great care must be taken when using the BSY flag with the SPI. Simply
+    checking the BSY flag alone is not enough to reliably detect it. The 
+    reference manual gives very specific instructions for what to do for each 
+    SPI mode. Ref man page 718, master or slave full-duplex mode: */
+    while(!(SPI_ADDR->SR & SPI_SR_RXNE));
+    while(!(SPI_ADDR->SR & SPI_SR_TXE));
+    while(SPI_ADDR->SR & SPI_SR_BSY);
     SPI_ADDR->CR1 &= ~SPI_CR1_SPE;
-
-    // TODO wait for transmission to finish
 
     /* Set slave select high */
     if(ssControl == SPI_SS_CALLBACKS && SetSSPin != NULL)
@@ -167,56 +174,126 @@ void SPI1_Disable(void)
 
 void SPI1_ReceivedDataEvent(void)
 {
+    if(lockRxReceivedEvent == true)
+    {
+        /* Prevent the possibility of another interrupt from somehow calling us 
+        while we're in a callback. This won't happen in SPI master mode because
+        we control the clock. */
+        return;
+    }
+    lockRxReceivedEvent = true;
 
+    if(ReceivedDataCallback)
+    {
+        ReceivedDataCallback(SPI1_GetReceivedByte);
+    }
+    lockRxReceivedEvent = false;
 }
 
 // *****************************************************************************
 
 uint8_t SPI1_GetReceivedByte(void)
 {
+    uint8_t data = SPI_ADDR->DR;
 
+    return data;
 }
 
 // *****************************************************************************
 
 bool SPI1_IsReceiveRegisterFull(void)
 {
-
+    /* The RX register not empty flag is set when the receive data register has 
+    a character placed in it. It is cleared by reading the character from the
+    receive data register. */
+    if(SPI_ADDR->SR & SPI_SR_RXNE)
+        return true;
+    else
+        return false;
 }
 
 // *****************************************************************************
 
 void SPI1_TransmitFinishedEvent(void)
 {
+    /* This will prevent recursive calls if we call transmit byte function from
+    within the transmit interrupt callback. This requires the pending event
+    handler function to be called to catch the txFinishedEventPending flag. */
+    if(lockTxFinishedEvent == true)
+    {
+        txFinishedEventPending = true;
+        return;
+    }
+    lockTxFinishedEvent = true;
 
+    /* Disable transmit interrupt here */
+    SPI_ADDR->CR2 &= ~SPI_CR2_TXEIE;
+
+    if(TransmitFinishedCallback)
+    {
+        TransmitFinishedCallback();
+    }
 }
 
 // *****************************************************************************
 
-void SPI1_TransmitByte(uint8_t dataToSend)
+void SPI1_TransmitByte(uint8_t data)
 {
+    SPI_ADDR->DR = data;
 
+    /* Enable transmit interrupt here if needed */
+    if(useTxInterrupt)
+        SPI_ADDR->CR2 |= SPI_CR2_TXEIE
 }
 
 // *****************************************************************************
 
 bool SPI1_IsTransmitRegisterEmpty(void)
 {
+    /* The transmit register empty flag is set when the contents of the
+    transmit data register are emptied. It is cleared when the transmit data
+    register is written to */
+    if(SPI_ADDR->SR & SPI_SR_TXE)
+        return true;
+    else
+        return false;
+}
 
+// *****************************************************************************
+
+bool SPI1_IsTransmitFinished(void)
+{
+    /* Great care must be taken when using the BSY flag with the SPI. Simply
+    checking the BSY flag alone is not enough to reliably detect it. The 
+    reference manual gives very specific instructions for what to do for each 
+    SPI mode. Ref man page 718, master or slave full-duplex mode: */
+    while(!(SPI_ADDR->SR & SPI_SR_RXNE));
+    while(!(SPI_ADDR->SR & SPI_SR_TXE));
+    while(SPI_ADDR->SR & SPI_SR_BSY);
 }
 
 // *****************************************************************************
 
 SPIStatusBits SPI1_GetStatus(void)
 {
+    /* TODO Because SPI and I2C are bi-directional there has to be more decision
+    making in the transmit and receive process. Whereas UART can just throw 
+    bytes into a buffer. I'm going to try and make a set of generic status 
+    types for each to make it easier to incorporate state machine control. */
+    SPIStatusBits status;
 
+    return status;
 }
 
 // *****************************************************************************
 
 void SPI1_PendingEventHandler(void)
 {
-
+    if(txFinishedEventPending && !lockTxFinishedEvent)
+    {
+        txFinishedEventPending = false;
+        SPI1_TransmitFinishedEvent();
+    }
 }
 
 // *****************************************************************************

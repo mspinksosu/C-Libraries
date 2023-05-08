@@ -8,7 +8,7 @@
  * @file SPI1.h
  * 
  * @details
- *      TODO
+ *      // TODO details
  * 
  ******************************************************************************/
 
@@ -51,11 +51,13 @@ uint8_t SPI1_GetReceivedByte(void);
 
 bool SPI1_IsReceiveRegisterFull(void);
 
-void SPI1_TransmitFinishedEvent(void);
+void SPI1_TransmitRegisterEmptyEvent(void);
 
 void SPI1_TransmitByte(uint8_t dataToSend);
 
 bool SPI1_IsTransmitRegisterEmpty(void);
+
+bool SPI1_IsTransmitFinished(void);
 
 SPIStatusBits SPI1_GetStatus(void);
 
