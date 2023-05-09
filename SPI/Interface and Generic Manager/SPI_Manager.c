@@ -8,7 +8,7 @@
  * @file SPI_Manager.h
  * 
  * @details
- *      // TODO details
+ *      // TODO details. Right now, this handles master only
  * 
  ******************************************************************************/
 
@@ -17,7 +17,6 @@
 
 // ***** Defines ***************************************************************
 
-#define DEFAULT_NUM_PERIPHERALS 4
 
 // ***** Global Variables ******************************************************
 

@@ -46,7 +46,7 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
   - [x] Add different types of rotary encoder
 - [ ] SPI: Interface created
     - [ ] Basic STM32 implementation ready to start testing
-    - [ ] SPI Manager state machine
+    - [ ] SPI Manager state machine almost ready
     - [ ] PIC32 implementation
     - [ ] Documentation
 - [x] Switch: Complete!
