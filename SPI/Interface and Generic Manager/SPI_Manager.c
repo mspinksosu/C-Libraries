@@ -21,21 +21,12 @@
 
 // ***** Global Variables ******************************************************
 
+static bool spiManagerEnabled;
 
 // ***** Static Function Prototypes ********************************************
 
 /* Put static function prototypes here */
 static void SPI_Manager_DevicePush(SPISlave *self, SPISlave *endOfList);
-
-// *****************************************************************************
-
-void SPI_Manager_Init(SPIManager *self)
-{
-
-    /* Initialize the SPI peripherals */
-
-    /* Enable the SPI peripherals */
-}
 
 // *****************************************************************************
 
@@ -196,14 +187,17 @@ void SPI_Manager_Process(SPIManager *self)
 
 void SPI_Manager_Enable(SPIManager *self)
 {
-
+    if(!SPI_IsEnabled())
+        SPI_Enable(self->peripheral);
+    
+    spiManagerEnabled = true;
 }
 
 // *****************************************************************************
 
 void SPI_Manager_Disable(SPIManager *self)
 {
-
+    spiManagerEnabled = false;
 }
 
 // *****************************************************************************

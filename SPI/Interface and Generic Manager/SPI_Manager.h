@@ -67,8 +67,6 @@ typedef struct SPIManagerTag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void SPI_Manager_Init(SPIManager *self);
-
 void SPI_Manager_Create(SPIManager *self, SPI *peripheral);
 
 void SPI_Manager_AddSlave(SPIManager *self, SPISlave *slave, uint8_t *writeBuffer, uint8_t *readBuffer);
@@ -78,8 +76,6 @@ bool SPI_Manager_IsDeviceBusy(SPISlave *self);
 void SPI_Manager_BeginTransfer(SPISlave *self, uint16_t numBytesToSend, uint16_t numBytesToRead);
 
 bool SPI_Manager_IsTransferFinished(SPISlave *self);
-
-//void SPI_Manager_GetData(SPISlave *self, uint8_t *retNumBytesSent, uint8_t *retNumBytesRead);
 
 void SPI_Manager_Process(SPIManager *self);
 

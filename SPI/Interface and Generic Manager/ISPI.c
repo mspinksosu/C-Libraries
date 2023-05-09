@@ -41,7 +41,7 @@ void SPI_SetInitTypeToDefaultParams(SPIInitType *params)
 {
     params->role = SPI_ROLE_MASTER;
     params->mode = SPI_MODE_0;
-    params->control = SPI_SS_NONE;
+    params->ssControl = SPI_SS_NONE;
     params->useRxInterrupt = false;
     params->useTxInterrupt = false;
 }
@@ -53,7 +53,7 @@ void SPI_SetInitTypeParams(SPIInitType *params, SPIRole role, SPIMode mode,
 {
     params->role = role;
     params->mode = mode;
-    params->control = ssControl;
+    params->ssControl = ssControl;
     params->useRxInterrupt = useRxInterrupt;
     params->useTxInterrupt = useTxInterrupt;
 }
