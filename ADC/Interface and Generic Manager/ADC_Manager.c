@@ -33,7 +33,7 @@
 
 static ADCChannelEntry *ptrToLast = NULL;       // circular linked list
 static ADCChannelEntry *currentEntry = NULL;  // index for linked list
-static bool adcManagerEnabled;
+static bool adcManagerEnabled = true;
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -112,7 +112,7 @@ void ADC_Manager_Tick(void)
     ADC_Tick();
 
     /* Go round-robin through the list */
-    if(!ADC_IsBusy() && currentEntry != NULL)
+    if(adcManagerEnabled && !ADC_IsBusy() && currentEntry != NULL)
     {
         ADC_TakeSample(currentEntry->channel);
         currentEntry = currentEntry->next;
@@ -123,6 +123,9 @@ void ADC_Manager_Tick(void)
 
 void ADC_Manager_Enable(void)
 {
+    if(!ADC_IsEnabled())
+        ADC_Enable();
+    
     adcManagerEnabled = true;
 }
 

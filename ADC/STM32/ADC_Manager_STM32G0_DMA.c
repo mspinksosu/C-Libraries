@@ -25,7 +25,7 @@
  * the init function individually for every object. I just did as an example of 
  * different way to initialize all the channels as an array. I did this because
  * the DMA array must have a known size before initialization. The size is 
- * determined by the number of channels times the samples. Since, the number of
+ * determined by the number of channels times the samples. Since the number of
  * channels must be known, I decided to put the channels in array.
  * 
  * One important difference is that I'm using an external pointer to point to
@@ -36,8 +36,8 @@
  * the pointer and setting it during the declaration of the array's members, 
  * everything can be done here and the declarations can be done in any order.
  * The downside of this method is that it takes up slightly more memory due to
- * the pointer. Remember in this case, because we are using a pointer, the
- * function calls don't need to use the reference operator.
+ * the pointer. Remember that because we are using a pointer, the function 
+ * calls don't need to use the reference operator:
  * ADC_Get16Bit(tempInternal) vs ADC_Get16Bit(&tempInternal) <-not needed
  * 
  * The number of channels is given by a define statement near the top of this
@@ -75,6 +75,7 @@ static ADCChannelEntry *ptrToLast = NULL;      // linked list
 static ADCChannelEntry *currentChannel = NULL; // index for linked list
 static uint32_t dmaChannelSelection = 0;    // for the channel select register
 static uint16_t DMAArray[ADC_MANAGE_NUM_CHANNELS * ADC_MANAGE_SAMPLES_PER_CHANNEL];
+static bool adcManagerEnabled = true;
 
 typedef struct ADCChannelFullTag
 {
@@ -233,11 +234,10 @@ void ADC_Manager_AddChannel(ADCChannelEntry *self, ADCChannel *newChannel)
 
 void ADC_Manager_Tick(void)
 {
-    /* Go round-robin through the list */
-
     ADC_Tick();
-    
-    if(currentChannel != NULL)
+
+    /* Go round-robin through the list */
+    if(adcManagerEnabled && currentChannel != NULL)
     {
         /* Start by getting the entries from the DMA array. The list begins in 
         order and matches the DMA array */
@@ -279,6 +279,8 @@ void ADC_Manager_Enable(void)
 
     if(!ADC_IsEnabled())
         ADC_Enable();
+    
+    adcManagerEnabled = true;
 }
 
 // *****************************************************************************
@@ -289,6 +291,8 @@ void ADC_Manager_Disable(void)
     LL_ADC_REG_SetDMATransfer(ADC1, LL_ADC_REG_DMA_TRANSFER_NONE);
     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_1);
     while(LL_DMA_IsEnabledChannel(DMA1, LL_DMA_CHANNEL_1)){}
+    
+    adcManagerEnabled = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
