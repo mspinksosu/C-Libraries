@@ -16,7 +16,8 @@
 #include <stddef.h> // needed for NULL
 
 /* Include processor specific header files here */
-#include "stm32f10x_map.h"
+#include "stm32f10x_map.h" // registers
+#include "stm32f10x.h"     // stm32f1 typedefs
 
 // ***** Defines ***************************************************************
 
@@ -82,10 +83,10 @@ void SPI1_Init(SPIInitType *params)
     SPI_ADDR->CR1 &= ~SPI_CR1_SPE;
 
     /* Turn off tx/rx interrupts */
-    SPI_ADDR->CR1 &= ~(SPI_CR2_RXNEIE | SPI_CR2_TXEIE);
+    SPI_ADDR->CR2 &= ~(SPI_CR2_RXNEIE | SPI_CR2_TXEIE);
 
     /* 8-bit data register width (default) */
-    SPI_ADDR->CR2 &= ~SPI_CR1_DFF;
+    SPI_ADDR->CR1 &= ~SPI_CR1_DFF;
 
     if(role == SPI_ROLE_MASTER)
     {
