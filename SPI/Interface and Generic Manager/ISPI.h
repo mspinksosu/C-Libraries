@@ -84,12 +84,12 @@ typedef struct SPIStatusBitsTag
 {
     union {
         struct {
-            unsigned BSY    :1;
-            unsigned TXE    :1;
-            unsigned RXNE   :1;
-            unsigned TF     :1;
-            unsigned FERR   :1;
-            unsigned OVF    :1;
+            unsigned BSY    :1; // busy
+            unsigned TXE    :1; // tx register empty
+            unsigned RXNE   :1; // rx register not empty
+            unsigned TF     :1; // transmit finished
+            unsigned FAULT  :1; // mode fault or frame error
+            unsigned OVF    :1; // overflow
             unsigned        :2;
         };
         uint8_t all;

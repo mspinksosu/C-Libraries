@@ -144,7 +144,7 @@ void SPI_Manager_Process(SPIManager *self)
                 able to just watch it. */
 
                 /* Add option for no read buffer */
-                if(SPI_IsTransmitFinished(self->peripheral))
+                if(SPI1_IsReceiveRegisterFull(self->peripheral))
                 {
                     uint8_t data = SPI_GetReceivedByte(self->peripheral);
 
