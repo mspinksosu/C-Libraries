@@ -243,7 +243,7 @@ void SPI1_TransmitByte(uint8_t data)
 
     /* Enable transmit interrupt here if needed */
     if(useTxInterrupt)
-        SPI_ADDR->CR2 |= SPI_CR2_TXEIE
+        SPI_ADDR->CR2 |= SPI_CR2_TXEIE;
 }
 
 // *****************************************************************************

@@ -284,7 +284,7 @@ void UART1_ReceiveEnable(void)
     UART_ADDR->CR1 |= USART_CR1_RE;
 
     if(useRxInterrupt) 
-        UART_ADDR->CR1 |= USART_CR1_RXNEIE;
+        UART_ADDR->CR1 |= USART_CR1_RXNEIE_RXFNEIE;
 
     /* RTS is asserted (low) whenever we are ready to receive data. */
     if(flowControl == UART_FLOW_CALLBACKS && SetRTSPin != NULL)
@@ -408,7 +408,7 @@ void UART1_TransmitEnable(void)
     /* If the transmit register is full and interrupts are desired, 
     enable them */
     if(useTxInterrupt && !(UART_ADDR->ISR & USART_ISR_TXE_TXFNF))
-        UART_ADDR->CR1 |= USART_CR1_TXEIE;
+        UART_ADDR->CR1 |= USART_CR1_TXEIE_TXFNFIE;
 }
 
 // *****************************************************************************
