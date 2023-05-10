@@ -157,8 +157,8 @@ void SPI1_Disable(void)
 {
     /* Great care must be taken when using the BSY flag with the SPI. Simply
     checking the BSY flag alone is not enough to reliably detect it. The 
-    reference manual gives very specific instructions for what to do for each 
-    SPI mode. Ref man page 718, master or slave full-duplex mode: */
+    reference manual gives very specific instructions for what to do. 
+    Ref man page 718, master or slave full-duplex mode: */
     while(!(SPI_ADDR->SR & SPI_SR_RXNE));
     while(!(SPI_ADDR->SR & SPI_SR_TXE));
     while(SPI_ADDR->SR & SPI_SR_BSY);
@@ -195,7 +195,8 @@ void SPI1_ReceivedDataEvent(void)
 
 uint8_t SPI1_GetReceivedByte(void)
 {
-    uint8_t data = SPI_ADDR->DR;
+    /* data is right aligned */
+    uint8_t data = (uint8_t)(SPI_ADDR->DR << 8);
 
     return data;
 }
@@ -264,13 +265,14 @@ bool SPI1_IsTransmitRegisterEmpty(void)
 
 bool SPI1_IsTransmitFinished(void)
 {
-    /* Great care must be taken when using the BSY flag with the SPI. Simply
-    checking the BSY flag alone is not enough to reliably detect it. The 
-    reference manual gives very specific instructions for what to do for each 
-    SPI mode. Ref man page 718, master or slave full-duplex mode: */
-    while(!(SPI_ADDR->SR & SPI_SR_RXNE));
-    while(!(SPI_ADDR->SR & SPI_SR_TXE));
-    while(SPI_ADDR->SR & SPI_SR_BSY);
+    /* Do not use the busy flag to handle data transmission. You should use the
+    TXE flag instead. The busy flag is low in master mode during reception.
+    so if the TXE flag is high (tx empty) and BSY is low, it "should" mean that
+    we've fully finished shifting bytes out. */
+    if((SPI_ADDR->SR & SPI_SR_TXE) && !(SPI_ADDR->SR & SPI_SR_BSY))
+        return true;
+    else
+        return false;
 }
 
 // *****************************************************************************
@@ -290,7 +292,7 @@ SPIStatusBits SPI1_GetStatus(void)
     if(SPI_ADDR->SR & SPI_SR_RXNE)
         status.RXNE = 1;
     if(SPI_ADDR->SR & SPI_SR_MODF)
-        status.FERR = 1;
+        status.FAULT = 1;
     if(SPI_ADDR->SR & SPI_SR_OVR)
         status.OVF = 1;
 
