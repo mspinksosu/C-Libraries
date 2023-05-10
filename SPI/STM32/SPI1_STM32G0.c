@@ -41,7 +41,7 @@ SPIInterface SPI1_FunctionTable = {
     .SPI_IsTransmitFinished = SPI1_IsTransmitFinished,
     .SPI_GetStatus = SPI1_GetStatus,
     .SPI_PendingEventHandler = SPI1_PendingEventHandler,
-    .SPI_SetTransmitFinishedCallback = SPI1_SetTransmitFinishedCallback,
+    .SPI_SetTransmitRegisterEmptyCallback = SPI1_SetTransmitRegisterEmptyCallback,
     .SPI_SetReceivedDataCallback = SPI1_SetReceivedDataCallback,
     .SPI_SetSSPinFunc = SPI1_SetSSPinFunc,
 };
@@ -54,7 +54,7 @@ static bool lockTxFinishedEvent = false, txFinishedEventPending = false,
     lockRxReceivedEvent = false;
 
 // local function pointers
-static void (*TransmitFinishedCallback)(void);
+static void (*TransmitRegisterEmptyCallback)(void);
 static void (*ReceivedDataCallback)(uint8_t data);
 static void (*SetSSPin)(bool setHigh);
 
@@ -235,9 +235,9 @@ void SPI1_TransmitFinishedEvent(void)
     /* Disable transmit interrupt here */
     SPI_ADDR->CR2 &= ~SPI_CR2_TXEIE;
 
-    if(TransmitFinishedCallback)
+    if(TransmitRegisterEmptyCallback)
     {
-        TransmitFinishedCallback();
+        TransmitRegisterEmptyCallback();
     }
 }
 
@@ -316,9 +316,9 @@ void SPI1_PendingEventHandler(void)
 
 // *****************************************************************************
 
-void SPI1_SetTransmitFinishedCallback(void (*Function)(void))
+void SPI1_SetTransmitRegisterEmptyCallback(void (*Function)(void))
 {
-    TransmitFinishedCallback = Function;
+    TransmitRegisterEmptyCallback = Function;
 }
 
 // *****************************************************************************

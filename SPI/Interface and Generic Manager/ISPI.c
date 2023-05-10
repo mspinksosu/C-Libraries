@@ -204,11 +204,11 @@ void SPI_PendingEventHandler(SPI *self)
 
 // *****************************************************************************
 
-void SPI_SetTransmitFinishedCallback(SPI *self, void (*Function)(void))
+void SPI_SetTransmitRegisterEmptyCallback(SPI *self, void (*Function)(void))
 {
-    if(self->interface->SPI_SetTransmitFinishedCallback != NULL)
+    if(self->interface->SPI_SetTransmitRegisterEmptyCallback != NULL)
     {
-        (self->interface->SPI_SetTransmitFinishedCallback)(Function);
+        (self->interface->SPI_SetTransmitRegisterEmptyCallback)(Function);
     }
 }
 

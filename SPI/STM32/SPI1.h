@@ -63,7 +63,7 @@ SPIStatusBits SPI1_GetStatus(void);
 
 void SPI1_PendingEventHandler(void);
 
-void SPI1_SetTransmitFinishedCallback(void (*Function)(void));
+void SPI1_SetTransmitRegisterEmptyCallback(void (*Function)(void));
 
 void SPI1_SetReceivedDataCallback(void (*Function)(uint8_t data));
 

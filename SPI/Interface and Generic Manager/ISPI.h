@@ -70,7 +70,7 @@ typedef struct SPIInterfaceTag
     bool (*SPI_IsTransmitFinished)(void);
     SPIStatusBits (*SPI_GetStatus)(void);
     void (*SPI_PendingEventHandler)(void);
-    void (*SPI_SetTransmitFinishedCallback)(void (*Function)(void));
+    void (*SPI_SetTransmitRegisterEmptyCallback)(void (*Function)(void));
     void (*SPI_SetReceivedDataCallback)(void (*Function)(uint8_t));
     void (*SPI_SetSSPinFunc)(void (*Function)(bool));
 } SPIInterface;
@@ -320,7 +320,7 @@ void SPI_PendingEventHandler(SPI *self);
  * 
  * @param Function  format: void SomeFunction(void)
  */
-void SPI_SetTransmitFinishedCallback(SPI *self, void (*Function)(void));
+void SPI_SetTransmitRegisterEmptyCallback(SPI *self, void (*Function)(void));
 
 /***************************************************************************//**
  * @brief Set a function to be called whenever a received data event happens
