@@ -84,12 +84,16 @@ typedef struct SPIStatusBitsTag
 {
     union {
         struct {
-            // TODO status bits
-            unsigned :8;
+            unsigned BSY    :1;
+            unsigned TXE    :1;
+            unsigned RXNE   :1;
+            unsigned TF     :1;
+            unsigned FERR   :1;
+            unsigned OVF    :1;
+            unsigned        :2;
         };
         uint8_t all;
     };
-
 } SPIStatusBits;
 
 /** 

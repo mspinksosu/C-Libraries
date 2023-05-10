@@ -47,7 +47,7 @@ void SPI_Manager_AddSlave(SPIManager *self, SPISlave *slave, uint8_t *writeBuffe
     slave->numBytesToRead = 0;
     slave->numBytesToSend = 0;
     slave->readWriteCount = 0;
-    slave->state = SPI_SS_IDLE;
+    slave->state = SPI_STATE_IDLE;
     slave->transferFinished = false;
 
     if(self->endOfList == NULL)
@@ -70,7 +70,7 @@ void SPI_Manager_AddSlave(SPIManager *self, SPISlave *slave, uint8_t *writeBuffe
 
 bool SPI_Manager_IsDeviceBusy(SPISlave *self)
 {
-    if(self->state == SPI_SS_IDLE)
+    if(self->state == SPI_STATE_IDLE)
         return false;
     else
         return true;
@@ -80,7 +80,7 @@ bool SPI_Manager_IsDeviceBusy(SPISlave *self)
 
 void SPI_Manager_BeginTransfer(SPISlave *self, uint16_t numBytesToSend, uint16_t numBytesToRead)
 {
-    if(self->state != SPI_SS_IDLE || (numBytesToRead == 0 && numBytesToSend == 0))
+    if(self->state != SPI_STATE_IDLE || (numBytesToRead == 0 && numBytesToSend == 0))
         return;
 
     if(self->writeBuffer != NULL)
@@ -90,7 +90,7 @@ void SPI_Manager_BeginTransfer(SPISlave *self, uint16_t numBytesToSend, uint16_t
         self->numBytesToRead = numBytesToRead;
 
     self->transferFinished = false;
-    self->state = SPI_SS_RQ_START; // request start
+    self->state = SPI_STATE_RQ_START; // request start
 }
 
 // *****************************************************************************
@@ -112,13 +112,13 @@ void SPI_Manager_Process(SPIManager *self)
     {
         switch(self->device->state)
         {
-            case SPI_SS_RQ_START:
+            case SPI_STATE_RQ_START:
                 /* Begin transfer. Set slave select line low */
                 if(self->device->SetSSPin != NULL)
                     (self->device->SetSSPin)(false, self->device);
-                self->device->state = SPI_SS_SEND_BYTE;
+                self->device->state = SPI_STATE_SEND_BYTE;
                 break;
-            case SPI_SS_SEND_BYTE:
+            case SPI_STATE_SEND_BYTE:
                 if(self->device->readWriteCount < self->device->numBytesToSend)
                 {
                     SPI_TransmitByte(self->peripheral, 
@@ -129,9 +129,9 @@ void SPI_Manager_Process(SPIManager *self)
                     /* Send empty data out for a slave read */
                     SPI_TransmitByte(self->peripheral, 0);
                 }
-                self->device->state = SPI_SS_RECEIVE_BYTE;
+                self->device->state = SPI_STATE_RECEIVE_BYTE;
                 break;
-            case SPI_SS_RECEIVE_BYTE:
+            case SPI_STATE_RECEIVE_BYTE:
                 /* In master mode there is always a receive after a send, so 
                 I can use a single read/write index count. However, we do have 
                 to wait until the transmission is fully finished first before 
@@ -158,7 +158,7 @@ void SPI_Manager_Process(SPIManager *self)
                         self->device->readWriteCount < self->device->numBytesToRead)
                     {
                         /* There are more bytes to send */
-                        self->device->state = SPI_SS_SEND_BYTE;
+                        self->device->state = SPI_STATE_SEND_BYTE;
                     }
                     else
                     {
@@ -167,7 +167,7 @@ void SPI_Manager_Process(SPIManager *self)
                             (self->device->SetSSPin)(true, self->device);
                         
                         self->device->transferFinished = true;
-                        self->device->state = SPI_SS_IDLE;
+                        self->device->state = SPI_STATE_IDLE;
                         self->device = self->device->next;
                     }
                 }

@@ -24,10 +24,10 @@
 
 typedef enum SPISlaveStateTag
 {
-    SPI_SS_IDLE = 0,
-    SPI_SS_RQ_START,
-    SPI_SS_SEND_BYTE,
-    SPI_SS_RECEIVE_BYTE
+    SPI_STATE_IDLE = 0,
+    SPI_STATE_RQ_START,
+    SPI_STATE_SEND_BYTE,
+    SPI_STATE_RECEIVE_BYTE
 } SPISlaveState;
 
 typedef struct SPISlaveTag SPISlave;

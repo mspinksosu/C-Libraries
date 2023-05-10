@@ -276,11 +276,22 @@ bool SPI1_IsTransmitFinished(void)
 
 SPIStatusBits SPI1_GetStatus(void)
 {
-    /* TODO Because SPI and I2C are bi-directional there has to be more decision
-    making in the transmit and receive process. Whereas UART can just throw 
-    bytes into a buffer. I'm going to try and make a set of generic status 
-    types for each to make it easier to incorporate state machine control. */
-    SPIStatusBits status;
+    /* TODO My first I2C state machine had a lot decisions to make and relied
+    on status bits. Whereas the UART could just throw bytes into a buffer. 
+    I decided to make some for SPI also. But now I'm thinking I may not need 
+    these after all. Decide if I want to keep these or not after testing. */
+    SPIStatusBits status = {0};
+
+    if(SPI_ADDR->SR & SPI_SR_BSY)
+        status.BSY = 1;
+    if(SPI_ADDR->SR & SPI_SR_TXE)
+        status.TXE = 1;
+    if(SPI_ADDR->SR & SPI_SR_RXNE)
+        status.RXNE = 1;
+    if(SPI_ADDR->SR & SPI_SR_MODF)
+        status.FERR = 1;
+    if(SPI_ADDR->SR & SPI_SR_OVR)
+        status.OVF = 1;
 
     return status;
 }
