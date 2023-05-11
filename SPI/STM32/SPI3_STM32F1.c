@@ -20,6 +20,19 @@
 
 // ***** Defines ***************************************************************
 
+enum {
+    SPI_PRE_DIV_2 = 0,
+    SPI_PRE_DIV_4,
+    SPI_PRE_DIV_8,
+    SPI_PRE_DIV_16,
+    SPI_PRE_DIV_32,
+    SPI_PRE_DIV_64,
+    SPI_PRE_DIV_128,
+    SPI_PRE_DIV_256};
+
+/* Prescale selection. Source = Pclk. Choose from the enum */
+#define SPI_PRESCALE    SPI_PRE_DIV_2
+
 /* Peripheral addresses and registers */
 #define SPI_ADDR        SPI3
 #define SPI_CLK_REG     RCC->APB1ENR
@@ -87,6 +100,10 @@ void SPI3_Init(SPIInitType *params)
     /* 8-bit data register width (default) */
     SPI_ADDR->CR1 &= ~SPI_CR1_DFF;
 
+    /* Set the baud rate. Pclk / prescale */
+    SPI_ADDR->CR1 &= SPI_CR1_BR;
+    SPI_ADDR->CR1 |= (SPI_PRESCALE << 3);
+
     if(role == SPI_ROLE_MASTER)
     {
         SPI_ADDR->CR1 |= SPI_CR1_MSTR;
@@ -115,12 +132,19 @@ void SPI3_Init(SPIInitType *params)
             break;
     }
 
+    /* In NSS software mode, set SSM and SSI. If used as input in hardware 
+    mode, NSS pin must pulled high. If using NSS as output in hardware mode,
+    set SSOE only. Ref man 25.3.3 (page 707) */
     if(ssControl == SPI_SS_HARDWARE)
     {
+        SPI_ADDR->CR1 &= ~SPI_CR1_SSI;
+        SPI_ADDR->CR1 &= ~SPI_CR1_SSM;
         SPI_ADDR->CR2 |= SPI_CR2_SSOE;
     }
     else
     {
+        SPI_ADDR->CR1 |= SPI_CR1_SSI;
+        SPI_ADDR->CR1 |= SPI_CR1_SSM;
         SPI_ADDR->CR2 &= ~SPI_CR2_SSOE;
     }
 
