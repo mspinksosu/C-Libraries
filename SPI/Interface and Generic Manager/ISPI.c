@@ -214,7 +214,7 @@ void SPI_SetTransmitRegisterEmptyCallback(SPI *self, void (*Function)(void))
 
 // *****************************************************************************
 
-void SPI_SetReceivedDataCallback(SPI *self, void (*Function)(uint8_t data))
+void SPI_SetReceivedDataCallback(SPI *self, void (*Function)(uint8_t (*CallToGetData)(void)))
 {
     if(self->interface->SPI_SetReceivedDataCallback != NULL)
     {

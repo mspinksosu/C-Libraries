@@ -44,6 +44,22 @@ typedef enum SPISSControlTag
     SPI_SS_CALLBACKS, // User will implement functions for controlling the pin
 } SPISSControl;
 
+typedef struct SPIStatusBitsTag
+{
+    union {
+        struct {
+            unsigned BSY    :1; // busy
+            unsigned TXE    :1; // tx register empty
+            unsigned RXNE   :1; // rx register not empty
+            unsigned TF     :1; // transmit finished
+            unsigned FAULT  :1; // mode fault or frame error
+            unsigned OVF    :1; // overflow
+            unsigned        :2;
+        };
+        uint8_t all;
+    };
+} SPIStatusBits;
+
 typedef struct SPIInitTypeTag
 {
     SPIRole role;
@@ -71,7 +87,7 @@ typedef struct SPIInterfaceTag
     SPIStatusBits (*SPI_GetStatus)(void);
     void (*SPI_PendingEventHandler)(void);
     void (*SPI_SetTransmitRegisterEmptyCallback)(void (*Function)(void));
-    void (*SPI_SetReceivedDataCallback)(void (*Function)(uint8_t));
+    void (*SPI_SetReceivedDataCallback)(void (*Function)(uint8_t (*CallToGetData)(void)));
     void (*SPI_SetSSPinFunc)(void (*Function)(bool));
 } SPIInterface;
 
@@ -79,22 +95,6 @@ typedef struct SPITag
 {
     SPIInterface *interface;
 } SPI;
-
-typedef struct SPIStatusBitsTag
-{
-    union {
-        struct {
-            unsigned BSY    :1; // busy
-            unsigned TXE    :1; // tx register empty
-            unsigned RXNE   :1; // rx register not empty
-            unsigned TF     :1; // transmit finished
-            unsigned FAULT  :1; // mode fault or frame error
-            unsigned OVF    :1; // overflow
-            unsigned        :2;
-        };
-        uint8_t all;
-    };
-} SPIStatusBits;
 
 /** 
  * Description of struct members: // TODO description
@@ -312,9 +312,8 @@ void SPI_PendingEventHandler(SPI *self);
 /***************************************************************************//**
  * @brief Set a function to be called whenever the transmit event happens
  * 
- * This function pointer is called from within the TransmitFinishedEvent
- * function, which is your "transmit register not empty" interrupt. Your 
- * function should follow the format listed below.
+ * This function pointer is called from within the TransmitRegisterEmptyEvent
+ * function. Your function should follow the format listed below.
  * 
  * @param self  pointer to the SPI you are using
  * 
@@ -325,16 +324,40 @@ void SPI_SetTransmitRegisterEmptyCallback(SPI *self, void (*Function)(void));
 /***************************************************************************//**
  * @brief Set a function to be called whenever a received data event happens
  * 
- * Create a function using the format listed below. When your function is 
- * called, you will receive the data from the Rx register. Every time you 
- * transmit using SPI you are also receiving. In many cases, you may not need
- * the data from the receive register. It is up to you to handle this.
+  * This callback function uses another function pointer as its argument. Copy 
+ * the format listed below to create your function to be used with this 
+ * callback. When your function is called, you will have a pointer to another
+ * function passed to you. This function pointer "CallToGetData" has a uint8_t
+ * return type. When you call it, you will be getting the actual data from the
+ * UART. The reason I give you a function to call instead of the data itself, 
+ * is because we don't want to mess up any flow control or interrupt flags in 
+ * the UART before the user gets the actual data. Typically, the receive 
+ * interrupt flag is cleared when the data is read out. So it's a nice method
+ * of ensuring that the data doesn't get overwritten accidentally and the flow
+ * control pins don't change prematurely.
+ * 
+ * When you issue the callback in your implementation you will typically give 
+ * it a reference to the SPIx_GetReceivedByte function.
+ * 
+ * // callback function implementation:
+ * void MyFunction(uint8_t (*CallToGetData)void) {
+ *     uint8_t data = CallToGetData();
+ *     ....
+ * }
+ * 
+ * SPI_SetReceivedDataCallback(MyFunction);
+ * 
+ * // inside ReceivedDataEvent implementation:
+ * static void (*ReceivedDataCallbackFuncPtr)(uint8_t (*CallToGetData)(void));
+ * 
+ * if(ReceivedDataCallbackFuncPtr != NULL)
+ *     ReceivedDataCallbackFuncPtr(SPI1_GetReceivedByte);
  * 
  * @param self  pointer to the SPI you are using
  * 
  * @param Function  format: void SomeFunction(uint8_t data)
  */
-void SPI_SetReceivedDataCallback(SPI *self, void (*Function)(uint8_t data));
+void SPI_SetReceivedDataCallback(SPI *self, void (*Function)(uint8_t (*CallToGetData)(void)));
 
 /***************************************************************************//**
  * @brief Set a function to allow this SPI library to control the SS pin.

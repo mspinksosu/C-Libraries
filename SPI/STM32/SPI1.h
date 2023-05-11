@@ -65,7 +65,7 @@ void SPI1_PendingEventHandler(void);
 
 void SPI1_SetTransmitRegisterEmptyCallback(void (*Function)(void));
 
-void SPI1_SetReceivedDataCallback(void (*Function)(uint8_t data));
+void SPI1_SetReceivedDataCallback(void (*Function)(uint8_t (*CallToGetData)(void)));
 
 void SPI1_SetSSPinFunc(void (*Function)(bool setPinHigh));
 

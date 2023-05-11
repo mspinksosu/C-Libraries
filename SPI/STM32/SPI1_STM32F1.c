@@ -16,8 +16,7 @@
 #include <stddef.h> // needed for NULL
 
 /* Include processor specific header files here */
-#include "stm32f10x_map.h" // registers
-#include "stm32f10x.h"     // stm32f1 typedefs
+#include "stm32f10x_map.h"
 
 // ***** Defines ***************************************************************
 
@@ -56,7 +55,7 @@ static bool lockTxFinishedEvent = false, txFinishedEventPending = false,
 
 // local function pointers
 static void (*TransmitRegisterEmptyCallback)(void);
-static void (*ReceivedDataCallback)(uint8_t data);
+static void (*ReceivedDataCallback)(uint8_t (*CallToGetData)(void));
 static void (*SetSSPin)(bool setHigh);
 
 // ***** Static Function Prototypes ********************************************
@@ -319,7 +318,7 @@ void SPI1_SetTransmitRegisterEmptyCallback(void (*Function)(void))
 
 // *****************************************************************************
 
-void SPI1_SetReceivedDataCallback(void (*Function)(uint8_t data))
+void SPI1_SetReceivedDataCallback(void (*Function)(uint8_t (*CallToGetData)(void)))
 {
     ReceivedDataCallback = Function;
 }
