@@ -31,7 +31,7 @@
 // ***** Defines ***************************************************************
 
 enum {
-    UART1_PRE_NO_DIV,
+    UART1_PRE_NO_DIV = 0,
     UART1_PRE_DIV_2,
     UART1_PRE_DIV_4,
     UART1_PRE_DIV_6,
@@ -45,8 +45,8 @@ enum {
     UART1_PRE_DIV_256};
 
 // ----- User selectable values ------------------------------------------------
-#define UART_PRESCALE UART1_PRE_NO_DIV // choose from the enum
-#define OVER8         0                // 0 = oversample 16, 1 = oversample 8
+#define UART_PRESCALE   UART1_PRE_NO_DIV  // choose from the enum
+#define OVER8           0                // 0 = oversample 16, 1 = oversample 8
 // -----------------------------------------------------------------------------
 
 /* Peripheral addresses and registers */
