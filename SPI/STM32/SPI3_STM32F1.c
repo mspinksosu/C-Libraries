@@ -5,14 +5,14 @@
  * 
  * @date 5/6/23    Original creation
  * 
- * @file SPI1_STM32F1.c
+ * @file SPI3_STM32F1.c
  * 
  * @details
  *      // TODO details
  * 
  ******************************************************************************/
 
-#include "SPI1.h"
+#include "SPI3.h"
 #include <stddef.h> // needed for NULL
 
 /* Include processor specific header files here */
@@ -21,29 +21,29 @@
 // ***** Defines ***************************************************************
 
 /* Peripheral addresses and registers */
-#define SPI_ADDR        SPI1
-#define SPI_CLK_REG     RCC->APB2ENR
-#define SPI_CLK_EN_MSK  RCC_APB2ENR_SPI1EN
+#define SPI_ADDR        SPI3
+#define SPI_CLK_REG     RCC->APB1ENR
+#define SPI_CLK_EN_MSK  RCC_APB1ENR_SPI3EN
 
 // ***** Global Variables ******************************************************
 
 /* Assign functions to the interface */
-SPIInterface SPI1_FunctionTable = {
-    .SPI_Init = SPI1_Init,
-    .SPI_Enable = SPI1_Enable,
-    .SPI_Disable = SPI1_Disable,
-    .SPI_ReceivedDataEvent = SPI1_ReceivedDataEvent,
-    .SPI_GetReceivedByte = SPI1_GetReceivedByte,
-    .SPI_IsReceiveRegisterFull = SPI1_IsReceiveRegisterFull,
-    .SPI_TransmitRegisterEmptyEvent = SPI1_TransmitRegisterEmptyEvent,
-    .SPI_TransmitByte = SPI1_TransmitByte,
-    .SPI_IsTransmitRegisterEmpty = SPI1_IsTransmitRegisterEmpty,
-    .SPI_IsTransmitFinished = SPI1_IsTransmitFinished,
-    .SPI_GetStatus = SPI1_GetStatus,
-    .SPI_PendingEventHandler = SPI1_PendingEventHandler,
-    .SPI_SetTransmitRegisterEmptyCallback = SPI1_SetTransmitRegisterEmptyCallback,
-    .SPI_SetReceivedDataCallback = SPI1_SetReceivedDataCallback,
-    .SPI_SetSSPinFunc = SPI1_SetSSPinFunc,
+SPIInterface SPI3_FunctionTable = {
+    .SPI_Init = SPI3_Init,
+    .SPI_Enable = SPI3_Enable,
+    .SPI_Disable = SPI3_Disable,
+    .SPI_ReceivedDataEvent = SPI3_ReceivedDataEvent,
+    .SPI_GetReceivedByte = SPI3_GetReceivedByte,
+    .SPI_IsReceiveRegisterFull = SPI3_IsReceiveRegisterFull,
+    .SPI_TransmitRegisterEmptyEvent = SPI3_TransmitRegisterEmptyEvent,
+    .SPI_TransmitByte = SPI3_TransmitByte,
+    .SPI_IsTransmitRegisterEmpty = SPI3_IsTransmitRegisterEmpty,
+    .SPI_IsTransmitFinished = SPI3_IsTransmitFinished,
+    .SPI_GetStatus = SPI3_GetStatus,
+    .SPI_PendingEventHandler = SPI3_PendingEventHandler,
+    .SPI_SetTransmitRegisterEmptyCallback = SPI3_SetTransmitRegisterEmptyCallback,
+    .SPI_SetReceivedDataCallback = SPI3_SetReceivedDataCallback,
+    .SPI_SetSSPinFunc = SPI3_SetSSPinFunc,
 };
 
 static bool useRxInterrupt = false, useTxInterrupt = false;
@@ -69,7 +69,7 @@ static void (*SetSSPin)(bool setHigh);
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void SPI1_Init(SPIInitType *params)
+void SPI3_Init(SPIInitType *params)
 {
     role = params->role;
     mode = params->mode;
@@ -136,7 +136,7 @@ void SPI1_Init(SPIInitType *params)
 
 // *****************************************************************************
 
-void SPI1_Enable(void)
+void SPI3_Enable(void)
 {
     SPI_ADDR->CR1 |= SPI_CR1_SPE;
 
@@ -152,7 +152,7 @@ void SPI1_Enable(void)
 
 // *****************************************************************************
 
-void SPI1_Disable(void)
+void SPI3_Disable(void)
 {
     /* Great care must be taken when using the BSY flag with the SPI. Simply
     checking the BSY flag alone is not enough to reliably detect it. The 
@@ -172,7 +172,7 @@ void SPI1_Disable(void)
 
 // *****************************************************************************
 
-void SPI1_ReceivedDataEvent(void)
+void SPI3_ReceivedDataEvent(void)
 {
     if(lockRxReceivedEvent == true)
     {
@@ -185,14 +185,14 @@ void SPI1_ReceivedDataEvent(void)
 
     if(ReceivedDataCallback)
     {
-        ReceivedDataCallback(SPI1_GetReceivedByte);
+        ReceivedDataCallback(SPI3_GetReceivedByte);
     }
     lockRxReceivedEvent = false;
 }
 
 // *****************************************************************************
 
-uint8_t SPI1_GetReceivedByte(void)
+uint8_t SPI3_GetReceivedByte(void)
 {
     /* data is right aligned */
     uint8_t data = (uint8_t)(SPI_ADDR->DR << 8);
@@ -202,7 +202,7 @@ uint8_t SPI1_GetReceivedByte(void)
 
 // *****************************************************************************
 
-bool SPI1_IsReceiveRegisterFull(void)
+bool SPI3_IsReceiveRegisterFull(void)
 {
     /* The RX register not empty flag is set when the receive data register has 
     a character placed in it. It is cleared by reading the character from the
@@ -215,7 +215,7 @@ bool SPI1_IsReceiveRegisterFull(void)
 
 // *****************************************************************************
 
-void SPI1_TransmitRegisterEmptyEvent(void)
+void SPI3_TransmitRegisterEmptyEvent(void)
 {
     /* This will prevent recursive calls if we call transmit byte function from
     within the transmit interrupt callback. This requires the pending event
@@ -238,7 +238,7 @@ void SPI1_TransmitRegisterEmptyEvent(void)
 
 // *****************************************************************************
 
-void SPI1_TransmitByte(uint8_t data)
+void SPI3_TransmitByte(uint8_t data)
 {
     SPI_ADDR->DR = data;
 
@@ -249,7 +249,7 @@ void SPI1_TransmitByte(uint8_t data)
 
 // *****************************************************************************
 
-bool SPI1_IsTransmitRegisterEmpty(void)
+bool SPI3_IsTransmitRegisterEmpty(void)
 {
     /* The transmit register empty flag is set when the contents of the
     transmit data register are emptied. It is cleared when the transmit data
@@ -262,7 +262,7 @@ bool SPI1_IsTransmitRegisterEmpty(void)
 
 // *****************************************************************************
 
-bool SPI1_IsTransmitFinished(void)
+bool SPI3_IsTransmitFinished(void)
 {
     /* Do not use the busy flag to handle data transmission. You should use the
     TXE flag instead. The busy flag is low in master mode during reception.
@@ -276,7 +276,7 @@ bool SPI1_IsTransmitFinished(void)
 
 // *****************************************************************************
 
-SPIStatusBits SPI1_GetStatus(void)
+SPIStatusBits SPI3_GetStatus(void)
 {
     /* TODO My first I2C state machine had a lot decisions to make and relied
     on status bits. Whereas the UART could just throw bytes into a buffer. 
@@ -300,32 +300,32 @@ SPIStatusBits SPI1_GetStatus(void)
 
 // *****************************************************************************
 
-void SPI1_PendingEventHandler(void)
+void SPI3_PendingEventHandler(void)
 {
     if(txFinishedEventPending && !lockTxFinishedEvent)
     {
         txFinishedEventPending = false;
-        SPI1_TransmitRegisterEmptyEvent();
+        SPI3_TransmitRegisterEmptyEvent();
     }
 }
 
 // *****************************************************************************
 
-void SPI1_SetTransmitRegisterEmptyCallback(void (*Function)(void))
+void SPI3_SetTransmitRegisterEmptyCallback(void (*Function)(void))
 {
     TransmitRegisterEmptyCallback = Function;
 }
 
 // *****************************************************************************
 
-void SPI1_SetReceivedDataCallback(void (*Function)(uint8_t (*CallToGetData)(void)))
+void SPI3_SetReceivedDataCallback(void (*Function)(uint8_t (*CallToGetData)(void)))
 {
     ReceivedDataCallback = Function;
 }
 
 // *****************************************************************************
 
-void SPI1_SetSSPinFunc(void (*Function)(bool setPinHigh))
+void SPI3_SetSSPinFunc(void (*Function)(bool setPinHigh))
 {
     SetSSPin = Function;
 }
