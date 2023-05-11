@@ -21,17 +21,17 @@
 // ***** Defines ***************************************************************
 
 enum {
-    SPI_PRE_DIV_2 = 0,
-    SPI_PRE_DIV_4,
-    SPI_PRE_DIV_8,
-    SPI_PRE_DIV_16,
-    SPI_PRE_DIV_32,
-    SPI_PRE_DIV_64,
-    SPI_PRE_DIV_128,
-    SPI_PRE_DIV_256};
+    SPI1_PRE_DIV_2 = 0,
+    SPI1_PRE_DIV_4,
+    SPI1_PRE_DIV_8,
+    SPI1_PRE_DIV_16,
+    SPI1_PRE_DIV_32,
+    SPI1_PRE_DIV_64,
+    SPI1_PRE_DIV_128,
+    SPI1_PRE_DIV_256};
 
 /* Prescale selection. Source = Pclk. Choose from the enum */
-#define SPI_PRESCALE    SPI_PRE_DIV_2
+#define SPI_PRESCALE    SPI1_PRE_DIV_2
 
 /* Peripheral addresses and registers */
 #define SPI_ADDR        SPI1
