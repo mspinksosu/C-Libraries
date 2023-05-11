@@ -29,8 +29,7 @@
 #include <stddef.h>
 
 /* Include processor specific header files here */
-#include "stm32f10x_map.h" // registers
-#include "stm32f10x.h"     // stm32f1 typedefs
+#include "stm32f10x_map.h"
 
 // ***** Defines ***************************************************************
 
