@@ -87,6 +87,8 @@ void SPI3_Init(SPIInitType *params)
     role = params->role;
     mode = params->mode;
     ssControl = params->ssControl;
+    useRxInterrupt = params->useRxInterrupt;
+    useTxInterrupt = params->useTxInterrupt;
 
     /* Peripheral clock must be enabled before you can write any registers */
     SPI_CLK_REG |= SPI_CLK_EN_MSK;
@@ -258,6 +260,7 @@ void SPI3_TransmitRegisterEmptyEvent(void)
     {
         TransmitRegisterEmptyCallback();
     }
+    lockTxFinishedEvent = false;
 }
 
 // *****************************************************************************
