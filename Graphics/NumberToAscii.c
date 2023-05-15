@@ -32,10 +32,10 @@
  * @param strWidth  the width of the string (minimum is 2)
  * @param leftJust  if true, left justify the resulting string
  */
-void numberToAscii(int16_t num, uint8_t *str, uint8_t strWidth, bool leftJust)
+void NumberToAscii(int16_t num, uint8_t *str, uint8_t strWidth, bool leftJust)
 {
-    /* If you mess up and give me the wrong width I'm still going to place
-    a null terminator */
+    /* The width should include a space for a null terminator. If the width is 
+    wrong, place a null terminator before exiting */
     if(strWidth < 2)
         strWidth = 1;
     str[--strWidth] = '\0';
