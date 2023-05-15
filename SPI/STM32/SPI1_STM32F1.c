@@ -184,7 +184,7 @@ void SPI1_Disable(void)
     checking the BSY flag alone is not enough to reliably detect it. The 
     reference manual gives very specific instructions for what to do. 
     Ref man page 718, master or slave full-duplex mode: */
-    while(!(SPI_ADDR->SR & SPI_SR_RXNE));
+    // while(!(SPI_ADDR->SR & SPI_SR_RXNE));
     while(!(SPI_ADDR->SR & SPI_SR_TXE));
     while(SPI_ADDR->SR & SPI_SR_BSY);
     SPI_ADDR->CR1 &= ~SPI_CR1_SPE;
@@ -292,9 +292,9 @@ bool SPI1_IsTransmitRegisterEmpty(void)
 bool SPI1_IsTransmitFinished(void)
 {
     /* Do not use the busy flag to handle data transmission. You should use the
-    TXE flag instead. The busy flag is low in master mode during reception.
-    so if the TXE flag is high (tx empty) and BSY is low, it "should" mean that
-    we've fully finished shifting bytes out. */
+    TXE flag instead. The busy flag is low in master mode when a transfer is 
+    finished, so if the TXE flag is high (tx empty) and BSY is low, it "should" 
+    mean that we've fully finished shifting bytes out. */
     if((SPI_ADDR->SR & SPI_SR_TXE) && !(SPI_ADDR->SR & SPI_SR_BSY))
         return true;
     else
