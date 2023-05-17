@@ -5,10 +5,10 @@
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
- * @date 12/6/19    Original creation
- * @date 10/1/21    Updated documention
- * @date 2/21/22    Added doxygen
- * @date 4/12/22    Refactored to create analog and digital button classes
+ * @date 12/6/19   Original creation
+ * @date 10/1/21   Updated documention
+ * @date 2/21/22   Added doxygen
+ * @date 4/12/22   Refactored to create analog and digital button classes
  * 
  * @details
  *      A library that handles basic button features like short press and long

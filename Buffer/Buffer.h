@@ -1,32 +1,40 @@
 /***************************************************************************//**
  * @brief Basic Ring Buffer Header
  * 
- * @author Matthew Spinks
- * 
- * @date 4/1/19     Original creation
- *       10/5/21    Updated documention
- *       2/21/22    Added doxygen
- * 
  * @file Buffer.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 4/1/19    Original creation
+ * @date 10/5/21   Updated documention
+ * @date 2/21/22   Added doxygen
  * 
  * @details
  *      A basic 8-bit ring buffer. To create a buffer, the minimum you will 
  * need is a Buffer object, an array pointer, and the size of the array.
  * 
- *      This library lets you control the size of your ring buffer as well as 
- * the way the buffer handles overflows. Multiple functions are provided to get 
+ * This library lets you control the size of your ring buffer as well as the 
+ * way the buffer handles overflows. Multiple functions are provided to get 
  * the status of the buffer. For each function, you will pass the buffer that 
  * you wish to perform the operation on.
  * 
- *      There are two initializations: One has a boolean which will allow data 
- * to be overwritten when placing data in the buffer. The default setting is 
+ * There are two initializations: One has a boolean which will allow data to 
+ * be overwritten when placing data in the buffer. The default setting is 
  * false. 
  * 
- *      There is a buffer overflow callback function. The function you create
- * for the callback must follow the prototype listed in Buffer.h. If overflow 
- * is about to happen and you have overwrite disabled, you will receive a 
- * callback and a boolean notification. If you don't clear the notification, it 
- * will be cleared for you when there is space in the buffer.
+ * There is a buffer overflow callback function. The function you create for 
+ * the callback must follow the prototype listed in Buffer.h. If overflow is 
+ * about to happen and you have overwrite disabled, you will receive a callback 
+ * and a boolean notification. If you don't clear the notification, it will be 
+ * cleared for you when there is space in the buffer.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2019 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

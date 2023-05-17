@@ -1,17 +1,25 @@
 /***************************************************************************//**
  * @brief Basic Ring Buffer
  * 
- * @author Matthew Spinks
- * 
- * @date 4/1/19     Original creation
- *       10/5/21    Updated documention
- *       05/16/22   Fixed bug with tail not getting updated with circular inc
- * 
  * @file Buffer.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 4/1/19    Original creation
+ * @date 10/5/21   Updated documention
+ * @date 5/16/22   Fixed bug with tail not getting updated with circular inc
  * 
  * @details
  *      A basic 8-bit ring buffer. To create a buffer, the minimum you will 
  * need is a Buffer object, an array pointer, and the size of the array.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2019 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
