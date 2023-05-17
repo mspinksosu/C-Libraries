@@ -1,14 +1,14 @@
 /***************************************************************************//**
  * @brief Button Library
  * 
- * @author  Matthew Spinks
+ * @file Button.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 12/6/19    Original creation
  * @date 10/1/21    Updated documention
  * @date 2/21/22    Added doxygen
  * @date 4/12/22    Refactored to create analog and digital button classes
- * 
- * @file Button.c
  * 
  * @details
  *      A library that handles basic button features like short press and long
@@ -19,6 +19,14 @@
  * ButtonGroup library. It only handles digital inputs, and only does button
  * press and release. No long press or analog features. The output of each
  * button is combined with up to 7 other buttons.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2019 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  *
  ******************************************************************************/
 

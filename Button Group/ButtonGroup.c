@@ -3,7 +3,7 @@
  * 
  * @author  Matthew Spinks
  * 
- * @date 6/25/22     Original creation
+ * @date 6/25/22    Original creation
  * 
  * @file ButtonGroup.c
  * 

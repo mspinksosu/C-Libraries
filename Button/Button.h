@@ -1,14 +1,14 @@
 /***************************************************************************//**
  * @brief Button Library Header File
  * 
- * @author  Matthew Spinks
- * 
- * @date 12/6/19    Original creation
- * @date 10/1/21    Updated documention
- * @date 2/21/22    Added doxygen
- * @date 4/12/22    Refactored to create analog and digital button classes
- * 
  * @file Button.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 12/6/19   Original creation
+ * @date 10/1/21   Updated documention
+ * @date 2/21/22   Added doxygen
+ * @date 4/12/22   Refactored to create analog and digital button classes
  * 
  * @details
  *      A library that handles basic button features like short press and long
@@ -68,7 +68,7 @@
  * create your function, call SetLongPressCallback or SetShortPressCallback and
  * give it your function as an argument.
  * 
- * Example Code:
+ * @section example_code Example Code:
  *      Button pushButton;
  *      DigitalButton digitalPushButton;
  *      Button_Digital_Create(&digitalPushButton, &pushButton, 20, 20, 10);
@@ -77,6 +77,14 @@
  *      Button_Tick(&pushButton, buttonIsPressed);
  *      if(Button_GetLongPress(&pushButton))
  *      { .... do something .... }
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2019 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
