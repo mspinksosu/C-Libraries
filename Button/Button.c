@@ -15,7 +15,7 @@
  * press. It can debounce the button press or release, to use with a digital
  * input, or it can use a analog voltage level.
  * 
- *      If you need a simpler Button library that takes up less memory. Try my
+ * If you need a simpler Button library that takes up less memory. Try my
  * ButtonGroup library. It only handles digital inputs, and only does button
  * press and release. No long press or analog features. The output of each
  * button is combined with up to 7 other buttons.

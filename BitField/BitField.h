@@ -1,12 +1,12 @@
 /***************************************************************************//**
  * @brief Flexible Bit Field Library Header File
  * 
- * @author Matthew Spinks
+ * @file BitField.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 5/14/22   Original creation
  * @date 10/30/22  Added variadic functions to modify list of bits
- * 
- * @file BitField.h
  * 
  * @details
  *      I like using bit fields a lot personally. In my opinion, I think
@@ -16,31 +16,40 @@
  * or try to convert a whole field to a unsigned int, things don't always work 
  * out as intended. This is why I think they get a bad rap.
  * 
- *      But maybe you do need to do some of those things. Maybe you're 
- * transmitting your bits to something else, and you want to always make sure 
- * your bits are packed and your bytes are in the right order. Maybe you're 
- * just worried because someone told you bitfields are evil. This is a library 
- * that can help you.
+ * But maybe you do need to do some of those things. Maybe you're transmitting 
+ * your bits to something else, and you want to always make sure your bits are 
+ * always packed and your bytes are in the right order. Maybe you're just 
+ * worried because someone told you bitfields are evil. This is a library that 
+ * can help you.
  * 
- *      Instead of storing everything in a single word, (or multiple words) 
- * I put the bits in an array. Now your bits can be packed into an array which 
- * can be 1 to 32 bytes! To make a flexible bit field, all you need is an array
- * of bytes and the size of the array.
+ * Instead of storing everything in a single word, (or multiple words) I put 
+ * the bits in an array. Now your bits can be packed into an array which can be
+ * 1 to 32 bytes! To make a flexible bit field, all you need is an array of 
+ * bytes and the size of the array. Yes it can be a little cumbersome sometimes
+ * but it is portable.
  * 
- * A good way to manage the size of your array automatically would be to define
- * your bits in an enum, with the very last value being "TOTAL". Then declare
- * your array like so:
+ * @section example_code Example Code:
+ *      A simple way to manage the size of your array automatically would be to 
+ * define your bits in an enum, with the very last value being "TOTAL". Then 
+ * declare your array like so:
  * 
- * enum { INPUT_A = 0, INPUT_B, TOTAL };
- * uint8_t inputMaskArray[TOTAL / 8 + 1];
+ *      enum { INPUT_A = 0, INPUT_B, TOTAL };
+ *      uint8_t inputMaskArray[TOTAL / 8 + 1];
  * 
- * Example Usage:
  *      BifField_Init(&myBifField, &inputMaskArray, sizeof(inputMaskArray));
  *      BifField_SetBit(&myBitField, INPUT_A);
  *      if(BitField_GetBit(&myBitField, INPUT_A)) 
  *      {
  *          // do something 
  *      }
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

@@ -11,41 +11,41 @@
  * @date 4/12/22   Refactored to create analog and digital button classes
  * 
  * @details
- *      A library that handles basic button features like short press and long
- * press. It can debounce the button press or release when using a digital
+ *      A library that handles basic button features like short press and long 
+ * press. It can debounce the button press or release when using a digital 
  * input, or it can use a analog voltage level. This library can also be used 
  * for things like inserting connectors or switches.
  * 
- *      There are two classes of buttons: analog and digital. To make a button, 
- * you will need both the base class Button object and either an analog or 
- * digital button. You will also need the debounce time in milliseconds if you
- * are using a digital button, or the high and low thresholds if you are using
- * an analog button. In addition to that, you need the expected update rate in
- * milliseconds (how often you call the tick function). This is used to
+ * There are two classes of buttons: analog and digital. To make a button, you 
+ * will need both the base class Button object and either an analog or digital 
+ * button. You will also need the debounce time in milliseconds if you are 
+ * using a digital button, or the high and low thresholds if you are using an 
+ * analog button. In addition to that, you need the expected update rate in 
+ * milliseconds (how often you call the tick function). This is used to 
  * calculate the long press time as well as debounce the digital button
  * 
- *      If you are using a digital button and you are debouncing your buttons 
- * with hardware or some other method, initialize the debounce times as zero.
+ * If you are using a digital button and you are debouncing your buttons with 
+ * hardware or some other method, initialize the debounce times as zero.
  * 
- *      There are two types of buttons available: short press and long press.
- * A button with a long press feature has a little bit different behavior than 
- * a regular button. When you press and hold it for the specified period of 
- * time, the long press event fires. If you let go of it before the long press 
- * period expires, it performs the normal short press action. 
+ * There are two types of buttons available: short press and long press. A 
+ * button with a long press feature has a little bit different behavior than a 
+ * regular button. When you press and hold it for the specified period of time, 
+ * the long press event fires. If you let go of it before the long press period 
+ * expires, it performs the normal short press action. 
  * 
- *      To create a long press button, simply give the long press length in 
- * milliseconds to the init function. Set it to zero if not needed. If you need
+ * To create a long press button, simply give the long press length in 
+ * milliseconds to the init function. Set it to zero if not needed. If you need 
  * to change the long press length of a button later, use the set long press 
  * function. It would be best to make sure your button is in a known state 
  * before changing the long press time though.
  * 
- *      There are multiple types of events available to you. When you check for 
- * an event, the flag for that event is not automatically cleared. This is for 
- * you to decide how to handle it. Normally, I clear the flag right after 
- * checking for an event, but there may be times when you don't want to do that.
+ * There are multiple types of events available to you. When you check for an 
+ * event, the flag for that event is not automatically cleared. This is for you 
+ * to decide how to handle it. Normally, I clear the flag right after checking 
+ * for an event, but there may be times when you don't want to do that. 
  * Functions have been provided for you to check for events and clear flags.
  * 
- *      Normally, you would only ever use the short press and long press events.
+ * Normally, you would only ever use the short press and long press events.
  * However, I've also included up and down events. The difference is that the 
  * short-press event behavior changes dependent on the button type. The up and 
  * down events always occur after debouncing a press or release and do not 
@@ -54,7 +54,7 @@
  * need to ignore the normal short press action. Or if you need to do something
  * during the time between the button being held down and the long press event.
  * 
- *      There are two callback functions for short press and long press events.
+ * There are two callback functions for short press and long press events.
  * The function you create must follow the prototype listed for the
  * ButtonCallbackFunc. It must have a void pointer as an argument. When the 
  * callback function gets called, you will get a pointer to the Button that 

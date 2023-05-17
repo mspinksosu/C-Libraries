@@ -1,12 +1,12 @@
 /***************************************************************************//**
  * @brief Flexible Bit Field Library
  * 
- * @author Matthew Spinks
+ * @file BitField.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 5/14/22   Original creation
  * @date 10/30/22  Added variadic functions to modify list of bits
- * 
- * @file BitField.c
  * 
  * @details
  *      This is a simple library. It works best when your just dealing with 
@@ -15,6 +15,14 @@
  * it might be necessary. It's not super fast, but if you're having to do 
  * a whole lot of work with masks and literals, maybe you should re-think what 
  * it is you're trying to accomplish. 
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
