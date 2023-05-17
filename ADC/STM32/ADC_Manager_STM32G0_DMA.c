@@ -1,12 +1,12 @@
 /***************************************************************************//**
  * @brief ADC Manager (STM32G0 DMA)
  * 
- * @author Matthew Spinks
+ * @file ADC_Manager_STM32G0_DMA.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 2/19/22  Original creation
  * @date 2/26/22  Added function pointers for enable and disable
- * 
- * @file ADC_Manager_STM32G0_DMA.c
  * 
  * @details
  *      This is a special version of the ADC_Manager that incorporates the DMA
@@ -50,7 +50,15 @@
  * though the appropriate init functions still have to be called. If more 
  * channel objects are added after initialization, they will still operate and 
  * you can still read their values. These channels will be added to the back of 
- * the list and won't have a matching entry in the DMA array. 
+ * the list and won't have a matching entry in the DMA array.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

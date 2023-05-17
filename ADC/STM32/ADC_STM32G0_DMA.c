@@ -1,12 +1,12 @@
 /***************************************************************************//**
  * @brief ADC Library Implementation (STM32G0 with DMA)
  * 
- * @author Matthew Spinks
+ * @file ADC_STM32G0_DMA.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 2/19/22  Original creation
  * @date 7/23/22  Interface updates
- * 
- * @file ADC_STM32G0_DMA.c
  * 
  * @details
  *      An ADC library for STM32G0 that implements the functions listed in the 
@@ -19,6 +19,14 @@
  * settings related to the ADC are contained in the G0's ADC header files. When 
  * you call the take sample function, it will pause the DMA controller, save
  * its settings, take the sample, then restore its settings.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

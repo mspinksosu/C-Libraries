@@ -1,13 +1,13 @@
 /***************************************************************************//**
  * @brief ADC Manager (Non-Processor Specific)
  * 
- * @author Matthew Spinks
- * 
- * @date 2/13/22  Original creation
- * @date 2/19/22  Modified initialization routine
- * @date 7/23/22  Modified for interface updates
- * 
  * @file ADC_Manager.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 2/13/22   Original creation
+ * @date 2/19/22   Modified initialization routine
+ * @date 7/23/22   Modified for interface updates
  * 
  * @details
  *      A simple implementation of the ADC_Manager library that handles taking
@@ -18,6 +18,14 @@
  * Only the ADCChannel needs to be made extern. Any file that needs access to
  * the ADC channel's value can use the ADCChannel by including the ADC_Manager
  * header file.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

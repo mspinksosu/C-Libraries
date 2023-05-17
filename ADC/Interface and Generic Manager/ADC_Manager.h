@@ -1,13 +1,13 @@
 /***************************************************************************//**
  * @brief ADC Manager Header (Non-Processor Specific)
  * 
- * @author Matthew Spinks
- * 
- * @date 2/13/22  Original creation
- * @date 2/24/22  Added functions for enable and disable
- * @date 7/23/22  Modified for interface updates
- * 
  * @file ADC_Manager.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 2/13/22   Original creation
+ * @date 2/24/22   Added functions for enable and disable
+ * @date 7/23/22   Modified for interface updates
  * 
  * @details
  *      A library that handles taking ADC samples for you. It also handles 
@@ -40,6 +40,14 @@
  * need to be made extern, not the ADCChannelEntry objects. Any file that needs 
  * access to the ADC channels values can include this header file and then
  * call either ADC_Get16Bit or ADC_Get8Bit to get the value. 
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

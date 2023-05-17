@@ -1,13 +1,13 @@
 /***************************************************************************//**
  * @brief ADC Interface Header File
  * 
- * @author Matthew Spinks
- * 
- * @date 2/11/22  Original creation
- * @date 2/24/22  Added function callbacks for enable and disable
- * @date 7/23/22  Made blocking and non-blocking options independent
- * 
  * @file IADC.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 2/11/22   Original creation
+ * @date 2/24/22   Added function callbacks for enable and disable
+ * @date 7/23/22   Made blocking and non-blocking options independent
  * 
  * @details
  *      An interface for an ADC library that can be used with different
@@ -29,11 +29,10 @@
  * then call the ADC_InitChannel function. This will setup the channel for you
  * to use with the ADC. Most of the time this is as simple as setting the
  * channel number equal to the struct member. How you choose to encode this 
- * value is up to you. That is why we are using this interface. After the
- * initialization, any code that deals with the ADC channel can refer to it by
- * name. This will give you the ability to quickly and easily swap physical 
- * hardware to different channels, or use different processors without changing
- * the code in multiple places. 
+ * value is up to you. After the initialization, any code that deals with the 
+ * ADC channel can refer to it by name. This will give you the ability to 
+ * quickly and easily swap physical hardware to different channels, or use 
+ * different processors without changing the code in multiple places. 
  * 
  * This library should not deal with setting the GPIO to analog type. That
  * should be done before calling the the ADC channel init function. If we do
@@ -61,10 +60,14 @@
  * ensures that 10-bit, 12-bit, 14-bit or whatever ADC values always go from 
  * 0 to 65535. Plus with a left-justified value, in order to get an 8-bit 
  * result, you simply drop the lower byte and return only the upper byte.
- * You can always shift your 16-bit result to the right, but if you port your 
- * code to another processor, you may have a different shift value, which is 
- * kind of like another dependency isn't it? I think it's better to stick with 
- * the full 16-bit range so there are no surprises.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

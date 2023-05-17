@@ -1,14 +1,22 @@
 /***************************************************************************//**
  * @brief ADC Library Implementation (STM32F1)
  * 
- * @author Matthew Spinks
+ * @file ADC_STM32F1.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 7/24/22  Original creation (ported from G0 code)
  * 
- * @file ADC_STM32F1.c
- * 
  * @details
  *      // TODO Finish porting over settings
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
