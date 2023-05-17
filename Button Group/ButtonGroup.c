@@ -24,7 +24,7 @@
  * useful preprocessor macros you can use to decode the buttons more easily.
  * 
  * @section license License
- * SPDX-FileCopyrightText: © 2019 Matthew Spinks
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
  * SPDX-License-Identifier: Zlib
  * 
  * This software is released under the Zlib license. You are free alter and
