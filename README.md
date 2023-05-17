@@ -124,23 +124,23 @@ If the answer to the above questions are *"No my BT module doesn't need to know 
 ---
 #### Commandments For Using My Libraries
 
-##### Thou shall not have dependencies!
+#### Thou shall not have dependencies!
 
 Interfaces are basically a template to follow for a library. Interfaces do not contain processor specific code or dependencies. Things like *"p32mz0512efe064.h"* or *"stm32g071xx.h"* do not belong here! Processor specific code goes in the **implementation**. Think of the implementation as how each particular processor chooses to do the things that are laid out in the interface. If you have a bunch of #includes in your code, you probably have dependencies. When you go to port your code to a different processor, you might make your life difficult.
 
-##### Thou shall use getters and setters
+#### Thou shall use getters and setters
 
 You should not have to manipulate data in a class directly. Whenever possible I have provided getters and setters to do this for you. Yes, I understand this is C and there are no private variables. But trust me. Just use the functions. What if the data types for different processors have different variables? If you try to port your code, it could break.
 
-##### Thou shall not use excessive global variables
+#### Thou shall not use excessive global variables
 
 >"By the way, there is a tendency to make everything in sight an extern variable because it appears to simplify communications-argument lists are short and variables are always there when you want them. But external variables are always there even when you don't want them. Relying too heavily on external variables is fraught with peril since it leads to programs whose data connections are not at all obvious-variables can be changed in unexpected and even inadvertent ways, and the program is hard to modify." - Dennis M. Ritchie, The C Programming Language
 
-##### Thou shall not use excessive \#define's and \#ifdef's
+#### Thou shall not use excessive \#define's and \#ifdef's
 
 Let's say you made an \#ifdef on a function call somewhere. Now you have to apply that same \#ifdef in multiple places throughout your code. The whole reason we are making interfaces is so that we never need to change something in multiple places in our code. The only time I feel an \#ifdef is useful is changing out the sub class declaration for a different one. However, the calling function will remain the same. Be careful of putting a bunch of \#defines all over the place too. It would be really annoying to try and port some code just to find that you're missing a random \#define that was in some file. Limit your \#define's to their relevant .c files as much as you can.
 
-##### Love thy function pointers
+#### Love thy function pointers
 
 I love function pointers. You should too. They can be useful for getting rid of dependencies. Let's say you have Bluetooth module you want to interface with. Our theoretical Bluetooth module could use UART or SPI. Having a function pointer is great, because now you can simply define a "transmit byte" and "receive byte" function pointer for the BT module interface. And you can connect those functions to your UART or SPI libraries and remove the UART and SPI dependencies from your interface code. The BT module could set a pin high on wake to signal that it is ready. You can have a function pointer in your interface called "wake event" that the interface calls whenever it needs to read a GPIO pin, or it gets a series of bytes. This is another very common type of function pointer called a **callback** function. This all goes back to the first commandment, which is *no dependencies*. ***There is one very important rule when using function pointers. Always check if the function pointer is not NULL before calling it.***
 
