@@ -1,15 +1,23 @@
 /***************************************************************************//**
  * @brief Checksum C File Template
  * 
- * @author Matthew Spinks
+ * @file Checksum.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 2/25/23   Original creation
- * 
- * @file Checksum.c
  * 
  * @details
  *      I decided to make a simple file to hold some different checksum 
  * routines, since it's something that I use a lot.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2023 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
@@ -66,8 +74,8 @@ uint8_t Checksum_OnesComp8Bit(const uint8_t *array, uint16_t length)
     checksum. Bit shift carries are easy to do in assembly, but not so much in
     C. The easiest way is to take the upper half of your sum which contains all 
     the carries, then add it back into the bottom half. Then take the one's 
-    comp of (invert) that result. When you do this operation again with the
-    checksum value included, the result will be zero. */
+    comp of that result. When you do this operation again with the checksum 
+    value included, the result will be zero just like a two's comp checksum. */
     uint16_t checksum = 0;
     
     for(uint16_t i = 0; i < length; i++)
