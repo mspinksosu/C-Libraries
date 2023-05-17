@@ -1,11 +1,11 @@
 /***************************************************************************//**
  * @brief Button Group Library
  * 
- * @author  Matthew Spinks
- * 
- * @date 6/25/22    Original creation
- * 
  * @file ButtonGroup.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 6/25/22   Original creation
  * 
  * @details
  *      This version of the debounce code is based on an algorithm that has
@@ -13,15 +13,23 @@
  * integrator. When the integrator reaches either 0 or the maximum value, the 
  * output state is changed.
  * 
- *      I took this simple approach and added a few extra steps. At the end I
- * check the previous state of the output to determine rising and falling 
- * transitions (pressed or released). I also added my usual object oriented
- * approach that I use for all of my C libraries. Every function uses a pointer
- * called self as its first argument. This is the pointer to the Button Group 
- * object you are currently using.
+ * I took this simple approach and added a few extra steps. At the end I check 
+ * the previous state of the output to determine rising and falling transitions 
+ * (pressed or released). I also added my usual object oriented approach that 
+ * I use for all of my C libraries. Every function uses a pointer called self 
+ * as its first argument. This is the pointer to the Button Group object you 
+ * are currently using.
  * 
  * Buttons are combined into groups of eight. Check the header file for some
  * useful preprocessor macros you can use to decode the buttons more easily.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2019 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

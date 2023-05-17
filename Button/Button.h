@@ -68,7 +68,8 @@
  * create your function, call SetLongPressCallback or SetShortPressCallback and
  * give it your function as an argument.
  * 
- * @section example_code Example Code:
+ * @section example_code Example Code
+ * 
  *      Button pushButton;
  *      DigitalButton digitalPushButton;
  *      Button_Digital_Create(&digitalPushButton, &pushButton, 20, 20, 10);

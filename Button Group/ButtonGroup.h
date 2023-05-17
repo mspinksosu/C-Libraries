@@ -1,11 +1,11 @@
 /***************************************************************************//**
  * @brief Button Group Library Header File
  * 
- * @author  Matthew Spinks
- * 
- * @date 6/25/22    Original creation
- * 
  * @file ButtonGroup.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 6/25/22   Original creation
  * 
  * @details
  *      A stripped down version of my original button library with less 
@@ -16,32 +16,30 @@
  * that requires debouncing. This library is most useful if you have a large 
  * number of inputs that need debouncing.
  * 
- *      To create a group of buttons, initialize the object with the debounce
- * time and the sample rate in milliseconds. This is how often you will call
- * the Tick function.
+ * To create a group of buttons, initialize the object with the debounce time 
+ * and the sample rate in milliseconds. This is how often you will call the 
+ * Tick function.
  * 
- *      When you check for a press or release event, the flag for that event 
- * is not automatically cleared. This is for you to decide how to handle it. 
- * Normally, I clear the flag right after checking for an event, but there may 
- * be times when you don't want to do that.
+ * When you check for a press or release event, the flag for that event is not 
+ * automatically cleared. This is for you to decide how to handle it. Normally, 
+ * I clear the flag right after checking for an event, but there may be times 
+ * when you don't want to do that.
  * 
- *      If you have a large list of inputs you can use some preprocessor macros 
+ * If you have a large list of inputs you can use some preprocessor macros 
  * to help manage your inputs and their indexes. You can use an enum with the 
  * last value being "TOTAL". By doing this, you can make an array of Button 
  * Group objects like so:
  * 
- * enum { BUTTON1,
- *        BUTTON2,
- *        TOTAL_BUTTONS};
+ * @section example_code Example Code
  * 
- * #define NUM_BUTTON_GROUPS (TOTAL_BUTTONS / 8 + 1)
+ *      enum { BUTTON1,
+ *             BUTTON2,
+ *             TOTAL_BUTTONS};
  * 
- * Here are some more useful macros:
+ *      #define NUM_BUTTON_GROUPS (TOTAL_BUTTONS / 8 + 1)
+ *      #define InputGroup(x) (x >> 3) // divide by 8
+ *      #define InputBit(x) (x & 0x07) // mod 8
  * 
- * #define InputGroup(x) (x >> 3) // divide by 8
- * #define InputBit(x) (x & 0x07) // mod 8
- * 
- * Example Usage:
  *      ButtonGroup oneButtonGroup;
  *      ButtonGroup arrayOfButtons[NUM_BUTTON_GROUPS];
  *      #define ButtonArray(x) &arrayOfButtons[InputGroup(x)], InputBit(x)
@@ -60,9 +58,17 @@
  * 
  *      for(i=0; i<NUM_BUTTON_GROUPS; i++) {
  *          BG_Tick(&arrayOfButtons[i]); } // update entire array
- *      
+ * 
  *      if(BG_GetPress(ButtonArray(BUTTON20)) // shorten with macro
  *      { .... }
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2019 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

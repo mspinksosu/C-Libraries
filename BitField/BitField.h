@@ -28,10 +28,11 @@
  * bytes and the size of the array. Yes it can be a little cumbersome sometimes
  * but it is portable.
  * 
- * @section example_code Example Code:
- *      A simple way to manage the size of your array automatically would be to 
+ * A simple way to manage the size of your array automatically would be to 
  * define your bits in an enum, with the very last value being "TOTAL". Then 
  * declare your array like so:
+ * 
+ * @section example_code Example Code
  * 
  *      enum { INPUT_A = 0, INPUT_B, TOTAL };
  *      uint8_t inputMaskArray[TOTAL / 8 + 1];
