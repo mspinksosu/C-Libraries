@@ -1,12 +1,14 @@
 /***************************************************************************//**
  * @brief UART Library Implementation (PIC18)
  * 
- * @author Matthew Spinks
+ * @file UART1_PIC18.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 12/1/15   Original creation (PIC16 implementation)
+ * @date 3/9/22    Re-factored to use function table and interface
+ * @date 6/25/22   Updated receive callback function
  * @date 3/8/23    Ported settings for PIC18
- * 
- * @file UART1_PIC18.c
  * 
  * @details
  *      If you are using XC-8, it should have your chip selection defined in 
@@ -23,14 +25,22 @@
  * 
  *  // TODO add more details, 9-bit, and software flow control
  * 
- * Example Code:
+ * @section example_code Example Code
  *      UART myUART;
  *      UART_Create(&myUART, &UART1_FunctionTable);
  *      UART_SetToDefaultParams(&myUART);
  *      uint32_t baud = UART_ComputeBRGValue(&myUART, 115200, 12000000UL);
  *      UART_SetBRGValue(&myUART, baud);
  *      UART_Init(&myUART);
- *      
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2015 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
+ * 
  * ****************************************************************************/
 
 #include "UART1.h"

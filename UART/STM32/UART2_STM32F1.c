@@ -1,14 +1,14 @@
 /***************************************************************************//**
  * @brief UART Library Implementation (STM32F1)
  * 
- * @author Matthew Spinks
+ * @file UART2_STM32F1.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 3/12/22   Original creation (G0 implementation)
  * @date 6/13/22   Ported settings for F1
  * @date 6/25/22   Updated receive callback function
  * @date 7/31/22   Added checks and handler for recursive function calls
- * 
- * @file UART2_STM32F1.c
  * 
  * @details
  *      I am currently using register names as given by the header file
@@ -22,6 +22,14 @@
  *      UART_SetBRGValue(&myUART, baud);
  *      UART_Init(&myUART);
  *      
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
+ * 
  * ****************************************************************************/
 
 #include "UART2.h"

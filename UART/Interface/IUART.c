@@ -1,7 +1,9 @@
 /***************************************************************************//**
- * @brief Basic UART Interface
+ * @brief UART Interface
  * 
- * @author Matthew Spinks
+ * @file IUART.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 12/2/14   Original creation
  * @date 2/4/22    Changed to interface. Added Doxygen
@@ -9,13 +11,19 @@
  * @date 6/13/22   Changed compute baud rate function and flow control
  * @date 7/31/22   Added handler for pending transmit interrupt
  * 
- * @file IUART.c
- * 
  * @details
  *      The counterpart for the UART interface library. The create function 
  * sets up the interface. The functions in the interface sections use this 
  * interface object in order to determine which function implementation to 
  * call.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2014 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

@@ -1,15 +1,15 @@
 /***************************************************************************//**
- * @brief UART 1 Implementation Header (Non-Processor Specific)
+ * @brief UART Implementation Header (Non-Processor Specific)
  * 
- * @author Matthew Spinks
+ * @file UART1.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 12/2/14   Original creation
  * @date 2/4/22    Modified
  * @date 3/5/22    Changed to use function table and match new interface
  * @date 6/12/22   Changed compute baud rate function
  * @date 7/31/22   Added handler for pending transmit interrupt
- * 
- * @file UART1.h
  * 
  * @details
  *      A header for a UART peripheral that implements the IUART interface. 
@@ -24,6 +24,14 @@
  * listed in the table point to the correct functions for your implementation.
  * 
  * @see IUART.h for a description of what each function should do.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2014 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

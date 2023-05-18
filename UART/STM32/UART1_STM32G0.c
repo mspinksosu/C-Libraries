@@ -1,13 +1,14 @@
 /***************************************************************************//**
  * @brief UART Library Implementation (STM32G0)
  * 
- * @author Matthew Spinks
+ * @file UART1_STM32G0.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 3/12/22   Original creation
  * @date 6/13/22   Changed compute baud rate function
+ * @date 6/25/22   Updated receive callback function
  * @date 7/31/22   Added checks and handler for recursive function calls
- * 
- * @file UART1_STM32G0.c
  * 
  * @details
  *      // TODO Add details, 9-bit, parity, software flow control
@@ -19,7 +20,15 @@
  *      uint32_t baud = UART_ComputeBRGValue(&myUART, 115200, 12000000UL);
  *      UART_SetBRGValue(&myUART, baud);
  *      UART_Init(&myUART);
- *      
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
+ * 
  * ****************************************************************************/
 
 #include "UART1.h"

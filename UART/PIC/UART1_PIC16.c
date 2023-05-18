@@ -1,13 +1,15 @@
 /***************************************************************************//**
- * @brief UART Library Implementation (PIC18)
+ * @brief UART Library Implementation (PIC16)
  * 
- * @author Matthew Spinks
+ * @file UART1_PIC16.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 12/1/15   Original creation
  * @date 2/4/22    Added Doxygen
  * @date 3/9/22    Re-factored to use function table and interface
- * 
- * @file UART1_PIC16.c
+ * @date 6/25/22   Updated receive callback function
+ * @date 7/31/22   Added checks and handler for recursive function calls
  * 
  * @details
  *      If you are using XC-8, it should have your chip selection defined in 
@@ -24,14 +26,22 @@
  * 
  *  // TODO add more details, 9-bit, and software flow control
  * 
- * Example Code:
+ * @section example_code Example Code
  *      UART myUART;
  *      UART_Create(&myUART, &UART1_FunctionTable);
  *      UART_SetToDefaultParams(&myUART);
  *      uint32_t baud = UART_ComputeBRGValue(&myUART, 115200, 12000000UL);
  *      UART_SetBRGValue(&myUART, baud);
  *      UART_Init(&myUART);
- *      
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2015 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
+ * 
  * ****************************************************************************/
 
 #include "UART1.h"
@@ -375,8 +385,8 @@ void UART1_TransmitEnable(void)
     TXxSTAbits.TXEN = 1;
 
     /* If the transmit register is full and interrupts are desired, enable 
-    them. The transmit interrupt flag gets set whenever the transmitter is
-    enabled */
+    them. The transmit interrupt flag also gets set whenever the transmitter
+    is enabled on this processor, so I checked the flag first. */
     if(useTxInterrupt && txDataFull)
         PIExbits.TXIE = 1;
 }

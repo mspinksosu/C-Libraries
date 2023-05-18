@@ -1,15 +1,15 @@
 /***************************************************************************//**
- * @brief Basic UART Interface Header
+ * @brief UART Interface Header
  * 
- * @author Matthew Spinks
+ * @file IUART.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 12/1/14   Original creation
  * @date 2/4/22    Changed to interface. Added Doxygen
  * @date 3/3/22    Redesigned to use function table. Also added new parameters
  * @date 6/13/22   Changed compute baud rate function and flow control
  * @date 7/31/22   Added handler for pending transmit interrupt
- * 
- * @file IUART.h
  * 
  * @details
  *      An interface for a UART library to be used with different processors.
@@ -51,7 +51,7 @@
  * hardcoding a precomputed value, and then give it to the UART_SetBRGValue 
  * function. After this, you are ready to call UART_Init.
  * 
- * Example Code:
+ * @section example_code Example Code
  *      UART myUART, anotherUART;
  *      UART_Create(&myUART, &UART1_FunctionTable);
  *      UART_SetInitTypeToDefaultParams(&myUART);
@@ -62,6 +62,14 @@
  *      baud = UART_ComputeBRGValue(&anotherUART, 19200, 16000000UL);
  *      UART_SetBRGValue(&anotherUART, baud);
  *      UART_Init(&anotherUART);
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2014 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  * ****************************************************************************/
 
