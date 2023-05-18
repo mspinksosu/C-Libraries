@@ -19,6 +19,11 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
 - [x] Button Group: Tested and working!
 - [x] Comparator: Tested and working!
   - [x] Update doxygen
+- [x] EEPROM: (internal EEPROM) PIC18 working!
+- [ ] Emulated EEPROM: not started
+  - [ ] Interface
+  - [ ] Implementation
+  - [ ] Documentation
 - [ ] Filter: Added two basic classes, SMA and EMA
   - [x] Interface
   - [ ] Documentation
@@ -39,10 +44,18 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
   - [ ] 4-bit mode
   - [ ] Screen scroll
   - [ ] Documentation
-- [ ] MCU: Scheduler tested working!
+- [x] Map Function: Tested and working!
+  - [x] Linear
+  - [x] Lookup table
+  - [x] Documentation
+- [ ] MCU: Scheduler Tested and working!
+  - [ ] Scheduler
+  - [ ] PIC32
   - [ ] Documentation
 - [x] Pattern: Tested and working!
   - [x] Update doxygen
+- [ ] PID: Untested
+  -[ ] Documentation
 - [ ] Rotary Encoder: Redesigned! Testing in progress
   - [x] Add different types of rotary encoder
 - [ ] SPI: Interface and generic manager complete! Ready to start testing STM32
