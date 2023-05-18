@@ -1,11 +1,11 @@
 /***************************************************************************//**
  * @brief Comparator Library
  * 
- * @author Matthew Spinks
+ * @file Comp.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 5/7/22    Original creation
- * 
- * @file Comp.c
  * 
  * @details
  *      In order to use this library you must define where the "deadzones" are.
@@ -18,6 +18,14 @@
  * as useful for something that has a very large number of output levels that 
  * are equal distance apart from each other. Something like that would be 
  * better suited for a map function.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
