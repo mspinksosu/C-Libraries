@@ -1,13 +1,14 @@
 /***************************************************************************//**
  * @brief Timer Library Header File
  * 
+ * @file Timer.h
+ * 
  * @author  Matthew Spinks
  * 
- * @date 1/17/19    Original creation
+ * @date 12/2/14    Original creation
+ * @date 1/17/19    Modified to use OOP
  * @date 10/1/21    Updated documention
  * @date 2/21/22    Added doxygen
- * 
- * @file Timer.h
  * 
  * @details
  *      A generic, free-running timer to do whatever you need. To create a
@@ -16,28 +17,28 @@
  * tick function). This is not meant to be an extremely accurate timer. It's
  * useful for blinking LED's, buttons etc.
  * 
- *      Once the timer finishes, the "expire" flag is set. But the timer will 
+ * Once the timer finishes, the "expire" flag is set. But the timer will 
  * continue to run as long as the "active" flag is set. The "expired" flag will 
  * not get cleared automatically. This is for you to check and decide what to 
  * do. How you choose to call the "Timer_Tick" function is up to you. Just be 
  * sure to call it periodically and make sure to initialize the timer with the 
  * expected rate. This lets the timer know how far it must count. 
  * 
- *      I've provided a timer finished callback function. The function you 
- * create must follow the prototype listed for TimerCallbackFunc. It must have 
- * a void pointer as an argument. The idea is that when the callback function 
- * is called you will get a pointer to the Timer that called it. This way you 
- * can have multiple Timers pointing to the same callback function if you 
- * desire. Then inside your callback function you can look at the context 
- * pointer to see which Timer object called the function and decide what to do.
- * The reason I chose a void pointer is so that you have the option of not 
- * using the contextPointer if you don't want to. This removes a dependency on 
- * needing to including Timer.h if your callback is in some other file. You're 
- * still going to get a pointer to the Timer, but it can be ignored. After you
- * create your function prototype, call SetFinishedCallback and give it your 
- * function as an argument.
+ * I've provided a timer finished callback function. The function you create 
+ * must follow the prototype listed for TimerCallbackFunc. It must have a void
+ *  pointer as an argument. The idea is that when the callback function is 
+ * called you will get a pointer to the Timer that called it. This way you can 
+ * have multiple Timers pointing to the same callback function if you desire. 
+ * Then inside your callback function you can look at the context pointer to 
+ * see which Timer object called the function and decide what to do. The reason 
+ * I chose a void pointer is so that you have the option of not using the 
+ * contextPointer if you don't want to. This removes a dependency on needing to 
+ * including Timer.h if your callback is in some other file. You're still going 
+ * to get a pointer to the Timer, but it can be ignored. After you create your 
+ * function prototype, call SetFinishedCallback and give it your function as an 
+ * argument.
  * 
- * Example Code:
+ * @section example_code Example_Code
  *      Timer startUpTimer;
  *      Timer_InitMs(&startupTimer, STARTUP_TIME_MS, TICK_1MS);
  *      Timer_Start(&startupTimer);
@@ -46,6 +47,15 @@
  *          Timer_ClearFlag(&startupTimer);
  *          // do some stuff
  *      }
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2014 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
+ * 
  ******************************************************************************/
 
 #ifndef TIMER_H
