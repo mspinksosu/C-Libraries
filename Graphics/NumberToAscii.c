@@ -1,17 +1,25 @@
 /***************************************************************************//**
  * @brief Number To ASCII
  * 
- * @author Matthew Spinks
+ * @file NumberToAscii.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 4/9/23    Original creation
- * 
- * @file NumberToAscii.c
  * 
  * @details
  *      Sometimes using sprintf can cost a lot of memory. If you don't need
  * to create large strings of numbers or floating point numbers, this function 
  * could be useful for you. I've even included the option to have left or right
  * justification.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2023 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

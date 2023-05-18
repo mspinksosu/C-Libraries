@@ -1,26 +1,64 @@
 /***************************************************************************//**
  * @brief Murphy's Modified Bresenham Line Algorithm
  * 
- * @author Matthew Spinks
+ * @file ThickLine.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 5/3/23    Original creation
  * 
- * @file ThickLine.c
- * 
  * @details
- *      The basic algorithm is called Bresenham's line algorithm. For each 
- * pixel, we calculate an error. For a line with positive slope, x will 
- * increase by 1 step and y will increase by 0 or 1 step. Each time x increases
- * the error increases by dy/dx. When the error is greater than 0.5, it means 
- * we are closer to the pixel above us and we go up to the next y position.
+ *      The basic algorithm is called Bresenham's line algorithm, named after
+ * Jack Bresenham. For each pixel, we calculate an error. For a line with 
+ * positive slope, x will increase by 1 step and y will increase by 0 or 1 
+ * step. Each time x increases the error increases by dy/dx. When the error is 
+ * greater than 0.5, it means we are closer to the pixel above us and we go up 
+ * to the next y position.
  * 
- *      Murphy's algorithm is a modification to Bresenham's that will draw 
- * perpendicular lines above and below the direction of the line in order to
- * make a thicker line
+ * This library is based on Alan Murphy's own work. Murphy's algorithm is a 
+ * modification to Bresenham's that will draw perpendicular lines above and 
+ * below the direction of the line in order to make a thicker line.
  * 
+ * This version is designed for use with microcontroller's and small TFT
+ * screens. It has been optimized slightly for speed, which I will explain
+ * below. There are a lot of if-statements with the pxStep and pyStep that 
+ * could optimized further, but I left them as is to make it easier to
+ * understand.
+ * 
+ * In the original paper, published in 1978 (IBM Technical Disclosure Bulletin 
+ * Vol. 20 No. 12 pages 5358-5366), there was a constant number called "k" 
+ * which was used to help shape the width of the thick line. The formula for 
+ * the thickness is 2*thickness*k. But, a lot of versions of this code simply 
+ * omit the formula and apply "2*thickness*sqrt(dx^2 + dy^2)" instead. The 
+ * sqrt(dx^2 + dy^2) is the constant "k". Computers of the era used an 
+ * approximation instead and I have done this same for this version. The paper 
+ * gives a rough approximation of x + y/4 as well as a piece-wise equation. 
+ * The algorithm works just fine with an approximation. The line will be a 
+ * little jagged, but that is hardly a concern with a small TFT screen. If you 
+ * are porting this to a more powerful processor you can try substituting the 
+ * ideal value to see if there is any noticeable difference.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2023 Matthew Spinks
+ * SPDX-License-Identifier: MIT-0
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to 
+ * deal in the Software without restriction, including without limitation the 
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or 
+ * sellcopies of the Software, and to permit persons to whom the Software is
+ * furnished to do so.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+ * IN THE SOFTWARE.
  ******************************************************************************/
 
-#include "ThickLine.h"
+#include <stdint.h>
 #include <stdlib.h>
 
 // ***** Defines ***************************************************************
@@ -210,7 +248,7 @@ static void DrawPerpLinesX(int16_t x1, int16_t y1, int16_t dx, int16_t dy,
 {
     int16_t x, y, error, errorDiag, errorSquare, threshold, tk;
     // TODO error is not initialized in this function. Add more notes
-    /* This is called Murphy's modified Bresenham algorigthm. It draws thick
+    /* This is called Murphy's modified Bresenham algorithm. It draws thick
     lines by drawing perpendicular lines above and below the first line. */
     x = x1;
     y = y1;
@@ -311,7 +349,7 @@ static void DrawLineY(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
         oddWidth = 1; // add one to right side for odd widths
     width >>= 1;
 
-    /* substitue for sqrt(dx^2 + dy^2) */
+    /* substitute for sqrt(dx^2 + dy^2) */
     if((dy+dy+dy) > dx)
         k = dx - (dx >> 3) + (dy >> 1); // dx - (dx / 8) + (dy / 2)
     else
@@ -373,7 +411,7 @@ static void DrawPerpLinesY(int16_t x1, int16_t y1, int16_t dx, int16_t dy,
 {
     int16_t x, y, error, errorDiag, errorSquare, threshold, tk;
     // TODO error is not initialized in this function. Add more notes
-    /* This is called Murphy's modified Bresenham algorigthm. It draws thick
+    /* This is called Murphy's modified Bresenham algorithm. It draws thick
     lines by drawing perpendicular lines above and below the first line. */
     x = x1;
     y = y1;
