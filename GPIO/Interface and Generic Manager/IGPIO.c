@@ -1,11 +1,11 @@
 /***************************************************************************//**
  * @brief GPIO Interface
  * 
- * @author Matthew Spinks
- * 
- * @date February 6, 2022  Original creation
- * 
  * @file IGPIO.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 2/6/22    Original creation
  * 
  * @details
  *      The counterpart for the GPIO interface library. Functions here are
@@ -14,6 +14,14 @@
  * the interface section will use the interface object and your base class 
  * object to determine which function implementation to call and which subclass
  * object to give to it.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

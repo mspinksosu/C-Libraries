@@ -1,11 +1,11 @@
 /***************************************************************************//**
  * @brief GPIO Library Implementation Header (STM32G0)
  * 
- * @author Matthew Spinks
- * 
- * @date February 4, 2022  Original creation
- * 
  * @file GPIO_STM32G0.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 2/4/22    Original creation
  * 
  * @details
  *      A GPIO library for STM32G0 that implements the IGPIO interface. There 
@@ -35,7 +35,7 @@
  * In the example below, the variables "init" and "_init" can be made local
  * and modified for each pin's initialization.
  * 
- * Example Code:
+ * @section example_code Example Code
  *      GPIO_DriverSetInterface(&GPIO_FunctionTable);
  *      GPIO led1;
  *      GPIO_STM32 _led1; // extends led 1
@@ -48,6 +48,14 @@
  *      GPIO_InitPin(&led1, &_led1);
  *      GPIO_Set(&led1); // set output high
  *      GPIO_SetType(&led1, GPIO_TYPE_ANALOG); // ready pin for sleep
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

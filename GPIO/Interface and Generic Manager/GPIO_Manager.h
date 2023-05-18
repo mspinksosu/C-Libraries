@@ -1,11 +1,11 @@
 /***************************************************************************//**
  * @brief GPIO Library Manager Header (Non-Processor Specific)
  * 
- * @author Matthew Spinks
+ * @file GPIO_Manager.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 7/24/22   Original creation
- * 
- * @file GPIO_Manager.h
  * 
  * @details
  *     This is a simple piece of code that handles initializing all of the pins 
@@ -42,6 +42,14 @@
  * nibble is the "port" A through N and the lower nibble is the pin 0 through 
  * 15. Not every processor is going to use 16 pins per port though. So, it is 
  * up to you to handle this in your processor's implementation.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

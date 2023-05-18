@@ -1,12 +1,12 @@
 /***************************************************************************//**
  * @brief GPIO Library Implementation (STM32G0)
  * 
- * @author Matthew Spinks
- * 
- * @date 2/4/22   Original creation
- * @date 2/19/22  Modified to use array for initialization
- * 
  * @file GPIO_STM32G0.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 2/4/22    Original creation
+ * @date 2/19/22   Modified to use array for initialization
  * 
  * @details
  *      A GPIO library that implements the STM32 GPIO functions which in turn, 
@@ -16,6 +16,14 @@
  * call. We declare and define the function table in one step, setting its 
  * members (which are function pointers) the our local functions. Typecasting 
  * is necessary.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

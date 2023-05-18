@@ -1,11 +1,11 @@
 /***************************************************************************//**
  * @brief GPIO Interface Header File
  * 
- * @author Matthew Spinks
- * 
- * @date February 2, 2022  Original creation
- * 
  * @file IGPIO.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 2/2/22    Original creation
  * 
  * @details
  *      An interface for a GPIO library to be used with different processors.
@@ -61,7 +61,7 @@
  * be kept in memory. They can be declared as local variables and used for each
  * pin's initialization.
  * 
- * Example Code:
+ * @section example_code Example Code
  *      GPIO_DriverSetInterface(&MCU1_GPIOInterface);
  *      GPIO led1;
  *      GPIO_MCU1 myMcuLED1; // extends GPIO pin
@@ -75,6 +75,14 @@
  *      GPIO_InitPin(&led1, &init);
  *      GPIO_Set(&led1); // set output high
  *      GPIO_SetType(&led1, GPIO_TYPE_ANALOG); // ready pin for sleep
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

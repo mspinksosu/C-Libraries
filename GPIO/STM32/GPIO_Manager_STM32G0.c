@@ -1,17 +1,24 @@
-
 /***************************************************************************//**
  * @brief GPIO Library Manager (STM32G0)
- * 
- * @author Matthew Spinks
- * 
- * @date 7/23/22   Original creation
- * 
+ *  
  * @file GPIO_Manager_STM32G0.c
  * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 7/23/22   Original creation
+ *
  * @details
  *      This is a special version of the GPIO Manager that works with the 
  * STM32G0 implementation. It sets the function table, and initializes all of
  * the pins. This file replaces GPIO_Manager.c.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

@@ -1,12 +1,11 @@
-
 /***************************************************************************//**
  * @brief GPIO Library Manager (STM32G0)
  * 
- * @author Matthew Spinks
+ * @file GPIO_Manager_STM32G0.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 7/23/22   Original creation
- * 
- * @file GPIO_Manager_STM32G0.c
  * 
  * @details
  *     I removed the initialization function that was in the GPIO library and 
@@ -17,6 +16,14 @@
  * 
  * This file is just a suggestion on how to handle initializing your pins.
  * Use it, or make your own to replace it.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
