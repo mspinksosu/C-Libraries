@@ -1,16 +1,24 @@
 /***************************************************************************//**
  * @brief MCU Interface
  * 
- * @author Matthew Spinks
+ * @file IMCU.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 10/14/22  Original creation
- * 
- * @file IMCU.c
  * 
  * @details
  *      An interface that will handle tasks such as sleep, shutdown, delay.
  * It will also have a very simple scheduler.
  * // TODO more details
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
@@ -92,6 +100,43 @@ void MCU_TaskTick(void)
     }
 }
 
+// *****************************************************************************
+
+void MCU_Delay(uint32_t count)
+{
+    while(count--);
+}
+
+// *****************************************************************************
+
+bool MCU_IsLittleEndian(void)
+{
+    uint16_t x = 1;
+    
+    return *((uint8_t *)&x);
+}
+
+// *****************************************************************************
+
+void *MCU_ReverseMemcpy(void *dst, const void *src, uint16_t n)
+{
+    uint8_t *pdst = (uint8_t*)dst;
+    const uint8_t *psrc = (const uint8_t*)src;
+    pdst += n - 1;
+
+    while(n--)
+    {
+        *pdst-- = *psrc++;
+    }
+    return dst;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Local Functions *****************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
 /***************************************************************************//**
  * @brief Find pending tasks
  * 
@@ -157,37 +202,6 @@ static void AddToPending(MCUTask *newTask)
         task->nextPending = newTask;
     }
     newTask->pending = true;
-}
-
-// *****************************************************************************
-
-void MCU_Delay(uint32_t count)
-{
-    while(count--);
-}
-
-// *****************************************************************************
-
-bool MCU_IsLittleEndian(void)
-{
-    uint16_t x = 1;
-    
-    return *((uint8_t *)&x);
-}
-
-// *****************************************************************************
-
-void *MCU_ReverseMemcpy(void *dst, const void *src, uint16_t n)
-{
-    uint8_t *pdst = (uint8_t*)dst;
-    const uint8_t *psrc = (const uint8_t*)src;
-    pdst += n - 1;
-
-    while(n--)
-    {
-        *pdst-- = *psrc++;
-    }
-    return dst;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

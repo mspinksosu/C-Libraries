@@ -1,16 +1,24 @@
 /***************************************************************************//**
  * @brief MCU Interface Header File
  * 
- * @author Matthew Spinks
+ * @file IMCU.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 10/14/22  Original creation
- * 
- * @file IMCU.h
  * 
  * @details
  *      An interface that will handle tasks such as sleep, shutdown, delay.
  * It will also have a very simple scheduler.
  * // TODO more details
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
