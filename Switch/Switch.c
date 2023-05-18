@@ -1,17 +1,25 @@
 /***************************************************************************//**
  * @brief Switch Library
  * 
- * @author Matthew Spinks
- * 
- * @date January 5, 2022  Original creation
- * 
  * @file Switch.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 1/5/22    Original creation
  * 
  * @details
  *      A library that handles basic features of a "dual throw" switch. There
  * are two inputs and one output. The output A and B cannot be both true. 
  * Optional "center off" that allows output to be off. The default is to not 
  * allow the output to be off.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

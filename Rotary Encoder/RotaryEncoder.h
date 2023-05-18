@@ -1,13 +1,13 @@
 /***************************************************************************//**
  * @brief Rotary Encoder Library (with switch)
  * 
- * @author Matthew Spinks
+ * @file RotaryEncoder.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 10/2/16    Original Creation
  * @date 2/21/22    Added Doxygen
  * @date 7/2/22     Redesigned to add different encoders and debouncing
- * 
- * @file RotaryEncoder.h
  * 
  * @details
  *      A library that handles a basic quadrature rotary encoder. Quadrature 
@@ -17,18 +17,18 @@
  * set a clockwise or counterclockwise event flag. To do all of this, you must
  * first know how many PPR and how many detents you have.
  * 
- *      By far, the most common type of rotary encoder is one that has half
- * the number of detents as PPR. We refer to this as a "1/2 cycle per detent" 
- * rotary encoder. This means the knobs stops on a detent halfway through the 
+ * By far, the most common type of rotary encoder is one that has half the 
+ * number of detents as PPR. We refer to this as a "1/2 cycle per detent" 
+ * rotary encoder. This means the knob stops on a detent halfway through the 
  * quadrature output cycle. There are also rotary encoders that have the same 
  * number of PPR as detents ("full cycle per detent") and even 1/4 cycle per 
  * detent rotary encoders. This last one has a detent on every state change in 
  * the cycle. If you don't know what your rotary encoder is, it's probably the 
  * 1/2 cycle per detent type.
  * 
- *      You also need the debounce time in milliseconds and the expected update 
- * rate in milliseconds (how often you plan to call the tick function). If you 
- * are debouncing using an RC filter, use 0 as the debounce time. For the tick 
+ * You also need the debounce time in milliseconds and the expected update rate 
+ * in milliseconds (how often you plan to call the tick function). If you are 
+ * debouncing using an RC filter, use 0 as the debounce time. For the tick 
  * rate, you should be updating the rotary encoder fairly quickly. If you 
  * update it too slow, it may feel sluggish. Most datasheets I've looked at 
  * recommend a 5 ms debounce time. So if you're debouncing using software, 
@@ -37,21 +37,21 @@
  * with going slower. The maximum available debounce time for debouncing with 
  * software is 255 ms.
  * 
- *      There are two callback functions for clockwise and counter clockwise 
- * events. The function you create must follow the prototype listed as 
- * RECallbackFunc. It must have a void pointer as an argument. When your 
- * function gets called, you will get a pointer to the RotaryEncoder object 
- * that initiated the call. This way, you can have multiple callbacks pointing
- * to the same function if you desire. Then inside your callback function you 
- * would compare the pointer with your RotaryEncoder object to determine which 
- * one initiated the callback. You do not have to use the contextPointer if you
- * do not want to. The reason it is a void pointer is so that you can have 
- * your callback function in some other file without needing to include the
- * RotaryEncoder.h header file. After you've created your function, call 
- * SetClockwiseEventCallback or SetCounterClockwiseEventCallback and give it 
- * your function as an argument.
+ * There are two callback functions for clockwise and counter clockwise events. 
+ * The function you create must follow the prototype listed as RECallbackFunc. 
+ * It must have a void pointer as an argument. When your function gets called, 
+ * you will get a pointer to the RotaryEncoder object that initiated the call. 
+ * This way, you can have multiple callbacks pointing to the same function 
+ * if you desire. Then inside your callback function you would compare the 
+ * pointer with your RotaryEncoder object to determine which one initiated the 
+ * callback. You do not have to use the contextPointer if you do not want to. 
+ * The reason it is a void pointer is so that you can have your callback 
+ * function in some other file without needing to include the RotaryEncoder.h 
+ * header file. After you've created your function, call 
+ * SetClockwiseEventCallback or SetCounterClockwiseEventCallback and give 
+ * it your function as an argument.
  * 
- * Example Code:
+ * @section example_code Example Code
  *      RotaryEncoder myEncoder;
  *      RE_InitWithType(&myEncoder, RE_FULL_CYCLE_PER_DETENT, 5, 1);
  *      // call update phases once per tick
@@ -60,6 +60,14 @@
  *      { .... do something .... }
  *      if(RE_GetCounterClockwise(&myEncoder))
  *      { .... do something .... }
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2016 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  * ****************************************************************************/
 

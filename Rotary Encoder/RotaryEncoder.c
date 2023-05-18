@@ -1,13 +1,13 @@
 /***************************************************************************//**
  * @brief Rotary Encoder Library Header
  * 
- * @author Matthew Spinks
+ * @file RotaryEncoder.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 10/2/16    Original Creation
  * @date 2/21/22    Added Doxygen
  * @date 7/2/22     Redesigned to add different encoders and debouncing
- * 
- * @file RotaryEncoder.h
  * 
  * @details
  *      A library that handles the basic quadrature rotary encoder. A flag is
@@ -16,8 +16,16 @@
  * or counterclockwise functions. The flags for these functions are cleared 
  * automatically whenever they are called.
  * 
- *      This library uses a table to determine what state the rotary encoder is
- * in. This is based on the value given by the update phases function.
+ * This library uses a table to determine what state the rotary encoder is in. 
+ * This is based on the value given by the update phases function.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2016 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  * ****************************************************************************/
 

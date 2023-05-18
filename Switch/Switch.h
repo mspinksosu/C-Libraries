@@ -1,11 +1,11 @@
 /***************************************************************************//**
  * @brief Switch Library Header File
  * 
- * @author Matthew Spinks
- * 
- * @date January 5, 2022  Original creation
- * 
  * @file Switch.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 1/5/22    Original creation
  * 
  * @details
  *      A library that handles basic features of a "dual throw" switch. There
@@ -13,28 +13,32 @@
  * both at the same time. There is an optional "center off" feature that allows 
  * output to be off. The default is no center-off.
  * 
- *      To create a Switch, you need a Switch object, the debounce time in 
- * milliseconds and the update rate in milliseconds. (This is how often you plan 
- * to periodically call the tick function.) If you are using hardware to 
+ * To create a Switch, you need a Switch object, the debounce time in 
+ * milliseconds and the update rate in milliseconds. (This is how often you 
+ * plan to periodically call the tick function.) If you are using hardware to 
  * debounce your switch inputs, you can set the debounce time to zero. You can 
  * also set the tick rate to zero, but you still must call the Tick function,
  * or else the output will never change. (Honestly though, if you are already
  * debouncing your inputs, why are you using this library at all? That's pretty
  * much the only feature here except maybe the center lockout.)
  * 
- *      Be sure to give the initialization function the initial value or else
- * you will get a false event on startup. Also, if you would like to use this 
- * for a single pole switch, simply set one of the arguments to the tick
- * function to always be false.
+ * Be sure to give the initialization function the initial value or else you 
+ * will get a false event on startup. Also, if you would like to use this for 
+ * a single pole switch, simply set one of the arguments to the tick function 
+ * to always be false.
  * 
- *      There are flags for different events such as "A on", "B on", as well as 
- * any output change. I am providing multiple different getter functions for 
- * states and events. How you determine the output is entirely up to you. The
- * events flags are not cleared automatically. There may be times when you 
- * don't want to immediately clear a flag.
+ * There are flags for different events such as "A on", "B on", as well as any 
+ * output change. I am providing multiple different getter functions for states 
+ * and events. How you determine the output is entirely up to you. The events 
+ * flags are not cleared automatically. There may be times when you don't want 
+ * to immediately clear a flag.
  * 
- *      In addition to the flags, I've also made a callback function that will
- * get called every time the output of the switch changes. Create a function 
+ * The output off event only happens with a switch that has a center-off 
+ * feature. Without the center-off feature, you will get an output B event
+ * when flipping from A to B and an output A event when flipping from B to A.
+ * 
+ * In addition to the flags, I've also made a callback function that will get 
+ * called every time the output of the switch changes. Create a function 
  * follows the prototype listed for SwitchCallbackFunc and then call 
  * SetOutputChangeCallback and give it your function as an argument. Your
  * function prototype must use a pointer to a Switch as argument. When your
@@ -43,6 +47,31 @@
  * Switch callbacks pointing to the same function if you desire. Inside your
  * function, you can compare the pointer to your Switches to determine which
  * one initiated that callback.
+ * 
+ * @section example_code Example Code
+ *      Switch spdt1;
+ *      Switch_Init(&spdt1, 40, 10, GPIO_ReadPin(&pinA), 
+ *          GPIO_ReadPin(&pinB), false);
+ *      // call update once per tick
+ *      Switch_Tick(&spdt1, 40, 10, GPIO_ReadPin(&pinA), GPIO_ReadPin(&pinB));
+ *      if(Switch_GetOutputAOnEvent(&spdt1))
+ *      {
+ *          Switch_ClearOutputAOnEventFlag(&spdt1);
+ *          // do something
+ *      }
+ *      if(Switch_GetOutputBOnEvent(&spdt1))
+ *      {
+ *          Switch_ClearOutputBOnEventFlag(&spdt1);
+ *          // do something
+ *      }
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
