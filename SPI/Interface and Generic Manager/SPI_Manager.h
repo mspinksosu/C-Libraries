@@ -1,14 +1,22 @@
 /***************************************************************************//**
  * @brief SPI Manager Header (Non-Processor Specific)
  * 
- * @author Matthew Spinks
- * 
- * @date 8/28/22  Original creation
- * 
  * @file SPI_Manager.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 8/28/22   Original creation
  * 
  * @details
  *      // TODO details
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

@@ -1,14 +1,22 @@
 /***************************************************************************//**
  * @brief SPI 1 Implementation Header (Non-Processor Specific)
  * 
- * @author Matthew Spinks
+ * @file SPI3.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 9/9/22    Original creation
  * 
- * @file SPI3.h
- * 
  * @details
  *      // TODO details
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2023 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

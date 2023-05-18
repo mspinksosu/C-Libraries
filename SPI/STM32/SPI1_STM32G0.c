@@ -1,14 +1,22 @@
 /***************************************************************************//**
  * @brief SPI Library Implementation (STM32G0)
  * 
- * @author Matthew Spinks
- * 
- * @date 5/7/23    Original creation
- * 
  * @file SPI1_STM32G0.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 4/7/23    Original creation
  * 
  * @details
  *      // TODO details
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2023 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

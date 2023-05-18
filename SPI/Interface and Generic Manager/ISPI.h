@@ -1,14 +1,22 @@
 /***************************************************************************//**
  * @brief SPI Interface Header File
  * 
- * @author Matthew Spinks
- * 
- * @date 8/27/22  Original creation
- * 
  * @file ISPI.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 8/27/22   Original creation
  * 
  * @details
  *      // TODO details. 8-bit, MSB first.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
