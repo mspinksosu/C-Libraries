@@ -1,11 +1,11 @@
 /***************************************************************************//**
  * @brief Pattern Library Header File
  * 
- * @author Matthew Spinks
+ * @file Pattern.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 7/9/22   Original creation
- * 
- * @file Pattern.h
  * 
  * @details
  *      A library that makes simple patterns. It's very useful for blinking 
@@ -58,7 +58,7 @@
  * After you've created your functions, call either SetFinishedCallback or
  * SetOutputChangedCallback and give it your function as an argument.
  * 
- * Example Code:
+ * @section example_code Example Code
  *      Pattern ledBlink;
  *      PatternState pattern1Array[2] = {{.output = 1, .timeInMs = 32},
  *                                       {.output = 0, .timeInMs = 468}};
@@ -72,6 +72,14 @@
  *          Pattern_StopAtomic(&ledBlink);
  *      if(changePattern == true)
  *          Pattern_LoadAtomic(&ledBlink, pattern2Array, 3, TICK_ONE_MS);
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

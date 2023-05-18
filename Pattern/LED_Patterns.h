@@ -1,20 +1,17 @@
 /***************************************************************************//**
  * @brief LED Patterns
  * 
- * @author Matthew Spinks
+ * @file LED_Patterns.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 7/10/22   Original creation
- * 
- * @file LED_Patterns.h
  * 
  * @details
  *      A list of LED patterns that work with my Pattern library. These are
  *  preprocessor define. This lets me put my declarations in a single
  * convenient file where they won't take up as much space. It also lets me 
  * choose whether or not I want to make my pattern variables global or static. 
- * In order to create a pattern, initialize an array of pattern states like so:
- * 
- * PatternState doubleBlinkPattern[DOUBLE_BLINK_SIZE] = DOUBLE_BLINK_PATT;
  * 
  * Remember to leave the semicolon off of the end of these defines! If you 
  * don't, you'll most likely get a very cryptic compiler error.
@@ -24,21 +21,30 @@
  * that you initialized it as. You could make a temporary pattern array and 
  * copy from one array to a larger one if you desire.
  * 
+ * Also, I like to make the last state an off state of some sort even for 
+ * patterns that loop. That way when I stop one, it's always in a known state. 
+ * For these patterns I was using a tick rate of 8 ms, but the times don't 
+ * have to be exact. For example, a lot of times I'll just put 250 ms instead 
+ * of 256 ms.
+ * 
+ * @section example_code Example Code
+ * 
+ * PatternState doubleBlinkPattern[DOUBLE_BLINK_SIZE] = DOUBLE_BLINK_PATT;
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
+ * 
  ******************************************************************************/
 
 #ifndef LED_PATTERNS_H
 #define LED_PATTERNS_H
 
 #include "Pattern.h"
-
-/* Remember to leave the semicolon off of the end of these defines. Also, I
-like to make the last state an off state of some sort even for patterns that
-loop. That way when I stop one, it's always in a known state. For these 
-patterns I was using a tick rate of 8 ms, but the times don't have to be exact.
-(for example, a lot of times I'll just put 250 ms instead 256 ms) */
-
-/* Example code: 
-    PatternState doubleBlink[DOUBLE_BLINK_SIZE] = DOUBLE_BLINK_PATT; */
 
 // a single blink, once per second
 #define SINGLE_BLINK_SIZE   3

@@ -1,14 +1,22 @@
 /***************************************************************************//**
- * @brief PID C Library
- * 
- * @author Matthew Spinks
- * 
- * @date 12/17/22  Original Creation
+ * @brief PID Library
  * 
  * @file PID.c
  * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 12/17/22  Original Creation
+ * 
  * @details
- *      TODO
+ *      // TODO Work in progress. Ready to test
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

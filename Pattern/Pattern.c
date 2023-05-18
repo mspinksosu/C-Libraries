@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @brief Pattern Library
  * 
- * @author Matthew Spinks
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 7/9/22   Original creation
  * 
@@ -17,6 +17,14 @@
  * tick rate you initialized your pattern with. If your period ends up being 
  * smaller than your tick rate, the period will be set to one. If you 
  * accidentally set your tick rate to zero, I will set it to one as well. 
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
