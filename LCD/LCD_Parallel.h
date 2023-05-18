@@ -1,15 +1,23 @@
 /***************************************************************************//**
  * @brief Parallel Character Display Library Implementation Header
  * 
- * @author Matthew Spinks
+ * @file LCD_Parallel.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 9/24/22  Original creation
- * 
- * @file LCD_Parallel.h
  * 
  * @details
  *      // TODO details. A basic implementation for a HD44780 or similar LCD
  * character display
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

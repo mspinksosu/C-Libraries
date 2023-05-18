@@ -1,15 +1,23 @@
 /***************************************************************************//**
- * @brief Basic I2C Peripheral Header
- * 
- * @author  Matthew Spinks
- * 
- * @date 10/2/16    Original Creation
- * @date 2/21/22    Added Doxygen
+ * @brief I2C 1 Implementation Header (Non-Processor Specific)
  * 
  * @file IC21.h 
  * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 10/2/16   Original Creation
+ * @date 2/21/22   Added Doxygen
+ * 
  * @details
  *      TODO
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2016 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
 *******************************************************************************/
 
@@ -65,10 +73,5 @@ void I2C1_TransmitFinishedInterrupt(void);
 
 void I2C1_SetReceiveInterruptCallback(void (*Function)(void));
 void I2C1_SetTransmitFinishedCallback(void (*Function)(void));
-
-
-/*
- End of File
- */
 
 #endif	/* I2C1_H */

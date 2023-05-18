@@ -1,15 +1,22 @@
 /***************************************************************************//**
- * @brief Foo Interface
+ * @brief Character LCD Interface
  * 
- * @author Matthew Spinks
+ * @file ILCD.h
  * 
- * @date 12/2/14  Original creation
- * @date 8/6/22   Modified
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
- * @file IFoo.c
+ * @date 9/24/22   Original creation
  * 
  * @details
  *      TODO
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

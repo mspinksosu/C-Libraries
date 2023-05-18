@@ -1,14 +1,25 @@
-/* *****************************************************************************
- * @Summary Basic I2C Interface Header
+/***************************************************************************//**
+ * @brief Basic I2C Interface Header
  * 
- * @author  Matthew Spinks
+ * @file IC21.h 
  * 
- * @File I2C.h 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
- * @Description
+ * @date 10/2/16   Original Creation
+ * @date 2/21/22   Added Doxygen
+ * 
+ * @details
  *      A very rough draft. For now, the only thing in here will be objects
  * that can be shared between multiple I2C peripherals. At least until I figure
  * out how I want to organize my library.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2016 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
 *******************************************************************************/
 
@@ -67,8 +78,4 @@ struct I2CObject
 // just let the user handle it
 void I2C_InitObject(I2CObject *self, uint8_t slaveAddress, uint8_t *writeBuffer, uint8_t *readBuffer);
 
-/*
- End of File
- */
-
-#endif	/* I2C_H */
+#endif /* I2C_H */

@@ -1,15 +1,23 @@
 /***************************************************************************//**
  * @brief Basic I2C Peripheral for PIC32
  * 
- * @author Matthew Spinks
- * 
- * @date 10/2/16    Original Creation
- * @date 2/21/22    Added Doxygen
- * 
  * @file I2C1_PIC32.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 10/2/16   Original Creation
+ * @date 2/21/22   Added Doxygen
  * 
  * @details
  *      TODO
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2016 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
 *******************************************************************************/
 

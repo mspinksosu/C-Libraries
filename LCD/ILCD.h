@@ -1,14 +1,22 @@
 /***************************************************************************//**
  * @brief Character LCD Interface Header File
  * 
- * @author Matthew Spinks
- * 
- * @date 9/24/22  Original creation
- * 
  * @file ILCD.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 9/24/22   Original creation
  * 
  * @details
  *      // TODO 80 characters max, up to 4 rows and 20 columns, font size 5x8
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

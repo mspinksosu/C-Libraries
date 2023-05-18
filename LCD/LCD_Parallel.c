@@ -1,14 +1,22 @@
 /***************************************************************************//**
  * @brief Parallel Character Display Library Implementation
  * 
- * @author Matthew Spinks
+ * @file LCD_Parallel.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 9/24/22  Original creation
  * 
- * @file LCD_Parallel.c
- * 
  * @details
- *      TODO
+ *      // TODO
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
