@@ -1,5 +1,5 @@
 /***************************************************************************//**
- * @brief SPI 1 Implementation Header (Non-Processor Specific)
+ * @brief SPI Implementation Header (Non-Processor Specific)
  * 
  * @file SPI1.h
  * 
