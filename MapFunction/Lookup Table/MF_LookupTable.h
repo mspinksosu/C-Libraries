@@ -1,17 +1,17 @@
 /***************************************************************************//**
  * @brief Map Function Implementation Header (Lookup Table)
  * 
- * @author Matthew Spinks
+ * @file MF_LookupTable.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 12/20/21  Original creation
- * 
- * @file MF_LookupTable.h
  * 
  * @details
  *      Implements the base class MapFunction. This implementation uses the
  * a simple lookup table method for computing a curve. The lookup table is an
  * array of bytes that I have precomputed. In order to use it, simply take the 
- * input which is tyically and adc reading or something similar and go to that 
+ * input which is typically an adc reading or something similar and go to that 
  * index in the array.
  * 
  * I like to make my lookup tables small powers of two, usually between 64 and 
@@ -22,12 +22,20 @@
  * shiftInputRightNBits to do this for me so I can pass the input directly to 
  * the function.
  * 
- * Example Code:
+ * @section example_code Example Code
  *      LUTArray[32] = { ... };
  *      MapFunction myCurve;
  *      MF_LookupTable myLUT;
  *      MF_LookupTable_Create(&myLUT, &myCurve, &LUTArray, sizeof(LUTArray));
  *      output = MF_Compute(&Curve, adcValue);   
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2021 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

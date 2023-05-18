@@ -1,11 +1,11 @@
 /***************************************************************************//**
  * @brief Map Function Implementation Header (Lookup Table)
  * 
- * @author Matthew Spinks
- * 
- * @date 12/19/21    Original creation
- * 
  * @file MF_Linear.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 12/19/21  Original creation
  * 
  * @details
  *      A library that implements IMapFunction interface. This implementation 
@@ -17,12 +17,20 @@
  * library. The main advantage of this library is that it could save a little
  * bit of memory if your lookup table is very large.
  * 
- * Example Code:
+ * @section example_code Example Code
  *      MapFunction Map;
  *      MF_Linear linearMap;
  *      MF_Linear_Create(&linearMap, &Map);
  *      MF_Linear_SetRange(&linearMap, oldMin, oldMax, newMin, newMax);
  *      output = MF_Compute(&Map, input);
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2021 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

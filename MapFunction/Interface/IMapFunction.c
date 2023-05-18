@@ -1,11 +1,11 @@
 /***************************************************************************//**
  * @brief Map Function Interface
  * 
- * @author Matthew Spinks
- * 
- * @date 12/18/21    Original creation
- * 
  * @file IMapFunction.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
+ * 
+ * @date 12/18/21  Original creation
  * 
  * @details
  *      The functions here are called using the base class object type. The 
@@ -14,6 +14,14 @@
  * pointers to your subclass. These functions will use the pointer to the
  * interface to determine which implementation to call and give it the pointer
  * to the subclass object (instance).
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2021 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

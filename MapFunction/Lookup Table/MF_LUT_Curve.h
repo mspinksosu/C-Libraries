@@ -1,11 +1,11 @@
 /***************************************************************************//**
  * @brief Lookup Tables
  * 
- * @author Matthew Spinks
+ * @file MF_LUT_Curve.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 12/20/21  Original creation
- * 
- * @file MF_LUT_Curve.h
  * 
  * @details
  *      This is to implement a curve using a simple lookup table. This file is 

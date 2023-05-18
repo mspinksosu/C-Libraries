@@ -1,25 +1,30 @@
 /***************************************************************************//**
  * @brief Map Function Interface Header File
  * 
- * @author Matthew Spinks
- * 
- * @date 12/18/21    Original creation
- * 
  * @file IMapFunction.h
  * 
- * @details
- *      An interface for different types of map functions. Objects that 
- * use this interface must implement the functions listed in the interface. A 
- * map function in this case is simply a function to convert a range of numbers 
- * from one range to another, either by linear interpolation or other means.
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
- * To make a MapFunction, you will need to make a base class MapFunction object
- * and a subclass MapFunction object. The base class contains at minimum, a 
- * pointer to the sub class's interface and a void pointer called "instance". 
- * Your subclass function will use your subclass type object, but the function
- * calls will be using the base class type. The reason the void pointer is used
- * is so that the user does not have to deal with typecasting every function 
- * call. The void pointer will be changed to point to your subclass object. 
+ * @date 12/18/21  Original creation
+ * 
+ * @details
+ *      An interface for different types of map functions. A map function is
+ * simply a function that converts one range of values to another range of 
+ * values by any means. The original map function equation I used was just an 
+ * equation for linear interpolation. I had used it many, many years ago with 
+ * the Arduino "map()" function. Hence the name. I used the linear equation 
+ * and created my own little ecosystem around to allow different kinds of map 
+ * functions to be used. 
+ * 
+ * Objects that use this interface must implement the functions listed in the 
+ * interface. To make a MapFunction, you will need to make a base class 
+ * MapFunction object and a subclass MapFunction object. The base class 
+ * contains at minimum, a pointer to the sub class's interface and a void 
+ * pointer called "instance". Your subclass function will use your subclass 
+ * type object, but the function calls will be using the base class type. The 
+ * reason the void pointer is used is so that the user does not have to deal 
+ * with typecasting every function call. The void pointer will be changed to 
+ * point to your subclass object. 
  * 
  * The MFInterface or function table will tell the interface which functions 
  * to call. Your implementation of the MapFunction will have its own functions
@@ -38,11 +43,19 @@
  * Doing it this way makes the process a little more type-safe by ensuring the
  * void pointer doesn't get set incorrectly.
  * 
- * Example Code:
+ * @section example_code Example Code
  *      MapFunction mapFunction;
  *      SubClassMap linearMapType;
  *      SubClassMap_Create(&mapFunction, &linearMapType, param1, ...)
  *      output = MF_Compute(&mapFunction, input);
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2021 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
