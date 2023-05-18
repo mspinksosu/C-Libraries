@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @brief Foo Library Implementation (MCU1)
  * 
- * @author Matthew Spinks
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 12/2/14   Original creation
  * @date 2/4/22    Modified
