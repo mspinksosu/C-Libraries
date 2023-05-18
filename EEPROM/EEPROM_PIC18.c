@@ -1,11 +1,11 @@
 /***************************************************************************//**
  * @brief EEPROM Library Implementation (PIC18)
  * 
- * @author Matthew Spinks
+ * @file EEPROM_PIC18.c
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 2/22/23   Original creation
- * 
- * @file EEPROM_PIC18.c
  * 
  * @details
  *      If you are using XC-8, it should have your chip selection defined in 
@@ -13,6 +13,14 @@
  * header files can be found in the install path of your compiler: 
  * "Install_Path/xc8/v2.20/pic/include/proc/"
  * Example: #include <proc/pic18lf4585.h>
+ * 
+ *  @section license License
+ * SPDX-FileCopyrightText: © 2023 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

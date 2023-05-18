@@ -1,19 +1,27 @@
 /***************************************************************************//**
  * @brief EEPROM Library Implementation Header (Non-Processor Specific)
  * 
- * @author Matthew Spinks
+ * @file EEPROM.h
+ * 
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 2/22/23   Original creation
- * 
- * @file EEPROM.h
  * 
  * @details
  *      This is for a built-in EEPROM, not a serial EEPROM.
  * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2023 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
+ * 
  ******************************************************************************/
 
-#ifndef EEPROM__H
-#define EEPROM__H
+#ifndef EEPROM_H
+#define EEPROM_H
 
 #include <stdint.h>
 
@@ -83,4 +91,4 @@ void EEPROM_WriteData(uint16_t address, uint8_t *data, uint8_t size);
  */
 void EEPROM_ReadData(uint16_t address, uint8_t *retData, uint8_t size);
 
-#endif  /* EEPROM__H */
+#endif  /* EEPROM_H */
