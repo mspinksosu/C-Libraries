@@ -1,15 +1,22 @@
 /***************************************************************************//**
- * @brief Foo Library Implementation (MCU1)
+ * @brief Hardware Timer 1 Implementation (STM32G0)
  * 
- * @author Matthew Spinks
+ * @file HWTimer1_STM32G0.c
  * 
- * @date 12/2/14  Original creation
- * @date 2/4/22   Modified
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
- * @file Foo_MCU1.c
- * 
+ * @date 9/18/22  Original creation
+ *
  * @details
  *      // TODO
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

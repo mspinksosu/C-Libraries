@@ -1,14 +1,22 @@
 /***************************************************************************//**
  * @brief Hardware Timer 1 Implementation Header (STM32G0)
  * 
- * @author Matthew Spinks
+ * @file HWTimer1_STM32G0.h
  * 
- * @date 9/17/22  Original creation
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
- * @file HWTimer1.h
+ * @date 9/18/22  Original creation
  * 
  * @details
  *      // TODO
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

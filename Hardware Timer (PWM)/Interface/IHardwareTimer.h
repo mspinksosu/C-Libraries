@@ -1,15 +1,23 @@
 /***************************************************************************//**
  * @brief Hardware Timer Interface Header File
  * 
+ * @file IHardwareTimer.h
+ * 
  * @author Matthew Spinks
  * 
  * @date 9/17/22  Original creation
  * 
- * @file IHardwareTimer.h
- * 
  * @details
  *      An interface to make use of a hardware timer peripheral features.
  * // TODO details
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
