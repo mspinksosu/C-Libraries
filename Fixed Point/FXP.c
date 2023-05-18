@@ -1,22 +1,22 @@
 /***************************************************************************//**
  * @brief Fixed Point Library File
  * 
- * @author Matthew Spinks
+ * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 3/11/23   Original creation
  * 
  * @file FXP.c
  * 
  * @details
- *      This is not meant to be as fast or as efficient as possible. It's meant
- * to be a simple library to help save a couple instruction cycles by avoiding
- * performing large amounts of floating point calculations. It also serves as
- * a nice educational tool for myself to learn how fixed point arithmetic works
- * in general.
+ *      A simple library to do some fixed point math.
  * 
- * The number of fractional bits defines the format of the number. For example,
- * a 16-bit number with 5 fractional bits is a 11.5 format. A 32-bit number
- * with 10 fractional bits is a 22.10 format and so on.
+ * @section license License
+ * SPDX-FileCopyrightText: © 2023 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
