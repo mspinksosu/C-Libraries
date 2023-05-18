@@ -1,11 +1,11 @@
 /***************************************************************************//**
  * @brief Error Code Library Header File
  * 
+ * @file ErrorCode.h
+ * 
  * @author Matthew Spinks
  * 
  * @date 11/20/22  Original creation
- * 
- * @file ErrorCode.h
  * 
  * @details
  *      Manages up to 32 error codes and flashes an LED for you. The LED can be 
@@ -29,6 +29,14 @@
  * so that you can pause the state machine briefly if you need to take control 
  * of the LED pin. When restarting the error code, it will start over on the 
  * current error code instead of in the middle of an error code.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 

@@ -1,17 +1,25 @@
 /***************************************************************************//**
  * @brief Error Code Library
+ *  
+ * @file ErrorCode.c
  * 
  * @author Matthew Spinks
  * 
  * @date 11/20/22  Original creation
- * 
- * @file ErrorCode.c
- * 
+ *
  * @details
  *      Manages up to 32 error codes and flashes an LED for you. The LED can be 
  * updated by calling ErrorCode_GetBlinkOutput(). Relies on Pattern.h library
  * to define the on and off times for the LED itself. When the error code
  * library is initialized it is given a tick rate in milliseconds.
+ * 
+ * @section license License
+ * SPDX-FileCopyrightText: © 2022 Matthew Spinks
+ * SPDX-License-Identifier: Zlib
+ * 
+ * This software is released under the Zlib license. You are free alter and
+ * redistribute it, but you must not misrepresent the origin of the software.
+ * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
 
