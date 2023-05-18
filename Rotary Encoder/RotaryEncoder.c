@@ -5,9 +5,9 @@
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
- * @date 10/2/16    Original Creation
- * @date 2/21/22    Added Doxygen
- * @date 7/2/22     Redesigned to add different encoders and debouncing
+ * @date 10/2/16   Original Creation
+ * @date 2/21/22   Added Doxygen
+ * @date 7/2/22    Redesigned to add different encoders and debouncing
  * 
  * @details
  *      A library that handles the basic quadrature rotary encoder. A flag is
