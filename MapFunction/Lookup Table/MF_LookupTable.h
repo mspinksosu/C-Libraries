@@ -27,7 +27,7 @@
  *      MapFunction myCurve;
  *      MF_LookupTable myLUT;
  *      MF_LookupTable_Create(&myLUT, &myCurve, &LUTArray, sizeof(LUTArray));
- *      output = MF_Compute(&Curve, adcValue);   
+ *      output = MF_Compute(&Curve, adcValue);
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2021 Matthew Spinks
@@ -90,7 +90,7 @@ void MF_LookupTable_Create(MF_LookupTable *self, MapFunction *base, uint8_t *arr
 /***************************************************************************//**
  * @brief  Set the value to shift the input to match your lookup table array
  * 
- * Most adc readings are between 8 and 16 bits in length. Whereas, a lookup 
+ * Most adc readings are between 8 and 16 bits in length, whereas a lookup 
  * table could be much smaller. Shifting the input is a quick way to scale it
  * to match your table. I'll handle the bit shift for you, so you don't have to
  * add it before your function call. This works great for lookup tables where 

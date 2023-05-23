@@ -1,15 +1,15 @@
 /***************************************************************************//**
- * @brief Map Function Implementation (Linear Interpolation)
+ * @brief Map Function Implementation (Lookup Table)
  * 
- * @file MF_Linear.c
+ * @file MF_Piecewise.c
  * 
- * @author Matthew Spinks <https://github.com/mspinksosu>
+ * @author Matthew Spinks
  * 
- * @date 12/19/21  Original creation
+ * @date 12/22/21  Original creation
  * 
  * @details
- *      A library that implements the MF_Linear functions, which conform to 
- * the IMapFunction interface.
+ *      A library that implements the MF_Piecewise functions, which conform 
+ * to the IMapFunction interface. 
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2021 Matthew Spinks
@@ -21,7 +21,8 @@
  * 
  ******************************************************************************/
 
-#include "MF_Linear.h"
+#include "MF_Piecewise.h"
+#include <stdbool.h>
 
 // ***** Defines ***************************************************************
 
@@ -32,7 +33,7 @@
     functions. Typecasting is necessary. When a new sub class object is 
     created, we will set its interface member equal to this table. */
 static MFInterface FunctionTable = {
-    .Compute = (int32_t (*)(void *, int32_t))MF_Linear_Compute,
+    .Compute = (int32_t (*)(void *, int32_t))MF_Piecewise_Compute,
 };
 
 // ***** Static Function Prototypes ********************************************
@@ -46,22 +47,15 @@ static MFInterface FunctionTable = {
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void MF_Linear_Create(MF_Linear *self, MapFunction *base)
+void MF_Piecewise_Create(MF_Piecewise *self, MapFunction *base, 
+    coordinate *coordinateArray, uint8_t numPoints)
 {
     self->super = base;
+    self->coordinates = coordinateArray;
+    self->numCoordinates = numPoints;
 
     /*  Call the base class constructor */
     MF_Create(base, self, &FunctionTable);
-}
-
-// *****************************************************************************
-
-void MF_Linear_SetRange(MF_Linear *self, uint32_t oldMin, uint32_t oldMax, uint32_t newMin, uint32_t newMax)
-{
-    self->oldMin = oldMin;
-    self->oldMax = oldMax;
-    self->newMin = newMin;
-    self->newMax = newMax;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -70,13 +64,37 @@ void MF_Linear_SetRange(MF_Linear *self, uint32_t oldMin, uint32_t oldMax, uint3
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-int32_t MF_Linear_Compute(MF_Linear *self, int32_t input)
+int32_t MF_Piecewise_Compute(MF_Piecewise *self, int32_t input)
 {
-    if(self->oldMax == self->oldMin)
-        return 0;
+    int32_t i = 0, output = 0, n = self->numCoordinates;
 
-    int32_t output = (input - self->oldMin) * (self->newMax - self->newMin) / 
-                     (self->oldMax - self->oldMin) + self->newMin;
+    /* The x values should be ordered from smallest to largest */
+    for(; i < n - 1; i++)
+    {
+        if(input <= self->coordinates[i].yOutput)
+            break;
+    }
+
+    if(i == 0)
+    {
+        output = self->coordinates[0].yOutput;
+    }
+    else if(i == n - 1)
+    {
+        output = self->coordinates[n-1].yOutput;
+    }
+    else if(self->coordinates[i+1].xInput != self->coordinates[i].xInput)
+    {
+        output = (int32_t)((input - self->coordinates[i].xInput) * 
+            (self->coordinates[i+1].yOutput - self->coordinates[i].yOutput) / 
+            (self->coordinates[i+1].xInput - self->coordinates[i].xInput) + 
+            self->coordinates[i].yOutput);
+    }
+    else
+    {
+        /* Overlapping x coordinates causes a divide by zero. */
+        output = self->coordinates[i+1].yOutput;
+    }
 
     return output;
 }
