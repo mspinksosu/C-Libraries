@@ -103,7 +103,7 @@ void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debou
 
 // *****************************************************************************
 
-void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh)
+void RE_Tick(RotaryEncoder *self, bool AisHigh, bool BisHigh)
 {
     /* First update the inputs */
     if(AisHigh)

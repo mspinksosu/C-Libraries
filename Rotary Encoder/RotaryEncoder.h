@@ -54,8 +54,8 @@
  * @section example_code Example Code
  *      RotaryEncoder myEncoder;
  *      RE_InitWithType(&myEncoder, RE_FULL_CYCLE_PER_DETENT, 5, 1);
- *      // call update phases once per tick
- *      RE_UpdatePhases(&myEncoder, GPIO_ReadPin(&pinA), GPIO_ReadPin(&pinB));
+ *      // call once per tick
+ *      RE_Tick(&myEncoder, GPIO_ReadPin(&pinA), GPIO_ReadPin(&pinB));
  *      if(RE_GetClockwise(&myEncoder))
  *      { .... do something .... }
  *      if(RE_GetCounterClockwise(&myEncoder))
@@ -190,7 +190,7 @@ void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debou
  *  
  * @param BisHigh boolean for phase B of the rotary encoder
  */
-void RE_UpdatePhases(RotaryEncoder *self, bool AisHigh, bool BisHigh);
+void RE_Tick(RotaryEncoder *self, bool AisHigh, bool BisHigh);
 
 /***************************************************************************//**
  * @brief Get Clockwise Event
