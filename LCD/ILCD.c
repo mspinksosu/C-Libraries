@@ -143,7 +143,7 @@ void LCD_PutFloat(LCD *self, float num, uint8_t precision)
             precision = 6;
         
         /* Create a float that is used for rounding up. If precision is 1, 
-        round becomes 0.05. If precsion is 2, round becomes 0.005 and so on. */
+        round becomes 0.05. If precision is 2, round becomes 0.005 and so on. */
         for(uint8_t i = 0; i < precision; i++) 
             round = round / 10.0f;
         
