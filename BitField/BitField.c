@@ -7,6 +7,7 @@
  * 
  * @date 5/14/22   Original creation
  * @date 10/30/22  Added variadic functions to modify list of bits
+ * @date 6/4/23    Fixed bug in variadic functions
  * 
  * @details
  *      This is a simple library. It works best when your just dealing with 
@@ -211,7 +212,7 @@ void BitField_SetBits(BitField *self, uint8_t numBitsToSet, ... )
     while(numBitsToSet > 0)
     {
         bitPos = va_arg(list, int);
-        if(bitPos > 0 && bitPos < (self->sizeOfArray) * 8)
+        if(bitPos < (self->sizeOfArray) * 8)
         {
             i = bitPos / 8;
             bit = bitPos % 8;
@@ -237,7 +238,7 @@ void BitField_ClearBits(BitField *self, uint8_t numBitsToClear, ... )
     while(numBitsToClear > 0)
     {
         bitPos = va_arg(list, int);
-        if(bitPos > 0 && bitPos < (self->sizeOfArray) * 8)
+        if(bitPos < (self->sizeOfArray) * 8)
         {
             i = bitPos / 8;
             bit = bitPos % 8;
@@ -263,7 +264,7 @@ void BitField_InvertBits(BitField *self, uint8_t numBits, ... )
     while(numBits > 0)
     {
         bitPos = va_arg(list, int);
-        if(bitPos > 0 && bitPos < (self->sizeOfArray) * 8)
+        if(bitPos < (self->sizeOfArray) * 8)
         {
             i = bitPos / 8;
             bit = bitPos % 8;

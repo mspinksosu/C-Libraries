@@ -7,6 +7,7 @@
  * 
  * @date 5/14/22   Original creation
  * @date 10/30/22  Added variadic functions to modify list of bits
+ * @date 6/4/23    Fixed bug in variadic functions
  * 
  * @details
  *      I like using bit fields a lot personally. In my opinion, I think
