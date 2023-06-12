@@ -21,7 +21,7 @@
  *      uint32_t baud = UART_ComputeBRGValue(&myUART, 115200, 12000000UL);
  *      UART_SetBRGValue(&myUART, baud);
  *      UART_Init(&myUART);
- *      
+ * 
  * @section license License
  * SPDX-FileCopyrightText: © 2022 Matthew Spinks
  * SPDX-License-Identifier: Zlib
@@ -74,7 +74,7 @@ static bool use9Bit = false, useRxInterrupt = false, useTxInterrupt = false;
 static UARTFlowControl flowControl = UART_FLOW_NONE;
 static UARTStopBits stopBits = UART_ONE_P;
 static UARTParity parity = UART_NO_PARITY;
-static bool lockTxFinishedEvent = false, txFinishedEventPending = false,
+static volatile bool lockTxFinishedEvent = false, txFinishedEventPending = false,
     lockRxReceivedEvent = false;
 
 // local function pointers
@@ -218,6 +218,11 @@ void UART2_ReceivedDataEvent(void)
     {
         /* Prevent the possibility of another interrupt from somehow calling us 
         while we're in a callback */
+        if(UART_ADDR->SR & (USART_SR_ORE | USART_SR_FE))
+        {
+            static volatile uint16_t throwAway;
+            throwAway = UART_ADDR->DR;
+        }
         return;
     }
     lockRxReceivedEvent = true;
