@@ -130,12 +130,14 @@ typedef struct UARTInterfaceTag
     void (*UART_ReceivedDataEvent)(void);
     uint8_t (*UART_GetReceivedByte)(void);
     bool (*UART_IsReceiveRegisterFull)(void);
+    bool (*UART_IsReceiveUsingInterrupts)(void);
     void (*UART_ReceiveEnable)(void);
     void (*UART_ReceiveDisable)(void);
     void (*UART_TransmitRegisterEmptyEvent)(void);
     void (*UART_TransmitByte)(uint8_t);
     bool (*UART_IsTransmitRegisterEmpty)(void);
     bool (*UART_IsTransmitFinished)(void);
+    bool (*UART_IsTransmitUsingInterrupts)(void); // TODO
     void (*UART_TransmitEnable)(void);
     void (*UART_TransmitDisable)(void);
     void (*UART_PendingEventHandler)(void);
@@ -325,6 +327,18 @@ uint8_t UART_GetReceivedByte(UART *self);
 bool UART_IsReceiveRegisterFull(UART *self);
 
 /***************************************************************************//**
+ * @brief Check if the receiver is using interrupts
+ * 
+ * This does not mean that interrupts are enabled this exact instant. Only that
+ * it is using interrupts.
+ * 
+ * @param self  pointer to the UART you are using
+ * 
+ * @return true if the UART is using a Rx interrupt
+ */
+bool UART_IsReceiveUsingInterrupts(UART *self);
+
+/***************************************************************************//**
  * @brief Enable the UART receiver
  * 
  * If you are using flow control, you will want to set the RTS pin low to 
@@ -407,6 +421,18 @@ bool UART_IsTransmitRegisterEmpty(UART *self);
  * @return true if the transmission is fully completed
  */
 bool UART_IsTransmitFinished(UART *self);
+
+/***************************************************************************//**
+ * @brief Check if the transmitter is using interrupts
+ * 
+ * This does not mean that interrupts are enabled this exact instant. Only that
+ * it is using interrupts.
+ * 
+ * @param self  pointer to the UART you are using
+ * 
+ * @return true if the UART is using a Tx interrupt
+ */
+bool UART_IsTransmitUsingInterrupts(UART *self);
 
 /***************************************************************************//**
  * @brief Enable the UART transmitter

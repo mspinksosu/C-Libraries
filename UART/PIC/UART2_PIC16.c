@@ -86,12 +86,14 @@ UARTInterface UART2_FunctionTable = {
     .UART_ReceivedDataEvent = UART2_ReceivedDataEvent,
     .UART_GetReceivedByte = UART2_GetReceivedByte,
     .UART_IsReceiveRegisterFull = UART2_IsReceiveRegisterFull,
+    .UART_IsReceiveUsingInterrupts = UART2_IsReceiveUsingInterrupts,
     .UART_ReceiveEnable = UART2_ReceiveEnable,
     .UART_ReceiveDisable = UART2_ReceiveDisable,
     .UART_TransmitRegisterEmptyEvent = UART2_TransmitRegisterEmptyEvent,
     .UART_TransmitByte = UART2_TransmitByte,
     .UART_IsTransmitRegisterEmpty = UART2_IsTransmitRegisterEmpty,
     .UART_IsTransmitFinished = UART2_IsTransmitFinished,
+    .UART_IsTransmitUsingInterrupts = UART2_IsTransmitUsingInterrupts,
     .UART_TransmitEnable = UART2_TransmitEnable,
     .UART_TransmitDisable = UART2_TransmitDisable,
     .UART_PendingEventHandler = UART2_PendingEventHandler,
@@ -145,7 +147,7 @@ uint32_t UART2_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz)
 // *****************************************************************************
 
 void UART2_Init(UARTInitType *params)
-    {
+{
     if(params->BRGValue == 0)
         return;
 
@@ -205,7 +207,7 @@ void UART2_ReceivedDataEvent(void)
     /* RTS is asserted (low) whenever we are ready to receive data. It is 
     deasserted (high) when the receive register is full. */
     if(flowControl == UART_FLOW_CALLBACKS && SetRTSPin != NULL)
-{
+    {
         SetRTSPin(true); // set high
     }
 
@@ -219,7 +221,7 @@ void UART2_ReceivedDataEvent(void)
 // *****************************************************************************
 
 uint8_t UART2_GetReceivedByte(void)
-    {
+{
     uint8_t data = RCxREG;
 
     /* RTS is asserted (low) whenever we are ready to receive data. It is 
@@ -230,12 +232,12 @@ uint8_t UART2_GetReceivedByte(void)
     }
 
     return data;
-    }
+}
 
 // *****************************************************************************
 
 bool UART2_IsReceiveRegisterFull(void)
-    {
+{
     bool rxFull = false;
 
     /* The receive character interrupt flag is set whenever there is an unread
@@ -251,6 +253,13 @@ bool UART2_IsReceiveRegisterFull(void)
     }
 
     return rxFull;
+}
+
+// *****************************************************************************
+
+bool UART2_IsReceiveUsingInterrupts(void)
+{
+    return useRxInterrupt;
 }
 
 // *****************************************************************************
@@ -274,7 +283,7 @@ void UART2_ReceiveEnable(void)
 void UART2_ReceiveDisable(void)
 {
     RCxSTAbits.CREN = 0;
-    
+
     /* RTS is deasserted (high) whenever we are not ready to receive data. */
     if(flowControl == UART_FLOW_CALLBACKS && SetRTSPin != NULL)
     {
@@ -290,7 +299,7 @@ void UART2_TransmitRegisterEmptyEvent(void)
     within the transmit interrupt callback. This requires the pending event
     handler function to be called to catch the txFinishedEventPending flag. */
     if(lockTxFinishedEvent == true)
-{
+    {
         txFinishedEventPending = true;
         return;
     }
@@ -313,7 +322,7 @@ void UART2_TransmitByte(uint8_t data)
     /* Check if CTS is asserted (low) before transmitting. If so, send data */
     if(flowControl == UART_FLOW_CALLBACKS && IsCTSPinLow != NULL &&
         IsCTSPinLow() == false)
-{
+    {
         return; // CTS was high
     }
     
@@ -343,7 +352,7 @@ bool UART2_IsTransmitRegisterEmpty(void)
     asserted */
     if(flowControl == UART_FLOW_CALLBACKS && IsCTSPinLow != NULL &&
         IsCTSPinLow() == false)
-{
+    {
         txReady = false; // CTS was high. Don't allow transmission
     }
 
@@ -375,6 +384,13 @@ bool UART2_IsTransmitFinished(void)
 
 // *****************************************************************************
 
+bool UART2_IsTransmitUsingInterrupts(void)
+{
+    return useTxInterrupt;
+}
+
+// *****************************************************************************
+
 void UART2_TransmitEnable(void)
 {
     bool txDataFull = false;
@@ -388,7 +404,7 @@ void UART2_TransmitEnable(void)
     them. The transmit interrupt flag also gets set whenever the transmitter
     is enabled on this processor, so I checked the flag first. */
     if(useTxInterrupt && txDataFull)
-    PIExbits.TXIE = 1;
+        PIExbits.TXIE = 1;
 }
 
 // *****************************************************************************
@@ -404,7 +420,7 @@ void UART2_TransmitDisable(void)
 void UART2_PendingEventHandler(void)
 {
     if(txFinishedEventPending && !lockTxFinishedEvent)
-{
+    {
         txFinishedEventPending = false;
         UART2_TransmitRegisterEmptyEvent();
     }
@@ -440,4 +456,4 @@ void UART2_SetRTSPinFunc(void (*Function)(bool setPinHigh))
 
 /*
  End of File
-*/
+ */

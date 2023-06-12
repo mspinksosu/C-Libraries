@@ -150,6 +150,20 @@ bool UART_IsReceiveRegisterFull(UART *self)
 
 // *****************************************************************************
 
+bool UART_IsReceiveUsingInterrupts(UART *self)
+{
+    if(self->interface->UART_IsReceiveUsingInterrupts != NULL)
+    {
+        return (self->interface->UART_IsReceiveUsingInterrupts)();
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// *****************************************************************************
+
 void UART_ReceiveEnable(UART *self)
 {
     if(self->interface->UART_ReceiveEnable != NULL)
@@ -209,6 +223,20 @@ bool UART_IsTransmitFinished(UART *self)
     if(self->interface->UART_IsTransmitFinished != NULL)
     {
         return (self->interface->UART_IsTransmitFinished)();
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// *****************************************************************************
+
+bool UART_IsTransmitUsngInterrupts(UART *self)
+{
+    if(self->interface->UART_IsTransmitUsingInterrupts != NULL)
+    {
+        return (self->interface->UART_IsTransmitUsingInterrupts)();
     }
     else
     {

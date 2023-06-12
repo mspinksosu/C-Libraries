@@ -55,12 +55,14 @@ UARTInterface UART2_FunctionTable = {
     .UART_ReceivedDataEvent = UART2_ReceivedDataEvent,
     .UART_GetReceivedByte = UART2_GetReceivedByte,
     .UART_IsReceiveRegisterFull = UART2_IsReceiveRegisterFull,
+    .UART_IsReceiveUsingInterrupts = UART2_IsReceiveUsingInterrupts,
     .UART_ReceiveEnable = UART2_ReceiveEnable,
     .UART_ReceiveDisable = UART2_ReceiveDisable,
     .UART_TransmitRegisterEmptyEvent = UART2_TransmitRegisterEmptyEvent,
     .UART_TransmitByte = UART2_TransmitByte,
     .UART_IsTransmitRegisterEmpty = UART2_IsTransmitRegisterEmpty,
     .UART_IsTransmitFinished = UART2_IsTransmitFinished,
+    .UART_IsTransmitUsingInterrupts = UART2_IsTransmitUsingInterrupts,
     .UART_TransmitEnable = UART2_TransmitEnable,
     .UART_TransmitDisable = UART2_TransmitDisable,
     .UART_PendingEventHandler = UART2_PendingEventHandler,
@@ -281,6 +283,13 @@ bool UART2_IsReceiveRegisterFull(void)
 
 // *****************************************************************************
 
+bool UART2_IsReceiveUsingInterrupts(void)
+{
+    return useRxInterrupt;
+}
+
+// *****************************************************************************
+
 void UART2_ReceiveEnable(void)
 {
     UART_ADDR->CR1 |= USART_CR1_RE;
@@ -399,6 +408,13 @@ bool UART2_IsTransmitFinished(void)
     }
 
     return txReady;
+}
+
+// *****************************************************************************
+
+bool UART2_IsTransmitUsingInterrupts(void)
+{
+    return useTxInterrupt;
 }
 
 // *****************************************************************************

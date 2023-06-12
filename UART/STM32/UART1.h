@@ -67,6 +67,8 @@ uint8_t UART1_GetReceivedByte(void);
 
 bool UART1_IsReceiveRegisterFull(void);
 
+bool UART1_IsReceiveUsingInterrupts(void);
+
 void UART1_ReceiveEnable(void);
 
 void UART1_ReceiveDisable(void);
@@ -78,6 +80,8 @@ void UART1_TransmitByte(uint8_t dataToSend);
 bool UART1_IsTransmitRegisterEmpty(void);
 
 bool UART1_IsTransmitFinished(void);
+
+bool UART1_IsTransmitUsingInterrupts(void);
 
 void UART1_TransmitEnable(void);
 
