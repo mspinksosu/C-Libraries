@@ -51,14 +51,11 @@ GPIOInterface GPIO_FunctionTable = {
     // Add the rest of the functions listed in the interface
 };
 
-GPIO_TypeDef *GET_PORT[] = {
-    GPIOA,
-    GPIOB,
-    GPIOC,
-    GPIOD,
-    NULL,
-    GPIOF,
-};
+GPIO_TypeDef *GET_PORT[16] = {
+    GPIOA, GPIOB, GPIOC, GPIOD,
+    NULL, GPIOF, NULL, NULL,
+    NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL};
 
 static GPIO_TypeDef *st_port = NULL;
 static uint32_t pinNumber;
@@ -86,7 +83,7 @@ void GPIO_STM32_CreateInitType(GPIOInitType_STM32 *stm32Params, GPIOInitType *ba
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void GPIO_InitPin(GPIOPin pin, GPIOInitType_STM32 *params)
+void GPIO_STM32_InitPin(GPIOPin pin, GPIOInitType_STM32 *params)
 {
     st_port = GET_PORT[(pin >> 4)];
     pinNumber = pin & 0x0F;
@@ -222,7 +219,7 @@ void GPIO_WritePin(GPIOPin pin, bool setPinHigh)
 
 // *****************************************************************************
 
-uint16_t GPIO_ReadPin(GPIOPin pin)
+bool GPIO_ReadPin(GPIOPin pin)
 {
     st_port = GET_PORT[(pin >> 4)];
     pinNumber = pin & 0x0F;

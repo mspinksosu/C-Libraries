@@ -62,7 +62,7 @@
 #ifndef GPIO_STM32G0_H
 #define GPIO_STM32G0_H
 
-#include "IGPIO_New_WIP.h"
+#include "IGPIO_New.h"
 
 /* Include processor specific header files here if needed */
 #include "stm32g071xx.h"
