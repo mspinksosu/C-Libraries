@@ -241,10 +241,10 @@ void GPIO_InitPin(GPIOPin pin, GPIOInitType *params);
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/* These functions should be implemented on your processor exactly as they are
+/* These functions should be implemented for your processor exactly as they are
 written. I reason I do this is to increase speed a little bit. There is usually
 only one GPIO peripheral on an MCU. Therefore, we shouldn't need multiple
-instances of the GPIO object, so the functions can be called directly. */
+instances of a GPIO object, so the functions can be called directly. */
 
 /***************************************************************************//**
  * @brief Set a pin high
@@ -336,6 +336,7 @@ GPIOPull GPIO_GetPull(GPIOPin pin);
 
 typedef enum GPIOPinTag
 {
+    GPIO_NONE = 0xE0, // a default value you can use that doesn't exist
     GPIO_PORTA_PIN0 = 0,
     GPIO_PORTA_PIN1,
     GPIO_PORTA_PIN2,
@@ -559,7 +560,7 @@ typedef enum GPIOPinTag
     GPIO_PORTN_PIN12,
     GPIO_PORTN_PIN13,
     GPIO_PORTN_PIN14,
-    GPIO_PORTN_PIN15
+    GPIO_PORTN_PIN15,
 } GPIOPin;
 
 #endif  /* IGPIO_H */
