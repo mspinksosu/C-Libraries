@@ -160,7 +160,7 @@ typedef struct UARTTag
  * BRGValue  The raw value that gets loaded into the baud rate generator 
  *           register. (not the baud rate!) Varies based on the processor.
  * 
- * stopBits  Most UART's use one stop bit, but they don't have to.
+ * stopBits  Most UART's use one stop bit, but some use two.
  * 
  * parity  The parity type, none, even, or odd.
  * 

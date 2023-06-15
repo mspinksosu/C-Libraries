@@ -11,6 +11,7 @@
  *      An interface that will handle tasks such as sleep, shutdown, delay.
  * It will also have a very simple scheduler.
  * // TODO more details
+ * // TODO add details about which functions need to be implemented (IMCU.h)
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2022 Matthew Spinks
@@ -210,9 +211,10 @@ static void AddToPending(MCUTask *newTask)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/* Implement the functions listed in IMCU.h under "Interface Functions" in your 
-own .c file. I usually name my .c file with an underscore prefix, such as 
-MCU_STM32G0.c or MCU_PIC32MX.c. Don't forget to include IMCU.h. */
+/* Implement the functions listed in the IMCU.h under "Interface Functions" in 
+your own .c file exactly as written. For the file name, I usually name my .c 
+file with an underscore prefix, such as MCU_STM32G0.c or MCU_PIC32MX.c. 
+Don't forget to include IMCU.h. */
 
 /*
  End of File
