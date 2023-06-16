@@ -62,11 +62,11 @@ void GPIO_CreateInitType(GPIOInitType *params, void *instanceOfSubClass)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void GPIO_InitPin(GPIOPin pin, GPIOInitType *params)
+void GPIO_InitPin(GPIOPort port, uint8_t pin, GPIOInitType *params)
 {
     if(interface->GPIO_InitPin != NULL && params->instance != NULL)
     {
-        (interface->GPIO_InitPin)(pin, params->instance);
+        (interface->GPIO_InitPin)(port, pin, params->instance);
     }
 }
 
