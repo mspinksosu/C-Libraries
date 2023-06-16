@@ -238,6 +238,15 @@ uint32_t MCU_InitSystemClock(uint32_t desiredClkInHz, uint32_t xtalInHz)
 
 // *****************************************************************************
 
+void MCU_WatchdogPet(void)
+{
+    /* There is no penalty for calling the reload function if the watchdog 
+    is disabled. Since the watchdog is truly independent, ST gives me no good way
+    to really know if it's currently running or not. Therefore, the reload function
+    should always be called. */
+    IWDG->KR = 0xAAAA;
+}
+
 void MCU_DelayUs(uint16_t microseconds)
 {
     /* The SysTick timer can be configured to use a prescale of 1 or 8. The 

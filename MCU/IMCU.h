@@ -276,6 +276,12 @@ inline uint32_t MCU_LimitU32(uint32_t a, uint32_t min, uint32_t max)
 uint32_t MCU_InitSystemClock(uint32_t desiredClkInHz, uint32_t xtalInHz);
 
 /***************************************************************************//**
+ * @brief Reset the watch dog timer
+ * 
+ */
+void MCU_WatchdogPet(void);
+
+/***************************************************************************//**
  * @brief Delay microseconds
  * 
  * @param microseconds  the number of microseconds to delay
