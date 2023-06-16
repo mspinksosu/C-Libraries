@@ -191,7 +191,8 @@ void GPIO_CreateInitType(GPIOInitType *params, void *instanceOfSubClass);
  * @brief Initialize a GPIO object
  * 
  * Set the necessary registers for your MCU. When you call this function, you
- * give it a reference to your subclass of GPIOInitType.
+ * give it a reference to your base class of GPIOInitType which then calls your
+ * subclass function.
  * 
  * @param port  port identifier type
  * 

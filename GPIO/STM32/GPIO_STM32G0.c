@@ -207,7 +207,7 @@ void GPIO_WritePin(GPIOPort port, uint8_t pin, bool setPinHigh)
 bool GPIO_ReadPin(GPIOPort port, uint8_t pin)
 {
     st_port = GET_PORT[port];
-    uint16_t retValue = 0;
+    bool retValue = false;
 
     if(st_port != NULL && pin <= 15)
     {
@@ -215,7 +215,7 @@ bool GPIO_ReadPin(GPIOPort port, uint8_t pin)
         {
             // digital input
             if(st_port->IDR & (1UL << pin))
-                retValue = 1;
+                retValue = true;
         }
     }
     return retValue;
