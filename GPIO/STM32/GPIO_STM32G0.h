@@ -109,6 +109,6 @@ void GPIO_STM32_CreateInitType(GPIOInitType_STM32 *self, GPIOInitType *base);
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void GPIO_STM32_InitPin(GPIOPin pin, GPIOInitType_STM32 *params);
+void GPIO_STM32_InitPin(GPIOPort port, uint8_t pin, GPIOInitType_STM32 *params);
 
 #endif  /* GPIO_STM32G0_H */

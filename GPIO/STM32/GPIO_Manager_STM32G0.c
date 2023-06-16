@@ -27,28 +27,20 @@
 
 // ***** Defines ***************************************************************
 
+/* I usually place these defines in a separate file due to the size */
+#define LED1_PIN        GPIO_PORTA_PIN5
+#define LED1_PIN_TYPE   GPIO_TYPE_DIGITAL_OUTPUT
+#define LED1_PIN_PULL   GPIO_PULL_NONE
+
+#define LED2_PIN        GPIO_PORTA_PIN15
+#define LED2_PIN_TYPE   GPIO_TYPE_DIGITAL_OUTPUT
+#define LED2_PIN_PULL   GPIO_PULL_NONE
 
 // ***** Global Variables ******************************************************
 
-/* Declare GPIO pins starting here. Each GPIO variable should have a 
-matching extern declaration in a header file. Only the GPIO variable needs to
-be made extern. Use a memorable name. This is the object you will use for 
-library function calls. */
-//------------------------------------------------------------------------------
 
-GPIO led1, led2;
-GPIO_STM32 _led1, _led2;
+//******************************************************************************
 
-//------------------------------------------------------------------------------
-
-
-/***************************************************************************//**
- * @brief Initialize all pins
- * 
- * Each pin has to be declared as a global variable. However, only the base
- * class GPIO needs to be extern. Anything that needs to access these pins
- * will include the header file which has the extern declaration.
- */
 void GPIO_Manager_InitAllPins(void)
 {
     GPIO_DriverSetInterface(&GPIO_FunctionTable); // defined in GPIO_STM32G0.c
@@ -70,20 +62,19 @@ void GPIO_Manager_InitAllPins(void)
     pin properties. Next, set any generic init properties and processor 
     specific init properties. Then, call your subclass create function. 
     Finally, call the pin init function. */
-    led1.pinNumber = 6;
-    _led1.st_port = GPIOC;
-    init.type = GPIO_TYPE_DIGITAL_OUTPUT;
-    init.pull = GPIO_PULL_NONE;
+    init.type = LED1_PIN_TYPE;
+    init.pull = LED1_PIN_PULL;
     _init.alternate = 0;
-    GPIO_STM32_Create(&_led1, &led1);
-    GPIO_InitPin(&led1, &init);
+    GPIO_InitPin(LED1_PIN, &init);
     
-    led2.pinNumber = 15;
-    _led2.st_port = GPIOA;
-    init.type = GPIO_TYPE_DIGITAL_OUTPUT;
-    init.pull = GPIO_PULL_NONE;
+    init.type = LED2_PIN_TYPE;
+    init.pull = LED2_PIN_PULL;
+    _init.speed = 1;
+    GPIO_InitPin(LED2_PIN, &init);
+    
+    init.type = GPIO_TYPE_DIGITAL_INPUT;
+    init.pull = GPIO_PULL_UP;
     _init.speed = 0;
-    GPIO_STM32_Create(&_led2, &led2);
-    GPIO_InitPin(&led2, &init);
+    GPIO_InitPin(GPIO_PORTC, 6, &init);
 
 }
