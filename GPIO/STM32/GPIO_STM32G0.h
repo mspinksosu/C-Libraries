@@ -74,15 +74,6 @@
 
 extern GPIOInterface GPIO_FunctionTable;
 
-/* Processor specific class */
-typedef struct GPIO_STM32Tag
-{
-    GPIO *super;
-    
-    /* Add any processor specific variables you need here */
-    GPIO_TypeDef *st_port;
-} GPIO_STM32;
-
 typedef struct GPIOInitType_STM32Tag
 {
     GPIOInitType *super;
@@ -101,18 +92,6 @@ typedef struct GPIOInitType_STM32Tag
 /***************************************************************************//**
  * @brief Connects the sub class to the base class
  * 
- * Calls the base class GPIO_Create function. Each sub class object must have 
- * a base class.
- * 
- * @param self  pointer to the GPIO_STM32 subclass that you are using
- * 
- * @param base  pointer to the base class GPIO object
- */
-void GPIO_STM32_Create(GPIO_STM32 *self, GPIO *base);
-
-/***************************************************************************//**
- * @brief Connects the sub class to the base class
- * 
  * Calls the base class GPIO_CreateInitType function. Each sub class must have 
  * a base class. However, you do not need an InitType for every single pin. You
  * can create one init type during your initialization and use it repeatedly
@@ -126,30 +105,10 @@ void GPIO_STM32_CreateInitType(GPIOInitType_STM32 *self, GPIOInitType *base);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// ***** Interface Functions *************************************************//
+// ***** Interface Functions with Inheritance  *******************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void GPIO_STM32_InitPin(GPIO_STM32 *self, GPIOInitType_STM32 *params);
-
-void GPIO_STM32_SetPin(GPIO_STM32 *self);
-
-void GPIO_STM32_ClearPin(GPIO_STM32 *self);
-
-void GPIO_STM32_InvertPin(GPIO_STM32 *self);
-
-void GPIO_STM32_WritePin(GPIO_STM32 *self, bool setPinHigh);
-
-uint16_t GPIO_STM32_ReadPin(GPIO_STM32 *self);
-
-bool GPIO_STM32_ReadBool(GPIO_STM32 *self);
-
-void GPIO_STM32_SetType(GPIO_STM32 *self, GPIOType type);
-
-GPIOType GPIO_STM32_GetType(GPIO_STM32 *self);
-
-void GPIO_STM32_SetPullType(GPIO_STM32 *self, GPIOPull pullType);
-
-GPIOPull GPIO_STM32_GetPullType(GPIO_STM32 *self);
+void GPIO_STM32_InitPin(GPIOPin pin, GPIOInitType_STM32 *params);
 
 #endif  /* GPIO_STM32G0_H */

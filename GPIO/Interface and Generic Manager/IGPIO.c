@@ -51,155 +51,35 @@ void GPIO_DriverSetInterface(GPIOInterface *thisInterface)
 
 // *****************************************************************************
 
-void GPIO_Create(GPIO *self, void *instanceOfSubClass)
-{
-    self->instance = instanceOfSubClass;
-}
-
-// *****************************************************************************
-
 void GPIO_CreateInitType(GPIOInitType *params, void *instanceOfSubClass)
 {
     params->instance = instanceOfSubClass;
 }
 
-// *****************************************************************************
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Interface Functions with Inheritance  *******************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
-void GPIO_SetPointerToAnalogValue(GPIO *self, uint16_t *ptr)
+void GPIO_InitPin(GPIOPin pin, GPIOInitType *params)
 {
-    self->ptrToAnalogValue = ptr;
+    if(interface->GPIO_InitPin != NULL && params->instance != NULL)
+    {
+        (interface->GPIO_InitPin)(pin, params->instance);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// ***** Interface Functions *************************************************//
+// ***** Simple Interface Functions ******************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void GPIO_InitPin(GPIO *self, GPIOInitType *params)
-{
-    if(interface->GPIO_InitPin != NULL && self->instance != NULL 
-        && params->instance != NULL)
-    {
-        (interface->GPIO_InitPin)(self->instance, params->instance);
-    }
-}
-
-// *****************************************************************************
-
-void GPIO_SetPin(GPIO *self)
-{
-    if(interface->GPIO_SetPin != NULL && self->instance != NULL)
-    {
-        (interface->GPIO_SetPin)(self->instance);
-    }
-}
-
-// *****************************************************************************
-
-void GPIO_ClearPin(GPIO *self)
-{
-    if(interface->GPIO_ClearPin != NULL && self->instance != NULL)
-    {
-        (interface->GPIO_ClearPin)(self->instance);
-    }
-}
-
-// *****************************************************************************
-
-void GPIO_InvertPin(GPIO *self)
-{
-    if(interface->GPIO_InvertPin != NULL && self->instance != NULL)
-    {
-        (interface->GPIO_InvertPin)(self->instance);
-    }
-}
-
-// *****************************************************************************
-
-void GPIO_WritePin(GPIO *self, bool setPinHigh)
-{
-    if(interface->GPIO_WritePin != NULL && self->instance != NULL)
-    {
-        (interface->GPIO_WritePin)(self->instance, setPinHigh);
-    }
-}
-
-// *****************************************************************************
-
-uint16_t GPIO_ReadPin(GPIO *self)
-{
-    if(interface->GPIO_ReadPin != NULL && self->instance != NULL)
-    {
-        return (interface->GPIO_ReadPin)(self->instance);
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-// *****************************************************************************
-
-bool GPIO_ReadBool(GPIO *self)
-{
-    if(interface->GPIO_ReadBool != NULL && self->instance != NULL)
-    {
-        return (interface->GPIO_ReadBool)(self->instance);
-    }
-    else
-    {
-        return false;
-    }
-}
-
-// *****************************************************************************
-
-void GPIO_SetType(GPIO *self, GPIOType type)
-{
-    if(interface->GPIO_SetType != NULL && self->instance != NULL)
-    {
-        (interface->GPIO_SetType)(self->instance, type);
-    }
-}
-
-// *****************************************************************************
-
-GPIOType GPIO_GetType(GPIO *self)
-{
-    if(interface->GPIO_GetType != NULL && self->instance != NULL)
-    {
-        return (interface->GPIO_GetType)(self->instance);
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-// *****************************************************************************
-
-void GPIO_SetPull(GPIO *self, GPIOPull pullType)
-{
-    if(interface->GPIO_SetPull != NULL && self->instance != NULL)
-    {
-        (interface->GPIO_SetPull)(self->instance, pullType);
-    }
-}
-
-// *****************************************************************************
-
-GPIOPull GPIO_GetPull(GPIO *self)
-{
-    if(interface->GPIO_GetPull != NULL && self->instance != NULL)
-    {
-        return (interface->GPIO_GetPull)(self->instance);
-    }
-    else
-    {
-        return 0;
-    }
-}
+/* Implement the functions listed in the IGPIO.h under "Simple Interface 
+Functions" in your own .c file exactly as written. For the file name, I usually 
+name my .c file with an underscore prefix, such as GPIO_STM32G0.c or 
+GPIO_PIC32MX.c. Don't forget to include IMCU.h. */
 
 /*
  End of File
