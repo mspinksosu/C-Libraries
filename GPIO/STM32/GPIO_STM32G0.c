@@ -208,14 +208,10 @@ bool GPIO_ReadPin(GPIOPort port, uint8_t pin)
 {
     st_port = GET_PORT[port];
     uint16_t retValue = 0;
-    uint32_t modeMask;
 
     if(st_port != NULL && pin <= 15)
     {
-        modeMask = st_port->MODER & (3UL << (pin * 2));
-        modeMask >>= (pin * 2);
-
-        if(modeMask == 0)
+        if(!(st_port->MODER & (3UL << (pin * 2))))
         {
             // digital input
             if(st_port->IDR & (1UL << pin))
