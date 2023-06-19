@@ -345,6 +345,7 @@ void GPIO_PortWrite(GPIOPort port, uint16_t portMask)
 uint16_t GPIO_PortGetOutput(GPIOPort port)
 {
     // TODO
+    return 0;
 }
 
 // *****************************************************************************
@@ -352,6 +353,7 @@ uint16_t GPIO_PortGetOutput(GPIOPort port)
 uint16_t GPIO_PortRead(GPIOPort port)
 {
     // TODO
+    return 0;
 }
 
 /*
