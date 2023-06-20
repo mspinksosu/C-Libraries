@@ -211,9 +211,9 @@ static void AddToPending(MCUTask *newTask)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/* Implement the functions listed in the IMCU.h under "Interface Functions" in 
-your own .c file exactly as written. For the file name, I usually name my .c 
-file with an underscore prefix, such as MCU_STM32G0.c or MCU_PIC32MX.c. 
+/* Implement the functions listed in IMCU.h under "Interface Functions" in 
+your own .c file exactly as written. For the file name, I usually name my 
+.c file with an underscore prefix, such as MCU_STM32G0.c or MCU_PIC32MX.c. 
 Don't forget to include IMCU.h. */
 
 /*

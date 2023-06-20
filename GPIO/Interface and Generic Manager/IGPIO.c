@@ -76,10 +76,10 @@ void GPIO_InitPin(GPIOPort port, uint8_t pin, GPIOInitType *params)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/* Implement the functions listed in the IGPIO.h under "Simple Interface 
-Functions" in your own .c file exactly as written. For the file name, I usually 
-name my .c file with an underscore prefix, such as GPIO_STM32G0.c or 
-GPIO_PIC32MX.c. Don't forget to include IMCU.h. */
+/* Implement the functions listed in IGPIO.h under "Simple Interface Functions" 
+in your own .c file exactly as written. For the file name, I usually name my 
+.c file with an underscore prefix, such as GPIO_STM32G0.c or GPIO_PIC32MX.c. 
+Don't forget to include IGPIO.h. */
 
 /*
  End of File
