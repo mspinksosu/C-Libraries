@@ -226,7 +226,7 @@ uint8_t SPI_GetReceivedByte(SPI *self);
  * 
  * @param self  pointer to the SPI you are using
  * 
- * @return true 
+ * @return true if there is data in the receive register
  */
 bool SPI_IsReceiveRegisterFull(SPI *self);
 

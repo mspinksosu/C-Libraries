@@ -206,7 +206,7 @@ void Switch_Tick(Switch *self, bool inputAIsOn, bool inputBIsOn);
  * 
  * @param self  pointer to the Switch that you are using
  * 
- * @return true true if output A changed from off to on
+ * @return true if output A changed from off to on
  */
 bool Switch_GetOutputAOnEvent(Switch *self);
 
