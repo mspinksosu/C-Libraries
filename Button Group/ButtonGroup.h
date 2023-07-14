@@ -209,7 +209,7 @@ void BG_UpdateValue(ButtonGroup *self, uint8_t index, uint16_t value);
  * 
  * @param index  button index 0 - 7
  * 
- * @return true  if pressed
+ * @return true if pressed
  */
 bool BG_GetPress(ButtonGroup *self, uint8_t index);
 
@@ -229,7 +229,7 @@ void BG_ClearPressFlag(ButtonGroup *self, uint8_t index);
  * 
  * @param index  button index 0 - 7
  * 
- * @return true  if released
+ * @return true if released
  */
 bool BG_GetRelease(ButtonGroup *self, uint8_t index);
 
@@ -249,7 +249,7 @@ void BG_ClearReleaseFlag(ButtonGroup *self, uint8_t index);
  * 
  * @param index  button index 0 - 7
  * 
- * @return uint8_t  0 = not pressed, 1 = pressed
+ * @return uint8_t  0 = not pressing, 1 = pressing
  */
 uint8_t BG_GetButtonOutput(ButtonGroup *self, uint8_t index);
 
@@ -258,7 +258,7 @@ uint8_t BG_GetButtonOutput(ButtonGroup *self, uint8_t index);
  * 
  * @param self  pointer to the Button Group that you are using
  * 
- * @return uint8_t  the output of all 8 buttons, 0 = not pressed, 1 = pressed
+ * @return uint8_t  the output of all 8 buttons, 0 = not pressing, 1 = pressing
  */
 uint8_t BG_GetButtonGroupOutput(ButtonGroup *self);
 
