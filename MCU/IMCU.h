@@ -179,7 +179,7 @@ void *MCU_ReverseMemcpy(void *dst, const void *src, uint16_t n);
  * 
  * @return int32_t  the largest of the two parameters
  */
-inline int32_t MCU_Max(int32_t a, int32_t b) { return ((a) > (b) ? a : b); }
+static inline int32_t MCU_Max(int32_t a, int32_t b) { return ((a) > (b) ? a : b); }
 
 /***************************************************************************//**
  * @brief Simple Min function
@@ -192,7 +192,7 @@ inline int32_t MCU_Max(int32_t a, int32_t b) { return ((a) > (b) ? a : b); }
  * 
  * @return int32_t  the smallest of the two parameters
  */
-inline int32_t MCU_Min(int32_t a, int32_t b) { return ((a) < (b) ? a : b); }
+static inline int32_t MCU_Min(int32_t a, int32_t b) { return ((a) < (b) ? a : b); }
 
 /***************************************************************************//**
  * @brief Simple Max function unsigned
@@ -203,7 +203,7 @@ inline int32_t MCU_Min(int32_t a, int32_t b) { return ((a) < (b) ? a : b); }
  * 
  * @return uint32_t  the largest of the two parameters
  */
-inline uint32_t MCU_MaxU32(uint32_t a, uint32_t b) { return ((a) > (b) ? a : b); }
+static inline uint32_t MCU_MaxU32(uint32_t a, uint32_t b) { return ((a) > (b) ? a : b); }
 
 /***************************************************************************//**
  * @brief Simple Min function unsigned
@@ -214,7 +214,7 @@ inline uint32_t MCU_MaxU32(uint32_t a, uint32_t b) { return ((a) > (b) ? a : b);
  * 
  * @return uint32_t  the smallest of the two parameters
  */
-inline uint32_t MCU_MinU32(uint32_t a, uint32_t b) { return ((a) < (b) ? a : b); }
+static inline uint32_t MCU_MinU32(uint32_t a, uint32_t b) { return ((a) < (b) ? a : b); }
 
 /***************************************************************************//**
  * @brief Simple Limit function
@@ -227,7 +227,7 @@ inline uint32_t MCU_MinU32(uint32_t a, uint32_t b) { return ((a) < (b) ? a : b);
  * 
  * @return int32_t  the input limited by the two parameters
  */
-inline int32_t MCU_Limit(int32_t a, int32_t min, int32_t max) 
+static inline int32_t MCU_Limit(int32_t a, int32_t min, int32_t max) 
 {
     return ((a) > (max) ? max : (a) < (min) ? min : a);
 }
@@ -243,7 +243,7 @@ inline int32_t MCU_Limit(int32_t a, int32_t min, int32_t max)
  * 
  * @return uint32_t  the input limited by the two parameters
  */
-inline uint32_t MCU_LimitU32(uint32_t a, uint32_t min, uint32_t max) 
+static inline uint32_t MCU_LimitU32(uint32_t a, uint32_t min, uint32_t max) 
 {
     return ((a) > (max) ? max : (a) < (min) ? min : a);
 }
