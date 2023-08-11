@@ -93,6 +93,7 @@ typedef enum GPIOPortTag
     GPIO_PORTL,
     GPIO_PORTM,
     GPIO_PORTN,
+    GPIO_PORT_NONE = 0x0F,
 } GPIOPort;
 
 typedef enum GPIOTypeTag
@@ -355,7 +356,7 @@ uint16_t GPIO_PortRead(GPIOPort port);
 
 // ----- Pin Type Names --------------------------------------------------------
 
-#define GPIO_NONE 0x0F, 0 // a default value you can use that doesn't exist
+#define GPIO_NONE GPIO_PORT_NONE, 0 // a default value you can use that doesn't exist
 #define GPIO_PORTA_PIN0 GPIO_PORTA, 0
 #define GPIO_PORTA_PIN1 GPIO_PORTA, 1
 #define GPIO_PORTA_PIN2 GPIO_PORTA, 2
