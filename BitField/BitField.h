@@ -122,6 +122,23 @@ void BitField_ClearBit(BitField *self, uint8_t bitPos);
 void BitField_InvertBit(BitField *self, uint8_t bitPos);
 
 /***************************************************************************//**
+ * @brief Write a bit
+ * 
+ * @param self  pointer to the BitField you are using
+ * 
+ * @param bitPos  the position of the bit in the mask. LSB = 0
+ * 
+ * @param value  true = set, false = clear
+ */
+static inline void BitField_WriteBit(BitField *self, uint8_t bitPos, bool value)
+{
+    if(value)
+        BitField_SetBit(self, bitPos);
+    else
+        BitField_ClearBit(self, bitPos);
+}
+
+/***************************************************************************//**
  * @brief Get a bit
  * 
  * @param self  pointer to the BitField you are using
