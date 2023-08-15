@@ -179,11 +179,11 @@ void BitField_SetBitRangeEqualTo(BitField *self, uint8_t endBitPos, uint8_t star
  * 
  * @param self  pointer to the BitField you are using
  * 
- * @param startBitPos  the bit number of the start of the range
- * 
  * @param endBitPos  the bit number of the end of the range
  * 
- * @return uint32_t  result truncated to 32 bits
+ * @param startBitPos  the bit number of the start of the range
+ * 
+ * @return uint32_t  result (truncated if larger than 32)
  */
 uint32_t BitField_GetBitRange(BitField *self, uint8_t endBitPos, uint8_t startBitPos);
 

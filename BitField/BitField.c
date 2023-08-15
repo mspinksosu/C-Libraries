@@ -165,10 +165,10 @@ uint32_t BitField_GetBitRange(BitField *self, uint8_t endBitPos, uint8_t startBi
     }
 
     uint32_t result = 0;
-    uint8_t byte = startBitPos / 8;
-    uint8_t endByte = endBitPos / 8;
-    uint8_t bit = startBitPos % 8;
-    uint8_t endBit = endBitPos % 8;
+    uint8_t byte = startBitPos >> 3; // divide by 8
+    uint8_t endByte = endBitPos >> 3;
+    uint8_t bit = startBitPos & 0x07; // modulo 8
+    uint8_t endBit = endBitPos & 0x07;
     uint8_t d = 0;
 
     while(byte <= endByte)
