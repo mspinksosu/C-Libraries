@@ -24,6 +24,7 @@
 #define HW_TIM2_STM32F1_H
 
 #include "HWTimer_STM32F1.h"
+#include "HWTimer2.h"
 
 /* Include processor specific header files here if needed */
 
@@ -53,5 +54,16 @@ void HWTimer2_STM32_ComputePeriodUs(HWTimerInitType_STM32 *params, uint32_t desi
     uint32_t clkInHz, uint16_t *retDiffInTicks);
 
 void HWTimer2_STM32_Init(HWTimerInitType_STM32 *params);
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Simple Interface Functions ******************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+/* Implement the functions listed in HWTimer2.h under "Simple Interface 
+Functions" in your own .c file exactly as written. For the file name, I usually 
+name my .c file with an underscore prefix, such as HWTimer2_STM32G0.c or 
+HWTimer2_PIC32MX.c. Don't forget to include IHardwareTimer.h. */
 
 #endif  /* HW_TIM2_STM32F1_H */
