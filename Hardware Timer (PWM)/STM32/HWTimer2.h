@@ -36,19 +36,28 @@
 /* Declare and define this variable in your implementation's .c file */
 extern HWTimerInterface HWTimer2_FunctionTable;
 
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Non-Interface Functions *********************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// ***** Interface Functions *************************************************//
+// ***** Interface Functions with Inheritance  *******************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/* See IHardwareTimer.h for a description of what each function should do. */
 
-HWTimerPrescaleOptions HWTimer2_GetPrescaleOptions(void);
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Simple Interface Functions ******************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
-void HWTimer2_ComputePeriodUs(HWTimerInitType *retParams, uint32_t desiredPeriodUs, 
-    uint32_t clkInHz, uint16_t *retDiffInTicks);
+/* These functions should be implemented for your processor exactly as they are
+written. */
 
 HWTimerSize HWTimer2_GetSize(void);
 

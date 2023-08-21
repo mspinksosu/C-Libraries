@@ -205,6 +205,27 @@ void HWTimer_SetInitTypeParams(HWTimerInitType *params, HWTimerPrescaleSelect pr
 ////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
+ * @brief Select the settings needed for the desired period (in us)
+ * 
+ * The function should go through the prescale settings starting from the 
+ * lowest, and find the setting that generates a period greater than or equal 
+ * to the desired period in us. Then return the settings used and the 
+ * difference in ticks subtracted from the maximum value of the timer. The idea
+ * is that the user can use the settings returned to get close enough to the 
+ * value they want. Or, they can take the difference in ticks and load that 
+ * value into the counter every time the counter overflows to get a more 
+ * accurate time period.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * @param retParams  pointer to the HWTimerInitType that you are using
+ * @param desiredPeriodUs  the period that you want in microseconds
+ * @param clkInHz  the frequency of your timer peripheral's clock in Hertz
+ * @param retDiffInTicks  difference in ticks subtracted from the max count
+ */
+void HWTimer_ComputePeriodUs(HWTimer *self, HWTimerInitType *retParams, 
+    uint32_t desiredPeriodUs, uint32_t clkInHz, uint16_t *retDiffInTicks);
+
+/***************************************************************************//**
  * @brief Initialize the Hardware Timer
  * 
  * Use the parameters provided to set the necessary registers for your MCU.
@@ -236,27 +257,6 @@ void HWTimer_Init(HWTimer *self, HWTimerInitType *params);
  * @return HWTimerPrescaleOptions  either fixed prescale values or a counter
  */
 HWTimerPrescaleOptions HWTimer_GetPrescaleOptions(HWTimer *self);
-
-/***************************************************************************//**
- * @brief Select the settings needed for the desired period (in us)
- * 
- * The function should go through the prescale settings starting from the 
- * lowest, and find the setting that generates a period greater than or equal 
- * to the desired period in us. Then return the settings used and the 
- * difference in ticks subtracted from the maximum value of the timer. The idea
- * is that the user can use the settings returned to get close enough to the 
- * value they want. Or, they can take the difference in ticks and load that 
- * value into the counter every time the counter overflows to get a more 
- * accurate time period.
- * 
- * @param self  pointer to the HWTimer you are using
- * @param retParams  pointer to the HWTimerInitType that you are using
- * @param desiredPeriodUs  the period that you want in microseconds
- * @param clkInHz  the frequency of your timer peripheral's clock in Hertz
- * @param retDiffInTicks  difference in ticks subtracted from the max count
- */
-void HWTimer_ComputePeriodUs(HWTimer *self, HWTimerInitType *retParams, 
-    uint32_t desiredPeriodUs, uint32_t clkInHz, uint16_t *retDiffInTicks);
 
 /***************************************************************************//**
  * @brief Get the size of the Hardware Timer

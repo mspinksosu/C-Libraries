@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @brief Hardware Timer 2 Implementation Header (STM32F1)
  * 
- * @file HWTimer1_STM32F1.h
+ * @file HWTimer2_STM32F1.h
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
@@ -33,6 +33,8 @@
 
 // ***** Global Variables ******************************************************
 
+/* Declare and define this variable in your implementation's .c file */
+extern HWTimerInterface HWTimer2_FunctionTable;
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -41,12 +43,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Interface Functions with Inheritance  *******************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// ***** Interface Functions *************************************************//
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+void HWTimer2_STM32_ComputePeriodUs(HWTimerInitType_STM32 *params, uint32_t desiredPeriodUs, 
+    uint32_t clkInHz, uint16_t *retDiffInTicks);
 
 void HWTimer2_STM32_Init(HWTimerInitType_STM32 *params);
 

@@ -38,32 +38,8 @@
     necessary. When a new sub class object is created, we will set its interface
     member equal to this table. */
 HWTimerInterface HWTimer2_FunctionTable = {
-    .HWTimer_GetPrescaleOptions = HWTimer2_GetPrescaleOptions,
-    .HWTimer_ComputePeriodUs = (void (*)(void *, uint32_t, uint32_t, uint16_t *))HWTimer2_ComputePeriodUs,
+    .HWTimer_ComputePeriodUs = (void (*)(void *, uint32_t, uint32_t, uint16_t *))HWTimer2_STM32_ComputePeriodUs,
     .HWTimer_Init = (void (*)(void *))HWTimer2_STM32_Init,
-    .HWTimer_GetSize = HWTimer2_GetSize,
-    .HWTimer_Start = HWTimer2_Start,
-    .HWTimer_Stop = HWTimer2_Stop,
-    .HWTimer_Reset = HWTimer2_Reset,
-    .HWTimer_IsRunning = HWTimer2_IsRunning,
-    .HWTimer_SetCount = HWTimer2_SetCount,
-    .HWTimer_GetCount = HWTimer2_GetCount,
-    .HWTimer_AddToCount = HWTimer2_AddToCount,
-    .HWTimer_GetNumCompareChannels = HWTimer2_GetNumCompareChannels,
-    .HWTimer_SetCompare16Bit = HWTimer2_SetCompare16Bit,
-    .HWTimer_GetCompare16Bit = HWTimer2_GetCompare16Bit,
-    .HWTimer_SetComparePercent = HWTimer2_SetComparePercent,
-    .HWTimer_GetComparePercent = HWTimer2_GetComparePercent,
-    .HWTimer_EnableCompare = HWTimer2_EnableCompare,
-    .HWTimer_DisableCompare = HWTimer2_DisableCompare,
-    .HWTimer_GetOverflow = HWTimer2_GetOverflow,
-    .HWTimer_GetCompareMatch = HWTimer2_GetCompareMatch,
-    .HWTimer_ClearOverflowFlag = HWTimer2_ClearOverflowFlag,
-    .HWTimer_ClearCompareMatchFlag = HWTimer2_ClearCompareMatchFlag,
-    .HWTimer_OverflowEvent = HWTimer2_OverflowEvent,
-    .HWTimer_CompareMatchEvent = HWTimer2_CompareMatchEvent,
-    .HWTimer_SetOverflowCallback = HWTimer2_SetOverflowCallback,
-    .HWTimer_SetCompareMatchCallback = HWTimer2_SetCompareMatchCallback,
 };
 
 static bool useOverflowInterrupt = false, useCompareMatchInterrupts = false;
@@ -89,6 +65,18 @@ static uint32_t compChanToAddress(uint8_t chan);
 // ***** Interface Functions with Inheritance  *******************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
+
+void HWTimer2_ComputePeriodUs(HWTimerInitType_STM32 *retParams, uint32_t desiredPeriodUs, 
+    uint32_t clkInHz, uint16_t *retDiffInTicks)
+{
+    uint32_t prescaleCounter = clkInHz / desiredPeriodUs;
+    if(prescaleCounter > 0x0000FFFF)
+        prescaleCounter = 0x0000FFFF;
+    retParams->super->prescaleCounterValue = (uint16_t)prescaleCounter;
+    retParams->super->prescaleSelect = HWTIM_PRESCALE_USES_COUNTER;
+}
+
+// *****************************************************************************
 
 void HWTimer2_STM32_Init(HWTimerInitType_STM32 *params)
 {
@@ -116,18 +104,6 @@ HWTimerPrescaleOptions HWTimer2_GetPrescaleOptions(void)
     HWTimerPrescaleOptions retVal = {.options.usesCounter = 1,
                                      .counterNumBits = 16 };
     return retVal;
-}
-
-// *****************************************************************************
-
-void HWTimer2_ComputePeriodUs(HWTimerInitType *retParams, uint32_t desiredPeriodUs, 
-    uint32_t clkInHz, uint16_t *retDiffInTicks)
-{
-    uint32_t prescaleCounter = clkInHz / desiredPeriodUs;
-    if(prescaleCounter > 0x0000FFFF)
-        prescaleCounter = 0x0000FFFF;
-    params->super->prescaleCounterValue = (uint16_t)prescaleCounter;
-    params->super->prescaleSelect = HWTIM_PRESCALE_USES_COUNTER;
 }
 
 // *****************************************************************************
