@@ -200,9 +200,29 @@ void HWTimer_SetInitTypeParams(HWTimerInitType *params, HWTimerPrescaleSelect pr
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// ***** Interface Functions *************************************************//
+// ***** Interface Functions with Inheritance ********************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
+
+/***************************************************************************//**
+ * @brief Initialize the Hardware Timer
+ * 
+ * Use the parameters provided to set the necessary registers for your MCU.
+ * The timer should count from 0 up to its maximum value, then rollover.
+ * 
+ * @param self  pointer to the HWTimerInitType you are using
+ * 
+ * @param params  pointer to the HWTimerInitType you are using
+ */
+void HWTimer_Init(HWTimer *self, HWTimerInitType *params);
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Simple Interface Functions ******************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+// TODO add notes
 
 /***************************************************************************//**
  * @brief Get the prescale options for the Hardware Timer
@@ -237,18 +257,6 @@ HWTimerPrescaleOptions HWTimer_GetPrescaleOptions(HWTimer *self);
  */
 void HWTimer_ComputePeriodUs(HWTimer *self, HWTimerInitType *retParams, 
     uint32_t desiredPeriodUs, uint32_t clkInHz, uint16_t *retDiffInTicks);
-
-/***************************************************************************//**
- * @brief Initialize the Hardware Timer
- * 
- * Use the parameters provided to set the necessary registers for your MCU.
- * The timer should count from 0 up to its maximum value, then rollover.
- * 
- * @param self  pointer to the HWTimerInitType you are using
- * 
- * @param params  pointer to the HWTimerInitType you are using
- */
-void HWTimer_Init(HWTimer *self, HWTimerInitType *params);
 
 /***************************************************************************//**
  * @brief Get the size of the Hardware Timer

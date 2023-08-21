@@ -69,8 +69,8 @@
 
 // ***** Defines ***************************************************************
 
-#define GPIO_STM32F1_AF_PP  0x08
-#define GPIO_STM32F1_AF_OD  0x0C
+#define GPIO_STM32F1_AF_PP  0x08 // alternate function push pull
+#define GPIO_STM32F1_AF_OD  0x0C // alternate function open drain
 #define GPIO_STM32F1_SPEED_10_MHZ 1
 #define GPIO_STM32F1_SPEED_2_MHZ  2
 #define GPIO_STM32F1_SPEED_50_MHZ 3
