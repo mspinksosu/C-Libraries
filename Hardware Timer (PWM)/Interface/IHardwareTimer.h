@@ -200,9 +200,22 @@ void HWTimer_SetInitTypeParams(HWTimerInitType *params, HWTimerPrescaleSelect pr
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// ***** Interface Functions with Inheritance ********************************//
+// ***** Interface Functions *************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
+
+/***************************************************************************//**
+ * @brief Get the prescale options for the Hardware Timer
+ * 
+ * A bit will be set for each prescale option that is availble for the timer.
+ * If the timer uses a counter for a prescaler instead, bit zero should be set 
+ * as well as the number of bits for the counter.
+ * 
+ * @param self  pointer to the HWTimer you are using
+ * 
+ * @return HWTimerPrescaleOptions  either fixed prescale values or a counter
+ */
+HWTimerPrescaleOptions HWTimer_GetPrescaleOptions(HWTimer *self);
 
 /***************************************************************************//**
  * @brief Select the settings needed for the desired period (in us)
@@ -236,27 +249,6 @@ void HWTimer_ComputePeriodUs(HWTimer *self, HWTimerInitType *retParams,
  * @param params  pointer to the HWTimerInitType you are using
  */
 void HWTimer_Init(HWTimer *self, HWTimerInitType *params);
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// ***** Simple Interface Functions ******************************************//
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-// TODO add notes
-
-/***************************************************************************//**
- * @brief Get the prescale options for the Hardware Timer
- * 
- * A bit will be set for each prescale option that is availble for the timer.
- * If the timer uses a counter for a prescaler instead, bit zero should be set 
- * as well as the number of bits for the counter.
- * 
- * @param self  pointer to the HWTimer you are using
- * 
- * @return HWTimerPrescaleOptions  either fixed prescale values or a counter
- */
-HWTimerPrescaleOptions HWTimer_GetPrescaleOptions(HWTimer *self);
 
 /***************************************************************************//**
  * @brief Get the size of the Hardware Timer

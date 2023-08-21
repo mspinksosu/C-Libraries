@@ -63,16 +63,16 @@ void HWTimer_SetInitTypeParams(HWTimerInitType *params, HWTimerPrescaleSelect pr
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// ***** Interface Functions with Inheritance  *******************************//
+// ***** Interface Functions *************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void HWTimer_ComputePeriodUs(HWTimer *self, HWTimerInitType *params, 
+void HWTimer_ComputePeriodUs(HWTimer *self, HWTimerInitType *retParams, 
     uint32_t desiredPeriodUs, uint32_t clkInHz, uint16_t *retDiffInTicks)
 {
-    if(self->interface->HWTimer_ComputePeriodUs != NULL && params->instance != NULL)
+    if(self->interface->HWTimer_ComputePeriodUs != NULL && retParams->instance != NULL)
     {
-        (self->interface->HWTimer_ComputePeriodUs)(params->instance, desiredPeriodUs,
+        (self->interface->HWTimer_ComputePeriodUs)(retParams->instance, desiredPeriodUs,
             clkInHz, retDiffInTicks);
     }
 }
@@ -87,11 +87,7 @@ void HWTimer_Init(HWTimer *self, HWTimerInitType *params)
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// ***** Interface Functions *************************************************//
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+// *****************************************************************************
 
 HWTimerSize HWTimer_GetSize(HWTimer *self)
 {
@@ -247,11 +243,11 @@ uint8_t HWTimer_GetComparePercent(HWTimer *self, uint8_t compChan)
 
 // *****************************************************************************
 
-void HWTimer_EnableCompare(HWTimer *self, uint8_t compChan)
+void HWTimer_EnableCompare(HWTimer *self, uint8_t compChan, bool useInterrupt)
 {
     if(self->interface->HWTimer_EnableCompare != NULL)
     {
-        (self->interface->HWTimer_EnableCompare)(compChan);
+        (self->interface->HWTimer_EnableCompare)(compChan, useInterrupt);
     }
 }
 

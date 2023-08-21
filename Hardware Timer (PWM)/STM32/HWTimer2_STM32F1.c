@@ -38,8 +38,32 @@
     necessary. When a new sub class object is created, we will set its interface
     member equal to this table. */
 HWTimerInterface HWTimer2_FunctionTable = {
+    .HWTimer_GetPrescaleOptions = HWTimer2_STM32_GetPrescaleOptions,
     .HWTimer_ComputePeriodUs = (void (*)(void *, uint32_t, uint32_t, uint16_t *))HWTimer2_STM32_ComputePeriodUs,
     .HWTimer_Init = (void (*)(void *))HWTimer2_STM32_Init,
+    .HWTimer_GetSize = HWTimer2_STM32_GetSize,
+    .HWTimer_Start = HWTimer2_STM32_Start,
+    .HWTimer_Stop = HWTimer2_STM32_Stop,
+    .HWTimer_Reset = HWTimer2_STM32_Reset,
+    .HWTimer_IsRunning = HWTimer2_STM32_IsRunning,
+    .HWTimer_SetCount = HWTimer2_STM32_SetCount,
+    .HWTimer_GetCount = HWTimer2_STM32_GetCount,
+    .HWTimer_AddToCount = HWTimer2_STM32_AddToCount,
+    .HWTimer_GetNumCompareChannels = HWTimer2_STM32_GetNumCompareChannels,
+    .HWTimer_SetCompare16Bit = HWTimer2_STM32_SetCompare16Bit,
+    .HWTimer_GetCompare16Bit = HWTimer2_STM32_GetCompare16Bit,
+    .HWTimer_SetComparePercent = HWTimer2_STM32_SetComparePercent,
+    .HWTimer_GetComparePercent = HWTimer2_STM32_GetComparePercent,
+    .HWTimer_EnableCompare = HWTimer2_STM32_EnableCompare,
+    .HWTimer_DisableCompare = HWTimer2_STM32_DisableCompare,
+    .HWTimer_GetOverflow = HWTimer2_STM32_GetOverflow,
+    .HWTimer_GetCompareMatch = HWTimer2_STM32_GetCompareMatch,
+    .HWTimer_ClearOverflowFlag = HWTimer2_STM32_ClearOverflowFlag,
+    .HWTimer_ClearCompareMatchFlag = HWTimer2_STM32_ClearCompareMatchFlag,
+    .HWTimer_OverflowEvent = HWTimer2_STM32_OverflowEvent,
+    .HWTimer_CompareMatchEvent = HWTimer2_STM32_CompareMatchEvent,
+    .HWTimer_SetOverflowCallback = HWTimer2_STM32_SetOverflowCallback,
+    .HWTimer_SetCompareMatchCallback = HWTimer2_STM32_SetCompareMatchCallback,
 };
 
 static bool useOverflowInterrupt = false, useCompareMatchInterrupts = false;
@@ -62,11 +86,20 @@ static uint32_t compChanToAddress(uint8_t chan);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// ***** Interface Functions with Inheritance  *******************************//
+// ***** Interface Functions *************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void HWTimer2_ComputePeriodUs(HWTimerInitType_STM32 *retParams, uint32_t desiredPeriodUs, 
+HWTimerPrescaleOptions HWTimer2_STM32_GetPrescaleOptions(void)
+{
+    HWTimerPrescaleOptions retVal = {.options.usesCounter = 1,
+                                     .counterNumBits = 16 };
+    return retVal;
+}
+
+// *****************************************************************************
+
+void HWTimer2_STM32_ComputePeriodUs(HWTimerInitType_STM32 *retParams, uint32_t desiredPeriodUs, 
     uint32_t clkInHz, uint16_t *retDiffInTicks)
 {
     uint32_t prescaleCounter = clkInHz / desiredPeriodUs;
@@ -88,55 +121,40 @@ void HWTimer2_STM32_Init(HWTimerInitType_STM32 *params)
     TIMx->CCR2 = 0;
     TIMx->CCR3 = 0;
     TIMx->CCR4 = 0;
-    TIMx->CCR5 = 0;
-    TIMx->CCR6 = 0;
     TIMx->PSC = params->super->prescaleCounterValue;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// ***** Interface Functions *************************************************//
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-HWTimerPrescaleOptions HWTimer2_GetPrescaleOptions(void)
-{
-    HWTimerPrescaleOptions retVal = {.options.usesCounter = 1,
-                                     .counterNumBits = 16 };
-    return retVal;
 }
 
 // *****************************************************************************
 
-HWTimerSize HWTimer2_GetSize(void)
+HWTimerSize HWTimer2_STM32_GetSize(void)
 {
     return HWTIM_16_BIT;
 }
 
 // *****************************************************************************
 
-void HWTimer2_Start(void)
+void HWTimer2_STM32_Start(void)
 {
     TIMx->CR1 |= TIM_CR1_CEN;
 }
 
 // *****************************************************************************
 
-void HWTimer2_Stop(void)
+void HWTimer2_STM32_Stop(void)
 {
     TIMx->CR1 &= ~TIM_CR1_CEN;
 }
 
 // *****************************************************************************
 
-void HWTimer2_Reset(void)
+void HWTimer2_STM32_Reset(void)
 {
     TIMx->CNT = 0;
 }
 
 // *****************************************************************************
 
-bool HWTimer2_IsRunning(void)
+bool HWTimer2_STM32_IsRunning(void)
 {
     if(TIMx->CR1 & TIM_CR1_CEN)
         return true;
@@ -146,35 +164,35 @@ bool HWTimer2_IsRunning(void)
 
 // *****************************************************************************
 
-void HWTimer2_SetCount(uint16_t count)
+void HWTimer2_STM32_SetCount(uint16_t count)
 {
     TIMx->CNT = count;
 }
 
 // *****************************************************************************
 
-uint16_t HWTimer2_GetCount(void)
+uint16_t HWTimer2_STM32_GetCount(void)
 {
     return TIMx->CNT;
 }
 
 // *****************************************************************************
 
-void HWTimer2_AddToCount(uint16_t addToCount)
+void HWTimer2_STM32_AddToCount(uint16_t addToCount)
 {
     TIMx->CNT += addToCount;
 }
 
 // *****************************************************************************
 
-uint8_t HWTimer2_GetNumCompareChannels(void)
+uint8_t HWTimer2_STM32_GetNumCompareChannels(void)
 {
     return HW_TIM1_NUM_COMP_CHANNELS;
 }
 
 // *****************************************************************************
 
-void HWTimer2_SetCompare16Bit(uint8_t compChan, uint16_t compValue)
+void HWTimer2_STM32_SetCompare16Bit(uint8_t compChan, uint16_t compValue)
 {
     if(compChan >= HW_TIM1_NUM_COMP_CHANNELS)
         return;
@@ -185,7 +203,7 @@ void HWTimer2_SetCompare16Bit(uint8_t compChan, uint16_t compValue)
 
 // *****************************************************************************
 
-uint16_t HWTimer2_GetCompare16Bit(uint8_t compChan)
+uint16_t HWTimer2_STM32_GetCompare16Bit(uint8_t compChan)
 {
     if(compChan >= HW_TIM1_NUM_COMP_CHANNELS)
         return;
@@ -196,7 +214,7 @@ uint16_t HWTimer2_GetCompare16Bit(uint8_t compChan)
 
 // *****************************************************************************
 
-void HWTimer2_SetComparePercent(uint8_t compChan, uint8_t percent)
+void HWTimer2_STM32_SetComparePercent(uint8_t compChan, uint8_t percent)
 {
     if(compChan >= HW_TIM1_NUM_COMP_CHANNELS)
         return;
@@ -211,7 +229,7 @@ void HWTimer2_SetComparePercent(uint8_t compChan, uint8_t percent)
 
 // *****************************************************************************
 
-uint8_t HWTimer2_GetComparePercent(uint8_t compChan)
+uint8_t HWTimer2_STM32_GetComparePercent(uint8_t compChan)
 {
     if(compChan >= HW_TIM1_NUM_COMP_CHANNELS)
         return 0;
@@ -222,7 +240,7 @@ uint8_t HWTimer2_GetComparePercent(uint8_t compChan)
 
 // *****************************************************************************
 
-void HWTimer2_EnableCompare(uint8_t compChan, bool useInterrupt)
+void HWTimer2_STM32_EnableCompare(uint8_t compChan, bool useInterrupt)
 {
     if(compChan >= HW_TIM1_NUM_COMP_CHANNELS)
         return;
@@ -241,7 +259,7 @@ void HWTimer2_EnableCompare(uint8_t compChan, bool useInterrupt)
 
 // *****************************************************************************
 
-void HWTimer2_DisableCompare(uint8_t compChan)
+void HWTimer2_STM32_DisableCompare(uint8_t compChan)
 {
     if(compChan >= HW_TIM1_NUM_COMP_CHANNELS)
         return;
@@ -251,23 +269,23 @@ void HWTimer2_DisableCompare(uint8_t compChan)
 
 // *****************************************************************************
 
-bool HWTimer2_GetOverflow(void)
+bool HWTimer2_STM32_GetOverflow(void)
 {
     return (TIMx->SR & TIM_SR_UIF) ? 1 : 0;
 }
 
 // *****************************************************************************
 
-bool HWTimer2_GetCompareMatch(uint8_t compChan)
+bool HWTimer2_STM32_GetCompareMatch(uint8_t compChan)
 {
     if(compChan < 4)
     {
         return (TIMx->SR & (1 << (compChan + 1))) ? 1 : 0; // bits [5:1]
     }
-    else if(compChan < 6)
-    {
-        return (TIMx->SR & (1 << (compChan + 12))) ? 1 : 0; // bits [17:16]
-    }
+    // else if(compChan < 6)
+    // {
+    //     return (TIMx->SR & (1 << (compChan + 12))) ? 1 : 0; // bits [17:16]
+    // }
     else
     {
         return false;
@@ -276,28 +294,28 @@ bool HWTimer2_GetCompareMatch(uint8_t compChan)
 
 // *****************************************************************************
 
-void HWTimer2_ClearOverflowFlag(void)
+void HWTimer2_STM32_ClearOverflowFlag(void)
 {
     TIMx->SR &= ~TIM_SR_UIF;
 }
 
 // *****************************************************************************
 
-void HWTimer2_ClearCompareMatchFlag(uint8_t compChan)
+void HWTimer2_STM32_ClearCompareMatchFlag(uint8_t compChan)
 {
     if(compChan < 4)
     {
         TIMx->SR &= ~(1 << (compChan + 1)); // bits [5:1]
     }
-    else if(compChan < 6)
-    {
-        TIMx->SR &= ~(1 << (compChan + 12)); // bits [17:16]
-    }
+    // else if(compChan < 6)
+    // {
+    //     TIMx->SR &= ~(1 << (compChan + 12)); // bits [17:16]
+    // }
 }
 
 // *****************************************************************************
 
-void HWTimer2_OverflowEvent(void)
+void HWTimer2_STM32_OverflowEvent(void)
 {
     TIMx->SR &= ~TIM_SR_UIF;
 
@@ -307,7 +325,7 @@ void HWTimer2_OverflowEvent(void)
 
 // *****************************************************************************
 
-void HWTimer2_CompareMatchEvent(void)
+void HWTimer2_STM32_CompareMatchEvent(void)
 {
     if(TIMx->SR & TIM_SR_CC1IF)
     {
@@ -349,7 +367,7 @@ void HWTimer2_CompareMatchEvent(void)
 
 // *****************************************************************************
 
-void HWTimer2_SetOverflowCallback(void (*Function)(void))
+void HWTimer2_STM32_SetOverflowCallback(void (*Function)(void))
 
 {
     OverflowCallback = Function;
@@ -357,7 +375,7 @@ void HWTimer2_SetOverflowCallback(void (*Function)(void))
 
 // *****************************************************************************
 
-void HWTimer2_SetCompareMatchCallback(void (*Function)(uint8_t compChan))
+void HWTimer2_STM32_SetCompareMatchCallback(void (*Function)(uint8_t compChan))
 
 {
     CompareMatchCallback = Function;
@@ -379,11 +397,11 @@ static uint32_t compChanToAddress(uint8_t channel)
         // address offset 0x34 through 0x40
         address += channel * 4;
     }
-    else if(channel < 6)
-    {
-        // address offset 0x58 and 0x5C
-        address = address + 20 + channel * 4;
-    }
+    // else if(channel < 6)
+    // {
+    //     // address offset 0x58 and 0x5C
+    //     address = address + 20 + channel * 4;
+    // }
 }
 
 /*
