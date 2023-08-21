@@ -253,9 +253,9 @@ void HWTimer1_STM32_EnableCompare(uint8_t compChan, bool useInterrupt)
     if(compChan < 4)
     {
         if(useInterrupt)
-            TIMx->DIER |= (1 << (compChan + 1)); // bits [5:1]
+            TIMx->DIER |= (1 << (compChan + 1)); // bits [4:1]
         else
-            TIMx->DIER &= ~(1 << (compChan + 1)); // bits [5:1]
+            TIMx->DIER &= ~(1 << (compChan + 1)); // bits [4:1]
     }
 }
 
@@ -282,7 +282,7 @@ bool HWTimer1_STM32_GetCompareMatch(uint8_t compChan)
 {
     if(compChan < 4)
     {
-        return (TIMx->SR & (1 << (compChan + 1))) ? 1 : 0; // bits [5:1]
+        return (TIMx->SR & (1 << (compChan + 1))) ? 1 : 0; // bits [4:1]
     }
     else if(compChan < 6)
     {
@@ -307,7 +307,7 @@ void HWTimer1_STM32_ClearCompareMatchFlag(uint8_t compChan)
 {
     if(compChan < 4)
     {
-        TIMx->SR &= ~(1 << (compChan + 1)); // bits [5:1]
+        TIMx->SR &= ~(1 << (compChan + 1)); // bits [4:1]
     }
     else if(compChan < 6)
     {

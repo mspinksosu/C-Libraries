@@ -27,7 +27,7 @@
 
 // ***** Defines ***************************************************************
 
-#define HW_TIM2_NUM_COMP_CHANNELS   4
+#define HW_TIM_NUM_COMP_CHANNELS   4
 #define TIMx    TIM2
 
 // ***** Global Variables ******************************************************
@@ -187,14 +187,14 @@ void HWTimer2_STM32_AddToCount(uint16_t addToCount)
 
 uint8_t HWTimer2_STM32_GetNumCompareChannels(void)
 {
-    return HW_TIM1_NUM_COMP_CHANNELS;
+    return HW_TIM_NUM_COMP_CHANNELS;
 }
 
 // *****************************************************************************
 
 void HWTimer2_STM32_SetCompare16Bit(uint8_t compChan, uint16_t compValue)
 {
-    if(compChan >= HW_TIM1_NUM_COMP_CHANNELS)
+    if(compChan >= HW_TIM_NUM_COMP_CHANNELS)
         return;
     
     uint32_t *CCRx = compChanToAddress(compChan);
@@ -205,7 +205,7 @@ void HWTimer2_STM32_SetCompare16Bit(uint8_t compChan, uint16_t compValue)
 
 uint16_t HWTimer2_STM32_GetCompare16Bit(uint8_t compChan)
 {
-    if(compChan >= HW_TIM1_NUM_COMP_CHANNELS)
+    if(compChan >= HW_TIM_NUM_COMP_CHANNELS)
         return;
     
     uint32_t *CCRx = compChanToAddress(compChan);
@@ -216,7 +216,7 @@ uint16_t HWTimer2_STM32_GetCompare16Bit(uint8_t compChan)
 
 void HWTimer2_STM32_SetComparePercent(uint8_t compChan, uint8_t percent)
 {
-    if(compChan >= HW_TIM1_NUM_COMP_CHANNELS)
+    if(compChan >= HW_TIM_NUM_COMP_CHANNELS)
         return;
     
     if(percent > 100)
@@ -231,7 +231,7 @@ void HWTimer2_STM32_SetComparePercent(uint8_t compChan, uint8_t percent)
 
 uint8_t HWTimer2_STM32_GetComparePercent(uint8_t compChan)
 {
-    if(compChan >= HW_TIM1_NUM_COMP_CHANNELS)
+    if(compChan >= HW_TIM_NUM_COMP_CHANNELS)
         return 0;
 
     uint32_t *CCRx = compChanToAddress(compChan);
@@ -242,7 +242,7 @@ uint8_t HWTimer2_STM32_GetComparePercent(uint8_t compChan)
 
 void HWTimer2_STM32_EnableCompare(uint8_t compChan, bool useInterrupt)
 {
-    if(compChan >= HW_TIM1_NUM_COMP_CHANNELS)
+    if(compChan >= HW_TIM_NUM_COMP_CHANNELS)
         return;
     
     TIMx->CCER |= (1 << (compChan * 4));
@@ -251,9 +251,9 @@ void HWTimer2_STM32_EnableCompare(uint8_t compChan, bool useInterrupt)
     if(compChan < 4)
     {
         if(useInterrupt)
-            TIMx->DIER |= (1 << (compChan + 1)); // bits [5:1]
+            TIMx->DIER |= (1 << (compChan + 1)); // bits [4:1]
         else
-            TIMx->DIER &= ~(1 << (compChan + 1)); // bits [5:1]
+            TIMx->DIER &= ~(1 << (compChan + 1)); // bits [4:1]
     }
 }
 
@@ -261,7 +261,7 @@ void HWTimer2_STM32_EnableCompare(uint8_t compChan, bool useInterrupt)
 
 void HWTimer2_STM32_DisableCompare(uint8_t compChan)
 {
-    if(compChan >= HW_TIM1_NUM_COMP_CHANNELS)
+    if(compChan >= HW_TIM_NUM_COMP_CHANNELS)
         return;
     
     TIMx->CCER &= ~(1 << (compChan * 4));
@@ -280,12 +280,8 @@ bool HWTimer2_STM32_GetCompareMatch(uint8_t compChan)
 {
     if(compChan < 4)
     {
-        return (TIMx->SR & (1 << (compChan + 1))) ? 1 : 0; // bits [5:1]
+        return (TIMx->SR & (1 << (compChan + 1))) ? 1 : 0; // bits [4:1]
     }
-    // else if(compChan < 6)
-    // {
-    //     return (TIMx->SR & (1 << (compChan + 12))) ? 1 : 0; // bits [17:16]
-    // }
     else
     {
         return false;
@@ -305,12 +301,8 @@ void HWTimer2_STM32_ClearCompareMatchFlag(uint8_t compChan)
 {
     if(compChan < 4)
     {
-        TIMx->SR &= ~(1 << (compChan + 1)); // bits [5:1]
+        TIMx->SR &= ~(1 << (compChan + 1)); // bits [4:1]
     }
-    // else if(compChan < 6)
-    // {
-    //     TIMx->SR &= ~(1 << (compChan + 12)); // bits [17:16]
-    // }
 }
 
 // *****************************************************************************
@@ -351,18 +343,6 @@ void HWTimer2_STM32_CompareMatchEvent(void)
         if(CompareMatchCallback)
             CompareMatchCallback(3);
     }
-    if(TIMx->SR & TIM_SR_CC5IF)
-    {
-        TIMx->SR &= ~TIM_SR_CC5IF;
-        if(CompareMatchCallback)
-            CompareMatchCallback(4);
-    }
-    if(TIMx->SR & TIM_SR_CC6IF)
-    {
-        TIMx->SR &= ~TIM_SR_CC6IF;
-        if(CompareMatchCallback)
-            CompareMatchCallback(5);
-    }
 }
 
 // *****************************************************************************
@@ -397,11 +377,6 @@ static uint32_t compChanToAddress(uint8_t channel)
         // address offset 0x34 through 0x40
         address += channel * 4;
     }
-    // else if(channel < 6)
-    // {
-    //     // address offset 0x58 and 0x5C
-    //     address = address + 20 + channel * 4;
-    // }
 }
 
 /*
