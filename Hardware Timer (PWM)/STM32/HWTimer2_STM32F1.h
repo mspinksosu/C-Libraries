@@ -86,11 +86,15 @@ void HWTimer2_STM32_EnableCompare(uint8_t compChan, bool useInterrupt);
 
 void HWTimer2_STM32_DisableCompare(uint8_t compChan);
 
+void HWTimer2_STM32_EnableComparePWMOutput(HWTimer *self, uint8_t compChan);
+
+void HWTimer2_STM32_DisableComparePWMOutput(HWTimer *self, uint8_t compChan);
+
 bool HWTimer2_STM32_GetOverflow(void);
 
-bool HWTimer2_STM32_GetCompareMatch(uint8_t compChan);
-
 void HWTimer2_STM32_ClearOverflowFlag(void);
+
+bool HWTimer2_STM32_GetCompareMatch(uint8_t compChan);
 
 void HWTimer2_STM32_ClearCompareMatchFlag(uint8_t compChan);
 

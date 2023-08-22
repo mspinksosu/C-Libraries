@@ -59,8 +59,8 @@ HWTimerInterface HWTimer2_FunctionTable = {
     .HWTimer_EnableCompare = HWTimer2_STM32_EnableCompare,
     .HWTimer_DisableCompare = HWTimer2_STM32_DisableCompare,
     .HWTimer_GetOverflow = HWTimer2_STM32_GetOverflow,
-    .HWTimer_GetCompareMatch = HWTimer2_STM32_GetCompareMatch,
     .HWTimer_ClearOverflowFlag = HWTimer2_STM32_ClearOverflowFlag,
+    .HWTimer_GetCompareMatch = HWTimer2_STM32_GetCompareMatch,
     .HWTimer_ClearCompareMatchFlag = HWTimer2_STM32_ClearCompareMatchFlag,
     .HWTimer_OverflowEvent = HWTimer2_STM32_OverflowEvent,
     .HWTimer_CompareMatchEvent = HWTimer2_STM32_CompareMatchEvent,
@@ -306,18 +306,17 @@ uint8_t HWTimer2_STM32_GetComparePercent(uint8_t compChan)
 
 void HWTimer2_STM32_EnableCompare(uint8_t compChan, bool useInterrupt)
 {
-    if(compChan >= HW_TIM_NUM_COMP_CHANNELS)
-        return;
-    
-    TIMx->CCER |= (1 << (compChan * 4));
-
-    /* Only CC channels 0 - 3 (1 to 4) have interrupts */
-    if(compChan < 4)
+    if(compChan < HW_TIM_NUM_COMP_CHANNELS)
     {
-        if(useInterrupt)
-            TIMx->DIER |= (1 << (compChan + 1)); // bits [4:1]
-        else
-            TIMx->DIER &= ~(1 << (compChan + 1)); // bits [4:1]
+        TIMx->CCER |= (1 << (compChan * 4));
+        /* Only CC channels 0 - 3 (CC1 to CC4) have interrupts */
+        if(compChan < 4)
+        {
+            if(useInterrupt)
+                TIMx->DIER |= (1 << (compChan + 1)); // bits [4:1]
+            else
+                TIMx->DIER &= ~(1 << (compChan + 1)); // bits [4:1]
+        }
     }
 }
 
@@ -325,10 +324,30 @@ void HWTimer2_STM32_EnableCompare(uint8_t compChan, bool useInterrupt)
 
 void HWTimer2_STM32_DisableCompare(uint8_t compChan)
 {
-    if(compChan >= HW_TIM_NUM_COMP_CHANNELS)
-        return;
-    
-    TIMx->CCER &= ~(1 << (compChan * 4));
+    if(compChan < HW_TIM_NUM_COMP_CHANNELS)
+    {
+        TIMx->CCER &= ~(1 << (compChan * 4));
+    }
+}
+
+// *****************************************************************************
+
+void HWTimer2_STM32_EnableComparePWMOutput(HWTimer *self, uint8_t compChan)
+{
+    if(compChan < HW_TIM_NUM_COMP_CHANNELS)
+    {
+        TIMx->CCER &= ~(1 << (compChan * 4));
+    }
+}
+
+// *****************************************************************************
+
+void HWTimer2_STM32_DisableComparePWMOutput(HWTimer *self, uint8_t compChan)
+{
+    if(compChan < HW_TIM_NUM_COMP_CHANNELS)
+    {
+        TIMx->CCER &= ~(1 << (compChan * 4));
+    }
 }
 
 // *****************************************************************************
@@ -336,6 +355,13 @@ void HWTimer2_STM32_DisableCompare(uint8_t compChan)
 bool HWTimer2_STM32_GetOverflow(void)
 {
     return (TIMx->SR & TIM_SR_UIF) ? 1 : 0;
+}
+
+// *****************************************************************************
+
+void HWTimer2_STM32_ClearOverflowFlag(void)
+{
+    TIMx->SR &= ~TIM_SR_UIF;
 }
 
 // *****************************************************************************
@@ -350,13 +376,6 @@ bool HWTimer2_STM32_GetCompareMatch(uint8_t compChan)
     {
         return false;
     }
-}
-
-// *****************************************************************************
-
-void HWTimer2_STM32_ClearOverflowFlag(void)
-{
-    TIMx->SR &= ~TIM_SR_UIF;
 }
 
 // *****************************************************************************

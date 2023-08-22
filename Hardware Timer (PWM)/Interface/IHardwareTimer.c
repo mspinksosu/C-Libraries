@@ -276,6 +276,26 @@ void HWTimer_DisableCompare(HWTimer *self, uint8_t compChan)
 
 // *****************************************************************************
 
+void HWTimer_EnableComparePWMOutput(HWTimer *self, uint8_t compChan)
+{
+    if(self->interface->HWTimer_EnableComparePWMOutput != NULL)
+    {
+        (self->interface->HWTimer_EnableComparePWMOutput)(compChan);
+    }
+}
+
+// *****************************************************************************
+
+void HWTimer_DisableComparePWMOutput(HWTimer *self, uint8_t compChan)
+{
+    if(self->interface->HWTimer_DisableComparePWMOutput != NULL)
+    {
+        (self->interface->HWTimer_DisableComparePWMOutput)(compChan);
+    }
+}
+
+// *****************************************************************************
+
 bool HWTimer_GetOverflow(HWTimer *self)
 {
     if(self->interface->HWTimer_GetOverflow != NULL)
@@ -290,6 +310,16 @@ bool HWTimer_GetOverflow(HWTimer *self)
 
 // *****************************************************************************
 
+void HWTimer_ClearOverflowFlag(HWTimer *self)
+{
+    if(self->interface->HWTimer_ClearOverflowFlag != NULL)
+    {
+        (self->interface->HWTimer_ClearOverflowFlag)();
+    }
+}
+
+// *****************************************************************************
+
 bool HWTimer_GetCompareMatch(HWTimer *self, uint8_t compChan)
 {
     if(self->interface->HWTimer_GetCompareMatch != NULL)
@@ -299,16 +329,6 @@ bool HWTimer_GetCompareMatch(HWTimer *self, uint8_t compChan)
     else
     {
         return false;
-    }
-}
-
-// *****************************************************************************
-
-void HWTimer_ClearOverflowFlag(HWTimer *self)
-{
-    if(self->interface->HWTimer_ClearOverflowFlag != NULL)
-    {
-        (self->interface->HWTimer_ClearOverflowFlag)();
     }
 }
 
