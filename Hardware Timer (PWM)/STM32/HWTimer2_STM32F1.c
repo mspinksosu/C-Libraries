@@ -68,7 +68,7 @@ HWTimerInterface HWTimer2_FunctionTable = {
     .HWTimer_SetCompareMatchCallback = HWTimer2_STM32_SetCompareMatchCallback,
 };
 
-static bool useOverflowInterrupt = false, useCompareMatchInterrupts = false;
+// static bool useOverflowInterrupt = false, useCompareMatchInterrupts = false; // TODO add interrupts
 static uint16_t timerPeriod = HW_TIM_BITS_MAX - 1;
 
 // local function pointers
@@ -234,7 +234,7 @@ void HWTimer2_STM32_SetCompare16Bit(uint8_t compChan, uint16_t compValue)
     if(compChan >= HW_TIM_NUM_COMP_CHANNELS)
         return;
     
-    uint32_t *CCRx = compChanToAddress(compChan);
+    uint32_t *CCRx = (uint32_t*)compChanToAddress(compChan);
     /* Shift the timer period left to convert to a 24.8 fixed point number */
     uint32_t fxpTimerPeriod = timerPeriod << 8;
     uint32_t scaledCompValue = compValue * fxpTimerPeriod / (HW_TIM_16_BIT_MAX - 1);
@@ -250,9 +250,9 @@ void HWTimer2_STM32_SetCompare16Bit(uint8_t compChan, uint16_t compValue)
 uint16_t HWTimer2_STM32_GetCompare16Bit(uint8_t compChan)
 {
     if(compChan >= HW_TIM_NUM_COMP_CHANNELS)
-        return;
+        return 0;
     
-    uint32_t *CCRx = compChanToAddress(compChan);
+    uint32_t *CCRx = (uint32_t*)compChanToAddress(compChan);
     /* Shift the dividend left to conver to 24.8 fixed point number */
     uint32_t fxpCompValue = *CCRx << 8;
     uint32_t retVal = fxpCompValue * (HW_TIM_16_BIT_MAX - 1) / timerPeriod;
@@ -273,7 +273,7 @@ void HWTimer2_STM32_SetComparePercent(uint8_t compChan, uint8_t percent)
     if(percent > 100)
         percent = 100;
 
-    uint32_t *CCRx = compChanToAddress(compChan);
+    uint32_t *CCRx = (uint32_t*)compChanToAddress(compChan);
     /* Shift the timer period left to convert to a 24.8 fixed point number */
     uint32_t fxpTimerPeriod = timerPeriod << 8;
     uint32_t scaledCompValue = percent * fxpTimerPeriod / 100;
@@ -291,7 +291,7 @@ uint8_t HWTimer2_STM32_GetComparePercent(uint8_t compChan)
     if(compChan >= HW_TIM_NUM_COMP_CHANNELS)
         return 0;
 
-    uint32_t *CCRx = compChanToAddress(compChan);
+    uint32_t *CCRx = (uint32_t*)compChanToAddress(compChan);
     /* Shift the dividend left to conver to 24.8 fixed point number */
     uint32_t fxpCompValue = *CCRx << 8;
     uint32_t retVal = fxpCompValue * 100 / timerPeriod;
@@ -433,7 +433,7 @@ void HWTimer2_STM32_SetCompareMatchCallback(void (*Function)(uint8_t compChan))
 
 static uint32_t compChanToAddress(uint8_t channel)
 {
-    uint32_t address = &(TIMx->CCR1); // address offset 0x34
+    uint32_t address = ((uint32_t)&(TIMx->CCR1)); // address offset 0x34
 
     // channel 0 - 3 equals CCR1 to CCR4
     if(channel < 4)
@@ -441,6 +441,7 @@ static uint32_t compChanToAddress(uint8_t channel)
         // address offset 0x34 through 0x40
         address += channel * 4;
     }
+    return address;
 }
 
 /*

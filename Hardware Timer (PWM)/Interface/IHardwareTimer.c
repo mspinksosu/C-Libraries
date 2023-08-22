@@ -55,7 +55,7 @@ void HWTimer_CreateInitType(HWTimerInitType *params, void *instanceOfSubclass)
 void HWTimer_SetInitTypeToDefaultParams(HWTimerInitType *params)
 {
     params->count = 0;
-    params->prescaleSelect = 0;
+    params->prescaleSelect = HWTIM_PRESCALE_USES_COUNTER;
     params->prescaleCounterValue = 0;
     params->period = 0xFFFF;
     params->useOverflowInterrupt = false;
@@ -110,7 +110,7 @@ HWTimerSize HWTimer_GetSize(HWTimer *self)
     }
     else
     {
-        return 0;
+        return HWTIM_16_BIT;
     }
 }
 
@@ -344,7 +344,7 @@ void HWTimer_CompareMatchEvent(HWTimer *self)
 
 // *****************************************************************************
 
-void HWTimer_SetOverflowCallback(HWTimer *self, HWTimerOverflowCallbackFunc Function)
+void HWTimer_SetOverflowCallback(HWTimer *self, void (*Function)(void))
 {
     if(self->interface->HWTimer_SetOverflowCallback != NULL)
     {
@@ -354,7 +354,7 @@ void HWTimer_SetOverflowCallback(HWTimer *self, HWTimerOverflowCallbackFunc Func
 
 // *****************************************************************************
 
-void HWTimer_SetCompareMatchCallback(HWTimer *self, HWTimerCompareMatchCallbackFunc Function)
+void HWTimer_SetCompareMatchCallback(HWTimer *self, void (*Function)(uint8_t compChan))
 {
     if(self->interface->HWTimer_SetCompareMatchCallback != NULL)
     {

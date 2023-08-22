@@ -82,16 +82,6 @@ typedef struct HWTimerPrescaleOptionsTag
     uint8_t counterNumBits;
 } HWTimerPrescaleOptions;
 
-/* A forward declaration which will allow the compiler to "know" what a HWTimer
-is before I use it in the callback function declaration below */
-typedef struct HWTimerTag HWTimer;
-
-/* callback function pointer. The context is so that you can know which HWTimer 
-initiated the callback. This is so that you can service multiple timers 
-callbacks with the same function if you desire. */
-typedef void (*HWTimerOverflowCallbackFunc)(void);
-typedef void (*HWTimerCompareMatchCallbackFunc)(uint8_t compChan); // TODO remove these
-
 typedef struct HWTimerInitTypeTag
 {
     void *instance;
@@ -144,7 +134,7 @@ typedef struct HWTimerInterfaceTag
 typedef struct HWTimerTag
 {
     HWTimerInterface *interface;
-};
+} HWTimer;
 
 /**
  * Description of struct members. You shouldn't really mess with any of these
