@@ -309,14 +309,15 @@ void HWTimer2_STM32_EnableCompare(uint8_t compChan, bool useInterrupt)
     if(compChan < HW_TIM_NUM_COMP_CHANNELS)
     {
         TIMx->CCER |= (1 << (compChan * 4));
+        
         /* Only CC channels 0 - 3 (CC1 to CC4) have interrupts */
-        if(compChan < 4)
-        {
-            if(useInterrupt)
-                TIMx->DIER |= (1 << (compChan + 1)); // bits [4:1]
-            else
-                TIMx->DIER &= ~(1 << (compChan + 1)); // bits [4:1]
-        }
+        // if(compChan < 4)
+        // {
+        //     if(useInterrupt)
+        //         TIMx->DIER |= (1 << (compChan + 1)); // bits [4:1]
+        //     else
+        //         TIMx->DIER &= ~(1 << (compChan + 1)); // bits [4:1]
+        // }
     }
 }
 
