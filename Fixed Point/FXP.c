@@ -45,7 +45,7 @@ Fxp FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart,
 
     // TODO check if integer part is too big
 
-    /* interger * 2^b + (fractional * 2^b / 10^p)
+    /* integer * 2^b + (fractional * 2^b / 10^p)
     Where b is the number of fractional bits and p is the precision */
 
     if(numFractionalBits < 16)

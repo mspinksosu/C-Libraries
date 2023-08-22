@@ -99,7 +99,7 @@ typedef struct HWTimerInitTypeTag
     //HWTimerCompareMatchCallbackFunc compareMatchCallback;
     uint32_t periodInUs; // TODO not needed unless we want to set values in us
     //HWTimerType type;
-    uint16_t period; // TODO probably not needed
+    uint16_t period;
     uint16_t count; // TODO probably not needed
     uint16_t prescaleCounterValue;
     HWTimerPrescaleSelect prescaleSelect;
@@ -114,7 +114,7 @@ typedef struct HWTimerInterfaceTag
     Set each of your functions equal to one of these pointers. The void pointer
     will be set to the sub class object. Typecasting will be needed. */
     HWTimerPrescaleOptions (*HWTimer_GetPrescaleOptions)(void);
-    void (*HWTimer_ComputePeriodUs)(void *params, uint32_t, uint32_t, uint16_t *retValue);
+    void (*HWTimer_ComputePeriod)(void *params, uint32_t, uint32_t, uint16_t *retValue);
     void (*HWTimer_Init)(void *params);
     HWTimerSize (*HWTimer_GetSize)(void);
     void (*HWTimer_Start)(void);
@@ -221,22 +221,23 @@ HWTimerPrescaleOptions HWTimer_GetPrescaleOptions(HWTimer *self);
  * @brief Select the settings needed for the desired period (in us)
  * 
  * The function should go through the prescale settings starting from the 
- * lowest, and find the setting that generates a period greater than or equal 
- * to the desired period in us. Then return the settings used and the 
+ * lowest, and find the setting that generates a frequency greater than or 
+ * equal to the desired frequency. Then return the settings used and the 
  * difference in ticks subtracted from the maximum value of the timer. The idea
  * is that the user can use the settings returned to get close enough to the 
- * value they want. Or, they can take the difference in ticks and load that 
- * value into the counter every time the counter overflows to get a more 
- * accurate time period.
+ * value they want. Most timers will automatically restart once they hit the 
+ * period value that is loaded. If for some reason the timer doesn't have that 
+ * feature, the user can take the difference in ticks and load that value into 
+ * the counter every time the counter overflows. 
  * 
  * @param self  pointer to the HWTimer you are using
  * @param retParams  pointer to the HWTimerInitType that you are using
- * @param desiredPeriodUs  the period that you want in microseconds
+ * @param desiredFreqHz  the frequency that you want in Hertz
  * @param clkInHz  the frequency of your timer peripheral's clock in Hertz
  * @param retDiffInTicks  difference in ticks subtracted from the max count
  */
-void HWTimer_ComputePeriodUs(HWTimer *self, HWTimerInitType *retParams, 
-    uint32_t desiredPeriodUs, uint32_t clkInHz, uint16_t *retDiffInTicks);
+void HWTimer_ComputePeriod(HWTimer *self, HWTimerInitType *retParams, 
+    uint32_t desiredFreqHz, uint32_t clkInHz, uint16_t *retDiffInTicks);
 
 /***************************************************************************//**
  * @brief Initialize the Hardware Timer

@@ -67,12 +67,12 @@ void HWTimer_SetInitTypeParams(HWTimerInitType *params, HWTimerPrescaleSelect pr
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void HWTimer_ComputePeriodUs(HWTimer *self, HWTimerInitType *retParams, 
-    uint32_t desiredPeriodUs, uint32_t clkInHz, uint16_t *retDiffInTicks)
+void HWTimer_ComputePeriod(HWTimer *self, HWTimerInitType *retParams, 
+    uint32_t desiredFreqHz, uint32_t clkInHz, uint16_t *retDiffInTicks)
 {
-    if(self->interface->HWTimer_ComputePeriodUs != NULL && retParams->instance != NULL)
+    if(self->interface->HWTimer_ComputePeriod != NULL && retParams->instance != NULL)
     {
-        (self->interface->HWTimer_ComputePeriodUs)(retParams->instance, desiredPeriodUs,
+        (self->interface->HWTimer_ComputePeriod)(retParams->instance, desiredFreqHz,
             clkInHz, retDiffInTicks);
     }
 }

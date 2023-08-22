@@ -39,7 +39,7 @@
     member equal to this table. */
 HWTimerInterface HWTimer2_FunctionTable = {
     .HWTimer_GetPrescaleOptions = HWTimer2_STM32_GetPrescaleOptions,
-    .HWTimer_ComputePeriodUs = (void (*)(void *, uint32_t, uint32_t, uint16_t *))HWTimer2_STM32_ComputePeriodUs,
+    .HWTimer_ComputePeriod = (void (*)(void *, uint32_t, uint32_t, uint16_t *))HWTimer2_STM32_ComputePeriod,
     .HWTimer_Init = (void (*)(void *))HWTimer2_STM32_Init,
     .HWTimer_GetSize = HWTimer2_STM32_GetSize,
     .HWTimer_Start = HWTimer2_STM32_Start,
@@ -99,14 +99,43 @@ HWTimerPrescaleOptions HWTimer2_STM32_GetPrescaleOptions(void)
 
 // *****************************************************************************
 
-void HWTimer2_STM32_ComputePeriodUs(HWTimerInitType_STM32 *retParams, uint32_t desiredPeriodUs, 
-    uint32_t clkInHz, uint16_t *retDiffInTicks)
+void HWTimer2_STM32_ComputePeriod(HWTimerInitType_STM32 *retParams, 
+    uint32_t desiredFreqHz,  uint32_t clkInHz, uint16_t *retDiffInTicks)
 {
-    uint32_t prescaleCounter = clkInHz / desiredPeriodUs;
-    if(prescaleCounter > 0x0000FFFF)
-        prescaleCounter = 0x0000FFFF;
-    retParams->super->prescaleCounterValue = (uint16_t)prescaleCounter;
+    uint32_t period = 0, prescale = 0;
+
+    /* Shift the clock input left to convert to a 27.5 fixed point number. 
+    A 27.5 fixed point number is just large enough to support the maximum 
+    system clock. 2^27 = 134 MHz. Max clock = 72 MHz. */
+    clkInHz <<= 5;
+    /* I want the period of the timer to be as close as possible to 65535 to 
+    give the most resolution */
+    prescale = clkInHz / HW_TIM_16_BIT_MAX / desiredFreqHz;
+    /* Add 0.5 to round the prescale value value up. 0.5 in 27.5 fixed point is 
+    2^4 or 1 << 4. */
+    prescale += (1 << 4);
+    /* Now shift back to get the prescale integer */
+    prescale >>= 5;
+    period = clkInHz / prescale / desiredFreqHz;
+
+    /* @note I use this method if the prescale uses fixed powers of two rather 
+    than a prescale counter. It can also work if there is a prescale table. 
+    The idea is the same. It uses the smallest prescale value that gets the 
+    period as close the 65535 as possible. */
+    // do {
+    //     if(prescale == 0)
+    //         prescale = 1;
+    //     else
+    //         prescale <<= 1;
+
+    //     period = clkInHz / prescale / desiredFreqHz;
+    // } while(period < HW_TIM_16_BIT_MAX - 1 && prescale < HW_TIM_16_BIT_MAX - 1);
+
+    period = period - 1;
+    retParams->super->prescaleCounterValue = (uint16_t)prescale;
+    retParams->super->period = (uint16_t)period;
     retParams->super->prescaleSelect = HWTIM_PRESCALE_USES_COUNTER;
+    *retDiffInTicks = (HW_TIM_16_BIT_MAX - 1) - period;
 }
 
 // *****************************************************************************
@@ -121,7 +150,9 @@ void HWTimer2_STM32_Init(HWTimerInitType_STM32 *params)
     TIMx->CCR2 = 0;
     TIMx->CCR3 = 0;
     TIMx->CCR4 = 0;
+    TIMx->ARR = params->super->period;
     TIMx->PSC = params->super->prescaleCounterValue;
+    /* Don't start the timer here */
 }
 
 // *****************************************************************************

@@ -24,7 +24,6 @@
 #define HW_TIM2_STM32F1_H
 
 #include "HWTimer_STM32F1.h"
-#include "HWTimer2.h"
 
 /* Include processor specific header files here if needed */
 
@@ -52,8 +51,8 @@ extern HWTimerInterface HWTimer2_FunctionTable;
 
 HWTimerPrescaleOptions HWTimer2_STM32_GetPrescaleOptions(void);
 
-void HWTimer2_STM32_ComputePeriodUs(HWTimerInitType_STM32 *retParams, uint32_t desiredPeriodUs, 
-    uint32_t clkInHz, uint16_t *retDiffInTicks);
+void HWTimer2_STM32_ComputePeriod(HWTimerInitType_STM32 *retParams, 
+    uint32_t desiredFreqHz, uint32_t clkInHz, uint16_t *retDiffInTicks);
 
 void HWTimer2_STM32_Init(HWTimerInitType_STM32 *params);
 

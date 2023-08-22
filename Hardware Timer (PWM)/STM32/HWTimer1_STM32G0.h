@@ -51,8 +51,8 @@ extern HWTimerInterface HWTimer1_FunctionTable;
 
 HWTimerPrescaleOptions HWTimer1_STM32_GetPrescaleOptions(void);
 
-void HWTimer1_STM32_ComputePeriodUs(HWTimerInitType_STM32 *params, uint32_t desiredPeriodUs, 
-    uint32_t clkInHz, uint16_t *retDiffInTicks);
+void HWTimer1_STM32_ComputePeriod(HWTimerInitType_STM32 *retParams, 
+    uint32_t desiredFreqHz, uint32_t clkInHz, uint16_t *retDiffInTicks);
 
 void HWTimer1_STM32_Init(HWTimerInitType_STM32 *params);
 

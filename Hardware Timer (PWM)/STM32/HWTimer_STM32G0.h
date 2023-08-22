@@ -62,8 +62,32 @@ typedef struct HWTimerInitType_STM32Tag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param base 
+ */
 void HWTimer_STM32_Create(HWTimer_STM32 *self, HWTimer *base);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param base 
+ */
 void HWTimer_STM32_CreateInitType(HWTimerInitType_STM32 *self, HWTimerInitType *base);
+
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param params 
+ * @param prescaleSelect 
+ * @param prescaleCounter 
+ * @param useOverflowInterrupt 
+ * @param useCompareMatchInterrupts 
+ */
+void HWTimer_SetInitTypeParams(HWTimerInitType_STM32 *params, HWTimerPrescaleSelect prescaleSelect,
+    uint16_t prescaleCounter, bool useOverflowInterrupt, bool useCompareMatchInterrupts);
 
 #endif  /* HW_TIM_STM32G0_H */
