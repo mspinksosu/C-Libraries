@@ -184,6 +184,15 @@ void HWTimer_Create(HWTimer *self, HWTimerInterface *interface);
 void HWTimer_CreateInitType(HWTimerInitType *params, void *instanceOfSubclass);
 
 /***************************************************************************//**
+ * @brief Set the default values of the HWTimerInitType object
+ * 
+ * Prescale settings to 0, timer period = maximum (0xFFFF), no interrupts
+ * 
+ * @param params  pointer to the HWTimerInitType you are using
+ */
+void HWTimer_SetInitTypeToDefaultParams(HWTimerInitType *params);
+
+/***************************************************************************//**
  * @brief Set the initial values for the HWTimerInitType
  * 
  * Alternatively, you can set the values of the HWTimerInitType members 
@@ -192,11 +201,12 @@ void HWTimer_CreateInitType(HWTimerInitType *params, void *instanceOfSubclass);
  * @param params  pointer to the HWTimerInitType you are using
  * @param prescaleSelect  the preselect options you want to use
  * @param prescaleCounter  value used if counter is selected as prescale option
+ * @param period  the period for the timer
  * @param useOverflowInterrupt  if true, enable overflow interrupt if available
  * @param useCompareMatchInterrupts  if true, enable CM interrupts if available
  */
 void HWTimer_SetInitTypeParams(HWTimerInitType *params, HWTimerPrescaleSelect prescaleSelect,
-    uint16_t prescaleCounter, bool useOverflowInterrupt, bool useCompareMatchInterrupts);
+    uint16_t prescaleCounter, uint16_t period, bool useOverflowInterrupt, bool useCompareMatchInterrupts);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -343,12 +353,11 @@ uint8_t HWTimer_GetNumCompareChannels(HWTimer *self);
  * @brief Set the compare value for a given channel (0-65535 full scale)
  * 
  * This does not set the value directly. Rather, it uses a 16-bit full scale
- * value and then computes the actual value based on the bits allowed by the 
- * compare channel. This is because some microcontrollers can use a 10-bit, 
- * 12-bit, or higher compare value. When the timer count hits the value set by 
- * the compare channel, you will get a compare match event. When using the 
- * compare output to generate a PWM waveform, you should not be altering the 
- * period of the timer, or else your compare match event may not get triggered.
+ * value and then computes the actual value based on the period of the timer.
+ * When the timer count hits the value set by the compare channel, you will get 
+ * a compare match event. When using the compare output to generate a PWM 
+ * waveform, you should not be altering the period of the timer, or else your 
+ * compare match event may not get triggered.
  * 
  * @param self  pointer to the HWTimer you are using
  * 
@@ -360,6 +369,9 @@ void HWTimer_SetCompare16Bit(HWTimer *self, uint8_t compChan, uint16_t compValue
 
 /***************************************************************************//**
  * @brief Get the compare value for a given channel (0-65535 full scale)
+ * 
+ * The value being returned will be scaled to a 16-bit number, regardless of 
+ * the size of the timer.
  * 
  * @param self  pointer to the HWTimer you are using
  * 
@@ -377,7 +389,7 @@ uint16_t HWTimer_GetCompare16Bit(HWTimer *self, uint8_t compChan);
  * compare channel, you will get a compare match event. When using the compare 
  * output to generate a PWM waveform, you should not be altering the period of 
  * the timer, or else your compare match event may not get triggered. If you 
- * need more resolution, use the SetCompare function instead.
+ * need more resolution, use the SetCompare16Bit function instead.
  * 
  * @param self  pointer to the HWTimer you are using
  * 

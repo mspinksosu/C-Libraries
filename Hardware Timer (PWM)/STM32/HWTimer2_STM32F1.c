@@ -27,8 +27,10 @@
 
 // ***** Defines ***************************************************************
 
-#define HW_TIM_NUM_COMP_CHANNELS   4
-#define TIMx    TIM2
+#define HW_TIM_SIZE_BITS            16
+#define HW_TIM_BITS_MAX                  (1 << HW_TIM_SIZE_BITS)
+#define HW_TIM_NUM_COMP_CHANNELS    4
+#define TIMx TIM2
 
 // ***** Global Variables ******************************************************
 
@@ -67,6 +69,7 @@ HWTimerInterface HWTimer2_FunctionTable = {
 };
 
 static bool useOverflowInterrupt = false, useCompareMatchInterrupts = false;
+static uint16_t timerPeriod = HW_TIM_BITS_MAX - 1;
 
 // local function pointers
 static void (*OverflowCallback)(void);
@@ -110,7 +113,7 @@ void HWTimer2_STM32_ComputePeriod(HWTimerInitType_STM32 *retParams,
     clkInHz <<= 5;
     /* I want the period of the timer to be as close as possible to 65535 to 
     give the most resolution */
-    prescale = clkInHz / HW_TIM_16_BIT_MAX / desiredFreqHz;
+    prescale = clkInHz / HW_TIM_BITS_MAX / desiredFreqHz;
     /* Add 0.5 to round the prescale value value up. 0.5 in 27.5 fixed point is 
     2^4 or 1 << 4. */
     prescale += (1 << 4);
@@ -121,7 +124,7 @@ void HWTimer2_STM32_ComputePeriod(HWTimerInitType_STM32 *retParams,
     /* @note I use this method if the prescale uses fixed powers of two rather 
     than a prescale counter. It can also work if there is a prescale table. 
     The idea is the same. It uses the smallest prescale value that gets the 
-    period as close the 65535 as possible. */
+    period as close the max as possible. */
     // do {
     //     if(prescale == 0)
     //         prescale = 1;
@@ -129,13 +132,13 @@ void HWTimer2_STM32_ComputePeriod(HWTimerInitType_STM32 *retParams,
     //         prescale <<= 1;
 
     //     period = clkInHz / prescale / desiredFreqHz;
-    // } while(period < HW_TIM_16_BIT_MAX - 1 && prescale < HW_TIM_16_BIT_MAX - 1);
+    // } while(period > HW_TIM_BITS_MAX - 1 && prescale < HW_TIM_BITS_MAX - 1);
 
     period = period - 1;
     retParams->super->prescaleCounterValue = (uint16_t)prescale;
     retParams->super->period = (uint16_t)period;
     retParams->super->prescaleSelect = HWTIM_PRESCALE_USES_COUNTER;
-    *retDiffInTicks = (HW_TIM_16_BIT_MAX - 1) - period;
+    *retDiffInTicks = (HW_TIM_BITS_MAX - 1) - period;
 }
 
 // *****************************************************************************
@@ -152,6 +155,7 @@ void HWTimer2_STM32_Init(HWTimerInitType_STM32 *params)
     TIMx->CCR4 = 0;
     TIMx->ARR = params->super->period;
     TIMx->PSC = params->super->prescaleCounterValue;
+    timerPeriod = params->super->period;
     /* Don't start the timer here */
 }
 
@@ -229,7 +233,14 @@ void HWTimer2_STM32_SetCompare16Bit(uint8_t compChan, uint16_t compValue)
         return;
     
     uint32_t *CCRx = compChanToAddress(compChan);
-    *CCRx = compValue;
+    /* Shift the timer period left to convert to a 24.8 fixed point number */
+    uint32_t fxpTimerPeriod = timerPeriod << 8;
+    uint32_t scaledCompValue = compValue * fxpTimerPeriod / (HW_TIM_16_BIT_MAX - 1);
+    /* Add 0.5 to round the fixed point result up */
+    scaledCompValue += (1 << 7);
+    /* Shift back right to get the final result */
+    scaledCompValue >>= 8;
+    *CCRx = (uint16_t)scaledCompValue;
 }
 
 // *****************************************************************************
@@ -240,7 +251,14 @@ uint16_t HWTimer2_STM32_GetCompare16Bit(uint8_t compChan)
         return;
     
     uint32_t *CCRx = compChanToAddress(compChan);
-    return *CCRx;
+    /* Shift the dividend left to conver to 24.8 fixed point number */
+    uint32_t fxpCompValue = *CCRx << 8;
+    uint32_t retVal = fxpCompValue * (HW_TIM_16_BIT_MAX - 1) / timerPeriod;
+    /* Add 0.5 to round the fixed point result up */
+    retVal += (1 << 7);
+    /* Shift back right to get the final result */
+    retVal >>= 8;
+    return retVal;
 }
 
 // *****************************************************************************
@@ -249,13 +267,19 @@ void HWTimer2_STM32_SetComparePercent(uint8_t compChan, uint8_t percent)
 {
     if(compChan >= HW_TIM_NUM_COMP_CHANNELS)
         return;
-    
+
     if(percent > 100)
         percent = 100;
 
     uint32_t *CCRx = compChanToAddress(compChan);
-    uint32_t compValue = percent * 65535 / 100;
-    *CCRx = compValue;
+    /* Shift the timer period left to convert to a 24.8 fixed point number */
+    uint32_t fxpTimerPeriod = timerPeriod << 8;
+    uint32_t scaledCompValue = percent * fxpTimerPeriod / 100;
+    /* Add 0.5 to round the fixed point result up */
+    scaledCompValue += (1 << 7);
+    /* Shift back right to get the final result */
+    scaledCompValue >>= 8;
+    *CCRx = (uint16_t)scaledCompValue;
 }
 
 // *****************************************************************************
@@ -266,7 +290,14 @@ uint8_t HWTimer2_STM32_GetComparePercent(uint8_t compChan)
         return 0;
 
     uint32_t *CCRx = compChanToAddress(compChan);
-    return *CCRx * 100 / 65535;
+    /* Shift the dividend left to conver to 24.8 fixed point number */
+    uint32_t fxpCompValue = *CCRx << 8;
+    uint32_t retVal = fxpCompValue * 100 / timerPeriod;
+    /* Add 0.5 to round the fixed point result up */
+    retVal += (1 << 7);
+    /* Shift back right to get the final result */
+    retVal >>= 8;
+    return retVal;
 }
 
 // *****************************************************************************

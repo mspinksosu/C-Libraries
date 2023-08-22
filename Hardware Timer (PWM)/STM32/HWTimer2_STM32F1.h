@@ -74,7 +74,7 @@ void HWTimer2_STM32_AddToCount(uint16_t addToCount);
 
 uint8_t HWTimer2_STM32_GetNumCompareChannels(void);
 
-void HWTimer2_STM32_SetCompare16Bit(uint8_t compChan, uint16_t compValue);
+void HWTimer2_STM32_SetCompare16Bit(uint8_t compChan, uint16_t compValue);  // TODO change to duty?
 
 uint16_t HWTimer2_STM32_GetCompare16Bit(uint8_t compChan);
 

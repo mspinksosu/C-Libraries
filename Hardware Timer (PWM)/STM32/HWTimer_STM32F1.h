@@ -78,16 +78,11 @@ void HWTimer_STM32_Create(HWTimer_STM32 *self, HWTimer *base);
  */
 void HWTimer_STM32_CreateInitType(HWTimerInitType_STM32 *self, HWTimerInitType *base);
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param params 
- * @param prescaleSelect 
- * @param prescaleCounter 
- * @param useOverflowInterrupt 
- * @param useCompareMatchInterrupts 
- */
+
+// TODO extra STM32 parameters
+void HWTimer_SetInitTypeToDefaultParams(HWTimerInitType_STM32 *params);
+
 void HWTimer_SetInitTypeParams(HWTimerInitType_STM32 *params, HWTimerPrescaleSelect prescaleSelect,
-    uint16_t prescaleCounter, bool useOverflowInterrupt, bool useCompareMatchInterrupts);
+    uint16_t prescaleCounter, uint16_t period, bool useOverflowInterrupt, bool useCompareMatchInterrupts);
 
 #endif  /* HW_TIM_STM32F1_H */

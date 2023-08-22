@@ -52,11 +52,24 @@ void HWTimer_CreateInitType(HWTimerInitType *params, void *instanceOfSubclass)
 
 // *****************************************************************************
 
+void HWTimer_SetInitTypeToDefaultParams(HWTimerInitType *params)
+{
+    params->count = 0;
+    params->prescaleSelect = 0;
+    params->prescaleCounterValue = 0;
+    params->period = 0xFFFF;
+    params->useOverflowInterrupt = false;
+    params->useCompareMatchInterrupts = false;
+}
+
+// *****************************************************************************
+
 void HWTimer_SetInitTypeParams(HWTimerInitType *params, HWTimerPrescaleSelect prescaleSelect,
-    uint16_t prescaleCounter, bool useOverflowInterrupt, bool useCompareMatchInterrupts)
+    uint16_t prescaleCounter, uint16_t period, bool useOverflowInterrupt, bool useCompareMatchInterrupts)
 {
     params->prescaleSelect = prescaleSelect;
     params->prescaleCounterValue = prescaleCounter;
+    params->period = period;
     params->useOverflowInterrupt = useOverflowInterrupt;
     params->useCompareMatchInterrupts = useCompareMatchInterrupts;
 }
