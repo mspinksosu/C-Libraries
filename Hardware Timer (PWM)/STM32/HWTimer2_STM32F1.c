@@ -153,9 +153,11 @@ void HWTimer2_STM32_Init(HWTimerInitType_STM32 *params)
     TIMx->CCR2 = 0;
     TIMx->CCR3 = 0;
     TIMx->CCR4 = 0;
-    TIMx->ARR = params->super->period;
+    /* Set the global variable and the reload value */
+    if(params->super->period < 0xFFFF)
+        timerPeriod = params->super->period;
+    TIMx->ARR = timerPeriod;
     TIMx->PSC = params->super->prescaleCounterValue;
-    timerPeriod = params->super->period;
     /* Don't start the timer here */
 }
 
