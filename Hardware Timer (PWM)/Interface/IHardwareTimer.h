@@ -133,6 +133,7 @@ typedef struct HWTimerInterfaceTag
 
 typedef struct HWTimerTag
 {
+    void *instance;
     HWTimerInterface *interface;
 } HWTimer;
 
@@ -151,13 +152,20 @@ typedef struct HWTimerTag
 ////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
- * @brief Set the function table for your HWTimer object
+ * @brief Combine the base class, sub class, and function table
+ * 
+ * My preferred method is to call this function from a sub class constructor. 
+ * This makes the create function more type safe. To create a sub class 
+ * constructor, make your own Create function that takes your sub class and 
+ * base class as arguments. Set your variables then call this function from it.
  * 
  * @param self  pointer to the HWTimer you are using
  * 
+ * @param instanceOfSubclass  the child object that implements HWTimer
+ * 
  * @param interface  pointer to the function table that your HWTimer uses
  */
-void HWTimer_Create(HWTimer *self, HWTimerInterface *interface);
+void HWTimer_Create(HWTimer *self, void *instanceOfSubClass, HWTimerInterface *interface);
 
 /***************************************************************************//**
  * @brief Combine the base class and sub class HWTimerInitType

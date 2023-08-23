@@ -38,8 +38,9 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void HWTimer_Create(HWTimer *self, HWTimerInterface *interface)
+void HWTimer_Create(HWTimer *self, void *instanceOfSubClass, HWTimerInterface *interface)
 {
+    self->instance = instanceOfSubClass;
     self->interface = interface;
 }
 
@@ -79,6 +80,19 @@ void HWTimer_SetInitTypeParams(HWTimerInitType *params, HWTimerPrescaleSelect pr
 // ***** Interface Functions *************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
+
+HWTimerPrescaleOptions HWTimer_GetPrescaleOptions(HWTimer *self)
+{
+    HWTimerPrescaleOptions retVal = {0};
+
+    if(self->interface->HWTimer_GetPrescaleOptions != NULL)
+    {
+        retVal = (self->interface->HWTimer_GetPrescaleOptions)();
+    }
+    return retVal;
+}
+
+// *****************************************************************************
 
 void HWTimer_ComputePeriod(HWTimer *self, HWTimerInitType *retParams, 
     uint32_t desiredFreqHz, uint32_t clkInHz, uint16_t *retDiffInTicks)

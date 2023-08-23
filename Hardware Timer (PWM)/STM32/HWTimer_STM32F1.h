@@ -68,7 +68,7 @@ typedef struct HWTimerInitType_STM32Tag
  * @param self 
  * @param base 
  */
-void HWTimer_STM32_Create(HWTimer_STM32 *self, HWTimer *base);
+void HWTimer_STM32_Create(HWTimer_STM32 *self, HWTimer *base, HWTimerInterface *interface); // TODO need to make HWTimer_STM32F1.c
 
 /***************************************************************************//**
  * @brief 
@@ -76,7 +76,7 @@ void HWTimer_STM32_Create(HWTimer_STM32 *self, HWTimer *base);
  * @param self 
  * @param base 
  */
-void HWTimer_STM32_CreateInitType(HWTimerInitType_STM32 *self, HWTimerInitType *base);
+void HWTimer_STM32_CreateInitType(HWTimerInitType_STM32 *self, HWTimerInitType *base); // TODO need to make HWTimer_STM32F1.c
 
 
 // TODO extra STM32 parameters
