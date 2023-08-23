@@ -56,8 +56,8 @@ HWTimerInterface HWTimer2_FunctionTable = {
     .HWTimer_GetCompare16Bit = HWTimer2_STM32_GetCompare16Bit,
     .HWTimer_SetComparePercent = HWTimer2_STM32_SetComparePercent,
     .HWTimer_GetComparePercent = HWTimer2_STM32_GetComparePercent,
-    .HWTimer_EnableCompare = HWTimer2_STM32_EnableCompare,
-    .HWTimer_DisableCompare = HWTimer2_STM32_DisableCompare,
+    .HWTimer_EnableComparePWM = HWTimer2_STM32_EnableComparePWM,
+    .HWTimer_DisableComparePWM = HWTimer2_STM32_DisableComparePWM,
     .HWTimer_GetOverflow = HWTimer2_STM32_GetOverflow,
     .HWTimer_ClearOverflowFlag = HWTimer2_STM32_ClearOverflowFlag,
     .HWTimer_GetCompareMatch = HWTimer2_STM32_GetCompareMatch,
@@ -304,7 +304,7 @@ uint8_t HWTimer2_STM32_GetComparePercent(uint8_t compChan)
 
 // *****************************************************************************
 
-void HWTimer2_STM32_EnableComparePWM(HWTimer *self, uint8_t compChan)
+void HWTimer2_STM32_EnableComparePWM(uint8_t compChan)
 {
     if(compChan < HW_TIM_NUM_COMP_CHANNELS)
     {
@@ -334,7 +334,7 @@ void HWTimer2_STM32_EnableComparePWM(HWTimer *self, uint8_t compChan)
 
 // *****************************************************************************
 
-void HWTimer2_STM32_DisableComparePWM(HWTimer *self, uint8_t compChan)
+void HWTimer2_STM32_DisableComparePWM(uint8_t compChan)
 {
     if(compChan < HW_TIM_NUM_COMP_CHANNELS)
     {

@@ -82,9 +82,9 @@ void HWTimer2_STM32_SetComparePercent(uint8_t compChan, uint8_t percent);
 
 uint8_t HWTimer2_STM32_GetComparePercent(uint8_t compChan);
 
-void HWTimer2_STM32_EnableComparePWM(HWTimer *self, uint8_t compChan);
+void HWTimer2_STM32_EnableComparePWM(uint8_t compChan);
 
-void HWTimer2_STM32_DisableComparePWM(HWTimer *self, uint8_t compChan);
+void HWTimer2_STM32_DisableComparePWM(uint8_t compChan);
 
 bool HWTimer2_STM32_GetOverflow(void);
 
