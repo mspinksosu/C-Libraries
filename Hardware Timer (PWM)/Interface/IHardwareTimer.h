@@ -119,7 +119,7 @@ typedef struct HWTimerInterfaceTag
     uint16_t (*HWTimer_GetCompare16Bit)(uint8_t compChan);
     void (*HWTimer_SetComparePercent)(uint8_t compChan, uint8_t percent);
     uint8_t (*HWTimer_GetComparePercent)(uint8_t compChan);
-    void (*HWTimer_EnableComparePWM)(uint8_t compChan, bool useInterrupt);
+    void (*HWTimer_EnableComparePWM)(uint8_t compChan);
     void (*HWTimer_DisableComparePWM)(uint8_t compChan);
     bool (*HWTimer_GetOverflow)(void);
     void (*HWTimer_ClearOverflowFlag)(void);
@@ -203,6 +203,9 @@ void HWTimer_SetInitTypeParams(HWTimerInitType *params, HWTimerPrescaleSelect pr
 // ***** Interface Functions *************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
+
+// TODO add a mode function in future
+// TODO add a interrupt enable function in the future
 
 /***************************************************************************//**
  * @brief Get the prescale options for the Hardware Timer
@@ -416,9 +419,7 @@ uint8_t HWTimer_GetComparePercent(HWTimer *self, uint8_t compChan);
  * 
  * @param compChan  the number of the compare channel (beginning with 0)
  */
-void HWTimer_EnableComparePWM(HWTimer *self, uint8_t compChan); // Add mode function in future
-
-// TODO add use interrupt function
+void HWTimer_EnableComparePWM(HWTimer *self, uint8_t compChan);
 
 /***************************************************************************//**
  * @brief Disable a compare match channel

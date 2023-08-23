@@ -256,41 +256,21 @@ uint8_t HWTimer_GetComparePercent(HWTimer *self, uint8_t compChan)
 
 // *****************************************************************************
 
-void HWTimer_EnableCompare(HWTimer *self, uint8_t compChan, bool useInterrupt)
+void HWTimer_EnableComparePWM(HWTimer *self, uint8_t compChan)
 {
-    if(self->interface->HWTimer_EnableCompare != NULL)
+    if(self->interface->HWTimer_EnableComparePWM!= NULL)
     {
-        (self->interface->HWTimer_EnableCompare)(compChan, useInterrupt);
+        (self->interface->HWTimer_EnableComparePWM)(compChan);
     }
 }
 
 // *****************************************************************************
 
-void HWTimer_DisableCompare(HWTimer *self, uint8_t compChan)
+void HWTimer_DisableComparePWM(HWTimer *self, uint8_t compChan)
 {
-    if(self->interface->HWTimer_DisableCompare != NULL)
+    if(self->interface->HWTimer_DisableComparePWM != NULL)
     {
-        (self->interface->HWTimer_DisableCompare)(compChan);
-    }
-}
-
-// *****************************************************************************
-
-void HWTimer_EnableComparePWMOutput(HWTimer *self, uint8_t compChan)
-{
-    if(self->interface->HWTimer_EnableComparePWMOutput != NULL)
-    {
-        (self->interface->HWTimer_EnableComparePWMOutput)(compChan);
-    }
-}
-
-// *****************************************************************************
-
-void HWTimer_DisableComparePWMOutput(HWTimer *self, uint8_t compChan)
-{
-    if(self->interface->HWTimer_DisableComparePWMOutput != NULL)
-    {
-        (self->interface->HWTimer_DisableComparePWMOutput)(compChan);
+        (self->interface->HWTimer_DisableComparePWM)(compChan);
     }
 }
 

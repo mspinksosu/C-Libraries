@@ -304,50 +304,56 @@ uint8_t HWTimer2_STM32_GetComparePercent(uint8_t compChan)
 
 // *****************************************************************************
 
-void HWTimer2_STM32_EnableCompare(uint8_t compChan, bool useInterrupt)
+void HWTimer2_STM32_EnableComparePWM(HWTimer *self, uint8_t compChan)
 {
     if(compChan < HW_TIM_NUM_COMP_CHANNELS)
     {
-        TIMx->CCER |= (1 << (compChan * 4));
-        
-        /* Only CC channels 0 - 3 (CC1 to CC4) have interrupts */
-        // if(compChan < 4)
-        // {
-        //     if(useInterrupt)
-        //         TIMx->DIER |= (1 << (compChan + 1)); // bits [4:1]
-        //     else
-        //         TIMx->DIER &= ~(1 << (compChan + 1)); // bits [4:1]
-        // }
+        uint32_t mode = TIM_CCMR1_OC1M_2; // PWM mode 1 (positive polarity)
+        mode |= TIM_CCMR1_OC1M_1;
+        mode &= ~TIM_CCMR1_OC1M_0;
+        /* Select either the upper or lower OCxM bits (0 or 1) */
+        uint32_t ocmSelect = compChan & 0x01;
+
+        switch(compChan)
+        {
+            case 0:
+            case 1:
+                TIMx->CCMR1 &= ~(TIM_CCMR1_OC1M << (ocmSelect * 8));
+                TIMx->CCMR1 |= (mode << (ocmSelect * 8));
+                TIMx->CCER |= (1 << (compChan * 4)); // enable
+                break;
+            case 2:
+            case 3:
+                TIMx->CCMR2 &= ~(TIM_CCMR1_OC1M << (ocmSelect * 8));
+                TIMx->CCMR2 |= (mode << (ocmSelect * 8));
+                TIMx->CCER |= (1 << (compChan * 4)); // enable
+                break;
+        }
     }
 }
 
 // *****************************************************************************
 
-void HWTimer2_STM32_DisableCompare(uint8_t compChan)
+void HWTimer2_STM32_DisableComparePWM(HWTimer *self, uint8_t compChan)
 {
     if(compChan < HW_TIM_NUM_COMP_CHANNELS)
     {
-        TIMx->CCER &= ~(1 << (compChan * 4));
-    }
-}
+        /* Select either the upper or lower OCxM bits (0 or 1) */
+        uint32_t ocmSelect = compChan & 0x01;
 
-// *****************************************************************************
-
-void HWTimer2_STM32_EnableComparePWMOutput(HWTimer *self, uint8_t compChan)
-{
-    if(compChan < HW_TIM_NUM_COMP_CHANNELS)
-    {
-        TIMx->CCER &= ~(1 << (compChan * 4));
-    }
-}
-
-// *****************************************************************************
-
-void HWTimer2_STM32_DisableComparePWMOutput(HWTimer *self, uint8_t compChan)
-{
-    if(compChan < HW_TIM_NUM_COMP_CHANNELS)
-    {
-        TIMx->CCER &= ~(1 << (compChan * 4));
+        switch(compChan)
+        {
+            case 0:
+            case 1:
+                TIMx->CCMR1 &= ~(TIM_CCMR1_OC1M << (ocmSelect * 8));
+                TIMx->CCER &= ~(1 << (compChan * 4));
+                break;
+            case 2:
+            case 3:
+                TIMx->CCMR2 &= ~(TIM_CCMR1_OC1M << (ocmSelect * 8));
+                TIMx->CCER &= ~(1 << (compChan * 4));
+                break;
+        }
     }
 }
 
