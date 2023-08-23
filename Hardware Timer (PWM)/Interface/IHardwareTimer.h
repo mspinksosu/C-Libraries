@@ -119,10 +119,8 @@ typedef struct HWTimerInterfaceTag
     uint16_t (*HWTimer_GetCompare16Bit)(uint8_t compChan);
     void (*HWTimer_SetComparePercent)(uint8_t compChan, uint8_t percent);
     uint8_t (*HWTimer_GetComparePercent)(uint8_t compChan);
-    void (*HWTimer_EnableCompare)(uint8_t compChan, bool useInterrupt);
-    void (*HWTimer_DisableCompare)(uint8_t compChan);
-    void (*HWTimer_EnableComparePWMOutput)(uint8_t compChan);
-    void (*HWTimer_DisableComparePWMOutput)(uint8_t compChan);
+    void (*HWTimer_EnableComparePWM)(uint8_t compChan, bool useInterrupt);
+    void (*HWTimer_DisableComparePWM)(uint8_t compChan);
     bool (*HWTimer_GetOverflow)(void);
     void (*HWTimer_ClearOverflowFlag)(void);
     bool (*HWTimer_GetCompareMatch)(uint8_t compChan);
@@ -405,6 +403,10 @@ uint8_t HWTimer_GetComparePercent(HWTimer *self, uint8_t compChan);
 /***************************************************************************//**
  * @brief Enable a compare match channel
  * 
+ * The compare channel should be in PWM mode. The output should be low when the 
+ * count is below the compare value and high when it is above it. Enabling PWM 
+ * mode does not alter the pin settings.
+ * 
  * The compare match channels should be numbered in ascending order starting
  * with zero. Sometimes microcontrollers will use letters 'A' 'B' etc.
  * If you enable the compare match interrupt, you must utlize the 
@@ -413,10 +415,10 @@ uint8_t HWTimer_GetComparePercent(HWTimer *self, uint8_t compChan);
  * @param self  pointer to the HWTimer you are using
  * 
  * @param compChan  the number of the compare channel (beginning with 0)
- * 
- * @param useInterrupt  enable compare match channel interrupt
  */
-void HWTimer_EnableCompare(HWTimer *self, uint8_t compChan, bool useInterrupt);
+void HWTimer_EnableComparePWM(HWTimer *self, uint8_t compChan); // Add mode function in future
+
+// TODO add use interrupt function
 
 /***************************************************************************//**
  * @brief Disable a compare match channel
@@ -425,33 +427,7 @@ void HWTimer_EnableCompare(HWTimer *self, uint8_t compChan, bool useInterrupt);
  * 
  * @param compChan  the number of the compare channel (beginning with 0)
  */
-void HWTimer_DisableCompare(HWTimer *self, uint8_t compChan);
-
-/***************************************************************************//**
- * @brief Set the compare match channel to output PWM to a pin
- * 
- * Allow the compare match channel to output a basic PWM waveform. The output 
- * should be low when the count is below the compare value and high when it is 
- * above it. Another other settings or features will be extended in the 
- * subclass.
- * 
- * Enabling PWM output does not enable the compare match channel itself.
- * @see HWTimer_EnableCompare
- * 
- * @param self  pointer to the HWTimer you are using
- * 
- * @param compChan  the number of the compare channel (beginning with 0)
- */
-void HWTimer_EnableComparePWMOutput(HWTimer *self, uint8_t compChan);
-
-/***************************************************************************//**
- * @brief Disable the compare match channel PWM output
- * 
- * @param self  pointer to the HWTimer you are using
- * 
- * @param compChan  the number of the compare channel (beginning with 0)
- */
-void HWTimer_DisableComparePWMOutput(HWTimer *self, uint8_t compChan);
+void HWTimer_DisableComparePWM(HWTimer *self, uint8_t compChan);
 
 /***************************************************************************//**
  * @brief Check if the overflow flag is set
