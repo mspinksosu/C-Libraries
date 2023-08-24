@@ -81,11 +81,10 @@ typedef struct MFInterfaceTag
 
 typedef struct MapFunctionTag
 {
-    /*  A base class must contain at minimum, a pointer to the sub class's 
-        interface and a void pointer. */
-    MFInterface *interface;
+    /*  A base class must contain at minimum, a void pointer and a pointer to 
+    the sub class's interface */
     void *instance;
-
+    MFInterface *interface;
 } MapFunction;
 
 /**

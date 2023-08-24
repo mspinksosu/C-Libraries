@@ -42,6 +42,18 @@ void Foo_Create(Foo *self, void *instanceOfSubclass, Foo_Interface *interface)
 {
     self->instance = instanceOfSubclass;
     self->interface = interface;
+
+    /* @note This is a method for setting the pointer to the super class called 
+    type-punning. This only works if the super class pointer is the first 
+    member of the sub class struct. Since we know the first member of the sub 
+    class is going to be a pointer to a Foo, we can cast the instance pointer 
+    as a pointer to a *Foo. */
+    // Foo **ptrToSuper = (Foo**)instanceOfSubClass;
+    // *ptrToSuper = self;
+
+    /* I prefer to set the pointer within a subclass Create function instead 
+    because it is much safer. If the first member is not a pointer to the base 
+    class, that method will still work. @see Foo_MCU1_Create */
 }
 
 ////////////////////////////////////////////////////////////////////////////////
