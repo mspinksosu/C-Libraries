@@ -157,6 +157,7 @@ void HWTimer2_STM32_ComputePeriod(HWTimerInitType_STM32 *retParams,
     rather than a prescale counter. It can also work if there is a prescale 
     table. The idea is the same. It uses the smallest prescale value that gets 
     the period as close the max as possible. */
+    // prescale = 0;
     // do {
     //     if(prescale == 0)
     //         prescale = 1;
@@ -196,9 +197,11 @@ void HWTimer2_STM32_Init(HWTimerInitType_STM32 *params)
     /* Set the global variable and the reload value */
     if(params->super->period < 0xFFFF)
         timerPeriod = params->super->period;
+    else
+        timerPeriod = 0xFFFF;
     TIMx->ARR = timerPeriod;
     TIMx->PSC = params->super->prescaleCounterValue;
-    /* Don't start the timer here */
+    /* Don't start the timer yet */
 }
 
 // *****************************************************************************
@@ -275,13 +278,7 @@ void HWTimer2_STM32_SetCompare16Bit(uint8_t compChan, uint16_t compValue)
         return;
     
     uint32_t *CCRx = (uint32_t*)compChanToAddress(compChan);
-    /* Shift the timer period left to convert to a 24.8 fixed point number */
-    uint32_t fxpTimerPeriod = timerPeriod << 8;
-    uint32_t scaledCompValue = compValue * fxpTimerPeriod / (HW_TIM_16_BIT_MAX - 1);
-    /* Add 0.5 to round the fixed point result up */
-    scaledCompValue += (1 << 7);
-    /* Shift back right to get the final result */
-    scaledCompValue >>= 8;
+    uint32_t scaledCompValue = compValue * timerPeriod / (HW_TIM_16_BIT_MAX - 1);
     *CCRx = (uint16_t)scaledCompValue;
 }
 
@@ -293,13 +290,8 @@ uint16_t HWTimer2_STM32_GetCompare16Bit(uint8_t compChan)
         return 0;
     
     uint32_t *CCRx = (uint32_t*)compChanToAddress(compChan);
-    /* Shift the dividend left to conver to 24.8 fixed point number */
-    uint32_t fxpCompValue = *CCRx << 8;
-    uint32_t retVal = fxpCompValue * (HW_TIM_16_BIT_MAX - 1) / timerPeriod;
-    /* Add 0.5 to round the fixed point result up */
-    retVal += (1 << 7);
-    /* Shift back right to get the final result */
-    retVal >>= 8;
+    uint32_t compValue = *CCRx;
+    uint32_t retVal = compValue * (HW_TIM_16_BIT_MAX - 1) / timerPeriod;
     return retVal;
 }
 
