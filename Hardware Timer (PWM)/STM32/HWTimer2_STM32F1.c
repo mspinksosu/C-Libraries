@@ -105,36 +105,76 @@ HWTimerPrescaleOptions HWTimer2_STM32_GetPrescaleOptions(void)
 void HWTimer2_STM32_ComputePeriod(HWTimerInitType_STM32 *retParams, 
     uint32_t desiredFreqHz,  uint32_t clkInHz, uint16_t *retDiffInTicks)
 {
-    uint32_t period = 0, prescale = 0;
+    uint32_t period = 0, prescale = 1, fxpClkInHz, integerPart = 0;
+    /* I want the period of the timer to be as large as possible to give the 
+    most resolution. Equations: 
+    prescale = clkInHz / HW_TIM_BITS_MAX / desiredFreqHz 
+    period = clkInHz / prescale / desiredFreqHz */
 
     /* Shift the clock input left to convert to a 27.5 fixed point number. 
     A 27.5 fixed point number is just large enough to support the maximum 
     system clock. 2^27 = 134 MHz. Max clock = 72 MHz. */
-    clkInHz <<= 5;
-    /* I want the period of the timer to be as close as possible to 65535 to 
-    give the most resolution */
-    prescale = clkInHz / HW_TIM_BITS_MAX / desiredFreqHz;
-    /* Add 0.5 to round the prescale value value up. 0.5 in 27.5 fixed point is 
-    2^4 or 1 << 4. */
-    prescale += (1 << 4);
-    /* Now shift back to get the prescale integer */
-    prescale >>= 5;
-    period = clkInHz / prescale / desiredFreqHz;
+    fxpClkInHz = clkInHz << 5;
 
-    /* @note I use this method if the prescale uses fixed powers of two rather 
-    than a prescale counter. It can also work if there is a prescale table. 
-    The idea is the same. It uses the smallest prescale value that gets the 
-    period as close the max as possible. */
+    if(clkInHz / desiredFreqHz > (HW_TIM_BITS_MAX - 1))
+    {
+        prescale = fxpClkInHz / HW_TIM_BITS_MAX;
+        /* Add 0.5 to round the prescale value value up. 0.5 in 27.5 fixed 
+        point is 2^4 or 1 << 4. */
+        prescale += (1 << 4);
+        /* Shift to gain back some precision before dividing again. This will 
+        make it 23.9 fxp. */
+        prescale <<= 4;
+        prescale = prescale / desiredFreqHz;
+        /* Add 0.5 to round up again */
+        prescale += (1 << 8);
+        /* Now shift back to get the prescale integer */
+        integerPart = prescale >> 9;
+        /* Perform a ceiling function. If our prescale value in fixed point is 
+        greater than the integer part, then there is a decimal digit. Round up 
+        to the next integer. */
+        if(prescale > (integerPart << 9))
+            integerPart++;
+        prescale = integerPart;
+    }
+    else
+    {
+        prescale = 1;
+    }
+
+    /* Now calculate the period needed (27.5 fxp) */
+    period = fxpClkInHz / prescale;
+    /* Add 0.5 to round the period value value up. 0.5 in 27.5 fixed point is 
+    2^4 or 1 << 4. */
+    period += (1 << 4);
+    period = period / desiredFreqHz;
+    /* Add 0.5 to round up again */
+    period += (1 << 4);
+    /* Now shift back to get the result */
+    period >>= 5;
+
+    /* @note I use this method instead if the prescale uses fixed powers of two 
+    rather than a prescale counter. It can also work if there is a prescale 
+    table. The idea is the same. It uses the smallest prescale value that gets 
+    the period as close the max as possible. */
     // do {
     //     if(prescale == 0)
     //         prescale = 1;
     //     else
     //         prescale <<= 1;
 
-    //     period = clkInHz / prescale / desiredFreqHz;
+    //     period = fxpClkInHz / prescale;
+    //     period += (1 << 4);
+    //     period = period / desiredFreqHz;
+    //     period += (1 << 4);
+    //     period >>= 5;
     // } while(period > HW_TIM_BITS_MAX - 1 && prescale < HW_TIM_BITS_MAX - 1);
 
-    period = period - 1;
+    /* Subtract one to get the actual values to be loaded into the register */
+    if(prescale > 0)
+        prescale--;
+    if(period > 0)
+        period--;
     retParams->super->prescaleCounterValue = (uint16_t)prescale;
     retParams->super->period = (uint16_t)period;
     retParams->super->prescaleSelect = HWTIM_PRESCALE_USES_COUNTER;
