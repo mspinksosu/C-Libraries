@@ -48,6 +48,7 @@
 
 // ***** Defines ***************************************************************
 
+#define DEFAULT_EC_PRIORITY_LEVEL   64
 
 // ***** Global Variables ******************************************************
 
@@ -148,30 +149,69 @@ bool ErrorCode_IsRunning(void);
 /***************************************************************************//**
  * @brief Get error code mask
  * 
- * Returns all the error codes in a 32-bit word. Remember that the bits are
- * numbered 0 through 31, but the error codes are 1 through 32
+ * Returns all the error codes in a 64-bit word. Remember that the bits are
+ * numbered 0 through 63, but the error codes are 1 through 64.
  * 
- * @return uint32_t  a bit mask. 1 = error code set, 0 = error code cleared
+ * @return uint64_t  a bit mask. 1 = error code set, 0 = error code cleared
  */
-uint32_t ErrorCode_GetActiveMask(void);
+uint64_t ErrorCode_GetActiveMask(void);
+
+/***************************************************************************//**
+ * @brief Get a range of error codes as a mask
+ * 
+ * Returns the range of error codes you specify as a 32-bit word. Remember that 
+ * the bits are numbered 0 through 63, but the error codes are 1 through 64.
+ * 
+ * @param errorCodeEnd  the error code of the end of the range
+ * 
+ * @param errorCodeStart  the error code of the start of the range
+ * 
+ * @return uint32_t  result (truncated if larger than 32)
+ */
+uint32_t ErrorCode_GetActiveMaskRange(uint8_t errorCodeEnd, uint8_t errorCodeStart);
 
 /***************************************************************************//**
  * @brief Change behavior for flashing the top n number of codes
  * 
  * The default behavior is to go through every error code and flash each one
- * with a pause in between them. By setting this value less than 32, you can
- * control how many error codes are flashed. The priority of error codes is 
- * from smallest to largest. 
+ * with a pause in between them. By setting this value less than the maximum, 
+ * you can control how many error codes are flashed. The priority of error 
+ * codes is controlled by the SetPriorityLevel function.
  * 
  * For example, if you only want to blink one error code to the customer set 
- * this value to 1. If error codes 3 and 5 are both active, then only error 
- * code 3 gets flashed.
+ * this value to 1. If error codes 3 and 5 are both active, then only the one 
+ * with the highest priority (lowest number) gets displayed.
  * 
  * A value of 0 is not allowed. If you set it to zero, it will be set to 1.
- * A value or 32 or greater will enable all.
+ * A value greater than the maximum will enable all.
+ * 
+ * @see ErrorCode_SetPriorityLevel
  * 
  * @param displayNumErrorCodes  flash up to 1 to 32 codes. (32 is default) 
  */
 void ErrorCode_SetDisplayTopNumOfCodes(uint8_t displayNumErrorCodes);
+
+/***************************************************************************//**
+ * @brief Change the priority of an error code
+ * 
+ * If multiple error codes are to be displayed, the ones with lower priority 
+ * numbers get flashed first. The default priority number is 64. 
+ * 
+ * For example, change error code 1 to be priority 65 and set 
+ * SetDisplayTopNumOfCodes to 1. If error code 1 is the only error code, it 
+ * will be displayed. If error codes 1 and 3 are active, only error code 3 gets 
+ * displayed. Increasing the number of error codes to display will allow both 
+ * to be displayed. First error 3, then error code 1.
+ * 
+ * If you change two error codes to the same priority number, they will be 
+ * displayed in the order in which you changed the priority level. For example, 
+ * if you set error codes 5 to priority 1 and then error code 4 to priority 1, 
+ * error code 5 gets displayed first, then 4.
+ * 
+ * @param code  error code 1 to 32
+ * 
+ * @param priority  priority number (64 is default)
+ */
+void ErrorCode_SetPriorityLevel(uint8_t code, uint8_t priority);
 
 #endif /* ERROR_CODE_H */

@@ -30,6 +30,8 @@
 
 #define ERROR_CODE_SHORT_PAUSE_SIZE     1
 #define ERROR_CODE_LONG_PAUSE_SIZE      2
+#define MAX_BITS                        64
+#define MAX_VALUE                       0xFFFFFFFFFFFFFFFF
 
 // ***** Global Variables ******************************************************
 
@@ -42,32 +44,42 @@ static PatternState errorPause[2] = {{.output = 0, .timeInMs = 450},
                                      {.output = 0, .timeInMs = 800}};
 
 static Pattern errorCodePattern;
-static uint32_t activeErrorMask, errorCodesToDisplayMask;
-static uint8_t currentErrorCode, numFlashes, output;
-static uint8_t numErrorCodesToDisplay = 32;
+static uint8_t sortedErrorCodes[MAX_BITS][2];
+static uint64_t activeErrorMask, errorCodesToDisplayMask;
+static uint8_t currentErrorCodeIndex, numFlashes, output;
+static uint8_t numErrorCodesToDisplay = MAX_BITS, errorCodeDisplayCount;
 static bool errorCodeFinished = true, errorCodeRunning, stopSignal;
 enum stopOptions {STOP_IMMEDIATELY, STOP_ON_NEXT_OFF_STATE, STOP_WHEN_FINISHED};
 static enum stopOptions stopBehavior = STOP_IMMEDIATELY;
 
 // ***** Static Function Prototypes ********************************************
 
-static uint8_t GetNextErrorCode(void);
+static void SortErrorCodeArrayByPriority(void);
+static uint8_t GetNextErrorCodeIndex(void);
 
 // *****************************************************************************
 
 void ErrorCode_InitMs(uint16_t tickMs)
 {
     activeErrorMask = 0;
-    currentErrorCode = 0;
-    errorCodesToDisplayMask = 0xFFFFFFFF >> (32 - numErrorCodesToDisplay);
+    currentErrorCodeIndex = MAX_BITS - 1;
+    errorCodesToDisplayMask = MAX_VALUE >> (MAX_BITS - numErrorCodesToDisplay);
     Pattern_InitMs(&errorCodePattern, tickMs);
+
+    /* Error codes go from 1 to 64 */
+    for(uint8_t i = 0; i < MAX_BITS; i++)
+    {
+        sortedErrorCodes[i][0] = i + 1;
+        sortedErrorCodes[i][1] = DEFAULT_EC_PRIORITY_LEVEL;
+    }
+    SortErrorCodeArrayByPriority();
 }
 
 // *****************************************************************************
 
 void ErrorCode_Set(uint8_t code)
 {
-    if(code > 32 || code == 0)
+    if(code > MAX_BITS || code == 0)
         return;
 
     code--;
@@ -78,7 +90,7 @@ void ErrorCode_Set(uint8_t code)
 
 void ErrorCode_Clear(uint8_t code)
 {
-    if(code > 32 || code == 0)
+    if(code > MAX_BITS || code == 0)
         return;
 
     code--;
@@ -98,13 +110,12 @@ bool ErrorCode_IsSet(uint8_t code)
 {
     bool retVal = false;
 
-    if(code <= 32 && code > 0)
+    if(code <= MAX_BITS && code > 0)
     {
         code--;
         if(activeErrorMask & (1UL << code))
             retVal = true;
     }
-    
     return retVal;
 }
 
@@ -112,8 +123,6 @@ bool ErrorCode_IsSet(uint8_t code)
 
 void ErrorCode_Tick(void)
 {
-    static uint8_t errorCodesDisplayCount = 0;
-
     Pattern_Tick(&errorCodePattern);
     output = Pattern_GetOutput(&errorCodePattern);
 
@@ -156,19 +165,18 @@ void ErrorCode_Tick(void)
     {
         /* Start another LED flash sequence. First, check how many error codes 
         we are supposed to display. If we reach our limit, skip to the end and
-        start over. We always take n number active errors codes of the lowest 
-        value. So in a sense, error codes are prioritized by number with lower 
-        numbers being higher priority. */
-        if(errorCodesDisplayCount >= numErrorCodesToDisplay)
+        start over. */
+        if(errorCodeDisplayCount >= numErrorCodesToDisplay)
         {
-            errorCodesDisplayCount = 0;
-            currentErrorCode = 32;
+            errorCodeDisplayCount = 0;
+            currentErrorCodeIndex = MAX_BITS - 1;
         }
 
-        currentErrorCode = GetNextErrorCode();
-        errorCodesDisplayCount++;
-
-        numFlashes = currentErrorCode;
+        uint8_t nextErrorCodeIndex = GetNextErrorCodeIndex();
+        if(nextErrorCodeIndex != currentErrorCodeIndex)
+            errorCodeDisplayCount++;
+        currentErrorCodeIndex = nextErrorCodeIndex;
+        numFlashes = sortedErrorCodes[currentErrorCodeIndex][0];
         Pattern_Load(&errorCodePattern, errorFlash, 2);
         Pattern_StopAtomic(&errorCodePattern);
         errorCodeFinished = false;
@@ -180,7 +188,7 @@ void ErrorCode_Tick(void)
 
 uint8_t ErrorCode_GetCurrentCode(void)
 {
-    return currentErrorCode;
+    return sortedErrorCodes[currentErrorCodeIndex][0];
 }
 
 // *****************************************************************************
@@ -230,9 +238,41 @@ bool ErrorCode_IsRunning(void)
 
 // *****************************************************************************
 
-uint32_t ErrorCode_GetActiveMask(void)
+uint64_t ErrorCode_GetActiveMask(void)
 {
     return activeErrorMask;
+}
+
+// *****************************************************************************
+
+uint32_t ErrorCode_GetActiveMaskRange(uint8_t errorCodeEnd, uint8_t errorCodeStart)
+{
+    if(errorCodeEnd > 64 || errorCodeStart > 64 || 
+        errorCodeEnd == 0 || errorCodeStart == 0)
+        return 0;
+
+    if(errorCodeStart > errorCodeEnd)
+    {
+        uint8_t tmp = errorCodeEnd;
+        errorCodeEnd = errorCodeStart;
+        errorCodeStart = tmp;
+    }
+
+    errorCodeStart--;
+    errorCodeEnd--;
+    uint32_t result = 0;
+    uint8_t bit = errorCodeStart, d = 0;
+
+    while(bit <= errorCodeEnd && d < 31)
+    {
+        if(activeErrorMask & (1ULL << bit))
+        {
+            result |= (1UL << d);
+        }
+        d++;
+        bit++;
+    }
+    return result;
 }
 
 // *****************************************************************************
@@ -241,11 +281,33 @@ void ErrorCode_SetDisplayTopNumOfCodes(uint8_t flashNumErrorCodes)
 {
     if(flashNumErrorCodes == 0)
         flashNumErrorCodes = 1;
-    else if(flashNumErrorCodes > 32)
-        flashNumErrorCodes = 32;
+    else if(flashNumErrorCodes > MAX_BITS)
+        flashNumErrorCodes = MAX_BITS;
 
     numErrorCodesToDisplay = flashNumErrorCodes;
-    errorCodesToDisplayMask = 0xFFFFFFFF >> (32 - numErrorCodesToDisplay);
+    errorCodesToDisplayMask = MAX_VALUE >> (MAX_BITS - numErrorCodesToDisplay);
+}
+
+// *****************************************************************************
+
+void ErrorCode_SetPriorityLevel(uint8_t code, uint8_t priority)
+{
+    if(code <= MAX_BITS && code > 0)
+    {
+        /* Locate the desired error code. Returns -1 if not found. */
+        int8_t i = sizeof(sortedErrorCodes) / sizeof(sortedErrorCodes[0]) - 1;
+        for(; i >= 0; i--)
+        {
+            if(sortedErrorCodes[i][0] == code)
+                break;
+        }
+
+        if(i > 0)
+        {
+            sortedErrorCodes[i][1] = priority;
+            SortErrorCodeArrayByPriority();
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -255,26 +317,56 @@ void ErrorCode_SetDisplayTopNumOfCodes(uint8_t flashNumErrorCodes)
 ////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
- * @brief Get the Next Error Code
+ * @brief Sort the array of error codes
+ * 
+ * The array of error codes contains a list of error codes and their priority
+ * number. sortedErrorCodes[x][0] is the error code number from 1 to 32. 
+ * sortedErrorCodes[x][1] is the priority value. A lower priority number means 
+ * higher priority.
+ */
+static void SortErrorCodeArrayByPriority(void)
+{
+    int8_t i, j, code, priority;
+    for(i = 1; i < sizeof(sortedErrorCodes) / sizeof(sortedErrorCodes[0]); i++)
+    {
+        code = sortedErrorCodes[i][0];
+        priority = sortedErrorCodes[i][1];
+        j = i - 1;
+
+        while(j >= 0 && sortedErrorCodes[j][1] > priority)
+        {
+            sortedErrorCodes[j + 1][0] = sortedErrorCodes[j][0];
+            sortedErrorCodes[j + 1][1] = sortedErrorCodes[j][1];
+            j--;
+        }
+        sortedErrorCodes[j + 1][0] = code;
+        sortedErrorCodes[j + 1][1] = priority;
+    }
+}
+
+/***************************************************************************//**
+ * @brief Get the Next Error Code Index
  * 
  * Loop through the error codes and find the next one that is set. If there 
- * are none it will return whatever currentErrorCode is.
+ * are none it will return whatever the current error code index is.
  * 
- * @return uint8_t the next error code (0 to 31)
+ * @return uint8_t the next error code index (0 to 31)
  */
-static uint8_t GetNextErrorCode(void)
+static uint8_t GetNextErrorCodeIndex(void)
 {
-    /* Error codes always go from 1 to 32, but the index goes from 0 to 31 */
-    uint8_t next = currentErrorCode & 0x1F;
+    uint8_t bit = 0;
+    uint8_t next = (currentErrorCodeIndex + 1) & (MAX_BITS-1);
 
-    while(next != (currentErrorCode - 1))
+    while(next != currentErrorCodeIndex)
     {
-        if(activeErrorMask & (1UL << next))
+        /* Error codes go from 1 to 64, but the bits go from 0 to 63 */
+        bit = sortedErrorCodes[next][0] - 1;
+        if(activeErrorMask & (1ULL << bit))
             break;
-        next = (next + 1) & 0x1F;
+        next = (next + 1) & (MAX_BITS-1);
     }
 
-    return next + 1;
+    return next;
 }
 
 /*
