@@ -272,7 +272,7 @@ uint8_t HWTimer_GetComparePercent(HWTimer *self, uint8_t compChan)
 
 void HWTimer_EnableComparePWM(HWTimer *self, uint8_t compChan)
 {
-    if(self->interface->HWTimer_EnableComparePWM!= NULL)
+    if(self->interface->HWTimer_EnableComparePWM != NULL)
     {
         (self->interface->HWTimer_EnableComparePWM)(compChan);
     }

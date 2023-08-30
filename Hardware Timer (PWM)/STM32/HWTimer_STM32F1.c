@@ -45,8 +45,6 @@
 void HWTimer_STM32_Create(HWTimer_STM32 *self, HWTimer *base, HWTimerInterface *interface)
 {
     self->super = base;
-
-    /*  Call the base class constructor */
     HWTimer_Create(base, self, interface);
 }
 
@@ -55,9 +53,24 @@ void HWTimer_STM32_Create(HWTimer_STM32 *self, HWTimer *base, HWTimerInterface *
 void HWTimer_STM32_CreateInitType(HWTimerInitType_STM32 *self, HWTimerInitType *base)
 {
     self->super = base;
-
-    /* Call the base class constructor */
     HWTimer_CreateInitType(base, self);
+}
+
+// *****************************************************************************
+
+void HWTimer_STM32_SetInitTypeToDefaultParams(HWTimerInitType_STM32 *params)
+{
+    /* Add any extra STM32 parameters here */
+
+    /* Call the base class function */
+    HWTimer_SetInitTypeToDefaultParams(params->super);
+}
+
+// *****************************************************************************
+
+void HWTimer_STM32_SetInitTypeParams(HWTimerInitType_STM32 *params)
+{
+    /* Add any extra STM32 parameters to the function */
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -30,7 +30,7 @@
 #define HW_TIM_SIZE_BITS            16
 #define HW_TIM_BITS_MAX             (1 << HW_TIM_SIZE_BITS)
 #define HW_TIM_NUM_COMP_CHANNELS    4
-#define TIMx                        TIM2
+#define TIMx                        TIM1
 
 // ***** Global Variables ******************************************************
 
@@ -362,6 +362,10 @@ void HWTimer1_STM32_EnableComparePWM(uint8_t compChan)
                 break;
         }
     }
+
+    /* Timers 1 and 8 have an extra bit that needs to be set
+    in order to use PWM */
+    TIMx->BDTR |= TIM_BDTR_MOE;
 }
 
 // *****************************************************************************
