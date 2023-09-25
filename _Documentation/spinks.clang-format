@@ -1,0 +1,45 @@
+---
+# options: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 0
+# don't change #include order
+SortIncludes: false
+# no space after cast (int)x
+SpaceAfterCStyleCast: false
+# spaces, not tabs!
+UseTab: Never
+# if (x) doStuff()  is not allowed, bad style
+AllowShortIfStatementsOnASingleLine: false
+# 
+AlignTrailingComments: true
+# Add at least one space on trailing comments
+SpacesBeforeTrailingComments: 1
+#  #define SHORT_NAME       42
+#  #define LONGER_NAME      0x007f   # does nice spacing for macros
+AlignConsecutiveMacros: Consecutive
+# Use \n instead of \r\n
+UseCRLF: false
+# changes a+= b to a += b
+SpaceBeforeAssignmentOperators: true
+# changes case : 1 to case: 1
+SpaceBeforeCaseColon: false
+# Never add a space before opening parenthesis
+# void func() 
+# if(true) 
+# for(i = 0; i < n; i++)
+# while(true)
+SpaceBeforeParens: Never
+# brace options
+BreakBeforeBraces: Custom
+BraceWrapping:
+# Put brace after function on next line
+    AfterFunction: true
+# Put brace after if/for/while/switch on next line
+# Options: Never, Multiline, Always
+    AfterControlStatement: Always
+# Put else on next line
+    BeforeElse: true
+# Switch statement indentation
+IndentCaseLabels: true
+IndentCaseBlocks: false

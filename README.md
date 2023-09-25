@@ -27,6 +27,8 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
 - [ ] Filter: Added two basic classes, SMA and EMA
   - [x] Interface
   - [ ] Documentation
+- [ ] FXP: In testing
+  - [ ] Documentation
 - [ ] GPIO: Redesigned!
   - [x] STM32 implementation finished! Testing in progress
   - [x] Refactored STM32 G0 to get rid of ST library dependancy. Needs re-testing
@@ -49,13 +51,18 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
   - [x] Lookup table
   - [x] Documentation
 - [ ] MCU: Scheduler Tested and working!
-  - [ ] Scheduler
-  - [ ] PIC32
+  - [x] Basic scheduler
+  - [ ] PIC32 implementation
   - [ ] Documentation
 - [x] Pattern: Tested and working!
   - [x] Update doxygen
 - [ ] PID: Untested
   -[ ] Documentation
+- [ ] Pseudo Random
+  - [ ] Add basic functions for LCG 32-bit
+  - [ ] Add Park-Miller implementation
+  - [ ] Add logarithmic skip to LCG
+  - [ ] Documentation
 - [ ] Rotary Encoder: Redesigned! Testing in progress
   - [x] Add different types of rotary encoder
 - [ ] SPI: Interface and generic manager complete! Ready to start testing STM32
@@ -78,7 +85,7 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
 
 Every cool software library has to have a cool acronym. So I've decided to name my library the "**S**pinks **U**niversal **C**ode **S**ystem". Or **SUCS** for short. Each piece of the SUCS system is designed to be as independent as possible. There are pieces that are just simple libraries that rely on no other piece of software. And there are pieces designed to interface with other things. Some people like to use the term "Hardware Abstraction Layer", but they're really just interfaces. And since they aren't limited to just hardware, I decided to call my interfaces **SAL** which stands for "**S**pinks AL is better than H**AL**". Each SAL is an independent piece of code that will help you interface to other things. Unlike other HAL's, SAL does not depend on other pieces of code. She does not make you download an entire collection of SALs or make you set up some SAL configuration header to enable or disable other SALs. SAL will also not try to kill you or your crew members. For these pieces of code though, I usually drop the SAL name and just prefix with an **"I"** for "Interface" instead just to keep things simple.
 
-The SUCS libraries and the SALs are designed to be as generic as possible so that they can easily be ported to other processors. As such, they require some thought to put them together into a working library. Just remember, the **interfaces** are the things that do not change. These are the things that define the list of functions to be implemented. There are no processor specific header files in these files. The **implementations** are the pieces of code that are processor specific. You will see that I've added suffixes to those. 
+The SUCS libraries and the SALs are designed to be as generic as possible so that they can easily be ported to other processors. As such, they require some thought to put them together into a working library. Just remember, the **interfaces** are the things that do not change. These are the things that define the list of functions to be implemented. There are no processor specific headers in these files. The **implementations** are the pieces of code that are processor specific. You will see that I've added suffixes to those. 
 
 For libraries with interfaces, I've separated the pieces into folders. This is for you to grab and drop into your project. You do not have to keep the folder structure. You don't even have to take all the files. More on that later. But you will need *at least* the "I" .h file, a header file for your peripheral (processor specific or generic), and a processor specific implementation (a .c file). 
 
