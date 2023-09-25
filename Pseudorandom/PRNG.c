@@ -24,6 +24,23 @@
 
 // ***** Defines ***************************************************************
 
+/* modulus m = 2^63 */
+#define LCG_MASK            ((1ULL << 63) - 1ULL)
+#define LCG_A               3249286849523012805ULL
+#define LCG_C               1ULL
+/* m and c must be relatively prime, so c = 1 is common chosen */
+#define LCG_DEFAULT_SEED    1UL
+
+#define PM_M                ((1ULL << 63) - 25ULL)
+#define PM_A                6458928179451363983ULL
+#define PM_DEFAULT_SEED     1UL
+
+/* This is the default implementation for C++ minstd_rand0. I could probably 
+use this if I wanted to try and implement a smaller Park Miller with no 64-bit 
+math. */
+// #define PM_M                ((1UL << 31) - 1UL)
+// #define PM_A                16807UL // minstd_rand0
+// #define PM_A                48271UL // minstd_rand
 
 // ***** Global Variables ******************************************************
 
@@ -61,7 +78,7 @@ uint32_t PRNG_LCGNext(LCG *self)
     }
 
     result = (LCG_A * self->state + LCG_C) & LCG_MASK;
-    self->state = (uint32_t)(result >> 32ULL);
+    self->state = (uint32_t)(result >> 31ULL);
     return self->state;
 }
 
@@ -76,8 +93,8 @@ uint32_t PRNG_LCGSkipAhead(LCG *self, uint32_t skip)
 
 void PRNG_ParkMillerSeed(ParkMiller *self, uint32_t seed)
 {
-    /* TODO I'm pretty sure the seed of the Park Miller can't change because it 
-    says that X0 must be co-prime to m. */
+    /* The initial value X_0 must be co-prime to m. If m is chosen to be a 
+    prime number, than any value from 0 < X_0 < m will work. */
     if(seed == 0)
         seed = PM_DEFAULT_SEED;
 
@@ -101,8 +118,8 @@ uint32_t PRNG_ParkMillerNext(ParkMiller *self)
         self->isSeeded = true;
     }
 
-    result = (LCG_A * self->state) & LCG_MASK;
-    self->state = (uint32_t)(result);
+    result = (PM_A * self->state) % PM_M;
+    self->state = (uint32_t)(result >> 31ULL);
     return self->state;
 }
 
