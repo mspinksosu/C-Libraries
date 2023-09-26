@@ -28,19 +28,23 @@
 
 // ***** Defines ***************************************************************
 
+/* Option for the Park Miller. True = multiplier a and modulo m will both be 
+64-bit numbers. False = multiplier a and modulo m will both be 32-bit numbers. 
+Setting it to false uses the same implementation as C++ minstd_rand. */
+#define PM_USE_DOUBLE_WIDTH_64_PRODUCT      false
 
 // ***** Global Variables ******************************************************
 
 /* Class specific variables */
 typedef struct LCGTag
 {
-    uint32_t state;
+    uint64_t state;
     bool isSeeded;
 } LCG;
 
 typedef struct ParkMillerTag
 {
-    uint32_t state;
+    uint64_t state;
     bool isSeeded;
 } ParkMiller;
 
@@ -56,13 +60,6 @@ typedef struct ParkMillerTag
 // ***** Function Prototypes *************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
-
-void PRNG_srand(uint32_t seed);
-
-uint32_t PRNG_randU32(void);
-
-uint16_t PRNG_randU16(void);
-
 
 void PRNG_LCGSeed(LCG *self, uint32_t seed);
 

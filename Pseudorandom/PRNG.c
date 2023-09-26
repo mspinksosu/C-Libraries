@@ -24,23 +24,24 @@
 
 // ***** Defines ***************************************************************
 
-/* modulus m = 2^63 */
+/* Using this LCG requires 64-bit math. Modulus m = 2^63 */
 #define LCG_MASK            ((1ULL << 63) - 1ULL)
 #define LCG_A               3249286849523012805ULL
 #define LCG_C               1ULL
-/* m and c must be relatively prime, so c = 1 is common chosen */
-#define LCG_DEFAULT_SEED    1UL
+/* m and c must be relatively prime, so c = 1 is commonly chosen */
+#define LCG_DEFAULT_SEED    1ULL
 
-#define PM_M                ((1ULL << 63) - 25ULL)
-#define PM_A                6458928179451363983ULL
-#define PM_DEFAULT_SEED     1UL
-
-/* This is the default implementation for C++ minstd_rand0. I could probably 
-use this if I wanted to try and implement a smaller Park Miller with no 64-bit 
-math. */
-// #define PM_M                ((1UL << 31) - 1UL)
-// #define PM_A                16807UL // minstd_rand0
-// #define PM_A                48271UL // minstd_rand
+/* For the Park Miller, modulus m is chosen to be a prime number. */
+#if PM_USE_DOUBLE_WIDTH_64_PRODUCT
+    #define PM_M            ((1ULL << 63) - 25ULL)
+    #define PM_A            6458928179451363983ULL
+#else
+    /* This is the default value for C++ minstd_rand */
+    #define PM_M            ((1UL << 31) - 1UL) 
+    #define PM_A            48271UL
+#endif
+/* Park Miller seed must be 0 < X_0 < m */
+#define PM_DEFAULT_SEED     1ULL
 
 // ***** Global Variables ******************************************************
 
@@ -63,8 +64,6 @@ void PRNG_LCGSeed(LCG *self, uint32_t seed)
 
 uint32_t PRNG_LCGNext(LCG *self)
 {
-    uint64_t result = 0;
-
     /* TODO This version will use a power of two for the modulus for speed with
     the lower bits removed. Similar to C rand, but with 32-bit result. 
     Multiplier a will be chosen from L'Ecuyer research paper. Increment c 
@@ -77,9 +76,8 @@ uint32_t PRNG_LCGNext(LCG *self)
         self->isSeeded = true;
     }
 
-    result = (LCG_A * self->state + LCG_C) & LCG_MASK;
-    self->state = (uint32_t)(result >> 31ULL);
-    return self->state;
+    self->state = (LCG_A * self->state + LCG_C) & LCG_MASK;
+    return (uint32_t)(self->state >> 30ULL);
 }
 
 // *****************************************************************************
@@ -106,8 +104,6 @@ void PRNG_ParkMillerSeed(ParkMiller *self, uint32_t seed)
 
 uint32_t PRNG_ParkMillerNext(ParkMiller *self)
 {
-    uint64_t result = 0;
-
     /* TODO This version will be a full-cycle PRNG with a modulus of a prime 
     number and c = 0. */
 
@@ -118,9 +114,12 @@ uint32_t PRNG_ParkMillerNext(ParkMiller *self)
         self->isSeeded = true;
     }
 
-    result = (PM_A * self->state) % PM_M;
-    self->state = (uint32_t)(result >> 31ULL);
-    return self->state;
+    self->state = (PM_A * self->state) % PM_M;
+#if PM_USE_DOUBLE_WIDTH_64_PRODUCT
+    return (uint32_t)(self->state >> 31ULL);
+#else
+    return (uint32_t)(self->state);
+#endif
 }
 
 // *****************************************************************************
