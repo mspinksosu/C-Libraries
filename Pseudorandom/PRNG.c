@@ -69,6 +69,9 @@ uint32_t PRNG_LCGNext(LCG *self)
     Multiplier a will be chosen from L'Ecuyer research paper. Increment c 
     will need to be odd. Try with c = 1. */
 
+    /* TODO Possible output values should be in the range 0 to 2^32-1. But 
+    output is not full-cycle */
+
     /* X_n+1 = (a * X_n + c) % m */
     if(self->isSeeded == false)
     {
@@ -78,6 +81,35 @@ uint32_t PRNG_LCGNext(LCG *self)
 
     self->state = (LCG_A * self->state + LCG_C) & LCG_MASK;
     return (uint32_t)(self->state >> 30ULL);
+}
+
+// *****************************************************************************
+
+uint32_t PRNG_LCGBounded(LCG *self, uint32_t lower, uint32_t upper)
+{
+    /* TODO I might end up combining all these different kinds of generators 
+    into a class. Or maybe not. - MS */
+    uint32_t result = 0;
+
+    if(lower > upper)
+    {
+        uint32_t temp = lower;
+        lower = upper;
+        upper = lower;
+    }
+
+    // output = output % (upper - lower + 1) + min
+    uint32_t range = upper - lower;
+    if(range < 0xFFFFFFFF)
+        range++;
+
+    /* @debug Test method for removing modulo bias */ 
+    uint32_t threshold = 0xFFFFFFFF - 0xFFFFFFFF % range;
+    do {
+        result = PRNG_LCGNext(self);
+    } while(result >= threshold);
+
+    return (result % range) + lower;
 }
 
 // *****************************************************************************
@@ -105,7 +137,8 @@ void PRNG_ParkMillerSeed(ParkMiller *self, uint32_t seed)
 uint32_t PRNG_ParkMillerNext(ParkMiller *self)
 {
     /* TODO This version will be a full-cycle PRNG with a modulus of a prime 
-    number and c = 0. */
+    number and c = 0. I believe the output values should be in the range of 
+    1 to m - 1. */
 
     /* X_n+1 = (a * X_n) % m */
     if(self->isSeeded == false)
@@ -120,6 +153,35 @@ uint32_t PRNG_ParkMillerNext(ParkMiller *self)
 #else
     return (uint32_t)(self->state);
 #endif
+}
+
+// *****************************************************************************
+
+uint32_t PRNG_ParkMillerBounded(ParkMiller *self, uint32_t lower, uint32_t upper)
+{
+        /* TODO I might end up combining all these different kinds of generators 
+    into a class. Or maybe not. - MS */
+    uint32_t result = 0;
+
+    if(lower > upper)
+    {
+        uint32_t temp = lower;
+        lower = upper;
+        upper = lower;
+    }
+
+    // output = output % (upper - lower + 1) + min
+    uint32_t range = upper - lower;
+    if(range < 0xFFFFFFFF)
+        range++;
+
+    /* @debug Test method for removing modulo bias */ 
+    uint32_t threshold = 0xFFFFFFFF - 0xFFFFFFFF % range;
+    do {
+        result = PRNG_ParkMillerNext(self);
+    } while(result >= threshold);
+
+    return (result % range) + lower;
 }
 
 // *****************************************************************************

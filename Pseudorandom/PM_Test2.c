@@ -7,20 +7,24 @@
 
 int main(void)
 {
-    uint32_t seed, result, n;
+    uint32_t seed, result, n, lower, upper;
     char outName[64];
     FILE *out;
-    LCG lcg;
+    ParkMiller pm;
 
     printf("Enter a seed value: ");
     scanf("%d", &seed);
     printf("Entered: %u\n", seed);
-    PRNG_LCGSeed(&lcg, seed);
+    PRNG_ParkMillerSeed(&pm, seed);
 
     /* Print out comma separated numbers to a file */
     printf("Enter number of values to output: ");
     scanf("%d", &n);
     printf("Entered: %u\n", n);
+    printf("Enter lower bound: ");
+    scanf("%d", &lower);
+    printf("Enter upper bound: ");
+    scanf("%d", &upper);
     printf("Save as type: .csv - File name: ");
     scanf("%59s", outName);
     strcat(outName, ".csv");
@@ -28,7 +32,7 @@ int main(void)
     printf("Writing output to %s...\n", outName);
     for(uint32_t i = 0; i < n; i++)
     {
-        result = PRNG_LCGNext(&lcg);
+        result = PRNG_ParkMillerBounded(&pm, lower, upper);
         fprintf(out, "%u,\n", result);
     }
     printf("Finished.\n");

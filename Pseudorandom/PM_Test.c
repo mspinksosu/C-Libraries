@@ -17,20 +17,21 @@ int main(void)
     printf("Entered: %u\n", seed);
     PRNG_ParkMillerSeed(&pm, seed);
 
-    /* Print out numbers to a file */
+    /* Print out comma separated numbers to a file */
     printf("Enter number of values to output: ");
     scanf("%d", &n);
     printf("Entered: %u\n", n);
-    printf ("Save as type: .csv - File name: ");
-    scanf ("%59s", outName);
+    printf("Save as type: .csv - File name: ");
+    scanf("%59s", outName);
     strcat(outName, ".csv");
-    out = fopen(outName, "w+");
-    printf ("Writing output to %s...\n", outName);
+    out = fopen(outName, "w");
+    printf("Writing output to %s...\n", outName);
     for(uint32_t i = 0; i < n; i++)
     {
         result = PRNG_ParkMillerNext(&pm);
         fprintf(out, "%u,\n", result);
     }
     printf("Finished.\n");
+    fclose(out);
     return 0;
 }
