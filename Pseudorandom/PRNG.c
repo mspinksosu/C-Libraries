@@ -51,6 +51,12 @@ modulus as the 32-bit Park Miller */
 #define SCH_Q               44488 // Q = M / A
 #define SCH_R               3399  // R = M % A
 
+#define DEBUG_PRINT         true
+
+#if DEBUG_PRINT
+#include <stdio.h>
+#endif
+
 // ***** Global Variables ******************************************************
 
 
@@ -123,14 +129,17 @@ uint32_t PRNG_LCGBounded(LCG *self, uint32_t lower, uint32_t upper)
 
 // *****************************************************************************
 
-uint32_t PRNG_LCGSkipAhead(LCG *self, int64_t ns)
+uint32_t PRNG_LCGSkip(LCG *self, int64_t ns)
 {
-    /* Knuth, Art of Computer Programming 3.2.1 Equation (6)
+    /* Given the seed, compute the nth term by skipping ahead logarithmically. 
+    This algorithm will complete in O(log2(n)) operations instead of O(n).
+
+    Knuth, Art of Computer Programming 3.2.1 Equation (6):
     X_n+k = (a^k * X_n + c(a^k - 1) / (a - 1)) % m 
     multiplier: a^k % m 
     increment: (c(a^k -1) / (a - 1)) % m
 
-    Brown, Random Number Generation With Arbitrary Strides 1994
+    Brown, Random Number Generation With Arbitrary Strides 1994:
     Used in random number generation for "Monte Carlo" calculations. The same 
     basic formuala "X_n+k = (A * X_n + C) % m" applies. This is equivalent to 
     the formula cited above by Donald Knuth.
@@ -164,7 +173,10 @@ uint32_t PRNG_LCGSkipAhead(LCG *self, int64_t ns)
 
     uint64_t A = 1, h = LCG_A, C = 0, f = LCG_C;
 
-    /* Now compute A and C */
+    /* Now compute A and C. */
+#if DEBUG_PRINT
+    uint64_t loopCount = 0;
+#endif
     for(; skipAhead > 0LL; skipAhead >>= 1)
     {
         if(skipAhead & 1LL)
@@ -172,10 +184,16 @@ uint32_t PRNG_LCGSkipAhead(LCG *self, int64_t ns)
             A = (A * h) & LCG_MASK;
             C = (C * h + f) & LCG_MASK;
         }
-        f = (f * (h + 1ULL)) & LCG_MASK;
+        f = (f * h + f) & LCG_MASK;
         h = (h * h) & LCG_MASK;
+#if DEBUG_PRINT
+    loopCount++;
+#endif
     }
 
+#if DEBUG_PRINT
+    printf("Number of iterations: %llu\n", loopCount);
+#endif
     self->state = (A * self->state + C) & LCG_MASK;
     return (uint32_t)(self->state >> 30ULL);
 }
@@ -248,7 +266,7 @@ uint32_t PRNG_ParkMillerBounded(ParkMiller *self, uint32_t lower, uint32_t upper
 
 // *****************************************************************************
 
-uint32_t PRNG_ParkMillerSkipAhead(ParkMiller *self, int32_t ns)
+uint32_t PRNG_ParkMillerSkip(ParkMiller *self, int32_t ns)
 {
     /* This is the exact same as the LCG skip ahead formula, except that this
     time I don't calculate C. And since m is a prime number and not a power of 
