@@ -141,27 +141,23 @@ uint32_t PRNG_LCGSkip(LCG *self, int64_t ns)
 
     Brown, Random Number Generation With Arbitrary Strides 1994:
     Used in random number generation for "Monte Carlo" calculations. The same 
-    basic formuala "X_n+k = (A * X_n + C) % m" applies. This is equivalent to 
-    the formula cited above by Donald Knuth.
+    formula "X_n+k = (A * X_n + C) % m" still applies. The psuedo code below is 
+    basically just a method to compute the formula cited above by Donald Knuth.
     psuedo code for A:
     A = 1, h = a, i = k + 2^m % 2^m 
-    while(i > 0)
-    {
+    while(i > 0) {
         if( i = odd)
             A = (A * h) % 2^m 
         h = (h^2) % 2^m
-        i = floor(i / 2)
-    }
+        i = floor(i / 2) }
     psuedo code for C:
     C = 0, f = c, h = a, i = (k + 2^m) % 2^m 
-    while(i > 0)
-    {
+    while(i > 0) {
         if( i = odd)
             C = (C * h + f) % 2^m
         f = (f * (h + 1)) % 2^m
         h = (h^2) % 2^m
-        i = floor(i / 2)
-    } */
+        i = floor(i / 2) } */
 
     /* Compute i (skipAhead). If number to skip is negative, add the period 
     until it is postive. Skipping backwards is the same as skipping forward 
@@ -172,11 +168,10 @@ uint32_t PRNG_LCGSkip(LCG *self, int64_t ns)
     skipAhead = skipAhead & LCG_MASK;
 
     uint64_t A = 1, h = LCG_A, C = 0, f = LCG_C;
-
-    /* Now compute A and C. */
 #if DEBUG_PRINT
-    uint64_t loopCount = 0;
+    uint32_t loopCount = 0;
 #endif
+    /* Now compute A and C. */
     for(; skipAhead > 0LL; skipAhead >>= 1)
     {
         if(skipAhead & 1LL)
@@ -187,7 +182,7 @@ uint32_t PRNG_LCGSkip(LCG *self, int64_t ns)
         f = (f * h + f) & LCG_MASK;
         h = (h * h) & LCG_MASK;
 #if DEBUG_PRINT
-    loopCount++;
+        loopCount++;
 #endif
     }
 
@@ -287,8 +282,10 @@ uint32_t PRNG_ParkMillerSkip(ParkMiller *self, int32_t ns)
         skipAhead += PM_M;
     skipAhead = skipAhead % PM_M;
 
-    uint32_t A = 1, h = PM_A;
-
+    uint64_t A = 1, h = PM_A;
+#if DEBUG_PRINT
+    uint32_t loopCount = 0;
+#endif
     /* Now compute A */
     for(; skipAhead > 0LL; skipAhead >>= 1)
     {
@@ -297,8 +294,14 @@ uint32_t PRNG_ParkMillerSkip(ParkMiller *self, int32_t ns)
             A = (A * h) % PM_M;
         }
         h = (h * h) % PM_M;
+#if DEBUG_PRINT
+        loopCount++;
+#endif
     }
 
+#if DEBUG_PRINT
+    printf("Number of iterations: %llu\n", loopCount);
+#endif
     self->state = (A * self->state) % PM_M;
     return (uint32_t)(self->state);
 }
