@@ -80,8 +80,8 @@ typedef struct SchrageTag
     bool isSeeded;
 } Schrage;
 
-/* TODO After I test all of these individually, I'll probably end up combining 
-them into a single class with a type specifier. - MS */
+/* TODO After I test all of these individually, I'll probably combine them into 
+a single class with a type specifier. - MS */
 
 /** 
  * Description of struct
