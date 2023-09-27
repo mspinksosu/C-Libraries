@@ -96,13 +96,26 @@ them into a single class with a type specifier. - MS */
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+/* TODO combine all PRNG's into a class. Change the function signature of the 
+other functions to take the state value as an argument directly. This will 
+still allow the use of the individual functions if desired for a little more 
+speed. */
+// void PRNG_Seed(PRNG *self);
+
+// uint32_t PRNG_Next(PRNG *self);
+
+// uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper);
+
+// uint32_t PRNG_LCGSkipAhead(PRNG *self, uint32_t skip);
+
+
 void PRNG_LCGSeed(LCG *self, uint32_t seed);
 
 uint32_t PRNG_LCGNext(LCG *self);
 
 uint32_t PRNG_LCGBounded(LCG *self, uint32_t lower, uint32_t upper);
 
-uint32_t PRNG_LCGSkipAhead(LCG *self, uint32_t skip);
+uint32_t PRNG_LCGSkip(LCG *self, int64_t ns);
 
 
 void PRNG_ParkMillerSeed(ParkMiller *self, uint32_t seed);
@@ -111,7 +124,7 @@ uint32_t PRNG_ParkMillerNext(ParkMiller *self);
 
 uint32_t PRNG_ParkMillerBounded(ParkMiller *self, uint32_t lower, uint32_t upper);
 
-uint32_t PRNG_ParkMillerSkipAhead(ParkMiller *self, uint32_t skip);
+uint32_t PRNG_ParkMillerSkip(ParkMiller *self, int32_t ns);
 
 
 void PRNG_SchrageSeed(Schrage *self, uint32_t seed);

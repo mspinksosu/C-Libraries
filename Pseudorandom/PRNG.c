@@ -25,6 +25,7 @@
 // ***** Defines ***************************************************************
 
 /* Using this LCG requires 64-bit math. Modulus m = 2^63 */
+#define LCG_M               (1ULL << 63)
 #define LCG_MASK            ((1ULL << 63) - 1ULL)
 #define LCG_A               3249286849523012805ULL
 #define LCG_C               1ULL
@@ -122,9 +123,61 @@ uint32_t PRNG_LCGBounded(LCG *self, uint32_t lower, uint32_t upper)
 
 // *****************************************************************************
 
-uint32_t PRNG_LCGSkipAhead(LCG *self, uint32_t skip)
+uint32_t PRNG_LCGSkipAhead(LCG *self, int64_t ns)
 {
-    return 0;
+    /* Knuth, Art of Computer Programming 3.2.1 Equation (6)
+    X_n+k = (a^k * X_n + c(a^k - 1) / (a - 1)) % m 
+    multiplier: a^k % m 
+    increment: (c(a^k -1) / (a - 1)) % m
+
+    Brown, Random Number Generation With Arbitrary Strides 1994
+    Used in random number generation for "Monte Carlo" calculations. The same 
+    basic formuala "X_n+k = (A * X_n + C) % m" applies. This is equivalent to 
+    the formula cited above by Donald Knuth.
+    psuedo code for A:
+    A = 1, h = a, i = k + 2^m % 2^m 
+    while(i > 0)
+    {
+        if( i = odd)
+            A = (A * h) % 2^m 
+        h = (h^2) % 2^m
+        i = floor(i / 2)
+    }
+    psuedo code for C:
+    C = 0, f = c, h = a, i = (k + 2^m) % 2^m 
+    while(i > 0)
+    {
+        if( i = odd)
+            C = (C * h + f) % 2^m
+        f = (f * (h + 1)) % 2^m
+        h = (h^2) % 2^m
+        i = floor(i / 2)
+    } */
+
+    /* Compute i (skipAhead). If number to skip is negative, add the period 
+    until it is postive. Skipping backwards is the same as skipping forward 
+    that many times. */
+    int64_t skipAhead = ns;
+    while(skipAhead < 0)
+        skipAhead += LCG_M;
+    skipAhead = skipAhead & LCG_MASK;
+
+    uint64_t A = 1, h = LCG_A, C = 0, f = LCG_C;
+
+    /* Now compute A and C */
+    for(; skipAhead > 0LL; skipAhead >>= 1)
+    {
+        if(skipAhead & 1LL)
+        {
+            A = (A * h) & LCG_MASK;
+            C = (C * h + f) & LCG_MASK;
+        }
+        f = (f * (h + 1ULL)) & LCG_MASK;
+        h = (h * h) & LCG_MASK;
+    }
+
+    self->state = (A * self->state + C) & LCG_MASK;
+    return (uint32_t)(self->state >> 30ULL);
 }
 
 // *****************************************************************************
@@ -195,9 +248,41 @@ uint32_t PRNG_ParkMillerBounded(ParkMiller *self, uint32_t lower, uint32_t upper
 
 // *****************************************************************************
 
-uint32_t PRNG_ParkMillerSkipAhead(ParkMiller *self, uint32_t skip)
+uint32_t PRNG_ParkMillerSkipAhead(ParkMiller *self, int32_t ns)
 {
-    return 0;
+    /* This is the exact same as the LCG skip ahead formula, except that this
+    time I don't calculate C. And since m is a prime number and not a power of 
+    two, I can't reduce the modulo operation.
+
+    X_n+k = (A * X_n + C) % m
+    X_n+k = (a^k * X_n + c(a^k - 1) / (a - 1)) % m 
+    multiplier: a^k % m 
+    increment: (c(a^k -1) / (a - 1)) % m */
+
+    // TODO add variables for 64-bit Park Miller version (m = 2^63 - 5)
+
+    /* Compute i (skipAhead). If number to skip is negative, add the period 
+    until it is postive. Skipping backwards is the same as skipping forward 
+    that many times. */
+    int32_t skipAhead = ns;
+    while(skipAhead < 0)
+        skipAhead += PM_M;
+    skipAhead = skipAhead % PM_M;
+
+    uint32_t A = 1, h = PM_A;
+
+    /* Now compute A */
+    for(; skipAhead > 0LL; skipAhead >>= 1)
+    {
+        if(skipAhead & 1LL)
+        {
+            A = (A * h) % PM_M;
+        }
+        h = (h * h) % PM_M;
+    }
+
+    self->state = (A * self->state) % PM_M;
+    return (uint32_t)(self->state);
 }
 
 // *****************************************************************************
