@@ -37,11 +37,18 @@
     #define PM_A            6458928179451363983ULL
 #else
     /* This is the default value for C++ minstd_rand */
-    #define PM_M            ((1UL << 31) - 1UL) 
+    #define PM_M            ((1UL << 31) - 1UL)
     #define PM_A            48271UL
 #endif
 /* Park Miller seed must be 0 < X_0 < m */
-#define PM_DEFAULT_SEED     1ULL
+#define PM_DEFAULT_SEED     1UL
+
+/* Precomputed values for Schrage's method. It uses the same multiplier and 
+modulus as the 32-bit Park Miller */
+#define SCH_M               ((1UL << 31) - 1UL)
+#define SCH_A               48271UL
+#define SCH_Q               44488 // Q = M / A
+#define SCH_R               3399  // R = M % A
 
 // ***** Global Variables ******************************************************
 
@@ -87,8 +94,8 @@ uint32_t PRNG_LCGNext(LCG *self)
 
 uint32_t PRNG_LCGBounded(LCG *self, uint32_t lower, uint32_t upper)
 {
-    /* TODO I might end up combining all these different kinds of generators 
-    into a class. Or maybe not. - MS */
+    /* TODO I'll probably end up combining all these different kinds of 
+    generators into a class since this function is almost always the same. */
     uint32_t result = 0;
 
     if(lower > upper)
@@ -103,7 +110,8 @@ uint32_t PRNG_LCGBounded(LCG *self, uint32_t lower, uint32_t upper)
     if(range < 0xFFFFFFFF)
         range++;
 
-    /* @debug Test method for removing modulo bias */ 
+    /* @debug method for removing modulo bias */
+    /* threshold = RAND_MAX - RAND_MAX % range */
     uint32_t threshold = 0xFFFFFFFF - 0xFFFFFFFF % range;
     do {
         result = PRNG_LCGNext(self);
@@ -159,8 +167,8 @@ uint32_t PRNG_ParkMillerNext(ParkMiller *self)
 
 uint32_t PRNG_ParkMillerBounded(ParkMiller *self, uint32_t lower, uint32_t upper)
 {
-        /* TODO I might end up combining all these different kinds of generators 
-    into a class. Or maybe not. - MS */
+    /* TODO I'll probably end up combining all these different kinds of 
+    generators into a class since this function is almost always the same. */
     uint32_t result = 0;
 
     if(lower > upper)
@@ -172,11 +180,12 @@ uint32_t PRNG_ParkMillerBounded(ParkMiller *self, uint32_t lower, uint32_t upper
 
     // output = output % (upper - lower + 1) + min
     uint32_t range = upper - lower;
-    if(range < 0xFFFFFFFF)
+    if(range < 0x7FFFFFFF)
         range++;
 
-    /* @debug Test method for removing modulo bias */ 
-    uint32_t threshold = 0xFFFFFFFF - 0xFFFFFFFF % range;
+    /* @debug method for removing modulo bias */
+    /* threshold = RAND_MAX - RAND_MAX % range */
+    uint32_t threshold = 0x7FFFFFFF - 0x7FFFFFFF % range;
     do {
         result = PRNG_ParkMillerNext(self);
     } while(result >= threshold);
@@ -189,6 +198,83 @@ uint32_t PRNG_ParkMillerBounded(ParkMiller *self, uint32_t lower, uint32_t upper
 uint32_t PRNG_ParkMillerSkipAhead(ParkMiller *self, uint32_t skip)
 {
     return 0;
+}
+
+// *****************************************************************************
+
+void PRNG_SchrageSeed(Schrage *self, uint32_t seed)
+{
+    /* The initial value X_0 must be co-prime to m. If m is chosen to be a 
+    prime number, than any value from 0 < X_0 < m will work. */
+    if(seed == 0)
+        seed = PM_DEFAULT_SEED;
+
+    self->state = seed;
+    self->isSeeded = true;
+}
+
+// *****************************************************************************
+
+uint32_t PRNG_SchrageNext(Schrage *self)
+{
+    int32_t result;
+    uint32_t X = self->state;
+    int32_t X_Div_Q, X_Mod_Q;
+    /* Schrage's method is a version of a Park Miller that avoids the need to 
+    use a 64-bit variable to store the product of a * x. For any integer "m" 
+    and "a > 0" there exists unique integers "q" (quotient) and "r" (remainder) 
+    such that "m = a * q + r" and "0 <= r < m". 
+    
+    "Then q = m / a (integer division) and "r = m % a". The product a*x is 
+    approximately: a*x = a(x % q) - r[x / q] (integer division). Then we can 
+    take the result of a*x and perform % m to it. This modulo m is further 
+    simplified: if a*x = a(x % q) - r[x / q] is negative, m is added to it. */
+
+    if(self->isSeeded == false)
+    {
+        self->state = PM_DEFAULT_SEED;
+        self->isSeeded = true;
+    }
+
+    /* ax % m = a(x % q) - r[x / q] % m */
+    X_Div_Q = X / SCH_Q;
+    X_Mod_Q = X - X_Div_Q * SCH_Q;
+    result = SCH_A * X_Mod_Q - SCH_R * X_Div_Q;
+    if(result < 0)
+        result += SCH_M;
+
+    self->state = result;
+    return result;
+}
+
+// *****************************************************************************
+
+uint32_t PRNG_SchrageBounded(Schrage *self, uint32_t lower, uint32_t upper)
+{
+    /* TODO I'll probably end up combining all these different kinds of 
+    generators into a class since this function is almost always the same. */
+    uint32_t result = 0;
+
+    if(lower > upper)
+    {
+        uint32_t temp = lower;
+        lower = upper;
+        upper = lower;
+    }
+
+    /* output = output % (upper - lower + 1) + min */
+    uint32_t range = upper - lower;
+    if(range < 0x7FFFFFFF)
+        range++;
+
+    /* @debug method for removing modulo bias */
+    /* threshold = RAND_MAX - RAND_MAX % range */
+    uint32_t threshold = 0x7FFFFFFF - 0x7FFFFFFF % range;
+    do {
+        result = PRNG_SchrageNext(self);
+    } while(result >= threshold);
+
+    return (result % range) + lower;
 }
 
 /*
