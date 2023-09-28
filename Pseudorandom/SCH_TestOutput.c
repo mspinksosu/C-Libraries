@@ -10,12 +10,15 @@ int main(void)
     uint32_t seed, result, n;
     char outName[64];
     FILE *out;
-    Schrage schrage;
+    PRNG prng;
+
+    prng.type = PRNG_TYPE_SCHRAGE;
 
     printf("Enter a seed value: ");
     scanf("%d", &seed);
     printf("Entered: %u\n", seed);
-    PRNG_SchrageSeed(&schrage, seed);
+    PRNG_Seed(&prng, seed);
+    // printf("LCG Seed: %llu\n", prng.state.u64);
 
     /* Print out comma separated numbers to a file */
     printf("Enter number of values to output: ");
@@ -28,7 +31,7 @@ int main(void)
     printf("Writing output to %s...\n", outName);
     for(uint32_t i = 0; i < n; i++)
     {
-        result = PRNG_SchrageNext(&schrage);
+        result = PRNG_Next(&prng);
         fprintf(out, "%u,\n", result);
     }
     printf("Finished.\n");
