@@ -64,12 +64,12 @@ Setting it to false makes it the same implementation as C++ minstd_rand. */
 // TODO see if it's possible to combine big and small classes together
 typedef enum PRNGTypeTag
 {
-    PRNG_LCG_BIG,
-    PRNG_LCG_SMALL,
-    PRNG_PARK_MILLER_BIG,
-    PRNG_PARK_MILLER_SMALL,
-    PRNG_SCHRAGE_BIG,
-    PRNG_SCHRAGE_SMALL,
+    PRNG_TYPE_LCG_BIG,
+    PRNG_TYPE_LCG_SMALL,
+    PRNG_TYPE_PARK_MILLER_BIG,
+    PRNG_TYPE_PARK_MILLER_SMALL,
+    PRNG_TYPE_SCHRAGE_BIG,
+    PRNG_TYPE_SCHRAGE_SMALL,
 } PRNGType;
 
 typedef enum PRNGBigTypeTag
@@ -91,11 +91,11 @@ typedef struct PRNGTag
     void *instance;
     PRNGType type;
     bool isSeeded;
-    union PRNGStateType
-    {
-        uint64_t state64;
-        uint32_t state32;
-    } PRNGstate;
+    // union PRNGStateType
+    // {
+    //     uint64_t state64;
+    //     uint32_t state32;
+    // } PRNGstate;
 } PRNG;
 
 typedef struct PRNGBigTag
@@ -162,19 +162,20 @@ uint32_t PRNGBig_NextBounded(PRNGBig *self, uint32_t lower, uint32_t upper);
 uint16_t PRNGSmall_NextBounded(PRNGSmall *self, uint16_t lower, uint16_t upper);
 
 uint32_t LCGBig_Next(uint64_t *state);
-uint16_t LCGSmall_Next(uint32_t *state);
+uint16_t LCGSmall_Next(uint32_t *state); // not implemented yet
 
-uint32_t ParkMillerBig_Next(uint64_t *state); // not implemented yet
-uint32_t ParkMillerSmall_Next(uint32_t *state);
+uint32_t ParkMillerBigger_Next(uint64_t *state); // not implemented yet
+uint32_t ParkMillerBig_Next(uint32_t *state);
+uint16_t ParkMillerSmall_Next(uint32_t *state); // TODO no small version of park miller required I think
 
 uint32_t SchrageBig_Next(uint32_t *state);
-uint16_t SchrageSmall_Next(uint16_t *state); // not implemented yet
+uint16_t SchrageSmall_Next(uint32_t *state); // not implemented yet
 
 uint32_t LCGBig_Skip(uint64_t *state, int64_t n);
 uint16_t LCGSmall_Skip(uint32_t *state, int32_t n); // not implemented yet
 
-uint32_t ParkMillerBig_Skip(uint64_t *state, int64_t n); // not implemented yet
-uint32_t ParkMillerSmall_Skip(uint32_t *state, int64_t n);
+uint32_t ParkMillerBig_Skip(uint32_t *state, int64_t n);
+uint16_t ParkMillerSmall_Skip(uint32_t *state, int32_t n); // not implemented yet
 
 // -----------------------------------------------------------------------------
 

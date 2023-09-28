@@ -33,12 +33,12 @@
 #define LCG_BIG_DEFAULT_SEED    1ULL
 
 /* For the Park Miller, modulus m is chosen to be a prime number. */
-#define PM_BIG_M                ((1ULL << 63) - 25ULL)
-#define PM_BIG_A            6458928179451363983ULL
+#define PM_BIGGER_M             ((1ULL << 63) - 25ULL)
+#define PM_BIGGER_A             6458928179451363983ULL
 
 /* This is the default value for C++ minstd_rand */
-#define PM_SMALL_M              ((1UL << 31) - 1UL)
-#define PM_SMALL_A              48271UL
+#define PM_BIG_M                ((1UL << 31) - 1UL)
+#define PM_BIG_A                48271UL
 
 /* The initial value X_0 must be co-prime to m. If m is chosen to be a prime 
 number, than any value from 0 < X_0 < m will work. */
@@ -46,12 +46,12 @@ number, than any value from 0 < X_0 < m will work. */
 
 /* Precomputed values for Schrage's method. It uses the same multiplier and 
 modulus as the 32-bit Park Miller */
-#define SCH_M               ((1UL << 31) - 1UL)
-#define SCH_A               48271UL
-#define SCH_Q               44488 // Q = M / A
-#define SCH_R               3399  // R = M % A
+#define SCH_M                   ((1UL << 31) - 1UL)
+#define SCH_A                   48271UL
+#define SCH_Q                   44488 // Q = M / A
+#define SCH_R                   3399  // R = M % A
 
-#define DEBUG_PRINT         true
+#define DEBUG_PRINT             true
 
 #if DEBUG_PRINT
 #include <stdio.h>
@@ -88,6 +88,41 @@ void PRNGBig_Seed(PRNGBig *self, uint32_t seed)
 
 // *****************************************************************************
 
+void PRNGSmall_Seed(PRNGSmall *self, uint32_t seed)
+{
+
+}
+
+// *****************************************************************************
+
+uint32_t PRNGBig_Next(PRNGBig *self)
+{
+    uint32_t result = 0;
+
+    switch(self->super->type)
+    {
+        case PRNG_TYPE_LCG_BIG:
+            result = LCGBig_Next(&(self->state));
+            break;
+        case PRNG_TYPE_PARK_MILLER_BIG:
+
+            break;
+        case PRNG_TYPE_SCHRAGE_BIG:
+
+            break;
+    }
+    return result;
+}
+
+// *****************************************************************************
+
+uint16_t PRNGSmall_Next(PRNGSmall *self)
+{
+
+}
+
+// *****************************************************************************
+
 uint32_t LCGBig_Next(uint64_t *state)
 {
     /* TODO This version will use a power of two for the modulus for speed with
@@ -107,8 +142,6 @@ uint32_t LCGBig_Next(uint64_t *state)
 
 uint32_t PRNGBig_NextBounded(PRNGBig *self, uint32_t lower, uint32_t upper)
 {
-    /* TODO I'll probably end up combining all these different kinds of 
-    generators into a class since this function is almost always the same. */
     uint32_t result = 0;
 
     if(lower > upper)
@@ -201,62 +234,61 @@ uint32_t LCGBig_Skip(uint64_t *state, int64_t n)
 
 // *****************************************************************************
 
-uint32_t ParkMillerSmall_Next(uint32_t *state)
+uint32_t ParkMillerBig_Next(uint32_t *state)
 {
     /* TODO This version will be a full-cycle PRNG with a modulus of a prime 
     number and c = 0. I believe the output values should be in the range of 
     1 to m - 1. */
 
     /* X_n+1 = (a * X_n) % m */
-    *state = (PM_SMALL_A * (*state)) % PM_SMALL_M;
+    *state = (PM_BIG_A * (*state)) % PM_BIG_M;
     return *state;
 }
 
 // *****************************************************************************
 
-uint32_t ParkMillerBig_Next(uint64_t *state)
+uint32_t ParkMillerBigger_Next(uint64_t *state)
 {
     /* TODO This version uses a 64-bit double width product */
 
     /* X_n+1 = (a * X_n) % m */
-    *state = (PM_BIG_A * (*state)) % PM_BIG_M;
-
+    *state = (PM_BIGGER_A * (*state)) % PM_BIGGER_M;
     return (uint32_t)(*state >> 31ULL);
 }
 
 // *****************************************************************************
 
-uint32_t PRNG_ParkMillerSmallBounded(uint32_t *state, uint32_t lower, uint32_t upper)
-{
-    /* TODO I'll probably end up combining all these different kinds of 
-    generators into a class since this function is almost always the same. */
-    uint32_t result = 0;
+// uint32_t PRNG_ParkMillerSmallBounded(uint32_t *state, uint32_t lower, uint32_t upper)
+// {
+//     /* TODO I'll probably end up combining all these different kinds of 
+//     generators into a class since this function is almost always the same. */
+//     uint32_t result = 0;
 
-    if(lower > upper)
-    {
-        uint32_t temp = lower;
-        lower = upper;
-        upper = lower;
-    }
+//     if(lower > upper)
+//     {
+//         uint32_t temp = lower;
+//         lower = upper;
+//         upper = lower;
+//     }
 
-    // output = output % (upper - lower + 1) + min
-    uint32_t range = upper - lower;
-    if(range < 0x7FFFFFFF)
-        range++;
+//     // output = output % (upper - lower + 1) + min
+//     uint32_t range = upper - lower;
+//     if(range < 0x7FFFFFFF)
+//         range++;
 
-    /* @debug method for removing modulo bias */
-    /* threshold = RAND_MAX - RAND_MAX % range */
-    uint32_t threshold = 0x7FFFFFFF - 0x7FFFFFFF % range;
-    do {
-        result = ParkMillerSmall_Next(state);
-    } while(result >= threshold);
+//     /* @debug method for removing modulo bias */
+//     /* threshold = RAND_MAX - RAND_MAX % range */
+//     uint32_t threshold = 0x7FFFFFFF - 0x7FFFFFFF % range;
+//     do {
+//         result = ParkMillerSmall_Next(state);
+//     } while(result >= threshold);
 
-    return (result % range) + lower;
-}
+//     return (result % range) + lower;
+// }
 
 // *****************************************************************************
 
-uint32_t ParkMillerSmall_Skip(uint32_t *state, int64_t n)
+uint32_t ParkMillerBig_Skip(uint32_t *state, int64_t n)
 {
     /* This is the exact same as the LCG skip ahead formula, except that this
     time I don't calculate C. And since m is a prime number and not a power of 
@@ -272,10 +304,10 @@ uint32_t ParkMillerSmall_Skip(uint32_t *state, int64_t n)
     that many times. */
     int64_t skipAhead = n;
     while(skipAhead < 0)
-        skipAhead += PM_SMALL_M;
-    skipAhead = skipAhead % PM_SMALL_M;
+        skipAhead += PM_BIG_M;
+    skipAhead = skipAhead % PM_BIG_M;
 
-    uint64_t A = 1, h = PM_SMALL_A;
+    uint64_t A = 1, h = PM_BIG_A;
 #if DEBUG_PRINT
     uint32_t loopCount = 0;
 #endif
@@ -284,9 +316,9 @@ uint32_t ParkMillerSmall_Skip(uint32_t *state, int64_t n)
     {
         if(skipAhead & 1LL)
         {
-            A = (A * h) % PM_SMALL_M;
+            A = (A * h) % PM_BIG_M;
         }
-        h = (h * h) % PM_SMALL_M;
+        h = (h * h) % PM_BIG_M;
 #if DEBUG_PRINT
         loopCount++;
 #endif
@@ -295,7 +327,7 @@ uint32_t ParkMillerSmall_Skip(uint32_t *state, int64_t n)
 #if DEBUG_PRINT
     printf("Number of iterations: %llu\n", loopCount);
 #endif
-    *state = (A * (*state)) % PM_SMALL_M;
+    *state = (A * (*state)) % PM_BIG_M;
     return *state;
 }
 
