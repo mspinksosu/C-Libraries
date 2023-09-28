@@ -28,40 +28,46 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
   - [x] Interface
   - [ ] Documentation
 - [ ] FXP: In testing
-  - [ ] Documentation
+  - [x] Unsigned
+  - [ ] Signed
+  - [ ] Finish documentation
 - [ ] GPIO: Redesigned!
-  - [x] STM32 implementation finished! Testing in progress
+  - [x] STM32 implementation finished!
   - [x] Refactored STM32 G0 to get rid of ST library dependancy. Needs re-testing
   - [x] Update doxygen
   - [ ] PIC32 implementation
 - [ ] Graphics: New library! (to go with TFT display eventually)
   - [ ] Line drawing algorithm working! Needs testing on octants 2, 3, 6, 7
   - [x] Simple number to ascii string
-- [ ] Hardware Timer: New library! Ready to start testing
-  - [ ] Add more STM32 sub class options
-  - [ ] Documentation
+- [ ] Hardware Timer: New library!
+  - [x] STM32 PWM Tested!
+  - [ ] Add more sub class options
+  - [ ] PIC32 implementation
+  - [ ] Finish documentation
 - [ ] I2C: Old PIC32 library. Worked before. Needs updating
 - [ ] LCD: New library! Ready to start testing
   - [x] 8-bit mode
   - [ ] 4-bit mode
   - [ ] Screen scroll
-  - [ ] Documentation
+  - [ ] Finish documentation
 - [x] Map Function: Tested and working!
   - [x] Linear
   - [x] Lookup table
   - [x] Documentation
 - [ ] MCU: Scheduler Tested and working!
-  - [x] Basic scheduler
+  - [x] Basic scheduler working
   - [ ] PIC32 implementation
-  - [ ] Documentation
+  - [ ] Finish documentation
 - [x] Pattern: Tested and working!
   - [x] Update doxygen
 - [ ] PID: Untested
-  -[ ] Documentation
-- [ ] Pseudo Random
-  - [ ] Add basic functions for LCG 32-bit
-  - [ ] Add Park-Miller implementation
-  - [ ] Add logarithmic skip to LCG
+  - [ ] Documentation
+- [ ] Pseudo Random. Logarithmic skip ahead is working!
+  - [x] Add basic functions for LCG 32-bit
+  - [x] Add Park-Miller implementation.
+  - [x] Add logarithmic skip to LCG and Park Miller
+  - [ ] Update classes and functions
+  - [ ] Smaller LCG with skip ahead
   - [ ] Documentation
 - [ ] Rotary Encoder: Redesigned! Testing in progress
   - [x] Add different types of rotary encoder
