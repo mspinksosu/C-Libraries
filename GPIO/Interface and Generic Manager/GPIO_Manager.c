@@ -55,26 +55,30 @@ void GPIO_Manager_InitAllPins(void)
     GPIOInitType init;
 
     /* Declare any GPIOInitType subclass variables here */
-    // GPIOInitType_MCU1 _init;
+    GPIOInitType_MCU1 _init;
 
-    /* Processor specific init properties can be changed for each individual 
-    pin before calling the GPIO init function */
-    // _init.alternate = 0;
+    /* Set default processor specific init properties. Properties can be 
+    changed for each individual pin before calling the GPIO init function. Just 
+    remember to reset them before going to the next pin. */
+    _init.speed = 0;
+    _init.alternate = 0;
 
     /* Call your sub class create init type function. This part only needs to 
     be done once */
-    // GPIO_MCU1_CreateInitType(&_init, &init);
+    GPIO_MCU1_CreateInitType(&_init, &init);
 
 // ----- Add your pins --------------------------------------------------
 
     /* Set the generic property for the pin first, then the processor specific 
-    pin properties. Next, set any generic init properties and processor 
-    specific init properties. Then, call your subclass create function. 
-    Finally, call the pin init function. */
+    pin properties. Then call the pin init function. */
     init.type = LED1_PIN_TYPE;
     init.pull = LED1_PIN_PULL;
+    _init.alternate = 1; // example processor specific property 
+    _init.speed = 1;
     GPIO_InitPin(LED1_PIN, &init);
-    
+    _init.alternate = 0;
+    _init.speed = 0;
+
     init.type = LED2_PIN_TYPE;
     init.pull = LED2_PIN_PULL;
     GPIO_InitPin(LED2_PIN, &init);
