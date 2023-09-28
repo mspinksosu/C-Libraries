@@ -111,10 +111,10 @@ uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper);
 // -----------------------------------------------------------------------------
 
 uint32_t LCGBig_Next(uint64_t *state);
-uint16_t LCGSmall_Next(uint32_t *state); // not implemented yet
+uint16_t LCGSmall_Next(uint32_t *state);
 
 // uint32_t ParkMillerBigger_Next(uint64_t *state); // not implemented yet
-uint32_t ParkMiller_Next(uint32_t *state);
+uint32_t ParkMiller_Next(uint64_t *state);
 
 uint32_t Schrage_Next(uint32_t *state);
 

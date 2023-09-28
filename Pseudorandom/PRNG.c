@@ -111,10 +111,10 @@ uint32_t PRNG_Next(PRNG *self)
             result = LCGSmall_Next(&(self->state.u32));
             break;
         case PRNG_TYPE_PARK_MILLER:
-
+            result = ParkMiller_Next(&(self->state.u64));
             break;
         case PRNG_TYPE_SCHRAGE:
-
+            result = Schrage_Next(&(self->state.u32));
             break;
     }
     return result;
@@ -147,6 +147,32 @@ uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper)
 
     return (result % range) + lower;
 }
+
+// TODO combine PRNG's together in Bounded function, the @remove this
+// uint32_t PRNG_ParkMillerSmallBounded(uint32_t *state, uint32_t lower, uint32_t upper)
+// {
+//     uint32_t result = 0;
+
+//     if(lower > upper)
+//     {
+//         uint32_t temp = lower;
+//         lower = upper;
+//         upper = lower;
+//     }
+
+//     // output = output % (upper - lower + 1) + min
+//     uint32_t range = upper - lower;
+//     if(range < 0x7FFFFFFF)
+//         range++;
+
+//     /* threshold = RAND_MAX - RAND_MAX % range */
+//     uint32_t threshold = 0x7FFFFFFF - 0x7FFFFFFF % range;
+//     do {
+//         result = ParkMillerSmall_Next(state);
+//     } while(result >= threshold);
+
+//     return (result % range) + lower;
+// }
 
 // *****************************************************************************
 
@@ -250,7 +276,57 @@ uint32_t LCGBig_Skip(uint64_t *state, int64_t n)
 
 // *****************************************************************************
 
-uint32_t ParkMiller_Next(uint32_t *state)
+uint16_t LCGSmall_Skip(uint32_t *state, int32_t n)
+{
+    /* This is the exact same as the big LCG skip ahead function above, just
+    with smaller variables. I know lots of people hate C rand() with a passion. 
+    But if the basic rand() is good enough for your use case, then this will 
+    give you the opportunity to use the logarithmic skip ahead with it also. 
+    It stil uses the double width product, but it might use a little less 
+    overhead depending on your compiler.
+
+    X_n+1 = (A * X_n + C) % m
+    X_n+k = (a^k * X_n + c(a^k - 1) / (a - 1)) % m 
+    multiplier: a^k % m 
+    increment: (c(a^k -1) / (a - 1)) % m */
+
+    /* Compute i (skipAhead). If number to skip is negative, add the period 
+    until it is postive. Skipping backwards is the same as skipping forward 
+    that many times. */
+    int32_t skipAhead = n;
+    while(skipAhead < 0)
+        skipAhead += LCG_SMALL_M;
+    skipAhead = skipAhead & LCG_SMALL_MASK;
+
+    uint32_t A = 1, h = LCG_SMALL_A, C = 0, f = LCG_SMALL_C;
+#if DEBUG_PRINT
+    uint32_t loopCount = 0;
+#endif
+    /* Now compute A and C. */
+    for(; skipAhead > 0LL; skipAhead >>= 1)
+    {
+        if(skipAhead & 1LL)
+        {
+            A = (A * h) & LCG_SMALL_MASK;
+            C = (C * h + f) & LCG_SMALL_MASK;
+        }
+        f = (f * h + f) & LCG_SMALL_MASK;
+        h = (h * h) & LCG_SMALL_MASK;
+#if DEBUG_PRINT
+        loopCount++;
+#endif
+    }
+
+#if DEBUG_PRINT
+    printf("Number of iterations: %llu\n", loopCount);
+#endif
+    *state = (A * (*state) + C) & LCG_SMALL_MASK;
+    return (uint32_t)(*state >> 15ULL);
+}
+
+// *****************************************************************************
+
+uint32_t ParkMiller_Next(uint64_t *state)
 {
     /* TODO This version will be a full-cycle PRNG with a modulus of a prime 
     number and c = 0. I believe the output values should be in the range of 
@@ -271,36 +347,6 @@ uint32_t ParkMillerBigger_Next(uint64_t *state)
     *state = (PM_BIGGER_A * (*state)) % PM_BIGGER_M;
     return (uint32_t)(*state >> 31ULL);
 }
-
-// *****************************************************************************
-
-// uint32_t PRNG_ParkMillerSmallBounded(uint32_t *state, uint32_t lower, uint32_t upper)
-// {
-//     /* TODO I'll probably end up combining all these different kinds of 
-//     generators into a class since this function is almost always the same. */
-//     uint32_t result = 0;
-
-//     if(lower > upper)
-//     {
-//         uint32_t temp = lower;
-//         lower = upper;
-//         upper = lower;
-//     }
-
-//     // output = output % (upper - lower + 1) + min
-//     uint32_t range = upper - lower;
-//     if(range < 0x7FFFFFFF)
-//         range++;
-
-//     /* @debug method for removing modulo bias */
-//     /* threshold = RAND_MAX - RAND_MAX % range */
-//     uint32_t threshold = 0x7FFFFFFF - 0x7FFFFFFF % range;
-//     do {
-//         result = ParkMillerSmall_Next(state);
-//     } while(result >= threshold);
-
-//     return (result % range) + lower;
-// }
 
 // *****************************************************************************
 
