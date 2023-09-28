@@ -32,7 +32,7 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
   - [ ] Signed
   - [ ] Finish documentation
 - [ ] GPIO: Redesigned!
-  - [x] STM32 implementation finished!
+  - [x] STM32 implementation 99% done! (needs port read and write)
   - [x] Refactored STM32 G0 to get rid of ST library dependancy. Needs re-testing
   - [x] Update doxygen
   - [ ] PIC32 implementation
