@@ -129,7 +129,7 @@ uint32_t PRNG_LCGBounded(LCG *self, uint32_t lower, uint32_t upper)
 
 // *****************************************************************************
 
-uint32_t PRNG_LCGSkip(LCG *self, int64_t ns)
+uint32_t PRNG_LCGSkip(LCG *self, int64_t n)
 {
     /* Given the seed, compute the nth term by skipping ahead logarithmically. 
     This algorithm will complete in O(log2(n)) operations instead of O(n).
@@ -162,7 +162,7 @@ uint32_t PRNG_LCGSkip(LCG *self, int64_t ns)
     /* Compute i (skipAhead). If number to skip is negative, add the period 
     until it is postive. Skipping backwards is the same as skipping forward 
     that many times. */
-    int64_t skipAhead = ns;
+    int64_t skipAhead = n;
     while(skipAhead < 0)
         skipAhead += LCG_M;
     skipAhead = skipAhead & LCG_MASK;
@@ -261,23 +261,21 @@ uint32_t PRNG_ParkMillerBounded(ParkMiller *self, uint32_t lower, uint32_t upper
 
 // *****************************************************************************
 
-uint32_t PRNG_ParkMillerSkip(ParkMiller *self, int32_t ns)
+uint32_t PRNG_ParkMillerSkip(ParkMiller *self, int64_t n)
 {
     /* This is the exact same as the LCG skip ahead formula, except that this
     time I don't calculate C. And since m is a prime number and not a power of 
     two, I can't reduce the modulo operation.
 
-    X_n+k = (A * X_n + C) % m
+    X_n+1 = (A * X_n + C) % m
     X_n+k = (a^k * X_n + c(a^k - 1) / (a - 1)) % m 
     multiplier: a^k % m 
     increment: (c(a^k -1) / (a - 1)) % m */
 
-    // TODO add variables for 64-bit Park Miller version (m = 2^63 - 5)
-
     /* Compute i (skipAhead). If number to skip is negative, add the period 
     until it is postive. Skipping backwards is the same as skipping forward 
     that many times. */
-    int32_t skipAhead = ns;
+    int64_t skipAhead = n;
     while(skipAhead < 0)
         skipAhead += PM_M;
     skipAhead = skipAhead % PM_M;

@@ -115,7 +115,7 @@ uint32_t PRNG_LCGNext(LCG *self);
 
 uint32_t PRNG_LCGBounded(LCG *self, uint32_t lower, uint32_t upper);
 
-uint32_t PRNG_LCGSkip(LCG *self, int64_t ns);
+uint32_t PRNG_LCGSkip(LCG *self, int64_t n);
 
 
 void PRNG_ParkMillerSeed(ParkMiller *self, uint32_t seed);
@@ -124,7 +124,7 @@ uint32_t PRNG_ParkMillerNext(ParkMiller *self);
 
 uint32_t PRNG_ParkMillerBounded(ParkMiller *self, uint32_t lower, uint32_t upper);
 
-uint32_t PRNG_ParkMillerSkip(ParkMiller *self, int32_t ns);
+uint32_t PRNG_ParkMillerSkip(ParkMiller *self, int64_t n);
 
 
 void PRNG_SchrageSeed(Schrage *self, uint32_t seed);
