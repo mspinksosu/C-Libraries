@@ -108,6 +108,8 @@ uint32_t PRNG_Next(PRNG *self);
 
 uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper);
 
+uint32_t PRNG_Skip(PRNG *self, int64_t n);
+
 // -----------------------------------------------------------------------------
 
 uint32_t LCGBig_Next(uint64_t *state);
@@ -121,6 +123,6 @@ uint32_t Schrage_Next(uint32_t *state);
 uint32_t LCGBig_Skip(uint64_t *state, int64_t n);
 uint16_t LCGSmall_Skip(uint32_t *state, int32_t n); // not implemented yet
 
-uint32_t ParkMiller_Skip(uint32_t *state, int64_t n);
+uint32_t ParkMiller_Skip(uint64_t *state, int64_t n);
 
 #endif  /* PRNG_H */

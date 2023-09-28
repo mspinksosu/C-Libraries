@@ -176,6 +176,30 @@ uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper)
 
 // *****************************************************************************
 
+uint32_t PRNG_Skip(PRNG *self, int64_t n)
+{
+    uint32_t result = 0;
+
+    switch(self->type)
+    {
+        case PRNG_TYPE_LCG_BIG:
+            result = LCGBig_Skip(&(self->state.u64), n);
+            break;
+        case PRNG_TYPE_LCG_SMALL:
+            
+            break;
+        case PRNG_TYPE_PARK_MILLER:
+            result = ParkMiller_Skip(&(self->state.u64), n);
+            break;
+        case PRNG_TYPE_SCHRAGE:
+            
+            break;
+    }
+    return result;
+}
+
+// *****************************************************************************
+
 uint32_t LCGBig_Next(uint64_t *state)
 {
     /* TODO This version will use a power of two for the modulus for speed with
@@ -350,7 +374,7 @@ uint32_t ParkMillerBigger_Next(uint64_t *state)
 
 // *****************************************************************************
 
-uint32_t ParkMiller_Skip(uint32_t *state, int64_t n)
+uint32_t ParkMiller_Skip(uint64_t *state, int64_t n)
 {
     /* This is the exact same as the LCG skip ahead formula, except that this
     time I don't calculate C. And since m is a prime number and not a power of 
