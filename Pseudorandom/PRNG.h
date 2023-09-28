@@ -82,22 +82,6 @@ typedef struct PRNGTag
     } state;
 } PRNG;
 
-// // TODO ---------- move these into classes--------------------------------------
-// typedef struct LCGTag
-// {
-//     uint64_t state;
-// } LCG;
-
-// typedef struct ParkMillerTag
-// {
-//     uint64_t state;
-// } ParkMiller;
-
-// typedef struct SchrageTag
-// {
-//     uint32_t state;
-// } Schrage;
-
 /** 
  * Description of struct
  * 
@@ -116,15 +100,9 @@ other functions to take the state value as an argument directly. This will
 still allow the use of the individual functions if desired for a little more 
 speed. */
 
-// Possible types: LCGBig, LCGSmall, ParkMillerBig, ParkMillerSmall, SchrageBig, SchrageSmall
-
-// void PRNGBig_Create(PRNGBig *self, PRNG *base, PRNGBigType type);
-// void PRNGSmall_Create(PRNGSmall *self, PRNG *base, PRNGSmallType type);
+void PRNG_Create(PRNG *self, PRNGType type);
 
 void PRNG_Seed(PRNG *self, uint32_t seed);
-
-/* TODO The small LCG returns 16-bit, but Park Miller returns 32. 
-Should I make the Park Miller big and make an even bigger version? */
 
 uint32_t PRNG_Next(PRNG *self);
 
@@ -137,15 +115,12 @@ uint16_t LCGSmall_Next(uint32_t *state); // not implemented yet
 
 // uint32_t ParkMillerBigger_Next(uint64_t *state); // not implemented yet
 uint32_t ParkMiller_Next(uint32_t *state);
-// uint16_t ParkMillerSmall_Next(uint32_t *state); // TODO no small version of park miller required I think
 
 uint32_t Schrage_Next(uint32_t *state);
-// uint16_t SchrageSmall_Next(uint32_t *state); // not implemented yet
 
 uint32_t LCGBig_Skip(uint64_t *state, int64_t n);
 uint16_t LCGSmall_Skip(uint32_t *state, int32_t n); // not implemented yet
 
 uint32_t ParkMiller_Skip(uint32_t *state, int64_t n);
-// uint16_t ParkMillerSmall_Skip(uint32_t *state, int32_t n); // not implemented yet
 
 #endif  /* PRNG_H */

@@ -32,6 +32,13 @@
 #define LCG_BIG_C               1ULL
 #define LCG_BIG_DEFAULT_SEED    1ULL
 
+#define LCG_SMALL_M             (1UL << 31)
+#define LCG_SMALL_MASK          (LCG_SMALL_M - 1UL)
+#define LCG_SMALL_A             20501397UL
+/* m and c must be relatively prime, so c = 1 is commonly chosen */
+#define LCG_SMALL_C             1UL
+#define LCG_SMALL_DEFAULT_SEED  1UL
+
 /* For the Park Miller, modulus m is chosen to be a prime number. */
 #define PM_BIGGER_M             ((1ULL << 63) - 25ULL)
 #define PM_BIGGER_A             6458928179451363983ULL
@@ -74,6 +81,9 @@ void PRNG_Seed(PRNG *self, uint32_t seed)
             case PRNG_TYPE_LCG_BIG:
                 seed = LCG_BIG_DEFAULT_SEED;
                 break;
+            case PRNG_TYPE_LCG_SMALL:
+                seed = LCG_SMALL_DEFAULT_SEED;
+                break;
             case PRNG_TYPE_PARK_MILLER:
                 seed = PM_DEFAULT_SEED;
                 break;
@@ -97,6 +107,9 @@ uint32_t PRNG_Next(PRNG *self)
         case PRNG_TYPE_LCG_BIG:
             result = LCGBig_Next(&(self->state.u64));
             break;
+        case PRNG_TYPE_LCG_SMALL:
+            result = LCGSmall_Next(&(self->state.u32));
+            break;
         case PRNG_TYPE_PARK_MILLER:
 
             break;
@@ -105,23 +118,6 @@ uint32_t PRNG_Next(PRNG *self)
             break;
     }
     return result;
-}
-
-// *****************************************************************************
-
-uint32_t LCGBig_Next(uint64_t *state)
-{
-    /* TODO This version will use a power of two for the modulus for speed with
-    the lower bits removed. Similar to C rand, but with 32-bit result. 
-    Multiplier a will be chosen from L'Ecuyer research paper. Increment c 
-    will need to be odd. Try with c = 1. */
-
-    /* TODO Possible output values should be in the range 0 to 2^32-1. But 
-    output is not full-cycle */
-
-    /* X_n+1 = (a * X_n + c) % m */
-    *state = (LCG_BIG_A * (*state) + LCG_BIG_C) & LCG_BIG_MASK;
-    return (uint32_t)(*state >> 30ULL);
 }
 
 // *****************************************************************************
@@ -150,6 +146,40 @@ uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper)
     } while(result >= threshold);
 
     return (result % range) + lower;
+}
+
+// *****************************************************************************
+
+uint32_t LCGBig_Next(uint64_t *state)
+{
+    /* TODO This version will use a power of two for the modulus for speed with
+    the lower bits removed. Similar to C rand, but with 32-bit result. 
+    Multiplier a will be chosen from L'Ecuyer research paper. Increment c 
+    will need to be odd. Try with c = 1. */
+
+    /* TODO Possible output values should be in the range 0 to 2^32-1. But 
+    output is not full-cycle */
+
+    /* X_n+1 = (a * X_n + c) % m */
+    *state = (LCG_BIG_A * (*state) + LCG_BIG_C) & LCG_BIG_MASK;
+    return (uint32_t)(*state >> 30ULL); // bits[62:31]
+}
+
+// *****************************************************************************
+
+uint16_t LCGSmall_Next(uint32_t *state)
+{
+    /* TODO This version is similar to C rand. I will use a power of two for 
+    the modulus for speed with the lower bits removed. Multiplier a will be 
+    chosen from L'Ecuyer research paper. Increment c will need to be odd. 
+    Try with c = 1. */
+
+    /* TODO Possible output values should be in the range 0 to 2^16-1. But 
+    output is not full-cycle */
+
+    /* X_n+1 = (a * X_n + c) % m */
+    *state = (LCG_SMALL_A * (*state) + LCG_SMALL_C) & LCG_SMALL_MASK;
+    return (uint16_t)(*state >> 15ULL); // bits[30:15]
 }
 
 // *****************************************************************************
@@ -220,7 +250,7 @@ uint32_t LCGBig_Skip(uint64_t *state, int64_t n)
 
 // *****************************************************************************
 
-uint32_t ParkMillerBig_Next(uint32_t *state)
+uint32_t ParkMiller_Next(uint32_t *state)
 {
     /* TODO This version will be a full-cycle PRNG with a modulus of a prime 
     number and c = 0. I believe the output values should be in the range of 
@@ -274,7 +304,7 @@ uint32_t ParkMillerBigger_Next(uint64_t *state)
 
 // *****************************************************************************
 
-uint32_t ParkMillerBig_Skip(uint32_t *state, int64_t n)
+uint32_t ParkMiller_Skip(uint32_t *state, int64_t n)
 {
     /* This is the exact same as the LCG skip ahead formula, except that this
     time I don't calculate C. And since m is a prime number and not a power of 
@@ -319,7 +349,7 @@ uint32_t ParkMillerBig_Skip(uint32_t *state, int64_t n)
 
 // *****************************************************************************
 
-uint32_t SchrageBig_Next(uint32_t *state)
+uint32_t Schrage_Next(uint32_t *state)
 {
     int32_t result;
     uint32_t X = *state;
