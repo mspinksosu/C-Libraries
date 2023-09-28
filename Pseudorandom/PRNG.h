@@ -61,27 +61,70 @@ Setting it to false makes it the same implementation as C++ minstd_rand. */
 
 // ***** Global Variables ******************************************************
 
-/* Class specific variables */
-typedef struct LCGTag
+// TODO see if it's possible to combine big and small classes together
+typedef enum PRNGTypeTag
 {
-    uint64_t state;
-    bool isSeeded;
-} LCG;
+    PRNG_LCG_BIG,
+    PRNG_LCG_SMALL,
+    PRNG_PARK_MILLER_BIG,
+    PRNG_PARK_MILLER_SMALL,
+    PRNG_SCHRAGE_BIG,
+    PRNG_SCHRAGE_SMALL,
+} PRNGType;
 
-typedef struct ParkMillerTag
+typedef enum PRNGBigTypeTag
 {
-    uint64_t state;
-    bool isSeeded;
-} ParkMiller;
+    PRNG_LCG_BIG,
+    PRNG_PARK_MILLER_BIG,
+    PRNG_SCHRAGE_BIG,
+} PRNGBigType;
 
-typedef struct SchrageTag
+typedef enum PRNGSmallTypeTag
 {
+    PRNG_LCG_SMALL,
+    PRNG_PARK_MILLER_SMALL,
+    PRNG_SCHRAGE_SMALL,
+} PRNGSmallType;
+
+typedef struct PRNGTag
+{
+    void *instance;
+    PRNGType type;
+    bool isSeeded;
+    union PRNGStateType
+    {
+        uint64_t state64;
+        uint32_t state32;
+    } PRNGstate;
+} PRNG;
+
+typedef struct PRNGBigTag
+{
+    PRNG *super;
+    uint64_t state;
+} PRNGBig;
+
+typedef struct PRNGSmallTag
+{
+    PRNG *super;
     uint32_t state;
-    bool isSeeded;
-} Schrage;
+} PRNGSmall;
 
-/* TODO After I test all of these individually, I'll probably combine them into 
-a single class with a type specifier. - MS */
+// // TODO ---------- move these into classes--------------------------------------
+// typedef struct LCGTag
+// {
+//     uint64_t state;
+// } LCG;
+
+// typedef struct ParkMillerTag
+// {
+//     uint64_t state;
+// } ParkMiller;
+
+// typedef struct SchrageTag
+// {
+//     uint32_t state;
+// } Schrage;
 
 /** 
  * Description of struct
@@ -100,38 +143,64 @@ a single class with a type specifier. - MS */
 other functions to take the state value as an argument directly. This will 
 still allow the use of the individual functions if desired for a little more 
 speed. */
-// void PRNG_Seed(PRNG *self);
 
-// uint32_t PRNG_Next(PRNG *self);
+// Possible types: LCGBig, LCGSmall, ParkMillerBig, ParkMillerSmall, SchrageBig, SchrageSmall
 
-// uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper);
+void PRNGBig_Create(PRNGBig *self, PRNG *base, PRNGBigType type);
+void PRNGSmall_Create(PRNGSmall *self, PRNG *base, PRNGSmallType type);
 
-// uint32_t PRNG_LCGSkipAhead(PRNG *self, uint32_t skip);
+void PRNGBig_Seed(PRNGBig *self, uint32_t seed);
+void PRNGSmall_Seed(PRNGSmall *self, uint32_t seed);
+
+/* TODO The small LCG returns 16-bit, but Park Miller returns 32. 
+Should I make the Park Miller big and make an even bigger version? */
+
+uint32_t PRNGBig_Next(PRNGBig *self);
+uint16_t PRNGSmall_Next(PRNGSmall *self);
+
+uint32_t PRNGBig_NextBounded(PRNGBig *self, uint32_t lower, uint32_t upper);
+uint16_t PRNGSmall_NextBounded(PRNGSmall *self, uint16_t lower, uint16_t upper);
+
+uint32_t LCGBig_Next(uint64_t *state);
+uint16_t LCGSmall_Next(uint32_t *state);
+
+uint32_t ParkMillerBig_Next(uint64_t *state); // not implemented yet
+uint32_t ParkMillerSmall_Next(uint32_t *state);
+
+uint32_t SchrageBig_Next(uint32_t *state);
+uint16_t SchrageSmall_Next(uint16_t *state); // not implemented yet
+
+uint32_t LCGBig_Skip(uint64_t *state, int64_t n);
+uint16_t LCGSmall_Skip(uint32_t *state, int32_t n); // not implemented yet
+
+uint32_t ParkMillerBig_Skip(uint64_t *state, int64_t n); // not implemented yet
+uint32_t ParkMillerSmall_Skip(uint32_t *state, int64_t n);
+
+// -----------------------------------------------------------------------------
+
+// void PRNG_LCGSeed(LCG *self, uint32_t seed);
+
+// uint32_t PRNG_LCGNext(LCG *self);
+
+// uint32_t PRNG_LCGBounded(LCG *self, uint32_t lower, uint32_t upper);
+
+// uint32_t PRNG_LCGSkip(LCG *self, int64_t n);
 
 
-void PRNG_LCGSeed(LCG *self, uint32_t seed);
+// void PRNG_ParkMillerSeed(ParkMiller *self, uint32_t seed);
 
-uint32_t PRNG_LCGNext(LCG *self);
+// uint32_t PRNG_ParkMillerNext(ParkMiller *self);
 
-uint32_t PRNG_LCGBounded(LCG *self, uint32_t lower, uint32_t upper);
+// uint32_t PRNG_ParkMillerBounded(ParkMiller *self, uint32_t lower, uint32_t upper);
 
-uint32_t PRNG_LCGSkip(LCG *self, int64_t n);
-
-
-void PRNG_ParkMillerSeed(ParkMiller *self, uint32_t seed);
-
-uint32_t PRNG_ParkMillerNext(ParkMiller *self);
-
-uint32_t PRNG_ParkMillerBounded(ParkMiller *self, uint32_t lower, uint32_t upper);
-
-uint32_t PRNG_ParkMillerSkip(ParkMiller *self, int64_t n);
+// uint32_t PRNG_ParkMillerSkip(ParkMiller *self, int64_t n);
 
 
-void PRNG_SchrageSeed(Schrage *self, uint32_t seed);
+// void PRNG_SchrageSeed(Schrage *self, uint32_t seed);
 
-uint32_t PRNG_SchrageNext(Schrage *self);
+// uint32_t PRNG_SchrageNext(Schrage *self);
 
-uint32_t PRNG_SchrageBounded(Schrage *self, uint32_t lower, uint32_t upper);
+// uint32_t PRNG_SchrageBounded(Schrage *self, uint32_t lower, uint32_t upper);
 
 
 #endif  /* PRNG_H */

@@ -24,25 +24,25 @@
 
 // ***** Defines ***************************************************************
 
-/* Using this LCG requires 64-bit math. Modulus m = 2^63 */
-#define LCG_M               (1ULL << 63)
-#define LCG_MASK            ((1ULL << 63) - 1ULL)
-#define LCG_A               3249286849523012805ULL
-#define LCG_C               1ULL
+/* Using this LCG requires 64-bit math. Modulus m is power of two */
+#define LCG_BIG_M               (1ULL << 63)
+#define LCG_BIG_MASK            (LCG_BIG_M - 1ULL)
+#define LCG_BIG_A               3249286849523012805ULL
 /* m and c must be relatively prime, so c = 1 is commonly chosen */
-#define LCG_DEFAULT_SEED    1ULL
+#define LCG_BIG_C               1ULL
+#define LCG_BIG_DEFAULT_SEED    1ULL
 
 /* For the Park Miller, modulus m is chosen to be a prime number. */
-#if PM_USE_DOUBLE_WIDTH_64_PRODUCT
-    #define PM_M            ((1ULL << 63) - 25ULL)
-    #define PM_A            6458928179451363983ULL
-#else
-    /* This is the default value for C++ minstd_rand */
-    #define PM_M            ((1UL << 31) - 1UL)
-    #define PM_A            48271UL
-#endif
-/* Park Miller seed must be 0 < X_0 < m */
-#define PM_DEFAULT_SEED     1UL
+#define PM_BIG_M                ((1ULL << 63) - 25ULL)
+#define PM_BIG_A            6458928179451363983ULL
+
+/* This is the default value for C++ minstd_rand */
+#define PM_SMALL_M              ((1UL << 31) - 1UL)
+#define PM_SMALL_A              48271UL
+
+/* The initial value X_0 must be co-prime to m. If m is chosen to be a prime 
+number, than any value from 0 < X_0 < m will work. */
+#define PM_DEFAULT_SEED         1UL
 
 /* Precomputed values for Schrage's method. It uses the same multiplier and 
 modulus as the 32-bit Park Miller */
@@ -65,18 +65,30 @@ modulus as the 32-bit Park Miller */
 
 // *****************************************************************************
 
-void PRNG_LCGSeed(LCG *self, uint32_t seed)
+void PRNGBig_Seed(PRNGBig *self, uint32_t seed)
 {
     if(seed == 0)
-        seed = LCG_DEFAULT_SEED;
-
+    {
+        switch(self->super->type)
+        {
+            case PRNG_LCG_BIG:
+                seed = LCG_BIG_DEFAULT_SEED;
+                break;
+            case PRNG_PARK_MILLER_BIG:
+                seed = PM_DEFAULT_SEED;
+                break;
+            case PRNG_SCHRAGE_BIG:
+                seed = PM_DEFAULT_SEED;
+                break;
+        }
+    }
     self->state = seed;
-    self->isSeeded = true;
+    self->super->isSeeded = true;
 }
 
 // *****************************************************************************
 
-uint32_t PRNG_LCGNext(LCG *self)
+uint32_t LCGBig_Next(uint64_t *state)
 {
     /* TODO This version will use a power of two for the modulus for speed with
     the lower bits removed. Similar to C rand, but with 32-bit result. 
@@ -87,19 +99,13 @@ uint32_t PRNG_LCGNext(LCG *self)
     output is not full-cycle */
 
     /* X_n+1 = (a * X_n + c) % m */
-    if(self->isSeeded == false)
-    {
-        self->state = LCG_DEFAULT_SEED;
-        self->isSeeded = true;
-    }
-
-    self->state = (LCG_A * self->state + LCG_C) & LCG_MASK;
-    return (uint32_t)(self->state >> 30ULL);
+    *state = (LCG_BIG_A * (*state) + LCG_BIG_C) & LCG_BIG_MASK;
+    return (uint32_t)(*state >> 30ULL);
 }
 
 // *****************************************************************************
 
-uint32_t PRNG_LCGBounded(LCG *self, uint32_t lower, uint32_t upper)
+uint32_t PRNGBig_NextBounded(PRNGBig *self, uint32_t lower, uint32_t upper)
 {
     /* TODO I'll probably end up combining all these different kinds of 
     generators into a class since this function is almost always the same. */
@@ -121,7 +127,7 @@ uint32_t PRNG_LCGBounded(LCG *self, uint32_t lower, uint32_t upper)
     /* threshold = RAND_MAX - RAND_MAX % range */
     uint32_t threshold = 0xFFFFFFFF - 0xFFFFFFFF % range;
     do {
-        result = PRNG_LCGNext(self);
+        result = LCGBig_Next(&(self->state)); // TODO add other functions
     } while(result >= threshold);
 
     return (result % range) + lower;
@@ -129,7 +135,7 @@ uint32_t PRNG_LCGBounded(LCG *self, uint32_t lower, uint32_t upper)
 
 // *****************************************************************************
 
-uint32_t PRNG_LCGSkip(LCG *self, int64_t n)
+uint32_t LCGBig_Skip(uint64_t *state, int64_t n)
 {
     /* Given the seed, compute the nth term by skipping ahead logarithmically. 
     This algorithm will complete in O(log2(n)) operations instead of O(n).
@@ -164,10 +170,10 @@ uint32_t PRNG_LCGSkip(LCG *self, int64_t n)
     that many times. */
     int64_t skipAhead = n;
     while(skipAhead < 0)
-        skipAhead += LCG_M;
-    skipAhead = skipAhead & LCG_MASK;
+        skipAhead += LCG_BIG_M;
+    skipAhead = skipAhead & LCG_BIG_MASK;
 
-    uint64_t A = 1, h = LCG_A, C = 0, f = LCG_C;
+    uint64_t A = 1, h = LCG_BIG_A, C = 0, f = LCG_BIG_C;
 #if DEBUG_PRINT
     uint32_t loopCount = 0;
 #endif
@@ -176,11 +182,11 @@ uint32_t PRNG_LCGSkip(LCG *self, int64_t n)
     {
         if(skipAhead & 1LL)
         {
-            A = (A * h) & LCG_MASK;
-            C = (C * h + f) & LCG_MASK;
+            A = (A * h) & LCG_BIG_MASK;
+            C = (C * h + f) & LCG_BIG_MASK;
         }
-        f = (f * h + f) & LCG_MASK;
-        h = (h * h) & LCG_MASK;
+        f = (f * h + f) & LCG_BIG_MASK;
+        h = (h * h) & LCG_BIG_MASK;
 #if DEBUG_PRINT
         loopCount++;
 #endif
@@ -189,49 +195,38 @@ uint32_t PRNG_LCGSkip(LCG *self, int64_t n)
 #if DEBUG_PRINT
     printf("Number of iterations: %llu\n", loopCount);
 #endif
-    self->state = (A * self->state + C) & LCG_MASK;
-    return (uint32_t)(self->state >> 30ULL);
+    *state = (A * (*state) + C) & LCG_BIG_MASK;
+    return (uint32_t)(*state >> 30ULL);
 }
 
 // *****************************************************************************
 
-void PRNG_ParkMillerSeed(ParkMiller *self, uint32_t seed)
-{
-    /* The initial value X_0 must be co-prime to m. If m is chosen to be a 
-    prime number, than any value from 0 < X_0 < m will work. */
-    if(seed == 0)
-        seed = PM_DEFAULT_SEED;
-
-    self->state = seed;
-    self->isSeeded = true;
-}
-
-// *****************************************************************************
-
-uint32_t PRNG_ParkMillerNext(ParkMiller *self)
+uint32_t ParkMillerSmall_Next(uint32_t *state)
 {
     /* TODO This version will be a full-cycle PRNG with a modulus of a prime 
     number and c = 0. I believe the output values should be in the range of 
     1 to m - 1. */
 
     /* X_n+1 = (a * X_n) % m */
-    if(self->isSeeded == false)
-    {
-        self->state = PM_DEFAULT_SEED;
-        self->isSeeded = true;
-    }
-
-    self->state = (PM_A * self->state) % PM_M;
-#if PM_USE_DOUBLE_WIDTH_64_PRODUCT
-    return (uint32_t)(self->state >> 31ULL);
-#else
-    return (uint32_t)(self->state);
-#endif
+    *state = (PM_SMALL_A * (*state)) % PM_SMALL_M;
+    return *state;
 }
 
 // *****************************************************************************
 
-uint32_t PRNG_ParkMillerBounded(ParkMiller *self, uint32_t lower, uint32_t upper)
+uint32_t ParkMillerBig_Next(uint64_t *state)
+{
+    /* TODO This version uses a 64-bit double width product */
+
+    /* X_n+1 = (a * X_n) % m */
+    *state = (PM_BIG_A * (*state)) % PM_BIG_M;
+
+    return (uint32_t)(*state >> 31ULL);
+}
+
+// *****************************************************************************
+
+uint32_t PRNG_ParkMillerSmallBounded(uint32_t *state, uint32_t lower, uint32_t upper)
 {
     /* TODO I'll probably end up combining all these different kinds of 
     generators into a class since this function is almost always the same. */
@@ -253,7 +248,7 @@ uint32_t PRNG_ParkMillerBounded(ParkMiller *self, uint32_t lower, uint32_t upper
     /* threshold = RAND_MAX - RAND_MAX % range */
     uint32_t threshold = 0x7FFFFFFF - 0x7FFFFFFF % range;
     do {
-        result = PRNG_ParkMillerNext(self);
+        result = ParkMillerSmall_Next(state);
     } while(result >= threshold);
 
     return (result % range) + lower;
@@ -261,7 +256,7 @@ uint32_t PRNG_ParkMillerBounded(ParkMiller *self, uint32_t lower, uint32_t upper
 
 // *****************************************************************************
 
-uint32_t PRNG_ParkMillerSkip(ParkMiller *self, int64_t n)
+uint32_t ParkMillerSmall_Skip(uint32_t *state, int64_t n)
 {
     /* This is the exact same as the LCG skip ahead formula, except that this
     time I don't calculate C. And since m is a prime number and not a power of 
@@ -277,10 +272,10 @@ uint32_t PRNG_ParkMillerSkip(ParkMiller *self, int64_t n)
     that many times. */
     int64_t skipAhead = n;
     while(skipAhead < 0)
-        skipAhead += PM_M;
-    skipAhead = skipAhead % PM_M;
+        skipAhead += PM_SMALL_M;
+    skipAhead = skipAhead % PM_SMALL_M;
 
-    uint64_t A = 1, h = PM_A;
+    uint64_t A = 1, h = PM_SMALL_A;
 #if DEBUG_PRINT
     uint32_t loopCount = 0;
 #endif
@@ -289,9 +284,9 @@ uint32_t PRNG_ParkMillerSkip(ParkMiller *self, int64_t n)
     {
         if(skipAhead & 1LL)
         {
-            A = (A * h) % PM_M;
+            A = (A * h) % PM_SMALL_M;
         }
-        h = (h * h) % PM_M;
+        h = (h * h) % PM_SMALL_M;
 #if DEBUG_PRINT
         loopCount++;
 #endif
@@ -300,29 +295,16 @@ uint32_t PRNG_ParkMillerSkip(ParkMiller *self, int64_t n)
 #if DEBUG_PRINT
     printf("Number of iterations: %llu\n", loopCount);
 #endif
-    self->state = (A * self->state) % PM_M;
-    return (uint32_t)(self->state);
+    *state = (A * (*state)) % PM_SMALL_M;
+    return *state;
 }
 
 // *****************************************************************************
 
-void PRNG_SchrageSeed(Schrage *self, uint32_t seed)
-{
-    /* The initial value X_0 must be co-prime to m. If m is chosen to be a 
-    prime number, than any value from 0 < X_0 < m will work. */
-    if(seed == 0)
-        seed = PM_DEFAULT_SEED;
-
-    self->state = seed;
-    self->isSeeded = true;
-}
-
-// *****************************************************************************
-
-uint32_t PRNG_SchrageNext(Schrage *self)
+uint32_t SchrageBig_Next(uint32_t *state)
 {
     int32_t result;
-    uint32_t X = self->state;
+    uint32_t X = *state;
     int32_t X_Div_Q, X_Mod_Q;
     /* Schrage's method is a version of a Park Miller that avoids the need to 
     use a 64-bit variable to store the product of a * x. For any integer "m" 
@@ -334,12 +316,6 @@ uint32_t PRNG_SchrageNext(Schrage *self)
     take the result of a*x and perform % m to it. This modulo m is further 
     simplified: if a*x = a(x % q) - r[x / q] is negative, m is added to it. */
 
-    if(self->isSeeded == false)
-    {
-        self->state = PM_DEFAULT_SEED;
-        self->isSeeded = true;
-    }
-
     /* ax % m = a(x % q) - r[x / q] % m */
     X_Div_Q = X / SCH_Q;
     X_Mod_Q = X - X_Div_Q * SCH_Q;
@@ -347,38 +323,7 @@ uint32_t PRNG_SchrageNext(Schrage *self)
     if(result < 0)
         result += SCH_M;
 
-    self->state = result;
-    return result;
-}
-
-// *****************************************************************************
-
-uint32_t PRNG_SchrageBounded(Schrage *self, uint32_t lower, uint32_t upper)
-{
-    /* TODO I'll probably end up combining all these different kinds of 
-    generators into a class since this function is almost always the same. */
-    uint32_t result = 0;
-
-    if(lower > upper)
-    {
-        uint32_t temp = lower;
-        lower = upper;
-        upper = lower;
-    }
-
-    /* output = output % (upper - lower + 1) + min */
-    uint32_t range = upper - lower;
-    if(range < 0x7FFFFFFF)
-        range++;
-
-    /* @debug method for removing modulo bias */
-    /* threshold = RAND_MAX - RAND_MAX % range */
-    uint32_t threshold = 0x7FFFFFFF - 0x7FFFFFFF % range;
-    do {
-        result = PRNG_SchrageNext(self);
-    } while(result >= threshold);
-
-    return (result % range) + lower;
+    return *state = result;
 }
 
 /*
