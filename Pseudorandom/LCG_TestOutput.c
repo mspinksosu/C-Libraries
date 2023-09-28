@@ -10,18 +10,15 @@ int main(void)
     uint32_t seed, result, n;
     char outName[64];
     FILE *out;
-    PRNG prng;
-    PRNGBig lcg;
+    PRNG lcg;
 
-    // Create manually for now
-    prng.instance = &lcg;
-    lcg.super = &prng;
-    prng.type = PRNG_TYPE_LCG_BIG;
+    lcg.type = PRNG_TYPE_LCG_BIG;
 
     printf("Enter a seed value: ");
     scanf("%d", &seed);
     printf("Entered: %u\n", seed);
-    PRNGBig_Seed(&lcg, seed);
+    PRNG_Seed(&lcg, seed);
+    // printf("LCG Seed: %llu\n", lcg.state.u64);
 
     /* Print out comma separated numbers to a file */
     printf("Enter number of values to output: ");
@@ -34,7 +31,7 @@ int main(void)
     printf("Writing output to %s...\n", outName);
     for(uint32_t i = 0; i < n; i++)
     {
-        result = PRNGBig_Next(&lcg);
+        result = PRNG_Next(&lcg);
         fprintf(out, "%u,\n", result);
     }
     printf("Finished.\n");

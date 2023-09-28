@@ -65,60 +65,46 @@ modulus as the 32-bit Park Miller */
 
 // *****************************************************************************
 
-void PRNGBig_Seed(PRNGBig *self, uint32_t seed)
+void PRNG_Seed(PRNG *self, uint32_t seed)
 {
     if(seed == 0)
     {
-        switch(self->super->type)
+        switch(self->type)
         {
-            case PRNG_LCG_BIG:
+            case PRNG_TYPE_LCG_BIG:
                 seed = LCG_BIG_DEFAULT_SEED;
                 break;
-            case PRNG_PARK_MILLER_BIG:
+            case PRNG_TYPE_PARK_MILLER:
                 seed = PM_DEFAULT_SEED;
                 break;
-            case PRNG_SCHRAGE_BIG:
+            case PRNG_TYPE_SCHRAGE:
                 seed = PM_DEFAULT_SEED;
                 break;
         }
     }
-    self->state = seed;
-    self->super->isSeeded = true;
+    self->state.u64 = seed;
+    self->isSeeded = true;
 }
 
 // *****************************************************************************
 
-void PRNGSmall_Seed(PRNGSmall *self, uint32_t seed)
-{
-
-}
-
-// *****************************************************************************
-
-uint32_t PRNGBig_Next(PRNGBig *self)
+uint32_t PRNG_Next(PRNG *self)
 {
     uint32_t result = 0;
 
-    switch(self->super->type)
+    switch(self->type)
     {
         case PRNG_TYPE_LCG_BIG:
-            result = LCGBig_Next(&(self->state));
+            result = LCGBig_Next(&(self->state.u64));
             break;
-        case PRNG_TYPE_PARK_MILLER_BIG:
+        case PRNG_TYPE_PARK_MILLER:
 
             break;
-        case PRNG_TYPE_SCHRAGE_BIG:
+        case PRNG_TYPE_SCHRAGE:
 
             break;
     }
     return result;
-}
-
-// *****************************************************************************
-
-uint16_t PRNGSmall_Next(PRNGSmall *self)
-{
-
 }
 
 // *****************************************************************************
@@ -140,7 +126,7 @@ uint32_t LCGBig_Next(uint64_t *state)
 
 // *****************************************************************************
 
-uint32_t PRNGBig_NextBounded(PRNGBig *self, uint32_t lower, uint32_t upper)
+uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper)
 {
     uint32_t result = 0;
 
@@ -160,7 +146,7 @@ uint32_t PRNGBig_NextBounded(PRNGBig *self, uint32_t lower, uint32_t upper)
     /* threshold = RAND_MAX - RAND_MAX % range */
     uint32_t threshold = 0xFFFFFFFF - 0xFFFFFFFF % range;
     do {
-        result = LCGBig_Next(&(self->state)); // TODO add other functions
+        result = LCGBig_Next(&(self->state.u64)); // TODO add other functions
     } while(result >= threshold);
 
     return (result % range) + lower;
