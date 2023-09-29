@@ -32,7 +32,6 @@ static bool spiManagerEnabled;
 
 // ***** Static Function Prototypes ********************************************
 
-/* Put static function prototypes here */
 static void SPI_Manager_DevicePush(SPISlave *self, SPISlave *endOfList);
 
 // *****************************************************************************

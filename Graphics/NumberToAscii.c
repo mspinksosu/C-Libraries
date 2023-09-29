@@ -30,10 +30,10 @@
 /***************************************************************************//**
  * @brief A simple function to convert an int to a string
  * 
- * Creates a null null terminated string of the number you give it. Accepts a
+ * Creates a null terminated string of the number you give it. Accepts a 
  * pointer to a string and the width of the string. Make sure the width you 
- * give has enough room to hold your number plus a null terminator. The number 
- * will be padded with blank spaces.
+ * specify has enough room to hold your number plus a null terminator. The 
+ * number will be padded with blank spaces.
  * 
  * @param num  number to be converted
  * @param str  pointer to a string where the output will be placed

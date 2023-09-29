@@ -31,6 +31,8 @@
 #define HSI_HZ          8000000UL
 #define HSI_TO_PLL_HZ   4000000UL
 #define HSE_STARTUP     16000  // 2 ms at 8 MHz
+#define MAX_SYS_CLK_HSE 72000000UL
+#define MAX_SYS_CLK_HSI 36000000UL
 
 // ***** Global Variables ******************************************************
 
@@ -89,8 +91,8 @@ void MCU_STM32_EnterLPMAutowake(uint16_t timeInSeconds)
 
 uint32_t MCU_InitSystemClock(uint32_t desiredClkInHz, uint32_t xtalInHz)
 {
-    if(desiredClkInHz > 72000000UL)
-        desiredClkInHz = 72000000UL;
+    if(desiredClkInHz > MAX_SYS_CLK_HSE)
+        desiredClkInHz = MAX_SYS_CLK_HSE;
 
     systemClockInHz = desiredClkInHz;
     uint32_t selectedClkSource = RCC_SYSCLKSource_HSI; // HSI default
@@ -136,8 +138,8 @@ uint32_t MCU_InitSystemClock(uint32_t desiredClkInHz, uint32_t xtalInHz)
         combination that gets us closest to the desired clock frequency */
         if(selectedClkSource == RCC_SYSCLKSource_HSI)
         {
-            if(desiredClkInHz > 36000000UL)
-                desiredClkInHz = 36000000UL;
+            if(desiredClkInHz > MAX_SYS_CLK_HSI)
+                desiredClkInHz = MAX_SYS_CLK_HSI;
 
             /* For HSI, the input to the PLL can only be 4 MHz. */
             for(m = sizeof(pllMulArray) - 1; m >= 0; m--)
@@ -240,10 +242,10 @@ uint32_t MCU_InitSystemClock(uint32_t desiredClkInHz, uint32_t xtalInHz)
 
 void MCU_WatchdogPet(void)
 {
-    /* There is no penalty for calling the reload function if the watchdog 
-    is disabled. Since the watchdog is truly independent, ST gives me no good way
-    to really know if it's currently running or not. Therefore, the reload function
-    should always be called. */
+    /* There is no penalty for calling the reload function if the watchdog is 
+    disabled. Since the watchdog is truly independent, ST gives me no good way
+    to really know if it's currently running or not. Therefore, the reload 
+    function should always be called. */
     IWDG->KR = 0xAAAA;
 }
 
@@ -302,6 +304,7 @@ void MCU_DelayMs(uint16_t milliseconds)
         while(!(SysTick->CTRL & SysTick_CTRL_COUNTFLAG));
         milliseconds--;
     }
+    /* Let the timer finish out the rest of the period that we started on */
     while(SysTick->VAL > sysTickCount);
     SysTick->CTRL = sysTickCtrlReg;
 }

@@ -31,10 +31,10 @@
  * the thickness is 2*thickness*k. But, a lot of versions of this code simply 
  * omit the formula and apply "2*thickness*sqrt(dx^2 + dy^2)" instead. The 
  * sqrt(dx^2 + dy^2) is the constant "k". Computers of the era used an 
- * approximation instead and I have done this same for this version. The paper 
+ * approximation instead and I have done the same for this version. The paper 
  * gives a rough approximation of x + y/4 as well as a piece-wise equation. 
- * The algorithm works just fine with an approximation. The line will be a 
- * little jagged, but that is hardly a concern with a small TFT screen. If you 
+ * The algorithm works just fine with an approximation. The line might be a 
+ * tiny bit jagged, but it is un-noticeable with a small TFT screen. If you 
  * are porting this to a more powerful processor you can try substituting the 
  * ideal value to see if there is any noticeable difference.
  * 
