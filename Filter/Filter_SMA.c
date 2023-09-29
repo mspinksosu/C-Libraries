@@ -49,7 +49,7 @@ void Filter_SMA_Create(Filter_SMA *self, Filter *base, uint16_t *buffer, uint8_t
     self->bufferLength = bufferLength;
     self->index = 0;
     /*  Call the base class constructor */
-    Foo_Create(base, self, &FilterFunctionTable);
+    Filter_Create(base, self, &FilterFunctionTable);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -54,7 +54,7 @@ void Filter_EMA_Create(Filter_EMA *self, Filter *base, float alpha)
     self->alphaU16 = ALPHA_U16(alpha);
     self->prevOutput = 0;
     /*  Call the base class constructor */
-    Foo_Create(base, self, &FilterFunctionTable);
+    Filter_Create(base, self, &FilterFunctionTable);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
