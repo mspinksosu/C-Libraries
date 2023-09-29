@@ -62,12 +62,12 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
   - [x] Update doxygen
 - [ ] PID: Untested
   - [ ] Documentation
-- [ ] Pseudo Random. Logarithmic skip ahead is working!
+- [ ] Pseudorandom. Tested. Logarithmic skip ahead is working!
   - [x] Add basic functions for LCG 32-bit
   - [x] Add Park-Miller implementation.
   - [x] Add logarithmic skip to LCG and Park Miller
-  - [ ] Update classes and functions
-  - [ ] Smaller LCG with skip ahead
+  - [x] Update classes and functions
+  - [x] Smaller LCG with skip ahead
   - [ ] Documentation
 - [ ] Rotary Encoder: Redesigned! Testing in progress
   - [x] Add different types of rotary encoder
