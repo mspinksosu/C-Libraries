@@ -56,6 +56,12 @@ typedef struct Filter_EMATag
  * Calls the base class Filter_Create function. Each sub class object must have 
  * a base class.
  * 
+ * This filter is called an exponential moving average filter, which is 
+ * supposed to mimic a RC filter and uses less memory than an SMA filter. 
+ * There is value called alpha that goes from 0 to 1.0. Values closer to 0 
+ * make the filter roll off earlier. A value of 0 allows no output at all. A
+ * value of 1.0 applies no filtering.
+ * 
  * @param self  pointer to the EMA Filter object you are using
  * 
  * @param base  pointer to the base class object used for function calls

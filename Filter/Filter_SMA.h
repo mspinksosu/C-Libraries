@@ -58,6 +58,10 @@ typedef struct Filter_SMATag
  * Calls the base class Filter_Create function. Each sub class object must have 
  * a base class.
  * 
+ * This is a type of filter called a simple moving average filter. It makes a 
+ * buffer of samples, and averages the samples. To use it, you will need to 
+ * give it an array to use as a buffer.
+ * 
  * @param self  pointer to the SMA Filter object you are using
  * 
  * @param base  pointer to the base class object used for function calls
