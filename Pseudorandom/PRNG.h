@@ -1,5 +1,5 @@
 /***************************************************************************//**
- * @brief Pseudorandom Number Generators with Logarithmic Skip Ahead
+ * @brief Pseudorandom Number Generators with Logarithmic Skip
  * 
  * @file PRNG.h
  * 
@@ -12,7 +12,9 @@
  * skip ahead algorithm. It will allow you to traverse a sequence of 
  * pseudorandom values in O(log2(n)) time instead of O(n). More on that later.
  * I have collected three different types of PRNG plus a generic algorithm to
- * shuffle an array for you.
+ * shuffle an array for you. Each random number generator is basically just 
+ * an object that holds its current state. Using this library, you can create 
+ * multiple PRNG's of different types and seed each one independently.
  * 
  * The Big LCG is an extension of a basic linear congruential generator, except 
  * that this one makes use of 64-bit math to get a longer output. The basic 
@@ -45,8 +47,8 @@
  * 
  * The actual PRNG functions use a pointer to the seed. I did this to allow you 
  * to just use the individual functions if desired for a little more speed. The 
- * PRNG class just makes it easier to manage the state of the PRNG and do 
- * things like give you a random number from a certain range.
+ * PRNG class just makes it easier to manage multiple PRNG's and do things like 
+ * give you a random number from a certain range.
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2023 Matthew Spinks
@@ -115,7 +117,7 @@ typedef struct PRNGTag
 void PRNG_Create(PRNG *self, PRNGType type);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Seed the random number generator
  * 
  * @param self 
  * @param seed 
@@ -123,7 +125,7 @@ void PRNG_Create(PRNG *self, PRNGType type);
 void PRNG_Seed(PRNG *self, uint32_t seed);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Get the next random number in the sequence
  * 
  * @param self 
  * @return uint32_t 
@@ -131,7 +133,7 @@ void PRNG_Seed(PRNG *self, uint32_t seed);
 uint32_t PRNG_Next(PRNG *self);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Return a random number within a specified boundary
  * 
  * @param self 
  * @param lower 
@@ -141,7 +143,7 @@ uint32_t PRNG_Next(PRNG *self);
 uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Perform logarithmic skip (forwards or backwards)
  * 
  * @param self 
  * @param n 
@@ -166,7 +168,7 @@ void PRNG_Shuffle(void *array, uint32_t n, size_t s, uint32_t seed);
 ////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************//**
- * @brief 
+ * @brief Big Linear Congruential Generator
  * 
  * // TODO range should be 0 to 2^32-1. period 2^63
  * 
@@ -176,7 +178,7 @@ void PRNG_Shuffle(void *array, uint32_t n, size_t s, uint32_t seed);
 uint32_t LCGBig_Next(uint64_t *state);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Small Linear Congruential Generator
  * 
  * // TODO range should be 0 to 2^16-1. period 2^31
  * 
@@ -186,7 +188,7 @@ uint32_t LCGBig_Next(uint64_t *state);
 uint16_t LCGSmall_Next(uint32_t *state);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Logarithmic skip function for Big LCG
  * 
  * @param state 
  * @param n 
@@ -195,7 +197,7 @@ uint16_t LCGSmall_Next(uint32_t *state);
 uint32_t LCGBig_Skip(uint64_t *state, int64_t n);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Logarithmic skip function for small LCG
  * 
  * @param state 
  * @param n 
@@ -204,7 +206,7 @@ uint32_t LCGBig_Skip(uint64_t *state, int64_t n);
 uint16_t LCGSmall_Skip(uint32_t *state, int32_t n);
 
 /***************************************************************************//**
- * @brief Park Miller 64-bit Double Width Product
+ * @brief Park Miller 64-bit double width product
  * 
  * // TODO not implemented yet
  * 
@@ -214,7 +216,7 @@ uint16_t LCGSmall_Skip(uint32_t *state, int32_t n);
 uint32_t ParkMillerBigger_Next(uint64_t *state);
 
 /***************************************************************************//**
- * @brief Park Miller (same as C++ rand)
+ * @brief Park Miller MLCG (same as C++ rand)
  * 
  * // TODO range should be 1 to 2^31-1. period 2^32-1
  * 
@@ -224,7 +226,7 @@ uint32_t ParkMillerBigger_Next(uint64_t *state);
 uint32_t ParkMiller_Next(uint64_t *state);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Logarithmic skip function for Park Miller
  * 
  * @param state 
  * @param n 
@@ -233,7 +235,10 @@ uint32_t ParkMiller_Next(uint64_t *state);
 uint32_t ParkMiller_Skip(uint64_t *state, int64_t n);
 
 /***************************************************************************//**
- * @brief 
+ * @brief Implementation of Park Miller using Schrage's method
+ * 
+ * May or may not be faster depending on your target device word size and 
+ * compiler. This was created to avoid using a double width product.
  * 
  * // TODO range should be 1 to 2^31-1. period 2^32-1
  * 

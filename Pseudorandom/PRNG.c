@@ -1,5 +1,5 @@
 /***************************************************************************//**
- * @brief Pseudorandom Number Generators with Logarithmic Skip Ahead
+ * @brief Pseudorandom Number Generators with Logarithmic Skip
  * 
  * @file PRNG.c
  * 
