@@ -1,5 +1,5 @@
 /***************************************************************************//**
- * @brief PRNG Library
+ * @brief Pseudorandom Number Generators with Logarithmic Skip Ahead
  * 
  * @file PRNG.c
  * 
@@ -8,7 +8,7 @@
  * @date 9/23/23   Original creation
  * 
  * @details
- *      TODO
+ *      // TODO
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2023 Matthew Spinks
@@ -33,6 +33,7 @@
 #define LCG_BIG_C               1ULL
 #define LCG_BIG_DEFAULT_SEED    1ULL
 
+/* Modulus m is power of two */
 #define LCG_SMALL_M             (1UL << 31)
 #define LCG_SMALL_MASK          (LCG_SMALL_M - 1UL)
 #define LCG_SMALL_A             20501397UL
@@ -44,7 +45,7 @@
 #define PM_BIGGER_M             ((1ULL << 63) - 25ULL)
 #define PM_BIGGER_A             6458928179451363983ULL
 
-/* This is the default value for C++ minstd_rand */
+/* This is also the default value for C++ minstd_rand */
 #define PM_BIG_M                ((1UL << 31) - 1UL)
 #define PM_BIG_A                48271UL
 
@@ -156,7 +157,7 @@ uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper)
     if(range < 0xFFFFFFFF)
         range++;
 
-    /* @debug method for removing modulo bias */
+    /* method for removing modulo bias */
     uint32_t threshold = randMax - randMax % range;
     do {
         switch(self->type)
@@ -177,6 +178,10 @@ uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper)
     } while(result >= threshold);
 
     return (result % range) + lower;
+
+    /* TODO I've tested this modulo bias method against the naive modulo 
+    method, and I haven't seen a difference yet. Maybe it only works for very 
+    large values... */
 }
 
 // *****************************************************************************
@@ -208,7 +213,7 @@ uint32_t PRNG_Skip(PRNG *self, int64_t n)
 void PRNG_Shuffle(void *array, uint32_t n, size_t s, uint32_t seed)
 {
     uint8_t tmp[s];
-    uint8_t *arrayPtr;
+    uint8_t *arrayPtr = array;
     uint32_t schragePRNG = seed;
 
     if(schragePRNG == 0)
@@ -220,8 +225,8 @@ void PRNG_Shuffle(void *array, uint32_t n, size_t s, uint32_t seed)
     for(uint32_t i = n - 1; i > 0; i--)
     {
         // Pick a random index from 0 to i
-        uint32_t j = Schrage_Next(&schragePRNG) % (i + 1);
- 
+        uint32_t j = Schrage_Next(&schragePRNG) % (i + 1); // TODO should I replace this with the "modulo bias removal method" like above?
+
         // Swap arr[i] with the element at random index
         memcpy(tmp, arrayPtr + j * s, s);
         memcpy(arrayPtr + j * s, arrayPtr + i * s, s);
@@ -233,7 +238,7 @@ void PRNG_Shuffle(void *array, uint32_t n, size_t s, uint32_t seed)
 
 uint32_t LCGBig_Next(uint64_t *state)
 {
-    /* TODO This version will use a power of two for the modulus for speed with
+    /* This version will use a power of two for the modulus for speed with
     the lower bits removed. Similar to C rand, but with 32-bit result. 
     Multiplier a will be chosen from L'Ecuyer research paper. Increment c 
     will need to be odd. Try with c = 1. */
@@ -250,7 +255,7 @@ uint32_t LCGBig_Next(uint64_t *state)
 
 uint16_t LCGSmall_Next(uint32_t *state)
 {
-    /* TODO This version is similar to C rand. I will use a power of two for 
+    /* This version is similar to C rand. I will use a power of two for 
     the modulus for speed with the lower bits removed. Multiplier a will be 
     chosen from L'Ecuyer research paper. Increment c will need to be odd. 
     Try with c = 1. */
@@ -277,16 +282,16 @@ uint32_t LCGBig_Skip(uint64_t *state, int64_t n)
 
     Brown, Random Number Generation With Arbitrary Strides 1994:
     Used in random number generation for "Monte Carlo" calculations. The same 
-    formula "X_n+k = (A * X_n + C) % m" still applies. The psuedo code below is 
+    formula "X_n+k = (A * X_n + C) % m" still applies. The pseudo code below is 
     basically just a method to compute the formula cited above by Donald Knuth.
-    psuedo code for A:
+    pseudo code for A:
     A = 1, h = a, i = k + 2^m % 2^m 
     while(i > 0) {
         if( i = odd)
             A = (A * h) % 2^m 
         h = (h^2) % 2^m
         i = floor(i / 2) }
-    psuedo code for C:
+    pseudo code for C:
     C = 0, f = c, h = a, i = (k + 2^m) % 2^m 
     while(i > 0) {
         if( i = odd)
@@ -296,7 +301,7 @@ uint32_t LCGBig_Skip(uint64_t *state, int64_t n)
         i = floor(i / 2) } */
 
     /* Compute i (skipAhead). If number to skip is negative, add the period 
-    until it is postive. Skipping backwards is the same as skipping forward 
+    until it is positive. Skipping backwards is the same as skipping forward 
     that many times. */
     int64_t skipAhead = n;
     while(skipAhead < 0)
@@ -337,7 +342,7 @@ uint16_t LCGSmall_Skip(uint32_t *state, int32_t n)
     with smaller variables. I know lots of people hate C rand() with a passion. 
     But if the basic rand() is good enough for your use case, then this will 
     give you the opportunity to use the logarithmic skip ahead with it also. 
-    It stil uses the double width product, but it might use a little less 
+    It still uses the double width product, but it might use a little less 
     overhead depending on your compiler.
 
     X_n+1 = (A * X_n + C) % m
@@ -346,7 +351,7 @@ uint16_t LCGSmall_Skip(uint32_t *state, int32_t n)
     increment: (c(a^k -1) / (a - 1)) % m */
 
     /* Compute i (skipAhead). If number to skip is negative, add the period 
-    until it is postive. Skipping backwards is the same as skipping forward 
+    until it is positive. Skipping backwards is the same as skipping forward 
     that many times. */
     int32_t skipAhead = n;
     while(skipAhead < 0)
@@ -383,7 +388,8 @@ uint16_t LCGSmall_Skip(uint32_t *state, int32_t n)
 
 uint32_t ParkMiller_Next(uint64_t *state)
 {
-    /* TODO This version will be a full-cycle PRNG with a modulus of a prime 
+    /* TODO Add more notes
+    This version will be a full-cycle PRNG with a modulus of a prime 
     number and c = 0. I believe the output values should be in the range of 
     1 to m - 1. */
 
@@ -396,7 +402,8 @@ uint32_t ParkMiller_Next(uint64_t *state)
 
 uint32_t ParkMillerBigger_Next(uint64_t *state)
 {
-    /* TODO This version uses a 64-bit double width product */
+    /* TODO Add more notes
+    This version uses a 64-bit double width product */
 
     /* X_n+1 = (a * X_n) % m */
     *state = (PM_BIGGER_A * (*state)) % PM_BIGGER_M;
@@ -417,7 +424,7 @@ uint32_t ParkMiller_Skip(uint64_t *state, int64_t n)
     increment: (c(a^k -1) / (a - 1)) % m */
 
     /* Compute i (skipAhead). If number to skip is negative, add the period 
-    until it is postive. Skipping backwards is the same as skipping forward 
+    until it is positive. Skipping backwards is the same as skipping forward 
     that many times. */
     int64_t skipAhead = n;
     while(skipAhead < 0)
