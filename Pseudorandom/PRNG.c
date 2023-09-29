@@ -21,6 +21,7 @@
  ******************************************************************************/
 
 #include "PRNG.h"
+#include "string.h"
 
 // ***** Defines ***************************************************************
 
@@ -125,6 +126,7 @@ uint32_t PRNG_Next(PRNG *self)
 uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper)
 {
     uint32_t result = 0;
+    uint32_t randMax = 0xFFFFFFFF;
 
     if(lower > upper)
     {
@@ -133,46 +135,49 @@ uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper)
         upper = lower;
     }
 
+    switch(self->type)
+    {
+        case PRNG_TYPE_LCG_BIG:
+            randMax = 0xFFFFFFFF;
+            break;
+        case PRNG_TYPE_LCG_SMALL:
+            randMax = LCG_SMALL_M;
+            break;
+        case PRNG_TYPE_PARK_MILLER:
+            randMax = PM_BIG_M;
+            break;
+        case PRNG_TYPE_SCHRAGE:
+            randMax = SCH_M;
+            break;
+    }
+
     // output = output % (upper - lower + 1) + min
     uint32_t range = upper - lower;
     if(range < 0xFFFFFFFF)
         range++;
 
     /* @debug method for removing modulo bias */
-    /* threshold = RAND_MAX - RAND_MAX % range */
-    uint32_t threshold = 0xFFFFFFFF - 0xFFFFFFFF % range;
+    uint32_t threshold = randMax - randMax % range;
     do {
-        result = LCGBig_Next(&(self->state.u64)); // TODO add other functions
+        switch(self->type)
+        {
+            case PRNG_TYPE_LCG_BIG:
+                result = LCGBig_Next(&(self->state.u64));
+                break;
+            case PRNG_TYPE_LCG_SMALL:
+                result = LCGSmall_Next(&(self->state.u32));
+                break;
+            case PRNG_TYPE_PARK_MILLER:
+                result = ParkMiller_Next(&(self->state.u64));
+                break;
+            case PRNG_TYPE_SCHRAGE:
+                result = Schrage_Next(&(self->state.u32));
+                break;
+        }
     } while(result >= threshold);
 
     return (result % range) + lower;
 }
-
-// TODO combine PRNG's together in Bounded function, the @remove this
-// uint32_t PRNG_ParkMillerSmallBounded(uint32_t *state, uint32_t lower, uint32_t upper)
-// {
-//     uint32_t result = 0;
-
-//     if(lower > upper)
-//     {
-//         uint32_t temp = lower;
-//         lower = upper;
-//         upper = lower;
-//     }
-
-//     // output = output % (upper - lower + 1) + min
-//     uint32_t range = upper - lower;
-//     if(range < 0x7FFFFFFF)
-//         range++;
-
-//     /* threshold = RAND_MAX - RAND_MAX % range */
-//     uint32_t threshold = 0x7FFFFFFF - 0x7FFFFFFF % range;
-//     do {
-//         result = ParkMillerSmall_Next(state);
-//     } while(result >= threshold);
-
-//     return (result % range) + lower;
-// }
 
 // *****************************************************************************
 
@@ -186,16 +191,42 @@ uint32_t PRNG_Skip(PRNG *self, int64_t n)
             result = LCGBig_Skip(&(self->state.u64), n);
             break;
         case PRNG_TYPE_LCG_SMALL:
-            
+            result = LCGSmall_Skip(&(self->state.u32), (int32_t)n);
             break;
         case PRNG_TYPE_PARK_MILLER:
             result = ParkMiller_Skip(&(self->state.u64), n);
             break;
         case PRNG_TYPE_SCHRAGE:
-            
+            // TODO I could probably just substitute the PM skip.
             break;
     }
     return result;
+}
+
+// *****************************************************************************
+
+void PRNG_Shuffle(void *array, uint32_t n, size_t s, uint32_t seed)
+{
+    uint8_t tmp[s];
+    uint8_t *arrayPtr;
+    uint32_t schragePRNG = seed;
+
+    if(schragePRNG == 0)
+        schragePRNG++;
+
+    if(n == 0)
+        n++;
+
+    for(uint32_t i = n - 1; i > 0; i--)
+    {
+        // Pick a random index from 0 to i
+        uint32_t j = Schrage_Next(&schragePRNG) % (i + 1);
+ 
+        // Swap arr[i] with the element at random index
+        memcpy(tmp, arrayPtr + j * s, s);
+        memcpy(arrayPtr + j * s, arrayPtr + i * s, s);
+        memcpy(arrayPtr + i * s, tmp, s);
+    }
 }
 
 // *****************************************************************************

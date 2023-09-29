@@ -110,6 +110,8 @@ uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper);
 
 uint32_t PRNG_Skip(PRNG *self, int64_t n);
 
+void PRNG_Shuffle(void *array, uint32_t n, size_t s, uint32_t seed);
+
 // -----------------------------------------------------------------------------
 
 uint32_t LCGBig_Next(uint64_t *state);
