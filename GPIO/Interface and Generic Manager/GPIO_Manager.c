@@ -1,7 +1,7 @@
 /***************************************************************************//**
- * @brief GPIO Library Manager (STM32G0)
+ * @brief GPIO Library Manager (MCU1)
  * 
- * @file GPIO_Manager_STM32G0.c
+ * @file GPIO_Manager.c
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
@@ -28,16 +28,16 @@
 #include "GPIO_Manager.h"
 
 /* include your processor GPIO implementation header here */
-// #include "GPIO_STM32G0.h"
+#include "GPIO_MCU1.h"
 
 // ***** Defines ***************************************************************
 
-/* I usually place these defines in a separate file due to the size */
+/* I usually place these defines in a separate file due to the size. */
 #define LED1_PIN        GPIO_PORTA_PIN5
 #define LED1_PIN_TYPE   GPIO_TYPE_DIGITAL_OUTPUT
 #define LED1_PIN_PULL   GPIO_PULL_NONE
 
-#define LED2_PIN        GPIO_PORTA_PIN15
+#define LED2_PIN        GPIO_PORTA_PIN6
 #define LED2_PIN_TYPE   GPIO_TYPE_DIGITAL_OUTPUT
 #define LED2_PIN_PULL   GPIO_PULL_NONE
 

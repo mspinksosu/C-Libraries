@@ -48,10 +48,13 @@
  * prefer this method is it makes the process a little more type-safe by having 
  * the base class and sub class as arguments in the function signature.
  * 
- * // TODO add notes about pin type
- * 
  * In the example below, The init type is declared as a local variables and 
  * used for each pin's initialization before being discarded.
+ * 
+ * I've also included some generic pin aliases below the functions that you 
+ * can use if you like. I've combined the port and pin together into a single 
+ * statement. Not every processor is going to use 16 pins per port though, so 
+ * it is up to you to handle this in your processor's implementation.
  * 
  * @section example_code Example Code
  * // TODO example code
