@@ -39,14 +39,15 @@
 // *****************************************************************************
 
 Fxp FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart, 
-    uint8_t precision, uint8_t numFractionalBits)
+    uint8_t precisionOfFractionalPart, uint8_t numFractionalBits)
 {
     Fxp retFxp = {.type = FXP_U16, .value = integerPart, .carry = false};
 
     // TODO check if integer part is too big
 
-    /* integer * 2^b + (fractional * 2^b / 10^p)
-    Where b is the number of fractional bits and p is the precision */
+    /* fxp = integer * 2^b + (fractional * 2^b / 10^p)
+    Where b is the number of fractional bits and p is the precision of the 
+    fractional part */
 
     if(numFractionalBits < 16)
     {
@@ -56,13 +57,13 @@ Fxp FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart,
         uint32_t frac32 = fractionalPart;
 
         /* Maximum fractional part is 65535 which is 5 digits */
-        if(precision > 5)
-            precision = 5;
+        if(precisionOfFractionalPart > 5)
+            precisionOfFractionalPart = 5;
 
         /* Calculate the precision of our fractional part input */
         uint32_t tens = 1;
         uint8_t p = 1;
-        for(; p < precision; p++)
+        for(; p < precisionOfFractionalPart; p++)
         {
             tens *= 10;
             if(fractionalPart < tens)
@@ -70,7 +71,7 @@ Fxp FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart,
         }
 
         /* Reduce fractional part if it is too big */
-        for(uint8_t i = precision; i < p; i++)
+        for(uint8_t i = precisionOfFractionalPart; i < p; i++)
         {
             frac32 += 5; // round
             frac32 /= 10;
@@ -81,7 +82,7 @@ Fxp FXP_ConvertToFixedU16(uint16_t integerPart, uint16_t fractionalPart,
         lose even more precision. */
         frac32 <<= 16;
 
-        for(uint8_t i = 0; i < precision; i++)
+        for(uint8_t i = 0; i < precisionOfFractionalPart; i++)
         {
             frac32 = frac32 / 10;
         }
