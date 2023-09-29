@@ -20,7 +20,7 @@ int main(void)
     {
         printf("Select type:\n1. %s\n2. %s\n3. %s\n4. %s\n", 
             option[0], option[1], option[2], option[3]);
-        printf("Press q to quit.\n");
+        printf("Enter q to quit.\n");
         scanf(" %c", &c);
 
         switch(c)
