@@ -214,10 +214,10 @@ void PRNG_Shuffle(void *array, uint32_t n, size_t s, uint32_t seed)
 {
     uint8_t tmp[s];
     uint8_t *arrayPtr = array;
-    uint32_t schragePRNG = seed;
+    uint32_t schrageState = seed;
 
-    if(schragePRNG == 0)
-        schragePRNG++;
+    if(schrageState == 0)
+        schrageState++;
 
     if(n == 0)
         n++;
@@ -225,7 +225,7 @@ void PRNG_Shuffle(void *array, uint32_t n, size_t s, uint32_t seed)
     for(uint32_t i = n - 1; i > 0; i--)
     {
         // Pick a random index from 0 to i
-        uint32_t j = Schrage_Next(&schragePRNG) % (i + 1); // TODO should I replace this with the "modulo bias removal method" like above?
+        uint32_t j = Schrage_Next(&schrageState) % (i + 1); // TODO should I replace this with the "modulo bias removal method" like above?
 
         // Swap arr[i] with the element at random index
         memcpy(tmp, arrayPtr + j * s, s);
