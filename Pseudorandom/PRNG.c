@@ -479,7 +479,7 @@ uint32_t Schrage_Next(uint32_t *state)
     if(result < 0)
         result += SCH_M;
 
-    return *state = result;
+    return *state = (uint32_t)result;
 }
 
 /*
