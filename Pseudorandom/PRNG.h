@@ -19,9 +19,9 @@
  * The Big LCG is an extension of a basic linear congruential generator, except 
  * that this one makes use of 64-bit math to get a longer output. The basic 
  * formula for an LCG is: "X_n+1 = (a * X_n + c) % m". LCG's have an advantage 
- * of being very fast if m is chosen to me a power of two because the modulus 
+ * of being very fast if m is chosen to be a power of two because the modulus 
  * can be reduced to a logical AND. The downside is that only the upper bits 
- * of the LCG are pseudorandom. The typical rand function uses this sort of 
+ * of the LCG are pseudorandom. The typical rand() function uses this sort of 
  * LCG. The state is a 32-bit variable, but only 15 bits are used. (bits 30 
  * through 16). My big LCG version just expands upon this to get a bigger 
  * number for the output. Instead of using a 32-bit variable, it uses 64-bit 
@@ -81,7 +81,6 @@ typedef enum PRNGTypeTag
 
 typedef struct PRNGTag
 {
-    void *instance;
     PRNGType type;
     bool isSeeded;
     union PRNGStateType
@@ -92,10 +91,20 @@ typedef struct PRNGTag
 } PRNG;
 
 /** 
- * // TODO Description of struct
+ * Description of struct members. You shouldn't really mess with any of these
+ * variables directly. That is why I made functions for you to use.
  * 
- * member1      description of variable member1
+ * type  The type of PRNG that you want to use
  * 
+ * isSeeded  If you don't give the PRNG an initial value, I will set it to a 
+ *           default value for you.
+ * 
+ * state  The internal value of the PRNG. May be a 32-bit or 64-bit value 
+ *        depending on the type. The union makes it so you don't have to worry 
+ *        about it. Be aware that output will either be a 16-bit or a 32-bit 
+ *        number, but my functions all return a 32-bit number for simplicity. 
+ *        A 64-bit PRNG will return a 32-bit number, and a 32-bit PRNG will 
+ *        return a 16-bit number.
  */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -109,45 +118,56 @@ typedef struct PRNGTag
 /* TODO Add lots of notes */
 
 /***************************************************************************//**
- * @brief 
+ * @brief Create a PRNG object
  * 
- * @param self 
- * @param type 
+ * @param self  pointer to the PRNG that you are using
+ * 
+ * @param type  PRNG_TYPE_LCG_BIG, PRNG_TYPE_LCG_SMALL, PRNG_TYPE_PARK_MILLER,
+ *              PRNG_TYPE_SCHRAGE,
  */
 void PRNG_Create(PRNG *self, PRNGType type);
 
 /***************************************************************************//**
  * @brief Seed the random number generator
  * 
- * @param self 
- * @param seed 
+ * @param self  pointer to the PRNG that you are using
+ * 
+ * @param seed  the initial value will be 1 if you do not seed the PRNG
  */
 void PRNG_Seed(PRNG *self, uint32_t seed);
 
 /***************************************************************************//**
- * @brief Get the next random number in the sequence
+ * @brief Get the next pseudorandom number in the sequence
  * 
- * @param self 
- * @return uint32_t 
+ * @param self  pointer to the PRNG that you are using
+ * 
+ * @return uint32_t  output. Could be 16-bit depending on the PRNG type
  */
 uint32_t PRNG_Next(PRNG *self);
 
 /***************************************************************************//**
  * @brief Return a random number within a specified boundary
  * 
- * @param self 
- * @param lower 
- * @param upper 
- * @return uint32_t 
+ * @param self  pointer to the PRNG that you are using
+ * 
+ * @param lower  lower bound inclusive
+ * 
+ * @param upper  upper bound inclusive
+ * 
+ * @return uint32_t  output. Could be 16-bit depending on the PRNG type
  */
 uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper);
 
 /***************************************************************************//**
  * @brief Perform logarithmic skip (forwards or backwards)
  * 
- * @param self 
- * @param n 
- * @return uint32_t 
+ * Finds the nth number in the sequence. n = 0 will output 0.
+ * 
+ * @param self  pointer to the PRNG that you are using
+ * 
+ * @param n  nth number. positive = forwards, negative = backwards
+ * 
+ * @return uint32_t  output. Could be 16-bit depending on the PRNG type
  */
 uint32_t PRNG_Skip(PRNG *self, int64_t n);
 
@@ -155,8 +175,11 @@ uint32_t PRNG_Skip(PRNG *self, int64_t n);
  * @brief Shuffle an array using the Fisher-Yates method
  * 
  * @param array  pointer to an array of any type
+ * 
  * @param n  number of elements
+ * 
  * @param s  the size in bytes of each element
+ * 
  * @param seed  seed for the shuffle algorithm
  */
 void PRNG_Shuffle(void *array, uint32_t n, size_t s, uint32_t seed);
@@ -208,7 +231,7 @@ uint16_t LCGSmall_Skip(uint32_t *state, int32_t n);
 /***************************************************************************//**
  * @brief Park Miller 64-bit double width product
  * 
- * // TODO not implemented yet
+ * // TODO range should be 1 to 2^31-1. period should be 2^63-5
  * 
  * @param state 
  * @return uint32_t 

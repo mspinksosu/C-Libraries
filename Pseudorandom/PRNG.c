@@ -104,6 +104,9 @@ uint32_t PRNG_Next(PRNG *self)
 {
     uint32_t result = 0;
 
+    if(!self->isSeeded)
+        PRNG_Seed(self, 0);
+
     switch(self->type)
     {
         case PRNG_TYPE_LCG_BIG:
@@ -128,6 +131,9 @@ uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper)
 {
     uint32_t result = 0;
     uint32_t randMax = 0xFFFFFFFF;
+
+    if(!self->isSeeded)
+        PRNG_Seed(self, 0);
 
     if(lower > upper)
     {
@@ -190,6 +196,9 @@ uint32_t PRNG_Skip(PRNG *self, int64_t n)
 {
     uint32_t result = 0;
 
+    if(!self->isSeeded)
+        PRNG_Seed(self, 0);
+
     switch(self->type)
     {
         case PRNG_TYPE_LCG_BIG:
@@ -244,7 +253,7 @@ uint32_t LCGBig_Next(uint64_t *state)
     will need to be odd. Try with c = 1. */
 
     /* TODO Possible output values should be in the range 0 to 2^32-1. But 
-    output is not full-cycle */
+    output is not full-cycle. Need to verify. */
 
     /* X_n+1 = (a * X_n + c) % m */
     *state = (LCG_BIG_A * (*state) + LCG_BIG_C) & LCG_BIG_MASK;
@@ -261,7 +270,7 @@ uint16_t LCGSmall_Next(uint32_t *state)
     Try with c = 1. */
 
     /* TODO Possible output values should be in the range 0 to 2^16-1. But 
-    output is not full-cycle */
+    output is not full-cycle. Need to verify. */
 
     /* X_n+1 = (a * X_n + c) % m */
     *state = (LCG_SMALL_A * (*state) + LCG_SMALL_C) & LCG_SMALL_MASK;
@@ -312,7 +321,7 @@ uint32_t LCGBig_Skip(uint64_t *state, int64_t n)
 #if DEBUG_PRINT
     uint32_t loopCount = 0;
 #endif
-    /* Now compute A and C. */
+    /* Now compute A and C. Both methods are combined into a single loop. */
     for(; skipAhead > 0LL; skipAhead >>= 1)
     {
         if(skipAhead & 1LL)
@@ -362,7 +371,7 @@ uint16_t LCGSmall_Skip(uint32_t *state, int32_t n)
 #if DEBUG_PRINT
     uint32_t loopCount = 0;
 #endif
-    /* Now compute A and C. */
+    /* Now compute A and C. Both methods are combined into a single loop. */
     for(; skipAhead > 0LL; skipAhead >>= 1)
     {
         if(skipAhead & 1LL)
@@ -402,7 +411,7 @@ uint32_t ParkMiller_Next(uint64_t *state)
 
 uint32_t ParkMillerBigger_Next(uint64_t *state)
 {
-    /* TODO Add more notes
+    /* TODO Test. Add more notes.
     This version uses a 64-bit double width product */
 
     /* X_n+1 = (a * X_n) % m */
@@ -467,12 +476,14 @@ uint32_t Schrage_Next(uint32_t *state)
     and "a > 0" there exists unique integers "q" (quotient) and "r" (remainder) 
     such that "m = a * q + r" and "0 <= r < m". 
     
-    "Then q = m / a (integer division) and "r = m % a". The product a*x is 
-    approximately: a*x = a(x % q) - r[x / q] (integer division). Then we can 
-    take the result of a*x and perform % m to it. This modulo m is further 
-    simplified: if a*x = a(x % q) - r[x / q] is negative, m is added to it. */
+    "q = m / a" (integer division) and "r = m % a". The product a * x is 
+    approximately: a * x = a(x % q) - r[x / q] (integer division). Next, we 
+    take the result of a * x and perform % m to it. This modulo m is further 
+    simplified: if a * x = a(x % q) - r[x / q] is negative, m is added to it. */
 
-    /* ax % m = a(x % q) - r[x / q] % m */
+    /* ax % m = a(x % q) - r[x / q] % m 
+    For X_Mod_Q, since we already have x / q, x % q can easily be done without 
+    doing any actual modulo division. */
     X_Div_Q = X / SCH_Q;
     X_Mod_Q = X - X_Div_Q * SCH_Q;
     result = SCH_A * X_Mod_Q - SCH_R * X_Div_Q;
