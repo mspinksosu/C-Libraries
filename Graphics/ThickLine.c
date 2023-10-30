@@ -22,7 +22,7 @@
  * This version is designed for use with microcontroller's and small TFT
  * screens. It has been optimized slightly for speed, which I will explain
  * below. There are a lot of if-statements with the pxStep and pyStep that 
- * could optimized further, but I left them as is to make it easier to
+ * could be optimized further, but I left them as is to make it easier to
  * understand.
  * 
  * In the original paper, published in 1978 (IBM Technical Disclosure Bulletin 
@@ -32,11 +32,11 @@
  * omit the formula and apply "2*thickness*sqrt(dx^2 + dy^2)" instead. The 
  * sqrt(dx^2 + dy^2) is the constant "k". Computers of the era used an 
  * approximation instead and I have done the same for this version. The paper 
- * gives a rough approximation of x + y/4 as well as a piece-wise equation. 
- * The algorithm works just fine with an approximation. The line might be a 
- * tiny bit jagged, but it is un-noticeable with a small TFT screen. If you 
- * are porting this to a more powerful processor you can try substituting the 
- * ideal value to see if there is any noticeable difference.
+ * gives a rough approximation of x + y/4 as well as a better piece-wise 
+ * equation. The algorithm works just fine with an approximation. The line 
+ * might be a tiny bit jagged, but it is un-noticeable with a small TFT screen. 
+ * If you are porting this to a more powerful processor you can try 
+ * substituting the ideal value to see if there is any noticeable difference.
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2023 Matthew Spinks
@@ -117,11 +117,11 @@ static void DrawLineX(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
     dy = y2 - y1;
     xStep = yStep = 1;
     /* Find the step directions for the perpendicular lines. For lines in 
-    quadrants I and III, we draw the left hand perpendicular first. So its
-    direction is just the x, y step values rotated counterclockwise. For 
+    quadrants I and III, we draw the left hand perpendicular first. So its 
+    direction is just the (x, y) step values rotated counterclockwise. For 
     quadrants II and IV the other perpendicular needs to be drawn first, 
-    otherwise there will be artifacts in the line. So for those quadrants the
-    step values are the x, y step values rotated clockwise. */
+    otherwise there will be artifacts in the line. So for those quadrants, the 
+    step values are the (x, y) step values rotated clockwise. */
     if(dx < 0)
         pxStep = 1;
     else
@@ -156,7 +156,7 @@ static void DrawLineX(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
     threshold = -2*dy + dx;
     errorDiag = -2*dx;
     errorSquare = 2*dy;
-    // error = pError = 2*dy - dx; // TODO test different type of loop
+    // error = pError = 2*dy - dx; // TODO these values test different type of loop
     // errorDiag = 2*dy - 2*dx;
     // errorSquare = 2*dy;
 
@@ -170,6 +170,9 @@ static void DrawLineX(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
     error = error + 2dy - 2dx   diagonal move
     error = error + 2dy         square move
 
+    Moving the terms of the error condition around yields the threshold:
+    error >= -2dy + dx          error condition
+
     /* k is a constant whose value is ideally sqrt(dx^2 + dy^2). The width 
     of a single perpendicular line is pWidth*2k. We are drawing two
     perpendicular lines, so we have divide the total width by 2 first. */
@@ -179,7 +182,7 @@ static void DrawLineX(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
     width >>= 1;
     /* Because there is a restricted domain for the values dx and dy, k can be
     approximated as dx + dy / 4, which should be fine for a microcontroller.
-    For better results you can also use the following formula: */
+    For even better results you can also use the following formula: */
     if((dy+dy+dy) > dx)
         k = dx - (dx >> 3) + (dy >> 1); // dx - (dx / 8) + (dy / 2)
     else
@@ -246,21 +249,25 @@ static void DrawPerpLinesX(int16_t x1, int16_t y1, int16_t dx, int16_t dy,
     int16_t xStep, int16_t yStep, int16_t errorInit, uint16_t widthLeft, 
     uint16_t widthRight, int16_t widthInit, uint16_t rgb565Color)
 {
-    int16_t x, y, error, errorDiag, errorSquare, threshold, tk;
-    // TODO error is not initialized in this function. Add more notes
+    int16_t x, y, error, errorDiag, errorSquare, threshold, pWidth;
     /* This is called Murphy's modified Bresenham algorithm. It draws thick
-    lines by drawing perpendicular lines above and below the first line. */
+    lines by drawing perpendicular lines above and below the first line. This 
+    is almost the same as the previous perpendicular line algorithm, except 
+    that the error value is passed into the function instead of always being 
+    zero. This is because when the base algorithm does a square move, it has to 
+    re-use the same error value otherwise the next perpendicular line would 
+    have a hole in it. */ // TODO notes about pWidth
     x = x1;
     y = y1;
     error = errorInit;
     threshold = -2*dy + dx;
     errorDiag = -2*dx;
     errorSquare = 2*dy;
-    // errorDiag = 2*dy - 2*dx; // TODO test different type of loop
+    // errorDiag = 2*dy - 2*dx; // TODO these values test different type of loop
     // errorSquare = 2*dy;
-    tk = dx + dy - widthInit;
+    pWidth = dx + dy - widthInit;
 
-    while(tk <= widthLeft)
+    while(pWidth <= widthLeft)
     {
         if(DrawPixel)
             DrawPixel(x, y, rgb565Color);
@@ -268,23 +275,22 @@ static void DrawPerpLinesX(int16_t x1, int16_t y1, int16_t dx, int16_t dy,
         {
             x += xStep;
             error += errorDiag;
-            tk += 2*dy;
+            pWidth += 2*dy;
         }
         error += errorSquare;
         y += yStep;
-        tk += 2*dx;
+        pWidth += 2*dx;
     }
 
-    /* Reset and draw the right side perpendicular line */
-    // TODO add notes about bottom perpendicular line
+    /* Reset and draw the right side perpendicular line. */
     x = x1;
     y = y1;
     xStep = -xStep;
     yStep = -yStep;
     error = -errorInit;
-    tk = dx + dy + widthInit;
+    pWidth = dx + dy + widthInit;
 
-    while(tk <= widthRight)
+    while(pWidth <= widthRight)
     {
         if(DrawPixel)
             DrawPixel(x, y, rgb565Color);
@@ -292,11 +298,11 @@ static void DrawPerpLinesX(int16_t x1, int16_t y1, int16_t dx, int16_t dy,
         {
             x += xStep;
             error += errorDiag;
-            tk += 2*dy;
+            pWidth += 2*dy;
         }
         error += errorSquare;
         y += yStep;
-        tk += 2*dx;
+        pWidth += 2*dx;
     }
 }
 
@@ -409,21 +415,25 @@ static void DrawPerpLinesY(int16_t x1, int16_t y1, int16_t dx, int16_t dy,
     int16_t xStep, int16_t yStep, int16_t errorInit, uint16_t widthLeft, 
     uint16_t widthRight, int16_t widthInit, uint16_t rgb565Color)
 {
-    int16_t x, y, error, errorDiag, errorSquare, threshold, tk;
-    // TODO error is not initialized in this function. Add more notes
+    int16_t x, y, error, errorDiag, errorSquare, threshold, pWidth;
     /* This is called Murphy's modified Bresenham algorithm. It draws thick
-    lines by drawing perpendicular lines above and below the first line. */
+    lines by drawing perpendicular lines above and below the first line. This 
+    is almost the same as the previous perpendicular line algorithm, except 
+    that the error value is passed into the function instead of always being 
+    zero. This is because when the base algorithm does a square move, it has to 
+    re-use the same error value otherwise the next perpendicular line would 
+    have a hole in it. */ // TODO notes about pWidth
     x = x1;
     y = y1;
     error = -errorInit;
     threshold = -2*dx + dy;
     errorDiag = -2*dy;
     errorSquare = 2*dx;
-    // errorDiag = 2*dx - 2*dy; // TODO test different type of loop
+    // errorDiag = 2*dx - 2*dy; // TODO these values test different type of loop
     // errorSquare = 2*dx;
-    tk = dx + dy + widthInit;
+    pWidth = dx + dy + widthInit;
 
-    while(tk <= widthLeft)
+    while(pWidth <= widthLeft)
     {
         if(DrawPixel)
             DrawPixel(x, y, rgb565Color);
@@ -431,23 +441,22 @@ static void DrawPerpLinesY(int16_t x1, int16_t y1, int16_t dx, int16_t dy,
         {
             y += yStep;
             error += errorDiag;
-            tk += 2*dx;
+            pWidth += 2*dx;
         }
         error += errorSquare;
         x += xStep;
-        tk += 2*dy;
+        pWidth += 2*dy;
     }
 
     /* Reset and draw the right side perpendicular line */
-    // TODO add notes about bottom perpendicular line
     x = x1;
     y = y1;
     xStep = -xStep;
     yStep = -yStep;
     error = errorInit;
-    tk = dx + dy - widthInit;
+    pWidth = dx + dy - widthInit;
 
-    while(tk <= widthRight)
+    while(pWidth <= widthRight)
     {
         if(DrawPixel)
             DrawPixel(x, y, rgb565Color);
@@ -455,11 +464,11 @@ static void DrawPerpLinesY(int16_t x1, int16_t y1, int16_t dx, int16_t dy,
         {
             y += yStep;
             error += errorDiag;
-            tk += 2*dx;
+            pWidth += 2*dx;
         }
         error += errorSquare;
         x += xStep;
-        tk += 2*dy;
+        pWidth += 2*dy;
     }
 }
 
