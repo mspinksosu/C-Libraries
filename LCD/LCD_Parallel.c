@@ -698,7 +698,7 @@ void LCD_Parallel_PutString(LCD_Parallel *self, uint8_t *ptrToString)
 {
     if(*ptrToString == '\0')
         return;
-        
+
     uint8_t index = CursorToIndex(self->cursorRow, self->cursorCol);
     uint8_t bitmask = 0;
     uint8_t *lineBuffer = self->lineBuffer1;
