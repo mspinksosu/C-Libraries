@@ -8,7 +8,13 @@
  * @date 9/23/23   Original creation
  * 
  * @details
- *      // TODO
+ *      The values of a and m for the LCG's and the big Park Miller LCG were 
+ * chosen from "Tables of Linear Congruential Generators of Different Sizes and 
+ * Good Lattice Structure by L'Ecuyer". In that paper, many different values 
+ * were tested and ranked by the author based on performance with a spectral 
+ * test. Then top values were chosen and compiled into different lists.
+ * 
+ * // TODO add notes about logarithmic skip
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2023 Matthew Spinks
@@ -49,8 +55,8 @@
 #define PM_BIG_M                ((1UL << 31) - 1UL)
 #define PM_BIG_A                48271UL
 
-/* The initial value X_0 must be co-prime to m. If m is chosen to be a prime 
-number, than any value from 0 < X_0 < m will work. */
+/* For a mulplicative LCG, the initial value X_0 must be co-prime to m. If m 
+is chosen to be a prime number, then any value from 0 < X_0 < m will work. */
 #define PM_DEFAULT_SEED         1UL
 
 /* Precomputed values for Schrage's method. It uses the same multiplier and 
@@ -290,17 +296,18 @@ uint32_t LCGBig_Skip(uint64_t *state, int64_t n)
     increment: (c(a^k -1) / (a - 1)) % m
 
     Brown, Random Number Generation With Arbitrary Strides 1994:
-    Used in random number generation for "Monte Carlo" calculations. The same 
-    formula "X_n+k = (A * X_n + C) % m" still applies. The pseudo code below is 
-    basically just a method to compute the formula cited above by Donald Knuth.
-    pseudo code for A:
+    Used in random number generation for "Monte Carlo" calculations. The pseudo 
+    code below is basically just a method to compute the formula that I cited 
+    above by Donald Knuth. Once A and C are computed, the same basic formula 
+    "X_n+k = (A * X_n + C) % m" for LCG's is used for the final value.
+    pseudo code to compute A:
     A = 1, h = a, i = k + 2^m % 2^m 
     while(i > 0) {
         if( i = odd)
             A = (A * h) % 2^m 
         h = (h^2) % 2^m
         i = floor(i / 2) }
-    pseudo code for C:
+    pseudo code to compute C:
     C = 0, f = c, h = a, i = (k + 2^m) % 2^m 
     while(i > 0) {
         if( i = odd)
@@ -309,22 +316,22 @@ uint32_t LCGBig_Skip(uint64_t *state, int64_t n)
         h = (h^2) % 2^m
         i = floor(i / 2) } */
 
-    /* Compute i (skipAhead). If number to skip is negative, add the period 
-    until it is positive. Skipping backwards is the same as skipping forward 
-    that many times. */
-    int64_t skipAhead = n;
-    while(skipAhead < 0)
-        skipAhead += LCG_BIG_M;
-    skipAhead = skipAhead & LCG_BIG_MASK;
+    /* Compute i (number of times to skip ahead). If i is negative, add the 
+    period until it is positive. Skipping backwards is the same as skipping 
+    forwards that many times. */
+    int64_t i = n;
+    while(i < 0)
+        i += LCG_BIG_M;
+    i = i & LCG_BIG_MASK;
 
     uint64_t A = 1, h = LCG_BIG_A, C = 0, f = LCG_BIG_C;
 #if DEBUG_PRINT
     uint32_t loopCount = 0;
 #endif
     /* Now compute A and C. Both methods are combined into a single loop. */
-    for(; skipAhead > 0LL; skipAhead >>= 1)
+    for(; i > 0LL; i >>= 1)
     {
-        if(skipAhead & 1LL)
+        if(i & 1LL)
         {
             A = (A * h) & LCG_BIG_MASK;
             C = (C * h + f) & LCG_BIG_MASK;
@@ -359,22 +366,22 @@ uint16_t LCGSmall_Skip(uint32_t *state, int32_t n)
     multiplier: a^k % m 
     increment: (c(a^k -1) / (a - 1)) % m */
 
-    /* Compute i (skipAhead). If number to skip is negative, add the period 
-    until it is positive. Skipping backwards is the same as skipping forward 
-    that many times. */
-    int32_t skipAhead = n;
-    while(skipAhead < 0)
-        skipAhead += LCG_SMALL_M;
-    skipAhead = skipAhead & LCG_SMALL_MASK;
+    /* Compute i (number of times to skip ahead). If i is negative, add the 
+    period until it is positive. Skipping backwards is the same as skipping 
+    forwards that many times. */
+    int32_t i = n;
+    while(i < 0)
+        i += LCG_SMALL_M;
+    i = i & LCG_SMALL_MASK;
 
     uint32_t A = 1, h = LCG_SMALL_A, C = 0, f = LCG_SMALL_C;
 #if DEBUG_PRINT
     uint32_t loopCount = 0;
 #endif
     /* Now compute A and C. Both methods are combined into a single loop. */
-    for(; skipAhead > 0LL; skipAhead >>= 1)
+    for(; i > 0LL; i >>= 1)
     {
-        if(skipAhead & 1LL)
+        if(i & 1LL)
         {
             A = (A * h) & LCG_SMALL_MASK;
             C = (C * h + f) & LCG_SMALL_MASK;
@@ -432,22 +439,22 @@ uint32_t ParkMiller_Skip(uint64_t *state, int64_t n)
     multiplier: a^k % m 
     increment: (c(a^k -1) / (a - 1)) % m */
 
-    /* Compute i (skipAhead). If number to skip is negative, add the period 
-    until it is positive. Skipping backwards is the same as skipping forward 
-    that many times. */
-    int64_t skipAhead = n;
-    while(skipAhead < 0)
-        skipAhead += PM_BIG_M;
-    skipAhead = skipAhead % PM_BIG_M;
+    /* Compute i (number of times to skip ahead). If i is negative, add the 
+    period until it is positive. Skipping backwards is the same as skipping 
+    forwards that many times. */
+    int64_t i = n;
+    while(i < 0)
+        i += PM_BIG_M;
+    i = i % PM_BIG_M;
 
     uint64_t A = 1, h = PM_BIG_A;
 #if DEBUG_PRINT
     uint32_t loopCount = 0;
 #endif
     /* Now compute A */
-    for(; skipAhead > 0LL; skipAhead >>= 1)
+    for(; i > 0LL; i >>= 1)
     {
-        if(skipAhead & 1LL)
+        if(i & 1LL)
         {
             A = (A * h) % PM_BIG_M;
         }
@@ -476,9 +483,9 @@ uint32_t Schrage_Next(uint32_t *state)
     and "a > 0" there exists unique integers "q" (quotient) and "r" (remainder) 
     such that "m = a * q + r" and "0 <= r < m". 
     
-    "q = m / a" (integer division) and "r = m % a". The product a * x is 
-    approximately: a * x = a(x % q) - r[x / q] (integer division). Next, we 
-    take the result of a * x and perform % m to it. This modulo m is further 
+    "q = m / a" (integer division) and "r = m % a". We compute the product 
+    a * x by the approximation: a * x = a(x % q) - r[x / q] (integer division).
+    Then take the result and perform % m to it. This modulo m is further 
     simplified: if a * x = a(x % q) - r[x / q] is negative, m is added to it. */
 
     /* ax % m = a(x % q) - r[x / q] % m 
