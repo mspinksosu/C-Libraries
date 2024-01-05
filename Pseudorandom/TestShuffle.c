@@ -1,4 +1,4 @@
-/* Program to test PRNG_LCG - MS */
+/* Program to test PRNG_Shuffle - MS */
 
 #include <stdio.h>
 #include <stdlib.h>
