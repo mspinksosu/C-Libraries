@@ -8,7 +8,7 @@
  * @date 11/20/22  Original creation
  *
  * @details
- *      Manages up to 32 error codes and flashes an LED for you. The LED can be 
+ *      Manages up to 64 error codes and flashes an LED for you. The LED can be 
  * updated by calling ErrorCode_GetBlinkOutput(). Relies on Pattern.h library
  * to define the on and off times for the LED itself. When the error code
  * library is initialized it is given a tick rate in milliseconds.
@@ -320,8 +320,8 @@ void ErrorCode_SetPriorityLevel(uint8_t code, uint8_t priority)
  * @brief Sort the array of error codes
  * 
  * The array of error codes contains a list of error codes and their priority
- * number. sortedErrorCodes[x][0] is the error code number from 1 to 32. 
- * sortedErrorCodes[x][1] is the priority value. A lower priority number means 
+ * number. sortedErrorCodes[i][0] is the error code number from 1 to n. 
+ * sortedErrorCodes[i][1] is the priority value. A lower priority number means 
  * higher priority.
  */
 static void SortErrorCodeArrayByPriority(void)
