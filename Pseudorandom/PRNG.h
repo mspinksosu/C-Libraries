@@ -132,7 +132,8 @@ void PRNG_Create(PRNG *self, PRNGType type);
  * 
  * @param self  pointer to the PRNG that you are using
  * 
- * @param seed  the initial value will be 1 if you do not seed the PRNG
+ * @param seed  if you seed the PRNG with 0, I will change it to a default 
+ *              value (usually 1)
  */
 void PRNG_Seed(PRNG *self, uint32_t seed);
 
@@ -141,7 +142,7 @@ void PRNG_Seed(PRNG *self, uint32_t seed);
  * 
  * @param self  pointer to the PRNG that you are using
  * 
- * @return uint32_t  output. Could be 16-bit depending on the PRNG type
+ * @return uint32_t  output. Could be 16-bit value depending on the PRNG type
  */
 uint32_t PRNG_Next(PRNG *self);
 
@@ -154,7 +155,7 @@ uint32_t PRNG_Next(PRNG *self);
  * 
  * @param upper  upper bound inclusive
  * 
- * @return uint32_t  output. Could be 16-bit depending on the PRNG type
+ * @return uint32_t  output. Could be 16-bit value depending on the PRNG type
  */
 uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper);
 
@@ -167,7 +168,7 @@ uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper);
  * 
  * @param n  nth number. positive = forwards, negative = backwards
  * 
- * @return uint32_t  output. Could be 16-bit depending on the PRNG type
+ * @return uint32_t  output. Could be 16-bit value depending on the PRNG type
  */
 uint32_t PRNG_Skip(PRNG *self, int64_t n);
 

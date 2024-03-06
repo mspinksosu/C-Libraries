@@ -164,7 +164,7 @@ uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper)
             break;
     }
 
-    // output = output % (upper - lower + 1) + min
+    /* output = output % (upper - lower + 1) + min */
     uint32_t range = upper - lower;
     if(range < 0xFFFFFFFF)
         range++;
@@ -191,9 +191,9 @@ uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper)
 
     return (result % range) + lower;
 
-    /* TODO I've tested this modulo bias method against the naive modulo 
-    method, and I haven't seen a difference yet. Maybe it only works for very 
-    large values... */
+    /* TODO I tested the modulo bias removal method above against the naive 
+    method (just using % by itself), and I haven't seen a difference yet. 
+    Maybe it only makes a difference for very large values? Not sure. - MS */
 }
 
 // *****************************************************************************
@@ -217,7 +217,7 @@ uint32_t PRNG_Skip(PRNG *self, int64_t n)
             result = ParkMiller_Skip(&(self->state.u64), n);
             break;
         case PRNG_TYPE_SCHRAGE:
-            // TODO I could probably just substitute the PM skip.
+            // TODO substitute the PM skip for schrage.
             break;
     }
     return result;
@@ -328,7 +328,8 @@ uint32_t LCGBig_Skip(uint64_t *state, int64_t n)
 #if DEBUG_PRINT
     uint32_t loopCount = 0;
 #endif
-    /* Now compute A and C. Both methods are combined into a single loop. */
+    /* Now compute A and C. Both of the loops to compute A and C are combined 
+    into a single loop here. Modulo division is replaced by logical AND. */
     for(; i > 0LL; i >>= 1)
     {
         if(i & 1LL)
@@ -378,7 +379,8 @@ uint16_t LCGSmall_Skip(uint32_t *state, int32_t n)
 #if DEBUG_PRINT
     uint32_t loopCount = 0;
 #endif
-    /* Now compute A and C. Both methods are combined into a single loop. */
+    /* Now compute A and C. Both of the loops to compute A and C are combined 
+    into a single loop here. Modulo division is replaced by logical AND. */
     for(; i > 0LL; i >>= 1)
     {
         if(i & 1LL)
