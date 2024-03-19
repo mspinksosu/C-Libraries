@@ -59,7 +59,7 @@
 is chosen to be a prime number, then any value from 0 < X_0 < m will work. */
 #define PM_DEFAULT_SEED         1UL
 
-/* Precomputed values for Schrage's method. It uses the same multiplier and 
+/* Precomputed values for Schrage's method. I will use the same multiplier and 
 modulus as the 32-bit Park Miller */
 #define SCH_M                   ((1UL << 31) - 1UL)
 #define SCH_A                   48271UL
