@@ -806,14 +806,14 @@ static LCDParDisplayState GetNextState(LCD_Parallel *self)
 
     /* The states go from 0 to 7. The "& 0x07" is just a quick method of doing 
     modulo division */
-    LCDParDisplayState nextState = (self->currentState + 1) & 0x07;
+    LCDParDisplayState nextState = self->currentState;
 
-    while(nextState != self->currentState)
-    {
+    do {
+        nextState = (nextState + 1) & 0x07;
         if(self->currentRefreshMask & (1 << nextState))
             break;
-        nextState = (nextState + 1) & 0x07;
-    }
+    } while(nextState != self->currentState);
+
     return nextState;
 }
 

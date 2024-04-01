@@ -350,21 +350,21 @@ static void SortErrorCodeArrayByPriority(void)
  * Loop through the error codes and find the next one that is set. If there 
  * are none it will return whatever the current error code index is.
  * 
- * @return uint8_t the next error code index (0 to 31)
+ * @return uint8_t the next error code index (0 to MAX_BITS - 1)
  */
 static uint8_t GetNextErrorCodeIndex(void)
 {
     uint8_t bit = 0;
-    uint8_t next = (currentErrorCodeIndex + 1) & (MAX_BITS-1);
+    uint8_t next = currentErrorCodeIndex;
 
-    while(next != currentErrorCodeIndex)
-    {
-        /* Error codes go from 1 to 64, but the bits go from 0 to 63 */
+    do {
+        next = (next + 1) & (MAX_BITS-1);
+        /* Error codes go from 1 to 64, but the bits go from 0 to 63. Get the 
+        error code and subtract 1 to convert to the bit position. */
         bit = sortedErrorCodes[next][0] - 1;
         if(activeErrorMask & (1ULL << bit))
             break;
-        next = (next + 1) & (MAX_BITS-1);
-    }
+    } while(next != currentErrorCodeIndex);
 
     return next;
 }
