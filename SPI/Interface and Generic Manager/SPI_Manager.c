@@ -28,7 +28,7 @@
 
 // ***** Global Variables ******************************************************
 
-static bool spiManagerEnabled;
+static bool spiManagerEnabled; // TODO enable/disable
 
 // ***** Static Function Prototypes ********************************************
 
