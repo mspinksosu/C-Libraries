@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @brief Rotary Encoder Library Header
  * 
- * @file RotaryEncoder.h
+ * @file RotaryEncoder.c
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
@@ -173,9 +173,9 @@ void RE_Tick(RotaryEncoder *self, bool AisHigh, bool BisHigh)
     means there was no transition, or that it was invalid. */
     int8_t newOutput = rotaryLookupTable[self->state];
 
-    /* Detect direction reversal. A -1 to +1 or +1 to -1 changes the sign and
-    resets the count */
-    if(self->output != newOutput && self->output + newOutput == 0)
+    /* Detect direction reversal. A negative to positive or a positive to 
+    negative changes the sign and resets the count */
+    if((newOutput == 1 && self->output < 0) || (newOutput == -1 && self->output >= 0))
     {
         self->output = newOutput;
     }
@@ -183,12 +183,15 @@ void RE_Tick(RotaryEncoder *self, bool AisHigh, bool BisHigh)
     {
         self->output += newOutput;
 
-        /* Prevent overflow and underflow */
-        if(newOutput == 1 && self->output == -128)
-            self->output = 2;
+        /* Prevent overflow and underflow. If the output was at 127 and going 
+        in the postive direction, it will be at -128. Roll it to 0. If the 
+        output was at -128 and going in the negative direction, it will be at 
+        127. Roll it to -1. */
+        if(newOutput == 1)
+            self->output &= 0x7F;
         
-        if(newOutput == -1 && self->output == 127)
-            self->output = -2;
+        if(newOutput == -1)
+            self->output |= 0x80;
     }
     
     /* The typemask will cause an event to occur every quarter, half, or full
