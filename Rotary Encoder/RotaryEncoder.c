@@ -42,8 +42,8 @@ value of the output will look like this: 0000baba. The index of the table
 corresponds to these values. A +1 indicates a clockwise transition and a -1 
 indicates a counter clockwise transition. A zero means there was no transition. 
 Any other number is invalid.  */
-static int8_t rotaryLookupTable[] = { 0, 1, -1, 3, -1, 0, 3, 1,
-                                      1, 3, 0, -1, 3, -1, 1, 0 };
+static int8_t rotaryLookupTable[] = { 0, 1, -1, 2, -1, 0, 2, 1,
+                                      1, 2, 0, -1, 2, -1, 1, 0 };
 
 // ***** Static Function Prototypes ********************************************
 
