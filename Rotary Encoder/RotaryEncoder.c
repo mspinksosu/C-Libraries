@@ -39,11 +39,11 @@
 /* The previous value of the phases is shifted left and combined with the
 current state. Using this, we can determine which direction we are going. The
 value of the output will look like this: 0000baba. The index of the table 
-corresponds to these values. A positive number indicates a clockwise transition
-and a negative number indicates a counter clockwise transition. A zero means
-there was no transition, or that it was invalid. */
-static int8_t rotaryLookupTable[] = { 0, 1, -1, 0, -1, 0, 0, 1,
-                                      1, 0, 0, -1, 0, -1, 1, 0 };
+corresponds to these values. A +1 indicates a clockwise transition and a -1 
+indicates a counter clockwise transition. A zero means there was no transition. 
+Any other number is invalid.  */
+static int8_t rotaryLookupTable[] = { 0, 1, -1, 3, -1, 0, 3, 1,
+                                      1, 3, 0, -1, 3, -1, 1, 0 };
 
 // ***** Static Function Prototypes ********************************************
 
@@ -105,7 +105,7 @@ void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debou
 
 void RE_Tick(RotaryEncoder *self, bool AisHigh, bool BisHigh)
 {
-    /* First update the inputs */
+    /* First update the inputs, then debounce them. */
     if(AisHigh)
     {
         if(self->phaseAIntegrator < self->debouncePeriod)
@@ -142,13 +142,12 @@ void RE_Tick(RotaryEncoder *self, bool AisHigh, bool BisHigh)
         self->phaseBIntegrator--;
     }
 
-    /* Update the integrator outputs. Shifting the previous state left will 
-    allow us to see the output from the previous state and the current state 
-    together. Phase A will be encoded as bit 0, and and phase B as bit 1. 
-    So the byte will look like this: 0000baba */
+    /* Update the state with the current integrator outputs. Shifting the 
+    previous state left will allow us to see the output from the previous 
+    state and the current state together. Phase A will be encoded as bit 0, 
+    and and phase B as bit 1. So the byte will look like this: 0000baba */
     self->state = (self->state << 2) & 0x0C;
 
-    /* Update the outputs */
     if(self->phaseAIntegrator == 0)
     {
         self->state &= ~0x01; // clear phase A (bit 0)
@@ -168,15 +167,21 @@ void RE_Tick(RotaryEncoder *self, bool AisHigh, bool BisHigh)
     }
     
     /* Decode the output using the state table. A state transition will occur
-    every quarter cycle. A positive number indicates a clockwise transition
-    and a negative number indicates a counter clockwise transition. A zero 
-    means there was no transition, or that it was invalid. */
+    every quarter cycle. A +1 indicates a clockwise transition and a -1 
+    indicates a counter clockwise transition. A zero means there was no 
+    transition. A number greater than 1 means that it was invalid. */
     int8_t newOutput = rotaryLookupTable[self->state];
 
-    /* Detect direction reversal. A negative to positive or a positive to 
-    negative changes the sign and resets the count */
-    if((newOutput == 1 && self->output < 0) || (newOutput == -1 && self->output >= 0))
+    if(newOutput > 1)
     {
+        /* Invalid state change */
+        self->output = 0;
+    }
+    else if((newOutput == 1 && self->output < 0) || 
+            (newOutput == -1 && self->output >= 0))
+    {
+        /* Detect direction reversal. A negative to positive or a positive to 
+        negative changes the sign and resets the count */
         self->output = newOutput;
     }
     else
