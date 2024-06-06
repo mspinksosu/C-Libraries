@@ -75,12 +75,13 @@ LCDInterface LCD_ParallelFunctionTable = {
     .LCD_ScrollUp = (void (*)(void *))LCD_Parallel_ScrollUp,
 };
 
-/* A lookup table for use with the LCDParDisplayRefreshMask variable. 
-Row number equals bit position: 4R 4L 2R 2L 3R 3L 1R 1L */
-static uint8_t rowToBitPos[4] = {0, 1, 5, 3, 7};
+/* A lookup table for use with the LCDParDisplayRefreshMask variable.
+Row number equals bit position: 4R 4L 2R 2L 3R 3L 1R 1L. Since the row numbers 
+begin at 1, entry 0 is just 0. */
+static uint8_t rowToBitPos[] = {0, 0, 4, 2, 6};
 
 /* Another lookup table for converting the row number to the address */
-static uint8_t rowToAddr[4] = {0, LCD_PAR_ROW1_ADDR, LCD_PAR_ROW2_ADDR,
+static uint8_t rowToAddr[] = {0, LCD_PAR_ROW1_ADDR, LCD_PAR_ROW2_ADDR,
                                   LCD_PAR_ROW3_ADDR, LCD_PAR_ROW4_ADDR};
 
 // ***** Static Function Prototypes ********************************************
@@ -502,8 +503,8 @@ void LCD_Parallel_ClearDisplay(LCD_Parallel *self)
         self->lineBuffer1[i] = 0;
         self->lineBuffer2[i] = 0;
     }
-    self->cursorRow = 0;
-    self->cursorCol = 0;
+    self->cursorRow = 1;
+    self->cursorCol = 1;
     self->refreshCursor = 1;
     self->currentRefreshMask = 0xFF; // TODO figure out if this is necessary
     LCD_Parallel_WriteCommand(self, 0x01);
@@ -757,7 +758,8 @@ void LCD_Parallel_WriteFullLine(LCD_Parallel *self, uint8_t lineNum, uint8_t *ar
             
             if(self->super->numRows == 1 && size > leftEndCol)
             {
-                /* Split the single row display in half */
+                /* Split the single row display in half. The first half goes in 
+                the line 1 buffer, the second half in the line 2 buffer. */
                 memcpy(self->lineBuffer1, array, leftEndCol);
                 memcpy(self->lineBuffer2, &array[leftEndCol - 1], size - leftEndCol);
                 self->currentRefreshMask |= (LCD_PAR_LEFT << (rowToBitPos[2]));
