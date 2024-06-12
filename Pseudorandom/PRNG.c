@@ -276,8 +276,8 @@ uint16_t LCGSmall_Next(uint32_t *state)
 {
     /* This version is similar to C rand. I will use a power of two for 
     the modulus for speed with the lower bits removed. Multiplier a will be 
-    chosen from L'Ecuyer research paper. Increment c will need to be odd. 
-    Try with c = 1. */
+    chosen from L'Ecuyer research paper. Increment c needs to be odd. I will 
+    use c = 1. */
 
     /* TODO Possible output values should be in the range 0 to 2^16-1. But 
     output is not full-cycle. Need to verify. */
