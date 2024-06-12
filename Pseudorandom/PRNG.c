@@ -191,7 +191,7 @@ uint32_t PRNG_NextBounded(PRNG *self, uint32_t lower, uint32_t upper)
 
     return (result % range) + lower;
 
-    /* TODO I tested the modulo bias removal method above against the naive 
+    /* @note I tested the modulo bias removal method above against the naive 
     method (just using % by itself), and I haven't seen a difference yet. 
     Maybe it only makes a difference for very large values? Not sure. - MS */
 }
@@ -217,7 +217,11 @@ uint32_t PRNG_Skip(PRNG *self, int64_t n)
             result = ParkMiller_Skip(&(self->state.u64), n);
             break;
         case PRNG_TYPE_SCHRAGE:
-            // TODO substitute the PM skip for schrage.
+            /* TODO A separate skip ahead function for the Schrage shouldn't be 
+            necessary since my Schrage funciton is using the same coeffecients 
+            as the Park Miller. Maybe build a Schrage version later and verify 
+            the output. - MS */
+            result = ParkMiller_Skip(&(self->state.u64), n);
             break;
     }
     return result;
@@ -242,7 +246,7 @@ void PRNG_Shuffle(void *array, uint32_t n, size_t s, uint32_t seed)
         // Pick a random index from 0 to i
         uint32_t j = Schrage_Next(&schrageState) % (i + 1); // TODO should I replace this with the "modulo bias removal method" like above?
 
-        // Swap arr[i] with the element at random index
+        // Swap arr[i] with the element at the random index (j)
         memcpy(tmp, arrayPtr + j * s, s);
         memcpy(arrayPtr + j * s, arrayPtr + i * s, s);
         memcpy(arrayPtr + i * s, tmp, s);
@@ -420,7 +424,7 @@ uint32_t ParkMiller_Next(uint64_t *state)
 
 uint32_t ParkMillerBigger_Next(uint64_t *state)
 {
-    /* TODO Test. Add more notes.
+    /* TODO A larger version of the Park Miller. Still needs testing. 
     This version uses a 64-bit double width product */
 
     /* X_n+1 = (a * X_n) % m */
@@ -434,7 +438,7 @@ uint32_t ParkMiller_Skip(uint64_t *state, int64_t n)
 {
     /* This is the exact same as the LCG skip ahead formula, except that this
     time I don't calculate C. And since m is a prime number and not a power of 
-    two, I can't reduce the modulo operation.
+    two, I can't reduce the modulo operation to a logical AND.
 
     X_n+1 = (A * X_n + C) % m
     X_n+k = (a^k * X_n + c(a^k - 1) / (a - 1)) % m 

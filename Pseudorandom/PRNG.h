@@ -77,6 +77,8 @@ typedef enum PRNGTypeTag
     PRNG_TYPE_LCG_SMALL,
     PRNG_TYPE_PARK_MILLER,
     PRNG_TYPE_SCHRAGE,
+    // TODO try making a bigger version of Park Miller
+    // PRNG_TYPE_PARK_MILLER_BIG
 } PRNGType;
 
 typedef struct PRNGTag
@@ -249,8 +251,12 @@ uint32_t ParkMillerBigger_Next(uint64_t *state);
  */
 uint32_t ParkMiller_Next(uint64_t *state);
 
+/* TODO Try making a version using bigger coefficients after verifying that the 
+bigger Park Miller works as expected */
+// uint32_t ParkMillerBigger_Skip(uint64_t *state, int64_t n);
+
 /***************************************************************************//**
- * @brief Logarithmic skip function for Park Miller
+ * @brief Logarithmic skip function for normal Park Miller
  * 
  * @param state 
  * @param n 
