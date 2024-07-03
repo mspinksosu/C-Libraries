@@ -42,7 +42,7 @@ GPIOInterface GPIO_FunctionTable = {
 
 GPIO_TypeDef *GET_PORT[16] = {
     GPIOA, GPIOB, GPIOC, GPIOD,
-    NULL, GPIOF, NULL, NULL,
+    GPIOE, GPIOF, GPIOG, NULL,
     NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL};
 
