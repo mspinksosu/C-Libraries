@@ -99,7 +99,7 @@ void GPIO_STM32_InitPin(GPIOPort port, uint8_t pin, GPIOInitType_STM32 *params)
         *configReg &= ~(4UL << (configBit * 4));
         *configReg |= params->alternate << (configBit * 4);
         /* Set the speed if there is one. Otherwise, just default to max */
-        if(params->speed > 0 && params->speed > 4)
+        if(params->speed > 0 && params->speed < 4)
         {
             *configReg &= ~(3UL << (configBit * 4));
             *configReg |= params->speed << (configBit * 4);
@@ -117,7 +117,7 @@ void GPIO_STM32_InitPin(GPIOPort port, uint8_t pin, GPIOInitType_STM32 *params)
     {
         *configReg &= ~(4UL << (configBit * 4)); // push pull
         /* Set the speed if there is one. Otherwise, just default to max */
-        if(params->speed > 0 && params->speed > 4)
+        if(params->speed > 0 && params->speed < 4)
         {
             *configReg &= ~(3UL << (configBit * 4));
             *configReg |= params->speed << (configBit * 4);
@@ -131,7 +131,7 @@ void GPIO_STM32_InitPin(GPIOPort port, uint8_t pin, GPIOInitType_STM32 *params)
     {
         // no change to CNF
         /* Set the speed if there is one. Otherwise, just default to max */
-        if(params->speed > 0 && params->speed > 4)
+        if(params->speed > 0 && params->speed < 4)
         {
             *configReg &= ~(3UL << (configBit * 4));
             *configReg |= params->speed << (configBit * 4);
@@ -153,8 +153,6 @@ void GPIO_STM32_InitPin(GPIOPort port, uint8_t pin, GPIOInitType_STM32 *params)
         *configReg &= ~(4UL << (configBit * 4));
         stmPort->ODR &= ~(1UL << pin);
     }
-
-    /* Set the speed if needed */
 }
 
 // *****************************************************************************
