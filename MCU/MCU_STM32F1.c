@@ -33,6 +33,7 @@
 #define HSE_STARTUP     16000  // 2 ms at 8 MHz
 #define MAX_SYS_CLK_HSE 72000000UL
 #define MAX_SYS_CLK_HSI 36000000UL
+#define PERIOD_1US_MIN  15
 
 // ***** Global Variables ******************************************************
 
@@ -42,7 +43,7 @@ uint32_t pllMulLookup[6] = {RCC_PLLMul_4, RCC_PLLMul_5, RCC_PLLMul_6,
                             RCC_PLLMul_7, RCC_PLLMul_8, RCC_PLLMul_9};
 
 static uint32_t systemClockInHz, sysTickCtrlReg, sysTickLoadReg, sysTickCount, 
-                nvicIntReg0, nvicIntReg1, period1us = 8;
+                nvicIntReg0, nvicIntReg1, period1us = PERIOD_1US_MIN;
 
 // ***** Static Function Prototypes ********************************************
 
@@ -234,6 +235,9 @@ uint32_t MCU_InitSystemClock(uint32_t desiredClkInHz, uint32_t xtalInHz)
     SysTick->CTRL |= (SysTick_CTRL_TICKINT | SysTick_CTRL_ENABLE);
 
     period1us = systemClockInHz / 1000000UL;
+
+    if(period1us < PERIOD_1US_MIN)
+        period1us = PERIOD_1US_MIN;
 
     return systemClockInHz;
 }
