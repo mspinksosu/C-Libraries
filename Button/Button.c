@@ -134,7 +134,7 @@ void Button_SetLongPressMs(Button *self, uint16_t longPressMs)
 // *****************************************************************************
 
 void Button_Tick(Button *self, uint16_t value)
-{   
+{
     if(self->instance != NULL)
     {
         if(self->type == BUTTON_ANALOG)
@@ -403,7 +403,7 @@ static void AnalogButton_Tick(AnalogButton *self, uint16_t value)
  * 
  * @param isPressed  true = pressed
  */
-static void DigitalButton_Tick(DigitalButton *self, bool isPressed)
+static void DigitalButton_Tick(DigitalButton *self, uint16_t isPressed) // @todo test uint16_t
 {
     switch(self->super->state)
     {
