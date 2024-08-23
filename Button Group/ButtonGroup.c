@@ -79,7 +79,8 @@ void BG_Tick(ButtonGroup *self)
             }
             else
             {
-                /* Prevent from going over maximum value */
+                /* Prevent from going over maximum value if debouncePeriod is 
+                ever modified. */
                 self->integrator[i] = self->debouncePeriod;
             }
         }
