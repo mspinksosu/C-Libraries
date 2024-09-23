@@ -5,7 +5,7 @@
 # @author Matthew Spinks <https://github.com/mspinksosu>
 #
 # I prefer to always have some sort of special output folder that holds the 
-# latest, or production .hex file. For this reason, I don't ignore .hex files, 
+# latest production .hex file. For this reason, I don't ignore .hex files, 
 # but I do ignore the default outputs for IAR, MPLAB, Keil, etc. When I'm ready 
 # to make a "release candidate" I put take copy from the build output and put 
 # it in that special folder. This way I never accidentally overwrite my last 
@@ -14,7 +14,6 @@
 # For Keil projects I make a folder for objects and listings called .Objects 
 # and .Listings and change the options in Keil under Output and Listings to 
 # put the files there.
-
 
 # VSCode files
 **/.vscode/
