@@ -1,6 +1,40 @@
+# Matt's Somewhat Universal Micrcontroller gitignore File
+#
+# For IAR, MPLAB X, Keil and some others
+#
+# @author Matthew Spinks <https://github.com/mspinksosu>
+#
+# I prefer to always have some sort of special output folder that holds the 
+# latest, or production .hex file. For this reason, I don't ignore .hex files, 
+# but I do ignore the default outputs for IAR, MPLAB, Keil, etc. When I'm ready 
+# to make a "release candidate" I put take copy from the build output and put 
+# it in that special folder. This way I never accidentally overwrite my last 
+# working version.
+# 
+# For Keil projects I make a folder for objects and listings called .Objects 
+# and .Listings and change the options in Keil under Output and Listings to 
+# put the files there.
+
+
 # VSCode files
 **/.vscode/
 **/.VSCodeCounter/
+
+# Si Labs 8051 files
+*.#1
+*.#2
+*.#3
+**/cyglink.txt
+*.backup
+*.bak
+*.Bak
+*.lst
+*.lnp
+*.m51
+
+# Keil build files
+**/.Listings/
+**/.Objects/
 
 # IAR project "Settings" directory
 **/settings/
@@ -15,6 +49,19 @@
 *.ewt
 *.pbi
 *.xcl
+
+# IAR EWARM 9 "BrowseInfo and other files"
+**/BrowseInfo/
+*.ninja*
+
+# MPLAB X build files
+**/*.X/build/
+**/*.X/dist/
+
+# MPLAB X project files
+**/*.X/nbproject/private/
+**/*.X/nbproject/Makefile-*
+**/*.X/nbproject/Package-*
 
 # These are some examples of commonly ignored file patterns.
 # You should customize this list as applicable to your project.
