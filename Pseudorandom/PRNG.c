@@ -51,12 +51,15 @@
 #define PM_BIGGER_M             ((1ULL << 63) - 25ULL)
 #define PM_BIGGER_A             6458928179451363983ULL
 
-/* This is also the default value for C++ minstd_rand */
+/* Prime numbers that are closer to the maximum value for a given bit size tend 
+to work better. The 8th Mersenne prime is often chosen for m because it is very 
+close to 2^32. It is also the default value for C++ minstd_rand */
 #define PM_BIG_M                ((1UL << 31) - 1UL)
 #define PM_BIG_A                48271UL
 
-/* For a mulplicative LCG, the initial value X_0 must be co-prime to m. If m 
-is chosen to be a prime number, then any value from 0 < X_0 < m will work. */
+/* For a mulplicative LCG like the Park Miller, the initial value X_0 must be 
+relatively prime to m. If m is chosen to be a prime number, then any value 
+from 0 < X_0 < m will work. */
 #define PM_DEFAULT_SEED         1UL
 
 /* Precomputed values for Schrage's method. I will use the same multiplier and 
@@ -307,14 +310,14 @@ uint32_t LCGBig_Skip(uint64_t *state, int64_t n)
     pseudo code to compute A:
     A = 1, h = a, i = k + 2^m % 2^m 
     while(i > 0) {
-        if( i = odd)
+        if(i is odd)
             A = (A * h) % 2^m 
         h = (h^2) % 2^m
         i = floor(i / 2) }
     pseudo code to compute C:
     C = 0, f = c, h = a, i = (k + 2^m) % 2^m 
     while(i > 0) {
-        if( i = odd)
+        if(i is odd)
             C = (C * h + f) % 2^m
         f = (f * (h + 1)) % 2^m
         h = (h^2) % 2^m
