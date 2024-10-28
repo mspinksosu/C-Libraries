@@ -75,11 +75,12 @@ uint16_t Filter_EMA_ComputeU16(Filter_EMA *self, uint16_t input)
     y[i] = x[i] * alpha + y[i - 1] * (1 - alpha)
     alpha = dt / (RC + dt)
 
-    I converted the alpha value to a 16-bit number. Then I shift the output 
-    from a 32-bit number to a 16-bit number on the last step. */
+    I converted the alpha value to a 16-bit number. After performing the 
+    operation, the operation the output will need to be converted from a 32-bit 
+    number to a 16-bit number before returning the result. */
     tmp = input * self->alphaU16 + self->prevOutput * (65536 - self->alphaU16);
     
-    /* This will round the 32-bit number before converting to 16-bit by adding 
+    /* Round the 32-bit number first before converting to 16-bit by adding 
     "one half" of a 16-bit number (0x8000). The principle is the same for
     decimal numbers i.e. adding 0.5. */
     return ((tmp + 0x8000) >> 16);

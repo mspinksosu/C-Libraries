@@ -324,7 +324,7 @@ uint8_t HWTimer1_STM32_GetComparePercent(uint8_t compChan)
         return 0;
 
     uint32_t *CCRx = (uint32_t*)compChanToAddress(compChan);
-    /* Shift the dividend left to conver to 24.8 fixed point number */
+    /* Shift the dividend left to convert to 24.8 fixed point number */
     uint32_t fxpCompValue = *CCRx << 8;
     uint32_t retVal = fxpCompValue * 100 / timerPeriod;
     /* Add 0.5 to round the fixed point result up */

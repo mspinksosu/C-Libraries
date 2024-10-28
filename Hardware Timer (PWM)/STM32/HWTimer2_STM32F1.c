@@ -122,8 +122,7 @@ void HWTimer2_STM32_ComputePeriod(HWTimerInitType_STM32 *retParams,
         /* Add 0.5 to round the prescale value value up. 0.5 in 27.5 fixed 
         point is 2^4 or 1 << 4. */
         prescale += (1 << 4);
-        /* Shift to gain back some precision before dividing again. This will 
-        make it 23.9 fxp. */
+        /* Shift left before dividing again. This will make it 23.9 fxp. */
         prescale <<= 4;
         prescale = prescale / desiredFreqHz;
         /* Add 0.5 to round up again */
