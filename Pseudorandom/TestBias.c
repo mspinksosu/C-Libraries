@@ -1,4 +1,4 @@
-/* Program to test PRNG_NextBounded - MS */
+/* Program to demonstrate LCG bias removal method - MS */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,18 +8,17 @@
 int main(void)
 {
     uint32_t seed, result, n, choice, lower, upper;
+    uint32_t randMax = 0xFFFFFFFF;
     char outName[64];
     FILE *out;
     PRNG prng;
-    char c;
-    char option[4][12] = {"LCG Big",
-                          "LCG Small",
-                          "Park Miller",
-                          "Schrage"};
+    char c, removeBias;
+    char option[2][22] = {"LCG No Bias Removal",
+                          "LCG With Bias Removal"};
     while(1)
     {
-        printf("Select type:\n1. %s\n2. %s\n3. %s\n4. %s\n", 
-            option[0], option[1], option[2], option[3]);
+        printf("Select type:\n1. %s\n2. %s\n", 
+            option[0], option[1]);
         printf("Enter q to quit.\n");
         scanf(" %c", &c);
 
@@ -28,18 +27,12 @@ int main(void)
             case '1':
                 choice = 0;
                 prng.type = PRNG_TYPE_LCG_BIG;
+                removeBias = 0;
                 break;
             case '2':
                 choice = 1;
-                prng.type = PRNG_TYPE_LCG_SMALL;
-                break;
-            case '3':
-                choice = 2;
-                prng.type = PRNG_TYPE_PARK_MILLER;
-                break;
-            case '4':
-                choice = 3;
-                prng.type = PRNG_TYPE_SCHRAGE;
+                prng.type = PRNG_TYPE_LCG_BIG;
+                removeBias = 1;
                 break;
             case 'Q':
             case 'q':
@@ -52,6 +45,9 @@ int main(void)
         scanf("%d", &seed);
         printf("Entered: %u\n", seed);
         PRNG_Seed(&prng, seed);
+        printf("Enter rand max in hex without \"0x\": ");
+        scanf("%x", &randMax);
+        printf("Entered: 0x%x\n", randMax);
         // printf("LCG Seed: %llu\n", prng.state.u64);
 
         /* Print out comma separated numbers to a file */
@@ -67,9 +63,30 @@ int main(void)
         strcat(outName, ".csv");
         out = fopen(outName, "w");
         printf("Writing output to %s...\n", outName);
+
+
+        /* output = output % (upper - lower + 1) + min */
+        uint32_t range = upper - lower;
+        if(range < 0xFFFFFFFF)
+            range++;
+        
+        /* If no bias removal is selected, skip the end of the do-while */
+        uint32_t threshold = 0;
+        if(removeBias)
+            threshold = randMax - randMax % range;
+
         for(uint32_t i = 0; i < n; i++)
         {
-            result = PRNG_NextBounded(&prng, lower, upper);
+            /* The loop and threshold are the method for removing modulo bias.
+            Performing modulus with randMax is so that this test can use a 
+            variable maximum limit to demonstrate how the size of the random 
+            generator's output affects the bias. */
+            do {
+                result = PRNG_Next(&prng);
+                result = result % (randMax + 1);
+            } while(removeBias && result >= threshold);
+
+            result = (result % range) + lower;
             fprintf(out, "%u,\n", result);
         }
         printf("Finished.\n");
