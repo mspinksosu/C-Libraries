@@ -44,7 +44,7 @@ void NumberToAscii(int16_t num, uint8_t *str, uint8_t strWidth, bool leftJust)
 {
     /* The width should include a space for a null terminator. If the width is 
     wrong, place a null terminator before exiting */
-    if(strWidth < 2)
+    if(strWidth == 0)
         strWidth = 1;
     str[--strWidth] = '\0';
     if(strWidth == 0)

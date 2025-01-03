@@ -12,8 +12,9 @@
  * Jack Bresenham. For each pixel, we calculate an error. For a line with 
  * positive slope, x will increase by 1 step and y will increase by 0 or 1 
  * step. Each time x increases the error increases by dy/dx. When the error is 
- * greater than 0.5, it means we are closer to the pixel above us and we go up 
- * to the next y position.
+ * greater than 0.5, it means we are closer to the pixel above us than the one 
+ * horizontal to us and we go up to the next y position. This basic algorithm 
+ * by itself will draw a line with a width of one pixel.
  * 
  * This library is based on Alan Murphy's own work. Murphy's algorithm is a 
  * modification to Bresenham's that will draw perpendicular lines above and 
@@ -21,22 +22,22 @@
  * 
  * This version is designed for use with microcontroller's and small TFT
  * screens. It has been optimized slightly for speed, which I will explain
- * below. There are a lot of if-statements with the pxStep and pyStep that 
- * could be optimized further, but I left them as is to make it easier to
- * understand.
+ * below. There are if-statements with the pxStep and pyStep that could be 
+ * optimized further, but I left them as is to make it easier to understand.
  * 
  * In the original paper, published in 1978 (IBM Technical Disclosure Bulletin 
  * Vol. 20 No. 12 pages 5358-5366), there was a constant number called "k" 
  * which was used to help shape the width of the thick line. The formula for 
  * the thickness is 2*thickness*k. But, a lot of versions of this code simply 
  * omit the formula and apply "2*thickness*sqrt(dx^2 + dy^2)" instead. The 
- * sqrt(dx^2 + dy^2) is the constant "k". Computers of the era used an 
- * approximation instead and I have done the same for this version. The paper 
- * gives a rough approximation of x + y/4 as well as a better piece-wise 
- * equation. The algorithm works just fine with an approximation. The line 
- * might be a tiny bit jagged, but it is un-noticeable with a small TFT screen. 
- * If you are porting this to a more powerful processor you can try 
- * substituting the ideal value to see if there is any noticeable difference.
+ * "sqrt(dx^2 + dy^2)" part is the constant "k". Computers of the era used an 
+ * approximation for k instead of computing the square root, and I have done 
+ * the same for this version. The paper gave a rough approximation of x + y/4 
+ * for k, as well as a better piece-wise equation. The algorithm works just 
+ * fine with an approximation. The line might be a tiny bit jagged, but it is 
+ * un-noticeable with a small TFT screen. If you are porting this to a more 
+ * powerful processor you can try substituting the ideal value to see if there 
+ * is any noticeable difference.
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2023 Matthew Spinks
@@ -88,12 +89,13 @@ static void DrawPerpLinesY(int16_t x1, int16_t y1, int16_t dx, int16_t dy,
 
 // *****************************************************************************
 
-void Murphy_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, 
+void DrawThickLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, 
     uint8_t width, uint16_t rgb565Color)
 {
     /* Normally x will increase by 1 step and y will increase by 0 or 1 step.
-    For a steep slope, y will increase by 1 step and x will increase by 
-    0 or 1 step. All the equations for x and y will be interchanged. */
+    For a steep slope the DrawLineY function is used instead. In this case,
+    y will increase by 1 step and x will increase by 0 or 1 step. DrawLineY is 
+    the same as the DrawLineX but with x and y values interchanged. */
     if(abs(y2 - y1) > abs(x2 - x1))
     {
         DrawLineY(x1, y1, x2, y2, width, rgb565Color);

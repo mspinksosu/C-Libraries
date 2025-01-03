@@ -78,9 +78,9 @@ int main(void)
         for(uint32_t i = 0; i < n; i++)
         {
             /* The loop and threshold are the method for removing modulo bias.
-            Performing modulus with randMax is so that this test can use a 
-            variable maximum limit to demonstrate how the size of the random 
-            generator's output affects the bias. */
+            The step in the middle that performs modulus with randMax + 1 is so 
+            that this test can use a variable maximum limit to demonstrate how 
+            the bit width of the random generator's output can affect the bias. */
             do {
                 result = PRNG_Next(&prng);
                 result = result % (randMax + 1);
