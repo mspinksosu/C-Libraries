@@ -53,6 +53,8 @@ typedef enum SPISSControlTag
     SPI_SS_CALLBACKS, // User will implement functions for controlling the pin
 } SPISSControl;
 
+// @todo make error codes enum?
+
 typedef struct SPIStatusBitsTag
 {
     union {
@@ -329,6 +331,10 @@ void SPI_PendingEventHandler(SPI *self);
  * @param Function  format: void SomeFunction(void)
  */
 void SPI_SetTransmitRegisterEmptyCallback(SPI *self, void (*Function)(void));
+
+/* @todo update SPI library receive callback function. This was copied over 
+from my UART library . But the callback argument shouldn't be needed like it 
+was in the UART version. - MS */
 
 /***************************************************************************//**
  * @brief Set a function to be called whenever a received data event happens

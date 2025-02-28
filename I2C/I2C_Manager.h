@@ -27,8 +27,42 @@
 
 // ***** Defines ***************************************************************
 
+/* Desired timeout time in ms */
+/* @todo original library used a dedicated hardware timer. Might change TIMEOUT_PERIOD
+to just use REPEAT_SEND instead */
+#define I2C_TIMEOUT_PERIOD_MS 1
+#define I2C_REPEAT_SEND_MS 10
+
+/* How many times to retry a command before giving up.
+An error flag will be set afterwards */
+#define I2C_REPEAT_LIMIT 5
 
 // ***** Global Variables ******************************************************
+
+// ---- New state machine stuff ------------------------------------------------
+
+typedef enum I2CSignalTag
+{
+    I2C_SIG_BEGIN_TRANSFER = 1,
+    I2C_SIG_BUS_IDLE_EVENT,
+    I2C_SIG_ACK_RECEIVED,
+    I2C_SIG_DATA_RECEIVED,
+    I2C_SIG_TIMEOUT,
+} I2CSignal;
+
+typedef struct I2CEventTag
+{
+    I2CSignal sig;
+    uint8_t slaveAddress;
+
+    // @todo update extra info for events
+    bool generateRepeatedStart; // at the end of transfer
+    bool repeatedStart;         // repeated start has been performed
+    bool masterRead;            // go into read state after sending address
+} I2CEvent;
+
+
+// -----------------------------------------------------------------------------
 
 // @todo I2C device slave state enum maybe not needed for the FSM
 // @todo or replace with new state type for FSM
@@ -65,6 +99,38 @@ struct I2CSlaveTag
     // I2CObjectCallbackFunc transmitFinishedCallback;
     // I2CObjectCallbackFunc receivedFinishedCallback;
 };
+
+typedef struct I2CTimerTag
+{
+    uint16_t period;
+    uint16_t count;
+    union {
+        struct {
+            unsigned start   :1;
+            unsigned active  :1;
+            unsigned expired :1;
+            unsigned         :5;
+        };
+        uint8_t all;
+    } flags;
+} I2CTimer;
+
+// @todo move this to .c file?
+typedef struct I2CManagerStatusBitsTag
+{
+    union {
+        struct {
+            unsigned sendingStart       :1;
+            unsigned sendingRestart     :1;
+            unsigned sendingStop        :1;
+            unsigned sendingAck         :1;
+            unsigned receiveInProgress  :1;
+            unsigned transmitInProgress :1;
+            unsigned                    :2;
+        };
+        uint8_t all;
+    };
+} I2CManagerStatusBits;
 
 typedef struct I2CManagerTag
 {

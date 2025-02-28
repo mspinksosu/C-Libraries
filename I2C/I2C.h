@@ -10,7 +10,8 @@
  * @date 2/27/25   Refactored
  * 
  * @details
- *      @todo details. Reorganizing code based on my newer SPI manager code
+ *      @todo details. Reorganizing code based on my newer SPI manager code.
+ *      master is only supported right now
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2016 Matthew Spinks
@@ -33,15 +34,83 @@
 
 // ***** Global Variables ******************************************************
 
+typedef enum I2CRoleTag
+{
+    I2C_ROLE_UNKNOWN = 0,
+    I2C_ROLE_MASTER,
+    I2C_ROLE_SLAVE,
+} I2CRole;
 
-/* TODO: description of variables below
+// @todo add modes if needed, or remove
+typedef enum I2CModeTag
+{
+    I2C_MODE_0 = 0,
+    I2C_MODE_1,
+    I2C_MODE_2,
+    I2C_MODE_3
+} I2CMode;
+
+// @todo make error codes enum?
+
+// @todo add status bits if needed for the peripheral level
+typedef struct I2CStatusBitsTag
+{
+    union {
+        struct {
+            unsigned busy             :1;
+            unsigned txEmpty          :1; // tx register empty
+            unsigned rxNotEmpty       :1; // rx register not empty
+            unsigned transmitFinished :1;
+            unsigned fault            :1; // mode fault or frame error
+            unsigned overflow         :1;
+            unsigned                  :2;
+        };
+        uint8_t all;
+    };
+} I2CStatusBits;
+
+typedef struct I2CInitTypeTag
+{
+    I2CRole role;
+    I2CMode mode;
+    bool useTxInterrupt;
+    bool useRxInterrupt;
+} I2CInitType;
+
+typedef struct I2CInterfaceTag
+{
+    /*  These are the functions that will be called. You will create your own
+    interface object for your class that will have these function signatures.
+    Set each of your functions equal to one of these pointers */
+    void (*I2C_Init)(I2CInitType *params);
+    void (*I2C_Enable)(void);
+    void (*I2C_Disable)(void);
+
+    // add more
+} I2CInterface;
+
+/** 
+ * Description of struct members: // TODO description
  * 
- * period   The period of the timer. When the count reaches this number, a flag
- *          will be set.
+ * member1      description of variable member1
  * 
  */
 
-// ***** Function Prototypes ***************************************************
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Non-Interface Functions *********************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+// @todo make calculate BRG function
+// @todo add more functions
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Interface Functions *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
 
 
 #endif /* I2C_H */
