@@ -5,7 +5,7 @@
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
- * @date 10/2/16   Original Creation
+ * @date 10/2/16   Original Creation (PIC32 only)
  * @date 2/21/22   Added Doxygen
  * 
  * @details

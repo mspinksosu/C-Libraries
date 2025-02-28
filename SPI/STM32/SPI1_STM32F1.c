@@ -8,7 +8,7 @@
  * @date 5/7/23    Original creation
  * 
  * @details
- *      // TODO details
+ *      // @todo details
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2023 Matthew Spinks
@@ -313,22 +313,23 @@ bool SPI1_IsTransmitFinished(void)
 
 SPIStatusBits SPI1_GetStatus(void)
 {
-    /* TODO My first I2C state machine had a lot decisions to make and relied
+    /* @todo My first I2C state machine had a lot decisions to make and relied
     on status bits. Whereas the UART could just throw bytes into a buffer. 
-    I decided to make some for SPI also. But now I'm thinking I may not need 
-    these after all. Decide if I want to keep these or not after testing. */
+    I decided to make some status bits for SPI also. But now I'm thinking I may 
+    not need these after all, because the SPI is simpler than I2C. Decide if 
+    I want to keep these or not after testing. */
     SPIStatusBits status = {0};
 
     if(SPI_ADDR->SR & SPI_SR_BSY)
-        status.BSY = 1;
+        status.busy = 1;
     if(SPI_ADDR->SR & SPI_SR_TXE)
-        status.TXE = 1;
+        status.txEmpty = 1;
     if(SPI_ADDR->SR & SPI_SR_RXNE)
-        status.RXNE = 1;
+        status.rxNotEmpty = 1;
     if(SPI_ADDR->SR & SPI_SR_MODF)
-        status.FAULT = 1;
+        status.fault = 1;
     if(SPI_ADDR->SR & SPI_SR_OVR)
-        status.OVF = 1;
+        status.overflow = 1;
 
     return status;
 }

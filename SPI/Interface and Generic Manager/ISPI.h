@@ -8,7 +8,8 @@
  * @date 8/27/22   Original creation
  * 
  * @details
- *      // TODO details. 8-bit, MSB first.
+ *      // @todo details. Still a work in progress. Right now it is 
+ *      master only, 8-bit, MSB first.
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2022 Matthew Spinks
@@ -56,13 +57,13 @@ typedef struct SPIStatusBitsTag
 {
     union {
         struct {
-            unsigned BSY    :1; // busy
-            unsigned TXE    :1; // tx register empty
-            unsigned RXNE   :1; // rx register not empty
-            unsigned TF     :1; // transmit finished
-            unsigned FAULT  :1; // mode fault or frame error
-            unsigned OVF    :1; // overflow
-            unsigned        :2;
+            unsigned busy             :1;
+            unsigned txEmpty          :1; // tx register empty
+            unsigned rxNotEmpty       :1; // rx register not empty
+            unsigned transmitFinished :1;
+            unsigned fault            :1; // mode fault or frame error
+            unsigned overflow         :1;
+            unsigned                  :2;
         };
         uint8_t all;
     };

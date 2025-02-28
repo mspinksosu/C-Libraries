@@ -14,7 +14,7 @@
  * were tested and ranked by the author based on performance with a spectral 
  * test. Then top values were chosen and compiled into different lists.
  * 
- * // TODO add notes about logarithmic skip
+ * // @todo add notes about logarithmic skip
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2023 Matthew Spinks
@@ -47,15 +47,16 @@
 #define LCG_SMALL_C             1UL
 #define LCG_SMALL_DEFAULT_SEED  1UL
 
-/* For the Park Miller, modulus m is chosen to be a prime number. */
-#define PM_BIGGER_M             ((1ULL << 63) - 25ULL)
-#define PM_BIGGER_A             6458928179451363983ULL
-
 /* Prime numbers that are closer to the maximum value for a given bit size tend 
 to work better. The 8th Mersenne prime is often chosen for m because it is very 
 close to 2^32. It is also the default value for C++ minstd_rand */
 #define PM_BIG_M                ((1UL << 31) - 1UL)
 #define PM_BIG_A                48271UL
+
+/* For the Park Miller, modulus m is chosen to be a prime number. I chose this 
+one because it is close to 2^64. */
+#define PM_BIGGER_M             ((1ULL << 63) - 25ULL)
+#define PM_BIGGER_A             6458928179451363983ULL
 
 /* For a mulplicative LCG like the Park Miller, the initial value X_0 must be 
 relatively prime to m. If m is chosen to be a prime number, then any value 
@@ -220,7 +221,7 @@ uint32_t PRNG_Skip(PRNG *self, int64_t n)
             result = ParkMiller_Skip(&(self->state.u64), n);
             break;
         case PRNG_TYPE_SCHRAGE:
-            /* TODO A separate skip ahead function for the Schrage shouldn't be 
+            /* @todo A separate skip ahead function for the Schrage shouldn't be 
             necessary since my Schrage funciton is using the same coeffecients 
             as the Park Miller. Maybe build a Schrage version later and verify 
             the output. - MS */
@@ -247,7 +248,7 @@ void PRNG_Shuffle(void *array, uint32_t n, size_t s, uint32_t seed)
     for(uint32_t i = n - 1; i > 0; i--)
     {
         // Pick a random index from 0 to i
-        uint32_t j = Schrage_Next(&schrageState) % (i + 1); // TODO should I replace this with the "modulo bias removal method" like above?
+        uint32_t j = Schrage_Next(&schrageState) % (i + 1); // @todo should I replace this with the "modulo bias removal method" like above?
 
         // Swap arr[i] with the element at the random index (j)
         memcpy(tmp, arrayPtr + j * s, s);
@@ -265,7 +266,7 @@ uint32_t LCGBig_Next(uint64_t *state)
     Multiplier a will be chosen from L'Ecuyer research paper. Increment c 
     will need to be odd. Try with c = 1. */
 
-    /* TODO Possible output values should be in the range 0 to 2^32-1. But 
+    /* @todo Possible output values should be in the range 0 to 2^32-1. But 
     output is not full-cycle. Need to verify. */
 
     /* X_n+1 = (a * X_n + c) % m */
@@ -282,7 +283,7 @@ uint16_t LCGSmall_Next(uint32_t *state)
     chosen from L'Ecuyer research paper. Increment c needs to be odd. I will 
     use c = 1. */
 
-    /* TODO Possible output values should be in the range 0 to 2^16-1. But 
+    /* @todo Possible output values should be in the range 0 to 2^16-1. But 
     output is not full-cycle. Need to verify. */
 
     /* X_n+1 = (a * X_n + c) % m */
@@ -413,7 +414,7 @@ uint16_t LCGSmall_Skip(uint32_t *state, int32_t n)
 
 uint32_t ParkMiller_Next(uint64_t *state)
 {
-    /* TODO Add more notes
+    /* @todo Add more notes
     This version will be a full-cycle PRNG with a modulus of a prime 
     number and c = 0. I believe the output values should be in the range of 
     1 to m - 1. */
@@ -427,7 +428,7 @@ uint32_t ParkMiller_Next(uint64_t *state)
 
 uint32_t ParkMillerBigger_Next(uint64_t *state)
 {
-    /* TODO A larger version of the Park Miller. Still needs testing. 
+    /* @todo A larger version of the Park Miller. Still needs testing. 
     This version uses a 64-bit double width product */
 
     /* X_n+1 = (a * X_n) % m */

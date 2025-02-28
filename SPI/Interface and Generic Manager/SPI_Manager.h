@@ -40,6 +40,7 @@ typedef enum SPISlaveStateTag
 
 typedef struct SPISlaveTag SPISlave;
 
+// @todo add callback function pointers like in old I2C library?
 struct SPISlaveTag
 {
     SPISlave *next;
@@ -49,7 +50,7 @@ struct SPISlaveTag
     uint8_t *readBuffer;
     uint16_t numBytesToSend;
     uint16_t numBytesToRead;
-    uint16_t readWriteCount;
+    uint16_t readWriteCount; // @todo might go back to my old method of making a private struct
     SPISlaveState state;
     bool transferFinished;
 };
@@ -60,7 +61,7 @@ typedef struct SPIManagerTag
     SPISlave *endOfList; // circular linked list
     SPISlave *device;
     bool busy;
-    // TODO is the busy flag needed? The SPI manager is just using each slave device's SPISlaveState
+    // @todo is the busy flag needed? The SPI manager is just using each slave device's SPISlaveState
 } SPIManager;
 
 /**
