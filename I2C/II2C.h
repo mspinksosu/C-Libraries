@@ -89,6 +89,11 @@ typedef struct I2CInterfaceTag
     // add more
 } I2CInterface;
 
+typedef struct I2CTag
+{
+    I2CInterface *interface;
+} I2C;
+
 /** 
  * Description of struct members: // TODO description
  * 

@@ -8,7 +8,7 @@
  * @date 2/27/25   Original creation
  * 
  * @details
- *      // TODO details
+ *      // @todo details
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2025 Matthew Spinks

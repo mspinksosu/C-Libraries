@@ -1,14 +1,14 @@
 /***************************************************************************//**
- * @brief SPI Manager Header (Non-Processor Specific)
+ * @brief SPI Manager (Non-Processor Specific)
  * 
- * @file SPI_Manager.h
+ * @file SPI_Manager.c
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 8/28/22   Original creation
  * 
  * @details
- *      // TODO details. Right now, this handles master only
+ *      // @todo details. Right now, this handles master only
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2022 Matthew Spinks
@@ -28,7 +28,7 @@
 
 // ***** Global Variables ******************************************************
 
-static bool spiManagerEnabled; // TODO enable/disable
+static bool spiManagerEnabled; // @todo enable/disable
 
 // ***** Static Function Prototypes ********************************************
 
@@ -41,7 +41,7 @@ void SPI_Manager_Create(SPIManager *self, SPI *peripheral)
     self->peripheral = peripheral;
     self->endOfList = NULL;
     self->device = NULL;
-    self->busy = false; // TODO busy flag isn't used right now
+    self->busy = false; // @todo busy flag isn't used right now
 }
 
 // *****************************************************************************
@@ -113,8 +113,8 @@ void SPI_Manager_Process(SPIManager *self)
 {
     /* Go round-robin through the list of devices. Right now, I'm only going to 
     deal with SPI master mode. */
-    // TODO add check for master mode, and eventually add slave mode
-    // TODO busy flag isn't used yet. I may want to replace it with a state for the peripheral instead
+    // @todo add check for master mode, and eventually add slave mode
+    // @todo busy flag isn't used yet. I may want to replace it with a state for the peripheral instead
     if(self->device != NULL)
     {
         switch(self->device->state)
@@ -146,7 +146,7 @@ void SPI_Manager_Process(SPIManager *self)
                 byte function will just return zero. Which is what it would do 
                 if there was no data anyway. */
 
-                /* TODO try by just checking using the getreceivedbyte function 
+                /* @todo try by just checking using the getreceivedbyte function 
                 by itself. As long as RXNE is cleared beforehand, we should be 
                 able to just watch it. */
 
@@ -178,7 +178,11 @@ void SPI_Manager_Process(SPIManager *self)
                         self->device = self->device->next;
                     }
                 }
-                // TODO get received byte try again count?
+                // @todo get received byte try again count?
+                break;
+            case SPI_STATE_IDLE:
+                /* Nothing to do. Go to next device. */
+                self->device = self->device->next;
                 break;
         } // end switch
     }
