@@ -44,7 +44,10 @@ A lot of these work just fine, but I haven't finished fully documenting them, or
   - [ ] Add more sub class options
   - [ ] PIC32 implementation
   - [ ] Finish documentation
-- [ ] I2C: Old PIC32 library. Worked before. Needs updating
+- [ ] I2C: Refactoring old PIC32 library
+  - [x] Add I2C manager similar to SPI manager
+  - [ ] New interface
+  - [ ] Refactor PIC32 code 
 - [ ] LCD: New library! Ready to start testing
   - [x] 8-bit mode
   - [ ] 4-bit mode
@@ -120,7 +123,7 @@ A library where everything is self contained and there is no processor specific 
 
 #### Simple Interface
 
-In this library there is a header file which plays the role of the interface (prefixed with an "I"). There may be one or more .c files that can be used with this header file. These .c files (implementations) have all the function names listed in the header file, but each may contain their own processor specific code and dependencies. Multiple .c files can be created and added to a project, *but only **one** may be used at a time.* For example, you can't have two different implementations (c files) both named "UART1". You can change the implementation by swapping the .c files in and out. This type of interface is useful when building libraries for basic peripherals. As long as everything can be done with the standard c data types like uint8_t and bool this type of interface is a good choice. **Examples: ADC, UART, SPI**
+In this library there is a header file which plays the role of the interface (prefixed with an "I"). There may be one or more .c files that can be used with this header file. These .c files (implementations) have all the function names listed in the header file, but each may contain their own processor specific code and dependencies. Multiple .c files can be created and added to a project, *but only **one** may be used at a time.* For example, you can't have two different implementations (c files) both named "UART1". You can change the implementation by swapping the .c files in and out. This type of interface is useful when building libraries for basic peripherals. If everything can be done with the standard c data types like uint8_t and bool this type of interface is a good choice. **Examples: ADC, UART, SPI**
 
 I took this a step further recently and added a function table to my UART library. This is just so that I can make the calling functions the same across different processors. For example, BT_UART could be UART1 on my PIC16, but UART2 on my STM32. In reality, the simple interface still exists. The UART1 interface (header file) exists in both the PIC16 and STM32 and each has still have their own implementation. For these types of libraries, you can set the function table first and then call the init function. This is because there is no inheritance going on, so there are no sub class specific init functions to call. More on that below.
 
