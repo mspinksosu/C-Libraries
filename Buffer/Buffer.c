@@ -28,8 +28,8 @@
 // ***** Defines ***************************************************************
 
 /*  I'm going to use a simple check to go around the ring buffer. In the past, 
-    I would use a logical AND type of modulo division. It worked really quickly, 
-    but it restricted the buffer size to powers of two only. */
+I would use a logical AND type of modulo division. It worked really quickly, 
+but it restricted the buffer size to powers of two only. */
 #define CircularIncrement(i, size) i == (size - 1) ? 0 : i + 1
 
 // ***** Global Variables ******************************************************
@@ -136,9 +136,9 @@ void Buffer_Flush(Buffer *self)
 
 uint8_t Buffer_GetCount(Buffer *self)
 {
-/*  For now, I'm using a simple counter. If I choose to limit by buffer
+    /* For now, I'm using a simple counter. If I choose to limit by buffer 
     to powers of two, then I can do away with the counter and get the size 
-    based on the head and tail with modulo division. Example below
+    based on the head and tail with modulo division instead. For example:
     return (uint8_t)(self->private.size + self->private.head - self->private.tail) & (self->private.size - 1); 
     */
     return self->count;
@@ -149,7 +149,7 @@ uint8_t Buffer_GetCount(Buffer *self)
 bool Buffer_IsFull(Buffer *self)
 {
     uint8_t tempHead = CircularIncrement(self->private.head, self->private.size);
-    
+
     if(tempHead == self->private.tail)
         return true;
     else
