@@ -160,6 +160,18 @@ static bool isBusBusy, prevBusBusy, currentAckStat, prevAckStat;
 static I2CObject I2C1_I2CObject;
 static I2CObject *ptrI2CSlave;
 
+// *****************************************************************************
+
+// @todo function prototypes from old I2C.h. Currently re-doing I2C.h. @remove these later
+void I2C1_FsmInit(uint16_t tickRateInNs, uint16_t timeoutInUs);
+void I2C1_FsmProcess(void);
+void I2C1_FsmMasterWrite(I2CObject *self, uint8_t *writeData, uint8_t numBytes, bool repeatedStart);
+void I2C1_FsmMasterRead(I2CObject *self, uint8_t *readData, uint8_t numBytes);
+
+bool I2C1_FsmIsIdle(void);
+//bool I2C1_FsmIsTransferFinished(void); // add check for any errors
+void I2C1_FsmGetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CObject *context);
+
 // ***** Static Function Prototypes ********************************************
 
 // states

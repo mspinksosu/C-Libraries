@@ -137,7 +137,7 @@ typedef struct UARTInterfaceTag
     void (*UART_TransmitByte)(uint8_t);
     bool (*UART_IsTransmitRegisterEmpty)(void);
     bool (*UART_IsTransmitFinished)(void);
-    bool (*UART_IsTransmitUsingInterrupts)(void); // TODO
+    bool (*UART_IsTransmitUsingInterrupts)(void); // @todo transmit using interrupts
     void (*UART_TransmitEnable)(void);
     void (*UART_TransmitDisable)(void);
     void (*UART_PendingEventHandler)(void);

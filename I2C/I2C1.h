@@ -1,15 +1,18 @@
 /***************************************************************************//**
- * @brief I2C 1 Implementation Header (Non-Processor Specific)
+ * @brief I2C Implementation Header (Non-Processor Specific)
  * 
- * @file IC21.h 
+ * @file IC21.h
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 10/2/16   Original Creation
  * @date 2/21/22   Added Doxygen
+ * @date 3/24/25   Changed to use function table and match new interface
  * 
  * @details
- *      TODO
+ *      @todo details
+ * 
+ * @see II2C.h for a description of what each function should do.
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2016 Matthew Spinks
@@ -19,59 +22,74 @@
  * redistribute it, but you must not misrepresent the origin of the software.
  * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
-*******************************************************************************/
+ ******************************************************************************/
 
 #ifndef I2C1_H
-#define	I2C1_H
+#define I2C1_H
 
-#include "I2C.h"
+#include "II2C.h"
 
 // ***** Defines ***************************************************************
 
 
 // ***** Global Variables ******************************************************
 
+/* Declare and define this variable in your implementation's .c file */
+extern I2CInterface I2C1_FunctionTable;
 
-// ***** Function Prototypes ***************************************************
 
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Interface Functions *************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
-// ----- State Machine Functions -----------------------------------------------
+/* See II2C.h for a description of what each function should do. */
 
-void I2C1_FsmInit(uint16_t tickRateInNs, uint16_t timeoutInUs);
-void I2C1_FsmProcess(void);
-void I2C1_FsmMasterWrite(I2CObject *self, uint8_t *writeData, uint8_t numBytes, bool repeatedStart);
-void I2C1_FsmMasterRead(I2CObject *self, uint8_t *readData, uint8_t numBytes);
+uint32_t I2C1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz);
 
-bool I2C1_FsmIsIdle(void);
-//bool I2C1_FsmIsTransferFinished(void); // TODO add check for any errors
-void I2C1_FsmGetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CObject *context);
+void I2C1_Init(I2CInitType *params);
 
-// ----- Peripheral Functions --------------------------------------------------
+void I2C1_ReceivedDataEvent(void);
 
-bool I2C1_InitWithFrequencies(float pbclkInMHz, uint16_t baudInKHz);
-bool I2C1_InitWithBRGValue(uint32_t brgValue);
-
-bool I2C1_IsBusy(void); // is the actual peripheral bus busy
-void I2C1_Start(void);
-void I2C1_Stop(void);
-void I2C1_Restart(void);
-void I2C1_SendAck(bool ack);
-bool I2C1_GetAckStatus(void);
-
-void I2C1_ReceiveEnable(void);
-void I2C1_ReceiveDisable(void);
-bool I2C1_IsReceivedDataAvailable(void);
 uint8_t I2C1_GetReceivedByte(void);
 
-void I2C1_TransmitEnable(void);
-void I2C1_TransmitDisable(void);
+bool I2C1_IsReceiveRegisterFull(void);
+
+bool I2C1_IsReceiveUsingInterrupts(void);
+
+void I2C1_ReceiveEnable(void);
+
+void I2C1_ReceiveDisable(void);
+
+void I2C1_TransmitRegisterEmptyEvent(void);
+
 void I2C1_TransmitByte(uint8_t dataToSend);
-bool I2C1_IsTransmitRegisterFull(void);
 
-void I2C1_ReceiveInterrupt(void);
-void I2C1_TransmitFinishedInterrupt(void);
+bool I2C1_IsTransmitRegisterEmpty(void);
 
-void I2C1_SetReceiveInterruptCallback(void (*Function)(void));
-void I2C1_SetTransmitFinishedCallback(void (*Function)(void));
+bool I2C1_IsTransmitFinished(void);
 
-#endif	/* I2C1_H */
+bool I2C1_IsTransmitUsingInterrupts(void);
+
+void I2C1_TransmitEnable(void);
+
+void I2C1_TransmitDisable(void);
+
+void I2C1_PendingEventHandler(void);
+void I2C1_SetTransmitRegisterEmptyCallback(void (*Function)(void));
+void I2C1_SetReceivedDataCallback(void (*Function)(uint8_t (*CallToGetData)(void)));
+
+bool I2C1_IsBusy(void);
+
+void I2C1_Start(void);
+
+void I2C1_Stop(void);
+
+void I2C1_Restart(void);
+
+void I2C1_SendAck(bool ackOrNack);
+
+bool I2C1_GetAckStatus(void);
+
+#endif /* I2C1_H */

@@ -41,15 +41,6 @@ typedef enum I2CRoleTag
     I2C_ROLE_SLAVE,
 } I2CRole;
 
-// @todo add modes if needed, or remove
-typedef enum I2CModeTag
-{
-    I2C_MODE_0 = 0,
-    I2C_MODE_1,
-    I2C_MODE_2,
-    I2C_MODE_3
-} I2CMode;
-
 // @todo make error codes enum?
 
 // @todo add status bits if needed for the peripheral level
@@ -72,7 +63,7 @@ typedef struct I2CStatusBitsTag
 typedef struct I2CInitTypeTag
 {
     I2CRole role;
-    I2CMode mode;
+    uint32_t BRGValue;
     bool useTxInterrupt;
     bool useRxInterrupt;
 } I2CInitType;
@@ -82,11 +73,40 @@ typedef struct I2CInterfaceTag
     /*  These are the functions that will be called. You will create your own
     interface object for your class that will have these function signatures.
     Set each of your functions equal to one of these pointers */
-    void (*I2C_Init)(I2CInitType *params);
+
+    /* @todo decide if I want to use a separate enable and disable for transmit 
+    and receive or not. The old PIC32 code currently uses separate enable and 
+    disable like the I2C library. - MS */
     void (*I2C_Enable)(void);
     void (*I2C_Disable)(void);
 
-    // add more
+    uint32_t (*I2C_ComputeBRGValue)(uint32_t, uint32_t);
+    void (*I2C_Init)(I2CInitType *params);
+    void (*I2C_ReceivedDataEvent)(void);
+    uint8_t (*I2C_GetReceivedByte)(void);
+    bool (*I2C_IsReceiveRegisterFull)(void);
+    bool (*I2C_IsReceiveUsingInterrupts)(void);
+    void (*I2C_ReceiveEnable)(void);
+    void (*I2C_ReceiveDisable)(void);
+    void (*I2C_TransmitRegisterEmptyEvent)(void);
+    void (*I2C_TransmitByte)(uint8_t);
+    bool (*I2C_IsTransmitRegisterEmpty)(void);
+    bool (*I2C_IsTransmitFinished)(void);
+    bool (*I2C_IsTransmitUsingInterrupts)(void); // @todo transmit using interrupts
+    void (*I2C_TransmitEnable)(void);
+    void (*I2C_TransmitDisable)(void);
+    void (*I2C_PendingEventHandler)(void); // @todo pending event handler, and function setters
+    void (*I2C_SetTransmitRegisterEmptyCallback)(void (*Function)(void));
+    void (*I2C_SetReceivedDataCallback)(void (*Function)(uint8_t (*CallToGetData)(void)));
+
+    bool (*I2C_IsBusy)(void);
+    // @todo add get state function also
+    void (*I2C_Start)(void);
+    void (*I2C_Stop)(void);
+    void (*I2C_Restart)(void);
+    void (*I2C_SendAck)(bool ackOrNack);
+    bool (*I2C_GetAckStatus)(void);
+
 } I2CInterface;
 
 typedef struct I2CTag
@@ -116,6 +136,58 @@ typedef struct I2CTag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+uint32_t I2C_ComputeBRGValue(I2C *self, uint32_t desiredBaudRate, uint32_t clkInHz);
+
+void I2C_Init(I2C *self, I2CInitType *params);
+
+void I2C_ReceivedDataEvent(I2C *self);
+
+uint8_t I2C_GetReceivedByte(I2C *self);
+
+bool I2C_IsReceiveRegisterFull(I2C *self);
+
+bool I2C_IsReceiveUsingInterrupts(I2C *self);
+
+void I2C_ReceiveEnable(I2C *self);
+
+void I2C_ReceiveDisable(I2C *self);
+
+void I2C_TransmitRegisterEmptyEvent(I2C *self);
+
+void I2C_TransmitByte(I2C *self, uint8_t dataToSend);
+
+bool I2C_IsTransmitRegisterEmpty(I2C *self);
+
+bool I2C_IsTransmitFinished(I2C *self);
+
+bool I2C_IsTransmitUsingInterrupts(I2C *self);
+
+void I2C_TransmitEnable(I2C *self);
+
+void I2C_TransmitDisable(I2C *self);
+
+// @todo pending event handler, and function setters
+void I2C_PendingEventHandler(I2C *self);
+void I2C_SetTransmitRegisterEmptyCallback(I2C *self, void (*Function)(void));
+void I2C_SetReceivedDataCallback(I2C *self, void (*Function)(uint8_t (*CallToGetData)(void)));
+
+// Other functions. (from old PIC32 I2C code)
+
+bool I2C_IsBusy(I2C *self);
+
+// @todo add get state function also
+
+void I2C_Start(I2C *self);
+
+void I2C_Stop(I2C *self);
+
+void I2C_Restart(I2C *self);
+
+void I2C_SendAck(I2C *self, bool ackOrNack);
+
+bool I2C_GetAckStatus(I2C *self);
+
+// @todo break down status bits from old PIC32 code into getters for new interface
 
 
 #endif /* I2C_H */

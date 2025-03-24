@@ -91,10 +91,12 @@ typedef struct SPIInterfaceTag
     void (*SPI_ReceivedDataEvent)(void);
     uint8_t (*SPI_GetReceivedByte)(void);
     bool (*SPI_IsReceiveRegisterFull)(void);
+    // @todo IsReceiveUsingInterrupts
     void (*SPI_TransmitRegisterEmptyEvent)(void);
     void (*SPI_TransmitByte)(uint8_t);
     bool (*SPI_IsTransmitRegisterEmpty)(void);
     bool (*SPI_IsTransmitFinished)(void);
+    // @todo IsTransmitUsingInterrupts
     SPIStatusBits (*SPI_GetStatus)(void);
     void (*SPI_PendingEventHandler)(void);
     void (*SPI_SetTransmitRegisterEmptyCallback)(void (*Function)(void));
