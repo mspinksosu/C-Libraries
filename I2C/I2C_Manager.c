@@ -78,8 +78,7 @@ void I2C_Manager_AddSlave(I2CManager *self, I2CSlave *slave, uint8_t *writeBuffe
 
 void I2C_Manager_Process(I2CManager *self)
 {
-
-
+    // @todo move old PIC32 state machine code here
 }
 
 // *****************************************************************************

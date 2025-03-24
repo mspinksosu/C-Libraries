@@ -77,6 +77,9 @@ I2CInterface I2C1_FunctionTable = {
     .I2C_Stop = I2C1_Stop,
     .I2C_Restart = I2C1_Restart,
     .I2C_SendAck = I2C1_SendAck,
+    .I2C_GetStartStatus = I2C1_GetStartStatus,
+    .I2C_GetStopStatus = I2C1_GetStopStatus,
+    .I2C_GetRestartStatus = I2C1_GetRestartStatus,
     .I2C_GetAckStatus = I2C1_GetAckStatus,
 };
 

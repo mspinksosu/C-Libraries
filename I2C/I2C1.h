@@ -90,6 +90,12 @@ void I2C1_Restart(void);
 
 void I2C1_SendAck(bool ackOrNack);
 
+bool I2C1_GetStartStatus(void);
+
+bool I2C1_GetStopStatus(void);
+
+bool I2C1_GetRestartStatus(void);
+
 bool I2C1_GetAckStatus(void);
 
 #endif /* I2C1_H */

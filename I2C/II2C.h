@@ -105,6 +105,9 @@ typedef struct I2CInterfaceTag
     void (*I2C_Stop)(void);
     void (*I2C_Restart)(void);
     void (*I2C_SendAck)(bool ackOrNack);
+    bool (*I2C_GetStartStatus)(void);
+    bool (*I2C_GetStopStatus)(void);
+    bool (*I2C_GetRestartStatus)(void);
     bool (*I2C_GetAckStatus)(void);
 
 } I2CInterface;
@@ -127,8 +130,15 @@ typedef struct I2CTag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-// @todo make calculate BRG function
-// @todo add more functions
+void I2C_Create(I2C *self, I2CInterface *interface);
+
+void I2C_SetInitTypeToDefaultParams(I2CInitType *params);
+
+// @todo add more params if needed
+void I2C_SetInitTypeParams(I2CInitType *params, bool useRxInterrupt, bool useTxInterrupt);
+
+// @todo does I2C need a init BRG value function? If not, remove ComputeBRGValue
+void I2C_SetInitBRGValue(I2CInitType *params, uint32_t BRGValue);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -185,9 +195,15 @@ void I2C_Restart(I2C *self);
 
 void I2C_SendAck(I2C *self, bool ackOrNack);
 
+bool I2C_GetStartStatus(I2C *self);
+
+bool I2C_GetStopStatus(I2C *self);
+
+bool I2C_GetRestartStatus(I2C *self);
+
 bool I2C_GetAckStatus(I2C *self);
 
-// @todo break down status bits from old PIC32 code into getters for new interface
-
+// @todo add get bus errors
+// @todo handle bus collision
 
 #endif /* I2C_H */
