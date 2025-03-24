@@ -61,7 +61,7 @@ void I2C_SetInitTypeParams(I2CInitType *params, bool useRxInterrupt, bool useTxI
 
 // *****************************************************************************
 
-void UART_SetInitBRGValue(UARTInitType *params, uint32_t BRGValue)
+void I2C_SetInitBRGValue(I2CInitType *params, uint32_t BRGValue)
 {
     params->BRGValue = BRGValue; 
 }
@@ -72,31 +72,25 @@ void UART_SetInitBRGValue(UARTInitType *params, uint32_t BRGValue)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+uint32_t I2C_ComputeBRGValue(I2C *self, uint32_t desiredBaudRate, uint32_t clkInHz)
+{
+    if(self->interface->I2C_ComputeBRGValue != NULL)
+    {
+        return (self->interface->I2C_ComputeBRGValue)(desiredBaudRate, clkInHz);
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+// *****************************************************************************
+
 void I2C_Init(I2C *self, I2CInitType *params)
 {
     if(self->interface->I2C_Init != NULL && params != NULL)
     {
         (self->interface->I2C_Init)(params);
-    }
-}
-
-// *****************************************************************************
-
-void I2C_Enable(I2C *self)
-{
-    if(self->interface->I2C_Enable != NULL)
-    {
-        (self->interface->I2C_Enable)();
-    }
-}
-
-// *****************************************************************************
-
-void I2C_Disable(I2C *self)
-{
-    if(self->interface->I2C_Disable != NULL)
-    {
-        (self->interface->I2C_Disable)();
     }
 }
 
@@ -135,6 +129,40 @@ bool I2C_IsReceiveRegisterFull(I2C *self)
     else
     {
         return false;
+    }
+}
+
+// *****************************************************************************
+
+bool I2C_IsReceiveUsingInterrupts(I2C *self)
+{
+    if(self->interface->I2C_IsReceiveUsingInterrupts != NULL)
+    {
+        return (self->interface->I2C_IsReceiveUsingInterrupts)();
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// *****************************************************************************
+
+void I2C_ReceiveEnable(I2C *self)
+{
+    if(self->interface->I2C_ReceiveEnable != NULL)
+    {
+        (self->interface->I2C_ReceiveEnable)();
+    }
+}
+
+// *****************************************************************************
+
+void I2C_ReceiveDisable(I2C *self)
+{
+    if(self->interface->I2C_ReceiveDisable != NULL)
+    {
+        (self->interface->I2C_ReceiveDisable)();
     }
 }
 
@@ -188,16 +216,36 @@ bool I2C_IsTransmitFinished(I2C *self)
 
 // *****************************************************************************
 
-I2CStatusBits I2C_GetStatus(I2C *self)
+bool I2C_IsTransmitUsingInterrupts(I2C *self)
 {
-    I2CStatusBits retVal = {0};
-
-    if(self->interface->I2C_GetStatus != NULL)
+    if(self->interface->I2C_IsTransmitUsingInterrupts != NULL)
     {
-        retVal = (self->interface->I2C_GetStatus)();
+        return (self->interface->I2C_IsTransmitUsingInterrupts)();
     }
+    else
+    {
+        return false;
+    }
+}
 
-    return retVal;
+// *****************************************************************************
+
+void I2C_TransmitEnable(I2C *self)
+{
+    if(self->interface->I2C_TransmitEnable != NULL)
+    {
+        (self->interface->I2C_TransmitEnable)();
+    }
+}
+
+// *****************************************************************************
+
+void I2C_TransmitDisable(I2C *self)
+{
+    if(self->interface->I2C_TransmitDisable != NULL)
+    {
+        (self->interface->I2C_TransmitDisable)();
+    }
 }
 
 // *****************************************************************************
@@ -232,11 +280,95 @@ void I2C_SetReceivedDataCallback(I2C *self, void (*Function)(uint8_t (*CallToGet
 
 // *****************************************************************************
 
-void I2C_SetSSPinFunc(I2C *self, void (*Function)(bool))
+void I2C_Start(I2C *self)
 {
-    if(self->interface->I2C_SetSSPinFunc != NULL)
+    if(self->interface->I2C_Start != NULL)
     {
-        (self->interface->I2C_SetSSPinFunc)(Function);
+        (self->interface->I2C_Start)();
+    }
+}
+
+// *****************************************************************************
+
+void I2C_Start(I2C *self)
+{
+    if(self->interface->I2C_Start != NULL)
+    {
+        (self->interface->I2C_Start)();
+    }
+}
+
+// *****************************************************************************
+
+void I2C_Start(I2C *self)
+{
+    if(self->interface->I2C_Start != NULL)
+    {
+        (self->interface->I2C_Start)();
+    }
+}
+
+// *****************************************************************************
+
+void I2C_SendAck(I2C *self, bool ackOrNack)
+{
+    if(self->interface->I2C_SendAck != NULL)
+    {
+        (self->interface->I2C_SendAck)(ackOrNack);
+    }
+}
+
+// *****************************************************************************
+
+bool I2C_GetStartStatus(I2C *self)
+{
+    if(self->interface->I2C_GetStartStatus != NULL)
+    {
+        return (self->interface->I2C_GetStartStatus)();
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// *****************************************************************************
+
+bool I2C_GetStopStatus(I2C *self)
+{
+    if(self->interface->I2C_GetStopStatus != NULL)
+    {
+        return (self->interface->I2C_GetStopStatus)();
+    }
+    else
+    {
+        return false;
+    }
+}
+// *****************************************************************************
+
+bool I2C_GetRestartStatus(I2C *self)
+{
+    if(self->interface->I2C_GetRestartStatus != NULL)
+    {
+        return (self->interface->I2C_GetRestartStatus)();
+    }
+    else
+    {
+        return false;
+    }
+}
+// *****************************************************************************
+
+bool I2C_GetAckStatus(I2C *self)
+{
+    if(self->interface->I2C_GetAckStatus != NULL)
+    {
+        return (self->interface->I2C_GetAckStatus)();
+    }
+    else
+    {
+        return false;
     }
 }
 

@@ -60,6 +60,8 @@ typedef struct I2CStatusBitsTag
     };
 } I2CStatusBits;
 
+// @todo keep old get status bits function?
+
 typedef struct I2CInitTypeTag
 {
     I2CRole role;
@@ -95,7 +97,9 @@ typedef struct I2CInterfaceTag
     bool (*I2C_IsTransmitUsingInterrupts)(void); // @todo transmit using interrupts
     void (*I2C_TransmitEnable)(void);
     void (*I2C_TransmitDisable)(void);
-    void (*I2C_PendingEventHandler)(void); // @todo pending event handler, and function setters
+
+    // @todo pending event handler, and function setters
+    void (*I2C_PendingEventHandler)(void);
     void (*I2C_SetTransmitRegisterEmptyCallback)(void (*Function)(void));
     void (*I2C_SetReceivedDataCallback)(void (*Function)(uint8_t (*CallToGetData)(void)));
 

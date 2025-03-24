@@ -232,7 +232,7 @@ bool UART_IsTransmitFinished(UART *self)
 
 // *****************************************************************************
 
-bool UART_IsTransmitUsngInterrupts(UART *self)
+bool UART_IsTransmitUsingInterrupts(UART *self)
 {
     if(self->interface->UART_IsTransmitUsingInterrupts != NULL)
     {
