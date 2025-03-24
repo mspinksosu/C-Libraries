@@ -5,11 +5,11 @@
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
- * @date 10/2/16   Original Creation (PIC32 only)
+ * @date 10/2/16   Original Creation (PIC32)
  * @date 2/21/22   Added Doxygen
  * 
  * @details
- *      TODO
+ *      @todo documentation
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2016 Matthew Spinks
@@ -50,9 +50,37 @@
 
 // ***** Global Variables ******************************************************
 
-// local function pointers
-void (*I2C1_TransmitFinishedCallback)(void);
-void (*I2C1_ReceiveInterruptCallback)(void);
+// ----- @label new interface code ---------------------------------------------
+
+/* Assign functions to the interface */
+I2CInterface I2C1_FunctionTable = {
+    .I2C_ComputeBRGValue = I2C1_ComputeBRGValue,
+    .I2C_Init = I2C1_Init,
+    .I2C_ReceivedDataEvent = I2C1_ReceivedDataEvent,
+    .I2C_GetReceivedByte = I2C1_GetReceivedByte,
+    .I2C_IsReceiveRegisterFull = I2C1_IsReceiveRegisterFull,
+    .I2C_IsReceiveUsingInterrupts = I2C1_IsReceiveUsingInterrupts,
+    .I2C_ReceiveEnable = I2C1_ReceiveEnable,
+    .I2C_ReceiveDisable = I2C1_ReceiveDisable,
+    .I2C_TransmitRegisterEmptyEvent = I2C1_TransmitRegisterEmptyEvent,
+    .I2C_TransmitByte = I2C1_TransmitByte,
+    .I2C_IsTransmitRegisterEmpty = I2C1_IsTransmitRegisterEmpty,
+    .I2C_IsTransmitFinished = I2C1_IsTransmitFinished,
+    .I2C_IsTransmitUsingInterrupts = I2C1_IsTransmitUsingInterrupts,
+    .I2C_TransmitEnable = I2C1_TransmitEnable,
+    .I2C_TransmitDisable = I2C1_TransmitDisable,
+    .I2C_PendingEventHandler = I2C1_PendingEventHandler,
+    .I2C_SetTransmitRegisterEmptyCallback = I2C1_SetTransmitRegisterEmptyCallback,
+    .I2C_SetReceivedDataCallback = I2C1_SetReceivedDataCallback,
+    .I2C_IsBusy = I2C1_IsBusy,
+    .I2C_Start = I2C1_Start,
+    .I2C_Stop = I2C1_Stop,
+    .I2C_Restart = I2C1_Restart,
+    .I2C_SendAck = I2C1_SendAck,
+    .I2C_GetAckStatus = I2C1_GetAckStatus,
+};
+
+// -----------------------------------------------------------------------------
 
 // Free timer (with bit field)
 typedef struct
@@ -128,8 +156,7 @@ struct Event
 //    /** If there is a received packet, place it in here and pass it to the 
 //     * state machine*/
 //    uint8_t readBuffer[RX_BUF_SIZE];
-    
-    // Yo dawg. I heard you liked structs...
+
     struct
     {
         uint8_t slaveAddress;
@@ -142,12 +169,8 @@ struct Event
          * be the safest route, because if the something goes wrong in the FSM
          * and the user doesn't wait and check it, then the data could change */
         //uint8_t writeBuffer[TX_BUF_SIZE];
-        //uint8_t writeSize;        
-        
+        //uint8_t writeSize;
     } private;
-    /** These variables should be treated as private and not modified directly
-     * without the use of a function. Unfortunately, this is C, so I really 
-     * can't stop you.*/
 };
 
 static FsmTimer I2C1_FsmTimer, I2C1_WaitTimer;
@@ -155,24 +178,14 @@ static Fsm I2C1_Fsm;
 static Event I2C1_Event;
 static bool isBusBusy, prevBusBusy, currentAckStat, prevAckStat;
 
-// TODO decide if I want to use a separate static I2C object or just use 
+// local function pointers
+void (*I2C1_TransmitFinishedCallback)(void);
+void (*I2C1_ReceiveInterruptCallback)(void);
+
+// @todo decide if I want to use a separate static I2C object or just use 
 // the I2C slave object
 static I2CObject I2C1_I2CObject;
 static I2CObject *ptrI2CSlave;
-
-// *****************************************************************************
-
-// @todo function prototypes from old I2C.h. Currently re-doing I2C.h. @remove these later
-void I2C1_FsmInit(uint16_t tickRateInNs, uint16_t timeoutInUs);
-void I2C1_FsmProcess(void);
-void I2C1_FsmMasterWrite(I2CObject *self, uint8_t *writeData, uint8_t numBytes, bool repeatedStart);
-void I2C1_FsmMasterRead(I2CObject *self, uint8_t *readData, uint8_t numBytes);
-
-bool I2C1_FsmIsIdle(void);
-//bool I2C1_FsmIsTransferFinished(void); // add check for any errors
-void I2C1_FsmGetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CObject *context);
-
-// ***** Static Function Prototypes ********************************************
 
 // states
 static void I2C1_FsmIdle(Event *e);
@@ -183,31 +196,29 @@ static void I2C1_FsmStop(Event *e);
 static void I2C1_FsmRestart(Event *e);
 static void I2C1_FsmReadData(Event *e);
 
-// private functions
+// ***** Static Function Prototypes ********************************************
+
 static void I2C1_TimerStart(void);
 static void I2C1_TimerStop(void);
-//static void I2C1_Wait(void); // TODO deprecated. Try using bus idle instead
+//static bool I2C1_IsBusIdle(void);
 static StatusBits I2C1_GetStatusBits(void);
 
+// @todo function prototypes from old I2C.h. Currently rewriting I2C.h. @remove these later
+void I2C1_FsmInit(uint16_t tickRateInNs, uint16_t timeoutInUs);
+void I2C1_FsmProcess(void);
+void I2C1_FsmMasterWrite(I2CObject *self, uint8_t *writeData, uint8_t numBytes, bool repeatedStart);
+void I2C1_FsmMasterRead(I2CObject *self, uint8_t *readData, uint8_t numBytes);
+bool I2C1_FsmIsIdle(void);
+//bool I2C1_FsmIsTransferFinished(void); // add check for any errors
+void I2C1_FsmGetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CObject *context);
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// ***** I2C Interface *******************************************************//
+// ***** Interface Functions *************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-// If your processor has multiple I2C peripherals, this function should only
-// be defined once.
-#ifndef I2C_OBJ
-#define I2C_OBJ
 
-void I2C_InitObject(I2CObject *self, uint8_t slaveAddress, uint8_t *writeBuffer, uint8_t *readBuffer)
-{
-    self->slaveAddress = slaveAddress;
-    self->writeBuffer = writeBuffer;
-    self->readBuffer = readBuffer;
-}
-
-#endif // I2C_OBJ
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
