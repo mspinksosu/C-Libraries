@@ -595,46 +595,47 @@ static StatusBits I2C1_GetStatusBits(void)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-bool I2C1_InitWithFrequencies(float pbclkInMHz, uint16_t baudInKHz)
-{
-    // TODO check bounds
-    if(pbclkInMHz == 0)
-    {
-        return true;
-    }
+// @todo old init functions
+// bool I2C1_InitWithFrequencies(float pbclkInMHz, uint16_t baudInKHz)
+// {
+//     // TODO check bounds
+//     if(pbclkInMHz == 0)
+//     {
+//         return true;
+//     }
 
-    /* Calculate baud rate. Use the ceiling function to round up in the 
-     * second step to get our register value. This will make the actual 
-     * baud rate slightly slower than the exact value. It is better to be 
-     * slightly slower, rather than faster, than the computed bus speed. 
-     * Equation 24-1. Datasheet section 24, page 19 */
-    uint32_t brgValue = 1000000 / (2 * baudInKHz) - 104;
-    brgValue = (uint32_t)(ceil(brgValue / 1000.0 * pbclkInMHz - 2));
-    bool temp = I2C1_InitWithBRGValue(brgValue);
+//     /* Calculate baud rate. Use the ceiling function to round up in the 
+//      * second step to get our register value. This will make the actual 
+//      * baud rate slightly slower than the exact value. It is better to be 
+//      * slightly slower, rather than faster, than the computed bus speed. 
+//      * Equation 24-1. Datasheet section 24, page 19 */
+//     uint32_t brgValue = 1000000 / (2 * baudInKHz) - 104;
+//     brgValue = (uint32_t)(ceil(brgValue / 1000.0 * pbclkInMHz - 2));
+//     bool temp = I2C1_InitWithBRGValue(brgValue);
     
-    return temp;
-}
+//     return temp;
+// }
 
-bool I2C1_InitWithBRGValue(uint32_t brgValue)
-{
-    // If you call this function directly I must assume you know what you are 
-    // doing and that you've already calculated the correct BRG value
-    if(brgValue == 0x00 || brgValue == 0x01)
-    {
-        // You've chosen an incompatible number for the baud rate generator
-        I2C1BRG = DEFAULT_BRG_VALUE;
-        return true;
-    }
+// bool I2C1_InitWithBRGValue(uint32_t brgValue)
+// {
+//     // If you call this function directly I must assume you know what you are 
+//     // doing and that you've already calculated the correct BRG value
+//     if(brgValue == 0x00 || brgValue == 0x01)
+//     {
+//         // You've chosen an incompatible number for the baud rate generator
+//         I2C1BRG = DEFAULT_BRG_VALUE;
+//         return true;
+//     }
     
-    I2C1_Fsm.state = I2C1_FsmIdle;
-    I2C1_Event.sig = 0;
-    I2C1_FsmTimer.period = (uint16_t)TIMEOUT_PERIOD_COUNT;
-    I2C1_FsmTimer.retryCount = RETRY_COUNT;
+//     I2C1_Fsm.state = I2C1_FsmIdle;
+//     I2C1_Event.sig = 0;
+//     I2C1_FsmTimer.period = (uint16_t)TIMEOUT_PERIOD_COUNT;
+//     I2C1_FsmTimer.retryCount = RETRY_COUNT;
     
-    I2C1BRG = (uint16_t)brgValue;
-    I2C1CONbits.ON = 1; // enable I2C module
-    return false;
-}
+//     I2C1BRG = (uint16_t)brgValue;
+//     I2C1CONbits.ON = 1; // enable I2C module
+//     return false;
+// }
 
 bool I2C1_IsBusy(void)
 {
