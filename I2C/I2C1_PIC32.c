@@ -47,6 +47,15 @@
 
 #define DEFAULT_BRG_VALUE       0x2C
 
+/* Registers */
+#define I2CxCON I2C1CON           // I2C control
+#define I2CxCONbits I2C1CONbits   // I2C control bits
+#define I2CxSTAT I2C1STAT         // I2C status
+#define I2CxSTATbits I2C1STATbits // I2C status bits
+#define I2CxBRG I2C1BRG           // baud rate generator
+#define I2CxRCV I2C1RCV           // receive register
+#define I2CxTRN I2C1TRN           // transmit register
+// interrupt status register
 
 // ***** Global Variables ******************************************************
 
@@ -640,50 +649,43 @@ static StatusBits I2C1_GetStatusBits(void)
 bool I2C1_IsBusy(void)
 {
     /* I2CxCON bits:
-     * 0, SEN:   0 = start condition idle
-     * 1, RSEN:  0 = restart condition idle
-     * 2, PEN:   0 = stop condition idle
-     * 3, RCEN:  0 = receive sequence not in progress
-     * 4, ACKEN: 0 = acknowledge sequence idle
-     * 
-     * TRSTAT: 0 = master transmit not in progress
-     **/
-    bool retValue;
-    if((I2C1CON & 0x0000001F)  || I2C1STATbits.TRSTAT)
-        retValue = true;
+     0, SEN:   0 = start condition idle
+     1, RSEN:  0 = restart condition idle
+     2, PEN:   0 = stop condition idle
+     3, RCEN:  0 = receive sequence not in progress
+     4, ACKEN: 0 = acknowledge sequence idle
+     
+     TRSTAT: 0 = master transmit not in progress
+     */
+    if((I2CxCON & 0x0000001F) || I2C1STATbits.TRSTAT)
+        return true;
     else
-        retValue = false;
-    
-    return retValue;
+        return false;
 }
 
 void I2C1_Start(void)
 {
-    I2C1CONbits.SEN = 1; // cleared by module when finished
-    I2C1_Fsm.statusBits.sendingStart = 1;
+    I2CxCONbits.SEN = 1; // cleared by module when finished
 }
 
 void I2C1_Stop(void)
 {
-    I2C1CONbits.PEN = 1; // cleared by module when finished
-    I2C1_Fsm.statusBits.sendingStop = 1;
+    I2CxCONbits.PEN = 1; // cleared by module when finished
 }
 
 void I2C1_Restart(void)
 {
-    I2C1CONbits.RSEN = 1; // cleared by module when finished
-    I2C1_Fsm.statusBits.sendingRestart = 1;
+    I2CxCONbits.RSEN = 1; // cleared by module when finished
 }
 
 void I2C1_SendAck(bool ackOrNack)
 {
     if(ackOrNack)
-        I2C1CONbits.ACKDT = 0; // send ack
+        I2CxCONbits.ACKDT = 0; // send ack
     else
-        I2C1CONbits.ACKDT = 1; // send nack
+        I2CxCONbits.ACKDT = 1; // send nack
     
-    I2C1CONbits.ACKEN = 1; // cleared by module when finished
-    I2C1_Fsm.statusBits.sendingAck = 1;
+    I2CxCONbits.ACKEN = 1; // cleared by module when finished
 }
 
 bool I2C1_GetAckStatus(void)
@@ -696,20 +698,19 @@ bool I2C1_GetAckStatus(void)
 
 void I2C1_ReceiveEnable(void)
 {
-    // RCEN bit is automatically cleared at the end of 8-bit receive data byte
-    I2C1CONbits.RCEN = 1;
-    I2C1_Fsm.statusBits.receiveInProgress = 1;
+    /* RCEN bit is automatically cleared at the end of the 8th bit of a 
+    received data byte */
+    I2CxCONbits.RCEN = 1;
 }
 
 void I2C1_ReceiveDisable(void)
 {
-    // On this PIC, the receiver is disabled automatically after 8 bits have
-    // been received.
+
 }
 
 bool I2C1_IsReceivedDataAvailable(void)
 {
-    if(I2C1STATbits.RBF == 1) // 1: receive complete
+    if(I2CxSTATbits.RBF == 1) // 1: receive complete
         return true; 
     else
         return false;
@@ -717,30 +718,27 @@ bool I2C1_IsReceivedDataAvailable(void)
 
 uint8_t I2C1_GetReceivedByte(void)
 {
-    return I2C1RCV;
+    return I2CxRCV;
 }
 
 void I2C1_TransmitEnable(void)
 {
-    // This PIC does not have a specific control bit to enable or disable
-    // the I2C transmitter
+
 }
 
 void I2C1_TransmitDisable(void)
 {
-    // This PIC does not have a specific control bit to enable or disable
-    // the I2C transmitter
+
 }
 
 void I2C1_TransmitByte(uint8_t dataToSend)
 {
-    I2C1TRN = dataToSend;
-    I2C1_Fsm.statusBits.transmitInProgress = 1;
+    I2CxTRN = dataToSend;
 }
 
 bool I2C1_IsTransmitRegisterFull(void)
 {
-    if(I2C1STATbits.TBF == 1)
+    if(I2CxSTATbits.TBF == 1)
         return true;
     else
         return false;
