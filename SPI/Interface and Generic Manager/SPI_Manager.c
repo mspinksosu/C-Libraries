@@ -85,7 +85,8 @@ bool SPI_Manager_IsDeviceBusy(SPISlave *self)
 
 // *****************************************************************************
 
-// @todo move state to SPIManager instead of SPISlave
+// @todo move state to SPIManager instead of SPISlave?
+// @todo better idea. Have slave have a state and the manager could also have its own state.
 void SPI_Manager_BeginTransfer(SPISlave *self, uint16_t numBytesToSend, uint16_t numBytesToRead)
 {
     if(self->state != SPI_STATE_IDLE || (numBytesToRead == 0 && numBytesToSend == 0))

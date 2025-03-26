@@ -62,6 +62,7 @@ typedef struct SPIManagerTag
     SPISlave *device;
     bool busy;
     // @todo is the busy flag needed? The SPI manager is just using each slave device's SPISlaveState
+    // @todo give the manager its own state instead or using busy flag
 } SPIManager;
 
 /**
