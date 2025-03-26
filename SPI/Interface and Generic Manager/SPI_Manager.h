@@ -45,7 +45,7 @@ struct SPISlaveTag
 {
     SPISlave *next;
     void (*SetSSPin)(bool setPinHigh, void *slaveContext);
-    SPIManager *manager;
+    SPIManager *manager; // @todo probably remove. I don't remember why I had this originally. - MS
     uint8_t *writeBuffer;
     uint8_t *readBuffer;
     uint16_t numBytesToSend;

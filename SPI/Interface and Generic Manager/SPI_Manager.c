@@ -85,6 +85,7 @@ bool SPI_Manager_IsDeviceBusy(SPISlave *self)
 
 // *****************************************************************************
 
+// @todo move state to SPIManager instead of SPISlave
 void SPI_Manager_BeginTransfer(SPISlave *self, uint16_t numBytesToSend, uint16_t numBytesToRead)
 {
     if(self->state != SPI_STATE_IDLE || (numBytesToRead == 0 && numBytesToSend == 0))
@@ -151,7 +152,7 @@ void SPI_Manager_Process(SPIManager *self)
                 able to just watch it. */
 
                 /* Add option for no read buffer */
-                if(SPI1_IsReceiveRegisterFull(self->peripheral))
+                if(SPI_IsReceiveRegisterFull(self->peripheral))
                 {
                     uint8_t data = SPI_GetReceivedByte(self->peripheral);
 

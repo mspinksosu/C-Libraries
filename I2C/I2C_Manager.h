@@ -46,6 +46,7 @@ typedef enum I2CSignalTag
     I2C_SIG_BEGIN_TRANSFER = 1,
     I2C_SIG_BUS_IDLE_EVENT,
     I2C_SIG_ACK_RECEIVED,
+    I2C_SIG_NACK_RECEIVED,
     I2C_SIG_DATA_RECEIVED,
     I2C_SIG_TIMEOUT,
 } I2CSignal;
@@ -55,7 +56,7 @@ typedef struct I2CEventTag
     I2CSignal sig;
     uint8_t slaveAddress;
 
-    // @todo update extra info for events
+    // @todo refactor and update with extra info for events
     bool generateRepeatedStart; // at the end of transfer
     bool repeatedStart;         // repeated start has been performed
     bool masterRead;            // go into read state after sending address
@@ -64,27 +65,16 @@ typedef struct I2CEventTag
 
 // -----------------------------------------------------------------------------
 
-// @todo I2C device slave state enum maybe not needed for the FSM
-// @todo or replace with new state type for FSM
-typedef enum I2CSlaveStateTag
-{
-    I2C_STATE_IDLE = 0,
-    I2C_STATE_RQ_START,
-    I2C_STATE_SEND_BYTE,
-    I2C_STATE_RECEIVE_BYTE
-} I2CSlaveState;
-
 typedef struct I2CSlaveTag I2CSlave;
 
 // @todo decided if I want to keep the old callback function pointers
 /* callback function pointer. The context is so that you can know which of
 your I2C devices initiated the callback. */
-// typedef void (*I2CObjectCallbackFunc)(I2CObject *i2cObjectContext);
+// typedef void (*I2CSlaveCallbackFunc)(I2CSlave *i2cSlaveContext);
 
 struct I2CSlaveTag
 {
     I2CSlave *next;
-    I2CManager *manager;
     uint8_t slaveAddress; // 7-bit address, right justified
     uint8_t *writeBuffer;
     uint8_t *readBuffer;
@@ -92,12 +82,11 @@ struct I2CSlaveTag
     uint16_t numBytesToRead;
     uint16_t writeCount; // @todo might go back to my old method of making a private struct
     uint16_t readCount;
-    I2CSlaveState state;
-    bool transferFinished;
+    bool transferFinished; // @todo probably not needed
 
     // @todo decided if I want to keep the old callback function pointers
-    // I2CObjectCallbackFunc transmitFinishedCallback;
-    // I2CObjectCallbackFunc receivedFinishedCallback;
+    // I2CSlaveCallbackFunc transmitFinishedCallback;
+    // I2CSlaveCallbackFunc receivedFinishedCallback;
 };
 
 typedef struct I2CTimerTag
@@ -132,13 +121,19 @@ typedef struct I2CManagerStatusBitsTag
     };
 } I2CManagerStatusBits;
 
+// This is the function pointer type for the state machine functions
+typedef void (*I2CState)(I2CEvent *e);
+
 typedef struct I2CManagerTag
 {
     I2C *peripheral;
     I2CSlave *endOfList; // circular linked list
     I2CSlave *device;
-    bool busy;
-    // @todo is the busy flag needed?
+    I2CState state;
+    I2CTimer fsmTimer;
+    I2CTimer waitTimer;
+    bool isBusBusy; // @todo is the busy flag needed?
+    I2CManagerStatusBits statusBits;
 } I2CManager;
 
 /**
