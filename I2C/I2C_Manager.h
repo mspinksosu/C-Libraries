@@ -65,7 +65,7 @@ typedef struct I2CEventTag
 
 // -----------------------------------------------------------------------------
 
-typedef struct I2CSlaveTag I2CSlave;
+// typedef struct I2CSlaveTag I2CSlave; // forward declaration
 
 // @todo decided if I want to keep the old callback function pointers
 /* callback function pointer. The context is so that you can know which of
@@ -87,19 +87,31 @@ typedef struct I2CManagerDataRequestTag
     I2CSlave *slave;
 } I2CManagerDataRequest;
 
-struct I2CSlaveTag
+typedef struct I2CSlaveTag
 {
-    I2CSlave *next;
+    void *instance;
     uint8_t slaveAddress; // 7-bit address, right justified
     uint8_t *writeBuffer;
     uint8_t *readBuffer;
-    // uint16_t numBytesToSend;
-    // uint16_t numBytesToRead;
+    uint16_t numBytesToSend;
+    uint16_t numBytesToRead;
     uint16_t writeCount;
     uint16_t readCount;
     // I2CDataRequest dataRequest; // @todo might move this outside
-    bool transferFinished;
 
+    // @todo IsTransmitByteReady function pointer?, TransmitByte function pointer.
+} I2CSlave;
+
+/* Think of better name for subclass. Maybe I2CSlave_Node? It sounds less 
+confusing and also implies that it is part of a list. - MS */
+typedef struct I2CSlave_ManagerTag I2CSlave_Manager; // forward declaration
+
+struct I2CSlave_ManagerTag
+{
+    I2CSlave *super; // include the base class first
+
+    I2CSlave_Manager *next;
+    bool transferFinished;
     // @todo transfer finished callback function pointer or transmit and isTransmitReady
 };
 
@@ -164,15 +176,19 @@ typedef struct I2CManagerTag
 
 /* TODO finish Doxygen */
 
+// @todo change names to I2CManager_Create etc.?
+
 void I2C_Manager_Create(I2CManager *self, I2C *peripheral);
 
-void I2C_Manager_AddSlave(I2CManager *self, I2CSlave *slave, uint8_t *writeBuffer, uint8_t *readBuffer);
+// @todo add create sub class
 
-bool I2C_Manager_IsDeviceBusy(I2CSlave *self);
+void I2C_Manager_AddSlave(I2CManager *self, I2CSlave_Manager *slave, uint8_t *writeBuffer, uint8_t *readBuffer);
 
-void I2C_Manager_BeginTransfer(I2CSlave *self, uint16_t numBytesToSend, uint16_t numBytesToRead);
+bool I2C_Manager_IsDeviceBusy(I2CSlave_Manager *self);
 
-bool I2C_Manager_IsTransferFinished(I2CSlave *self);
+void I2C_Manager_BeginTransfer(I2CSlave_Manager *self, uint16_t numBytesToSend, uint16_t numBytesToRead);
+
+bool I2C_Manager_IsTransferFinished(I2CSlave_Manager *self);
 
 void I2C_Manager_Process(I2CManager *self);
 

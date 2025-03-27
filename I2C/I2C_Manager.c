@@ -227,7 +227,7 @@ void I2C_Manager_Disable(I2CManager *self)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-static void I2C_Manager_DevicePush(I2CSlave *self, I2CSlave *endOfList)
+static void I2C_Manager_DevicePush(I2CSlave *self, I2CSlave_Manager *endOfList)
 {
     /* Add the new entry to the beginning of the list. Make the "next" pointer
     point to the head */
@@ -240,11 +240,12 @@ static void I2C_Manager_DevicePush(I2CSlave *self, I2CSlave *endOfList)
 
 // @todo change to use data request similar to SPI. Write data to the slave's buffer also?
 
-void I2C_Manager_MasterDataTransfer(I2CManager *self, I2CSlave *slave, bool isReadRequest, uint8_t numBytes)
+void I2CSlave_Manager_DataTransfer(I2CSlave_Manager *self, bool isReadRequest, uint8_t *writeData, uint8_t numBytes)
 {
     // check if slave is busy already?
     // check if buffer is full or not
-    // add new data
+    // copy new data in
+    // notify manager that data is ready
 
 }
 
@@ -253,17 +254,18 @@ void I2C_Manager_MasterDataTransfer(I2CManager *self, I2CSlave *slave, bool isRe
 // Should the slave have it's own buffer or not?
 // Or have the manager keep a circular buffer instead
 
-// I2C_Manager_Master_WriteToDataTransferBuffer
+void I2C_Manager_Master_WriteToDataTransferBuffer(I2CManager *self, I2CManagerDataRequest *dataRequest)
+{
+    // check for room in buffer
+    // place data request in buffer
+}
 
 
-void I2C_Manager_MasterWrite(I2CManager *self, I2CSlave *slave, uint8_t *writeData, uint8_t numBytes, bool repeatedStart)
+void I2C_Manager_MasterWrite(I2CManager *self, I2CSlave_Manager *slave, uint8_t *writeData, uint8_t numBytes)
 {
     if(I2C_Manager_Fsm.state != I2C_Manager_FsmIdle)
         return;
 
-    // @todo decide if I want to use a separate static I2C object or just use 
-    // the I2C slave object
-    // ptrI2CSlave = slave;
     slave->writeBuffer = writeData;
     slave->numBytesToSend = numBytes;
     slave->private.writeCount = 0;
@@ -271,22 +273,18 @@ void I2C_Manager_MasterWrite(I2CManager *self, I2CSlave *slave, uint8_t *writeDa
     // create an event to give to the state machine
     I2CEvent event;
     event.private.masterRead = false;
-    event.private.slaveAddress = slave->slaveAddress << 1; // clear R/W bit
-    event.private.generateRepeatedStart = repeatedStart;
+    event.private.slaveAddress = slave->slaveAddress << 1;
     event.sig = I2C_SIG_BEGIN_TRANSFER;
     I2C_Manager_Fsm.state(&event); // call the current state and pass the event
 }
 
-void I2C_Manager_MasterRead(I2CManager *self, I2CSlave *slave, uint8_t *readData, uint8_t numBytes)
+void I2C_Manager_MasterRead(I2CManager *self, I2CSlave_Manager *slave, uint8_t *readData, uint8_t numBytes)
 {
     // @todo setup a lock to keep this function from being called if it's
     // already running. Decide if I want to make the return type a bool
     if(I2C_Manager_Fsm.state != I2C_Manager_FsmIdle)
         return;
 
-    // @todo decide if I want to use a separate static I2C object or just use 
-    // the I2C slave object
-    // ptrI2CSlave = slave;
     slave->readBuffer = readData;
     slave->numBytesToRead = numBytes;
     slave->private.readCount = 0;
@@ -308,7 +306,7 @@ bool I2C_Manager_IsIdle(void)
 }
 
 // @todo refactor get data function - MS
-void I2C_Manager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave *context)
+void I2C_Manager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave_Manager *context)
 {
     // @todo decide if I want to use a separate static I2C object or just use 
     // the I2C slave object
