@@ -238,7 +238,25 @@ static void I2C_Manager_DevicePush(I2CSlave *self, I2CSlave *endOfList)
 
 // ----- @label stuff from old state machine. Refactor to use new manager code
 
-void I2C_Manager_MasterWrite(I2CManager *self,, I2CSlave *slave, uint8_t *writeData, uint8_t numBytes, bool repeatedStart)
+// @todo change to use data request similar to SPI. Write data to the slave's buffer also?
+
+void I2C_Manager_MasterDataTransfer(I2CManager *self, I2CSlave *slave, bool isReadRequest, uint8_t numBytes)
+{
+    // check if slave is busy already?
+    // check if buffer is full or not
+    // add new data
+
+}
+
+// Use single function with read/write boolean, or two separate functions, one for read and one for write?
+// Should I write data to the slave buffer and then set a flag
+// Should the slave have it's own buffer or not?
+// Or have the manager keep a circular buffer instead
+
+// I2C_Manager_Master_WriteToDataTransferBuffer
+
+
+void I2C_Manager_MasterWrite(I2CManager *self, I2CSlave *slave, uint8_t *writeData, uint8_t numBytes, bool repeatedStart)
 {
     if(I2C_Manager_Fsm.state != I2C_Manager_FsmIdle)
         return;

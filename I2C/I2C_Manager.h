@@ -72,21 +72,35 @@ typedef struct I2CSlaveTag I2CSlave;
 your I2C devices initiated the callback. */
 // typedef void (*I2CSlaveCallbackFunc)(I2CSlave *i2cSlaveContext);
 
+// experiment
+typedef struct I2CDataRequestTag
+{
+    bool readTypeRequest; // true = read, false = write
+    uint16_t length;
+    uint8_t *data;
+} I2CDataRequest;
+
+// experiment
+typedef struct I2CManagerDataRequestTag
+{
+    I2CDataRequest *dataRequest;
+    I2CSlave *slave;
+} I2CManagerDataRequest;
+
 struct I2CSlaveTag
 {
     I2CSlave *next;
     uint8_t slaveAddress; // 7-bit address, right justified
     uint8_t *writeBuffer;
     uint8_t *readBuffer;
-    uint16_t numBytesToSend;
-    uint16_t numBytesToRead;
-    uint16_t writeCount; // @todo might go back to my old method of making a private struct
+    // uint16_t numBytesToSend;
+    // uint16_t numBytesToRead;
+    uint16_t writeCount;
     uint16_t readCount;
-    bool transferFinished; // @todo probably not needed
+    // I2CDataRequest dataRequest; // @todo might move this outside
+    bool transferFinished;
 
-    // @todo decided if I want to keep the old callback function pointers
-    // I2CSlaveCallbackFunc transmitFinishedCallback;
-    // I2CSlaveCallbackFunc receivedFinishedCallback;
+    // @todo transfer finished callback function pointer or transmit and isTransmitReady
 };
 
 typedef struct I2CTimerTag
