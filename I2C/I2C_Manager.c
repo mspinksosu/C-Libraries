@@ -45,7 +45,7 @@ static void I2C_Manager_FsmReadData(I2CEvent *e);
 
 // ***** Static Function Prototypes ********************************************
 
-static void I2C_Manager_DevicePush(I2CSlave *self, I2CSlave *endOfList);
+static void I2C_Manager_DevicePush(I2CSlave_Node *self, I2CSlave_Node *endOfList);
 
 
 // ----- stuff from PIC32 code. @todo clean up ---------------------------------
@@ -58,11 +58,11 @@ static I2CManagerStatusBits I2C_Manager_GetStatusBits(void);
 // @todo Fsm function prototypes from old I2C.h. Currently rewriting I2C.h.
 void I2C_Manager_FsmInit(uint16_t tickRateInNs, uint16_t timeoutInUs);
 void I2C_Manager_Process(I2CManager *self);
-void I2C_Manager_MasterWrite(I2CManager *self, I2CSlave *slave, uint8_t *writeData, uint8_t numBytes, bool repeatedStart);
-void I2C_Manager_MasterRead(I2CManager *self, I2CSlave *slave, uint8_t *readData, uint8_t numBytes);
+void I2C_Manager_MasterWrite(I2CManager *self, I2CSlave_Node *slave, uint8_t *writeData, uint8_t numBytes, bool repeatedStart);
+void I2C_Manager_MasterRead(I2CManager *self, I2CSlave_Node *slave, uint8_t *readData, uint8_t numBytes);
 bool I2C_Manager_IsIdle(void);
 //bool I2C_Manager_IsTransferFinished(void);
-void I2C_Manager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave *context);
+void I2C_Manager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave_Node *context);
 
 // *****************************************************************************
 
@@ -75,7 +75,7 @@ void I2C_Manager_Create(I2CManager *self, I2C *peripheral)
 
 // *****************************************************************************
 
-void I2C_Manager_AddSlave(I2CManager *self, I2CSlave *slave, uint8_t *writeBuffer, uint8_t *readBuffer)
+void I2C_Manager_AddSlave(I2CManager *self, I2CSlave_Node *slave, uint8_t *writeBuffer, uint8_t *readBuffer)
 {
     slave->writeBuffer = writeBuffer;
     slave->readBuffer = readBuffer;
@@ -227,7 +227,7 @@ void I2C_Manager_Disable(I2CManager *self)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-static void I2C_Manager_DevicePush(I2CSlave *self, I2CSlave_Manager *endOfList)
+static void I2C_Manager_DevicePush(I2CSlave_Node *self, I2CSlave_Node *endOfList)
 {
     /* Add the new entry to the beginning of the list. Make the "next" pointer
     point to the head */
@@ -240,19 +240,30 @@ static void I2C_Manager_DevicePush(I2CSlave *self, I2CSlave_Manager *endOfList)
 
 // @todo change to use data request similar to SPI. Write data to the slave's buffer also?
 
-void I2CSlave_Manager_DataTransfer(I2CSlave_Manager *self, bool isReadRequest, uint8_t *writeData, uint8_t numBytes)
+// I2CSlave_Node_Create
+// I2CSlave_Node_Init
+
+void I2CSlave_Node_DataTransfer(I2CSlave_Node *self, bool isReadRequest, uint8_t *writeData, uint8_t numBytes)
 {
     // check if slave is busy already?
-    // check if buffer is full or not
-    // copy new data in
-    // notify manager that data is ready
+    // check if transmit buffer is full or not
+    uint8_t tempHead = (self->private.txHead == self->private.txBufferSize - 1) ? 0 : self->private.txHead + 1;
+
+    if(tempHead != self->private.txTail)
+    {
+        // copy data in or pass by reference. The circular buffer is going to be like a buffer of data request objects
+        self->pendingDataTransfer = true; // notify that data is ready (read of write)
+    }
+
+    /* Ideally we should be able to add both a read and write request to the sequence at once to the 
+    data transfer buffer of the I2C manager in whatever order we desire. So instead of setting a 
+    generic pending flag, maybe we should wait for space in the buffer? Maybe have the user 
+    check how much space is the buffer outside this function before calling. It's technically okay 
+    if the write isn't followed immediately by the read because each read also requires an address byte - MS */
 
 }
 
-// Use single function with read/write boolean, or two separate functions, one for read and one for write?
-// Should I write data to the slave buffer and then set a flag
-// Should the slave have it's own buffer or not?
-// Or have the manager keep a circular buffer instead
+// Should the slave have its own buffer or not?
 
 void I2C_Manager_Master_WriteToDataTransferBuffer(I2CManager *self, I2CManagerDataRequest *dataRequest)
 {
@@ -260,8 +271,10 @@ void I2C_Manager_Master_WriteToDataTransferBuffer(I2CManager *self, I2CManagerDa
     // place data request in buffer
 }
 
+// Add function to check how much room is in the buffer
 
-void I2C_Manager_MasterWrite(I2CManager *self, I2CSlave_Manager *slave, uint8_t *writeData, uint8_t numBytes)
+// @remove old function after re-factoring
+void I2C_Manager_MasterWrite(I2CManager *self, I2CSlave_Node *slave, uint8_t *writeData, uint8_t numBytes)
 {
     if(I2C_Manager_Fsm.state != I2C_Manager_FsmIdle)
         return;
@@ -278,7 +291,7 @@ void I2C_Manager_MasterWrite(I2CManager *self, I2CSlave_Manager *slave, uint8_t 
     I2C_Manager_Fsm.state(&event); // call the current state and pass the event
 }
 
-void I2C_Manager_MasterRead(I2CManager *self, I2CSlave_Manager *slave, uint8_t *readData, uint8_t numBytes)
+void I2C_Manager_MasterRead(I2CManager *self, I2CSlave_Node *slave, uint8_t *readData, uint8_t numBytes)
 {
     // @todo setup a lock to keep this function from being called if it's
     // already running. Decide if I want to make the return type a bool
@@ -306,7 +319,7 @@ bool I2C_Manager_IsIdle(void)
 }
 
 // @todo refactor get data function - MS
-void I2C_Manager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave_Manager *context)
+void I2C_Manager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave_Node *context)
 {
     // @todo decide if I want to use a separate static I2C object or just use 
     // the I2C slave object

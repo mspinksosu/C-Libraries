@@ -91,26 +91,33 @@ typedef struct I2CSlaveTag
 {
     void *instance;
     uint8_t slaveAddress; // 7-bit address, right justified
-    uint8_t *writeBuffer;
-    uint8_t *readBuffer;
-    uint16_t numBytesToSend;
-    uint16_t numBytesToRead;
-    uint16_t writeCount;
-    uint16_t readCount;
-    // I2CDataRequest dataRequest; // @todo might move this outside
+
+    struct
+    {
+        uint8_t *txBuffer;
+        uint16_t txBufferSize;
+        uint16_t txHead;
+        uint16_t txTail;
+
+        uint8_t *rxBuffer;
+        uint16_t rxBufferSize;
+        uint16_t rxHead;
+        uint16_t rxTail;
+
+        uint16_t writeCount;
+        uint16_t readCount;
+    } private;
 
     // @todo IsTransmitByteReady function pointer?, TransmitByte function pointer.
 } I2CSlave;
 
-/* Think of better name for subclass. Maybe I2CSlave_Node? It sounds less 
-confusing and also implies that it is part of a list. - MS */
-typedef struct I2CSlave_ManagerTag I2CSlave_Manager; // forward declaration
+typedef struct I2CSlave_NodeTag I2CSlave_Node; // forward declaration
 
-struct I2CSlave_ManagerTag
+struct I2CSlave_NodeTag
 {
     I2CSlave *super; // include the base class first
 
-    I2CSlave_Manager *next;
+    I2CSlave_Node *next;
     bool transferFinished;
     // @todo transfer finished callback function pointer or transmit and isTransmitReady
 };
@@ -182,13 +189,13 @@ void I2C_Manager_Create(I2CManager *self, I2C *peripheral);
 
 // @todo add create sub class
 
-void I2C_Manager_AddSlave(I2CManager *self, I2CSlave_Manager *slave, uint8_t *writeBuffer, uint8_t *readBuffer);
+void I2C_Manager_AddSlave(I2CManager *self, I2CSlave_Node *slave, uint8_t *writeBuffer, uint8_t *readBuffer);
 
-bool I2C_Manager_IsDeviceBusy(I2CSlave_Manager *self);
+bool I2C_Manager_IsDeviceBusy(I2CSlave_Node *self);
 
-void I2C_Manager_BeginTransfer(I2CSlave_Manager *self, uint16_t numBytesToSend, uint16_t numBytesToRead);
+void I2C_Manager_BeginTransfer(I2CSlave_Node *self, uint16_t numBytesToSend, uint16_t numBytesToRead);
 
-bool I2C_Manager_IsTransferFinished(I2CSlave_Manager *self);
+bool I2C_Manager_IsTransferFinished(I2CSlave_Node *self);
 
 void I2C_Manager_Process(I2CManager *self);
 
