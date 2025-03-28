@@ -75,10 +75,25 @@ your I2C devices initiated the callback. */
 // experiment
 typedef struct I2CDataRequestTag
 {
-    bool readTypeRequest; // true = read, false = write
+    bool requestTypeRead; // true = read, false = write
     uint8_t *data;
     uint16_t length;
 } I2CDataRequest;
+
+typedef enum I2CTransferTypeTag
+{
+    I2C_TRANSFER_TYPE_ERROR = 0,
+    I2C_TRANSFER_TYPE_WRITE,
+    I2C_TRANSFER_TYPE_READ
+} I2CTransferType;
+
+typedef struct I2CDataTransferStatusTag
+{
+    I2CTransferType transferType;
+    uint8_t *ptrArray;
+    uint16_t sizeOfArray;
+    uint16_t numOfBytesTransferred;
+} I2CDataTransferStatus;
 
 // experiment
 // typedef struct I2CManagerDataRequestTag

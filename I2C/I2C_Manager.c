@@ -251,7 +251,7 @@ void I2CSlave_Node_SendDataRequest(I2CSlave_Node *self, bool isReadRequest, uint
     if(tempHead != self->private.txTail)
     {
         // There is space in the buffer
-        self->private.buffer[self->private.head].readTypeRequest = isReadRequest;
+        self->private.buffer[self->private.head].requestTypeRead = isReadRequest;
         self->private.buffer[self->private.head].data = data;
         self->private.buffer[self->private.head].length = length;
         self->private.head = tempHead;
@@ -266,7 +266,7 @@ uint8_t I2CSlave_Node_GetDataRequest(I2CSlave_Node *self, I2CDataRequest *return
     {
         // The buffer is not empty
         // @follow-up test simple struct assignment first instead of memcpy just for better readability - MS
-        *returnDataRequest = self->private.buffer[self->private.tail].readTypeRequest;
+        *returnDataRequest = self->private.buffer[self->private.tail];
         self->private.tail = CircularIncrement(self->private.tail, I2CSLAVE_DR_BUFFER_SIZE);
         return 0; // no error
     }
@@ -275,6 +275,22 @@ uint8_t I2CSlave_Node_GetDataRequest(I2CSlave_Node *self, I2CDataRequest *return
         returnDataRequest->length = 0;
         return 1;
     }
+}
+
+// bool I2CSlave_IsDataTransferFinished(I2CSlave_Node *self);
+bool I2CSlave_Node_IsDataTransferFinished(I2CSlave_Node *self)
+{
+
+}
+
+// add a get status or get error and return number of bytes written or read
+
+// I2CSlave_DataTransferFinishedCallback
+
+// void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus);
+void I2CSlave_Node_GetDataTransferStatus(I2CSlave_Node *self, I2CDataTransferStatus *retTransferStatus)
+{
+
 }
 
 static uint8_t I2CSlave_Node_GetDataTransferBufferCount(I2CSlave_Node *self)
@@ -286,31 +302,6 @@ static uint8_t I2CSlave_Node_GetDataTransferBufferCount(I2CSlave_Node *self)
         count += I2CSLAVE_DR_BUFFER_SIZE;
     }
     return count;
-}
-
-// bool I2CSlave_IsDataTransferFinished(I2CSlave_Node *self);
-bool I2CSlave_Node_IsDataTransferFinished(I2CSlave_Node *self)
-{
-
-}
-
-// I2CSlave_DataTransferFinishedCallback
-
-typedef struct I2CRxPacketTag
-{
-    uint8_t *ptrDstArray;
-    uint16_t sizeOfDstArray;
-    uint16_t sizeOfReceivedPacket;
-} I2CRxPacket;
-
-bool I2CSlave_IsRxPacketReady(I2CSlave_Node *self)
-{
-
-}
-
-void I2CSlave_GetRxPacket(I2CSlave *self, I2CRxPacket *retPacket)
-{
-
 }
 
 // ----- @label stuff from old state machine. Refactor -------------------------
