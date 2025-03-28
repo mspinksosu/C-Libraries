@@ -61,7 +61,6 @@ void I2CManager_Process(I2CManager *self);
 void I2CManager_MasterWrite(I2CManager *self, I2CSlave_Node *slave, uint8_t *writeData, uint8_t numBytes, bool repeatedStart);
 void I2CManager_MasterRead(I2CManager *self, I2CSlave_Node *slave, uint8_t *readData, uint8_t numBytes);
 bool I2CManager_IsIdle(void);
-//bool I2CManager_IsTransferFinished(void);
 void I2CManager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave_Node *context);
 
 // *****************************************************************************
@@ -236,51 +235,70 @@ static void I2CManager_DevicePush(I2CSlave_Node *self, I2CSlave_Node *endOfList)
     endOfList->next = self;
 }
 
-// ----- @label stuff from old state machine. Refactor to use new manager code
-
-// @todo change to use data request similar to SPI. Write data to the slave's buffer also?
-
 // I2CSlave_Node_Create
 // I2CSlave_Node_Init
 
-void I2CSlave_Node_DataTransfer(I2CSlave_Node *self, bool isReadRequest, uint8_t *writeData, uint8_t numBytes)
+// ----- @label experimental slave code ----------------------------------------
+
+/* For now the slave will have its own fixed buffer of a small size. I might 
+make it where the buffer is managed externally via pointer in the future.
+Ideally the size of the buffer should be two at minimum to allow for a write 
+followed by a read. Because of that I might keep it defined in the slave. */
+bool I2CSlave_IsDataTransferFinished(I2CSlave *self)
+{
+
+}
+
+// I2CSlave_DataTransferFinishedCallback
+
+#define CircularIncrement(i, size) i == (size - 1) ? 0 : i + 1
+
+// names: RequestDataTransfer? AddDataTransfer
+void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, bool isReadRequest, uint8_t *writeData, uint16_t length)
 {
     // check if slave is busy already?
-    // check if transmit buffer is full or not
-    uint8_t tempHead = (self->private.txHead == self->private.txBufferSize - 1) ? 0 : self->private.txHead + 1;
+    uint8_t tempHead = CircularIncrement(self->private.head, I2CSLAVE_DR_BUFFER_SIZE);
 
     if(tempHead != self->private.txTail)
     {
-        // copy data in or pass by reference. The circular buffer is going to be like a buffer of data request objects
-        self->pendingDataTransfer = true; // notify that data is ready (read of write)
+        // There is space in the buffer
+        self->private.buffer[self->private.head].readTypeRequest = isReadRequest;
+        self->private.buffer[self->private.head].data = writeData;
+        self->private.buffer[self->private.head].length = length;
+        self->private.head = tempHead;
+        //self->private.bufferIsNotEmpty = true;
     }
-
-    /* Ideally we should be able to add both a read and write request to the sequence at once to the 
-    data transfer buffer of the I2C manager in whatever order we desire. So instead of setting a 
-    generic pending flag, maybe we should wait for space in the buffer? Maybe have the user 
-    check how much space is the buffer outside this function before calling. It's technically okay 
-    if the write isn't followed immediately by the read because each read also requires an address byte - MS */
-
 }
 
-// @todo Should the slave have its own buffer or not?
-bool I2CSlave_IsTransferFinished(I2CSlave *self)
+uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataRequest *returnDataRequest)
 {
-
+    if(self->private.head != self->private.tail)
+    {
+        // The buffer is not empty
+        // @follow-up test simple struct assignment first instead of memcpy just for better readability - MS
+        *returnDataRequest = self->private.buffer[self->private.tail].readTypeRequest;
+        self->private.tail = CircularIncrement(self->private.tail, I2CSLAVE_DR_BUFFER_SIZE);
+        return 0; // no error
+    }
+    else
+    {
+        returnDataRequest->length = 0;
+        return 1;
+    }
 }
 
-bool I2CSlave_IsBufferEmpty(I2CSlave *self)
+uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self)
 {
+    int16_t count = self->private.head - self->private.tail;
 
+    if(count < 0)
+    {
+        count += I2CSLAVE_DR_BUFFER_SIZE;
+    }
+    return count;
 }
 
-void I2CManager_Master_WriteToDataTransferBuffer(I2CManager *self, I2CManagerDataRequest *dataRequest)
-{
-    // check for room in buffer
-    // place data request in buffer
-}
-
-// Add function to check how much room is in the buffer
+// ----- @label stuff from old state machine. Refactor -------------------------
 
 // @remove old function after re-factoring
 void I2CManager_MasterWrite(I2CManager *self, I2CSlave_Node *slave, uint8_t *writeData, uint8_t numBytes)
@@ -359,6 +377,8 @@ static I2CManagerStatusBits GetStatusBits(I2C *peripheral)
     // retValue.transmitInProgress = I2C1STATbits.TRSTAT;
     return retValue;
 }
+
+// ----- Old FSM code ----------------------------------------------------------
 
 static void I2CManager_FsmInit(uint16_t tickRateInNs, uint16_t timeoutInUs)
 {

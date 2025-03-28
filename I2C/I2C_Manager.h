@@ -76,8 +76,8 @@ your I2C devices initiated the callback. */
 typedef struct I2CDataRequestTag
 {
     bool readTypeRequest; // true = read, false = write
-    uint16_t length;
     uint8_t *data;
+    uint16_t length;
 } I2CDataRequest;
 
 // experiment
@@ -86,6 +86,8 @@ typedef struct I2CDataRequestTag
 //     I2CDataRequest *dataRequest;
 //     I2CSlave *slave;
 // } I2CManagerDataRequest;
+
+#define I2CSLAVE_DR_BUFFER_SIZE 2
 
 typedef struct I2CSlaveTag
 {
@@ -97,21 +99,17 @@ typedef struct I2CSlaveTag
         // uint8_t *txBuffer;
         // uint16_t txBufferSize;
         // Try using a fixed size for now
-        I2CDataRequest txBuffer[2];
-        uint16_t txHead;
-        uint16_t txTail;
+        I2CDataRequest buffer[I2CSLAVE_DR_BUFFER_SIZE];
+        uint16_t head;
+        uint16_t tail;
 
-        // uint8_t *rxBuffer;
-        // uint16_t rxBufferSize;
-        I2CDataRequest rxBuffer[2];
-        uint16_t rxHead;
-        uint16_t rxTail;
-
+        bool transferFinished;
         uint16_t writeCount;
         uint16_t readCount;
     } private;
 
-    // @todo IsTransmitByteReady function pointer?, TransmitByte function pointer.
+    /* @todo add IsTransmitByteReady function pointer?, TransmitByte function 
+    pointer similar to wireless module library? */
 } I2CSlave;
 
 typedef struct I2CSlave_NodeTag I2CSlave_Node; // forward declaration
@@ -121,7 +119,7 @@ struct I2CSlave_NodeTag
     I2CSlave *super; // include the base class first
 
     I2CSlave_Node *next;
-    bool transferFinished;
+
     // @todo transfer finished callback function pointer or transmit and isTransmitReady
 };
 
