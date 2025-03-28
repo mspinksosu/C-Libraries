@@ -81,11 +81,11 @@ typedef struct I2CDataRequestTag
 } I2CDataRequest;
 
 // experiment
-typedef struct I2CManagerDataRequestTag
-{
-    I2CDataRequest *dataRequest;
-    I2CSlave *slave;
-} I2CManagerDataRequest;
+// typedef struct I2CManagerDataRequestTag
+// {
+//     I2CDataRequest *dataRequest;
+//     I2CSlave *slave;
+// } I2CManagerDataRequest;
 
 typedef struct I2CSlaveTag
 {
@@ -94,13 +94,16 @@ typedef struct I2CSlaveTag
 
     struct
     {
-        uint8_t *txBuffer;
-        uint16_t txBufferSize;
+        // uint8_t *txBuffer;
+        // uint16_t txBufferSize;
+        // Try using a fixed size for now
+        I2CDataRequest txBuffer[2];
         uint16_t txHead;
         uint16_t txTail;
 
-        uint8_t *rxBuffer;
-        uint16_t rxBufferSize;
+        // uint8_t *rxBuffer;
+        // uint16_t rxBufferSize;
+        I2CDataRequest rxBuffer[2];
         uint16_t rxHead;
         uint16_t rxTail;
 

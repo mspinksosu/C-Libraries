@@ -35,17 +35,17 @@ static bool I2CManagerEnabled; // @todo enable/disable
 // void (*I2C1_ReceiveInterruptCallback)(void);
 
 // states
-static void I2C_Manager_FsmIdle(I2CEvent *e);
-static void I2C_Manager_FsmStart(I2CEvent *e);
-static void I2C_Manager_FsmWriteAddress(I2CEvent *e);
-static void I2C_Manager_FsmWriteData(I2CEvent *e);
-static void I2C_Manager_FsmStop(I2CEvent *e);
-static void I2C_Manager_FsmRestart(I2CEvent *e);
-static void I2C_Manager_FsmReadData(I2CEvent *e);
+static void I2CManager_FsmIdle(I2CEvent *e);
+static void I2CManager_FsmStart(I2CEvent *e);
+static void I2CManager_FsmWriteAddress(I2CEvent *e);
+static void I2CManager_FsmWriteData(I2CEvent *e);
+static void I2CManager_FsmStop(I2CEvent *e);
+static void I2CManager_FsmRestart(I2CEvent *e);
+static void I2CManager_FsmReadData(I2CEvent *e);
 
 // ***** Static Function Prototypes ********************************************
 
-static void I2C_Manager_DevicePush(I2CSlave_Node *self, I2CSlave_Node *endOfList);
+static void I2CManager_DevicePush(I2CSlave_Node *self, I2CSlave_Node *endOfList);
 
 
 // ----- stuff from PIC32 code. @todo clean up ---------------------------------
@@ -53,20 +53,20 @@ static void I2C_Manager_DevicePush(I2CSlave_Node *self, I2CSlave_Node *endOfList
 static void I2CTimer_Start(void);
 static void I2CTimer_Stop(void);
 //static bool IsBusIdle(void);
-static I2CManagerStatusBits I2C_Manager_GetStatusBits(void);
+static I2CManagerStatusBits I2CManager_GetStatusBits(void);
 
 // @todo Fsm function prototypes from old I2C.h. Currently rewriting I2C.h.
-void I2C_Manager_FsmInit(uint16_t tickRateInNs, uint16_t timeoutInUs);
-void I2C_Manager_Process(I2CManager *self);
-void I2C_Manager_MasterWrite(I2CManager *self, I2CSlave_Node *slave, uint8_t *writeData, uint8_t numBytes, bool repeatedStart);
-void I2C_Manager_MasterRead(I2CManager *self, I2CSlave_Node *slave, uint8_t *readData, uint8_t numBytes);
-bool I2C_Manager_IsIdle(void);
-//bool I2C_Manager_IsTransferFinished(void);
-void I2C_Manager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave_Node *context);
+void I2CManager_FsmInit(uint16_t tickRateInNs, uint16_t timeoutInUs);
+void I2CManager_Process(I2CManager *self);
+void I2CManager_MasterWrite(I2CManager *self, I2CSlave_Node *slave, uint8_t *writeData, uint8_t numBytes, bool repeatedStart);
+void I2CManager_MasterRead(I2CManager *self, I2CSlave_Node *slave, uint8_t *readData, uint8_t numBytes);
+bool I2CManager_IsIdle(void);
+//bool I2CManager_IsTransferFinished(void);
+void I2CManager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave_Node *context);
 
 // *****************************************************************************
 
-void I2C_Manager_Create(I2CManager *self, I2C *peripheral)
+void I2CManager_Create(I2CManager *self, I2C *peripheral)
 {
     self->peripheral = peripheral;
     self->endOfList = NULL;
@@ -75,7 +75,7 @@ void I2C_Manager_Create(I2CManager *self, I2C *peripheral)
 
 // *****************************************************************************
 
-void I2C_Manager_AddSlave(I2CManager *self, I2CSlave_Node *slave, uint8_t *writeBuffer, uint8_t *readBuffer)
+void I2CManager_AddSlave(I2CManager *self, I2CSlave_Node *slave, uint8_t *writeBuffer, uint8_t *readBuffer)
 {
     slave->writeBuffer = writeBuffer;
     slave->readBuffer = readBuffer;
@@ -96,14 +96,14 @@ void I2C_Manager_AddSlave(I2CManager *self, I2CSlave_Node *slave, uint8_t *write
     }
     else
     {
-        I2C_Manager_DevicePush(slave, self->endOfList);
+        I2CManager_DevicePush(slave, self->endOfList);
     }
     self->device = self->endOfList->next; // reset the index
 }
 
 // *****************************************************************************
 
-void I2C_Manager_Process(I2CManager *self)
+void I2CManager_Process(I2CManager *self)
 {
     // @todo refactor old PIC32 code
 
@@ -139,31 +139,31 @@ void I2C_Manager_Process(I2CManager *self)
 // ----- Check for I2C Events --------------------------------------------------
 
     I2CManagerStatusBits currentStatus;
-    currentStatus = I2C_Manager_GetStatusBits();
+    currentStatus = I2CManager_GetStatusBits();
 
     if(self->statusBits.sendingStart && !currentStatus.sendingStart)
     {
         self->statusBits.sendingStart = 0;
         action.sig = I2C_SIG_BUS_IDLE_EVENT;
-        I2C_Manager_Fsm.state(&action); // call the current state and pass the event
+        I2CManager_Fsm.state(&action); // call the current state and pass the event
     }
     if(self->statusBits.sendingRestart && !currentStatus.sendingRestart)
     {
         self->statusBits.sendingRestart = 0;
         action.sig = I2C_SIG_BUS_IDLE_EVENT;
-        I2C_Manager_Fsm.state(&action); // call the current state and pass the event
+        I2CManager_Fsm.state(&action); // call the current state and pass the event
     }
     if(self->statusBits.sendingStop && !currentStatus.sendingStop)
     {
         self->statusBits.sendingStop = 0;
         action.sig = I2C_SIG_BUS_IDLE_EVENT;
-        I2C_Manager_Fsm.state(&action); // call the current state and pass the event
+        I2CManager_Fsm.state(&action); // call the current state and pass the event
     }
     if(self->statusBits.sendingAck && !currentStatus.sendingAck)
     {
         self->statusBits.sendingAck = 0;
         action.sig = I2C_SIG_BUS_IDLE_EVENT;
-        I2C_Manager_Fsm.state(&action); // call the current state and pass the event
+        I2CManager_Fsm.state(&action); // call the current state and pass the event
     }
     if(self->statusBits.transmitInProgress && !currentStatus.transmitInProgress)
     {
@@ -174,7 +174,7 @@ void I2C_Manager_Process(I2CManager *self)
         {
             self->statusBits.transmitInProgress = 0;
             action.sig = I2C_SIG_BUS_IDLE_EVENT;
-            I2C_Manager_Fsm.state(&action); // call the current state and pass the event
+            I2CManager_Fsm.state(&action); // call the current state and pass the event
         }
     }
     else if(self->statusBits.receiveInProgress && !currentStatus.receiveInProgress)
@@ -183,7 +183,7 @@ void I2C_Manager_Process(I2CManager *self)
         {
             self->statusBits.receiveInProgress = 0;
             action.sig = I2C_SIG_DATA_RECEIVED;
-            I2C_Manager_Fsm.state(&action);
+            I2CManager_Fsm.state(&action);
         }
     }
     else if(self->fsmTimer.flags.expired)
@@ -193,7 +193,7 @@ void I2C_Manager_Process(I2CManager *self)
         // @todo This is temporary! I removed during troubleshooting with 
         // logic analyzer. I don't think the timeout value is long enough.
         // So I need to do some measurements first
-        //I2C_Manager_Fsm.state(&action); 
+        //I2CManager_Fsm.state(&action); 
     }
     else if(self->fsmTimer.flags.retryFinished)
     {
@@ -206,7 +206,7 @@ void I2C_Manager_Process(I2CManager *self)
 
 // *****************************************************************************
 
-void I2C_Manager_Enable(I2CManager *self)
+void I2CManager_Enable(I2CManager *self)
 {
     if(!I2C_IsEnabled())
         I2C_Enable(self->peripheral);
@@ -216,7 +216,7 @@ void I2C_Manager_Enable(I2CManager *self)
 
 // *****************************************************************************
 
-void I2C_Manager_Disable(I2CManager *self)
+void I2CManager_Disable(I2CManager *self)
 {
     I2CManagerEnabled = false;
 }
@@ -227,7 +227,7 @@ void I2C_Manager_Disable(I2CManager *self)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-static void I2C_Manager_DevicePush(I2CSlave_Node *self, I2CSlave_Node *endOfList)
+static void I2CManager_DevicePush(I2CSlave_Node *self, I2CSlave_Node *endOfList)
 {
     /* Add the new entry to the beginning of the list. Make the "next" pointer
     point to the head */
@@ -263,9 +263,18 @@ void I2CSlave_Node_DataTransfer(I2CSlave_Node *self, bool isReadRequest, uint8_t
 
 }
 
-// Should the slave have its own buffer or not?
+// @todo Should the slave have its own buffer or not?
+bool I2CSlave_IsTransferFinished(I2CSlave *self)
+{
 
-void I2C_Manager_Master_WriteToDataTransferBuffer(I2CManager *self, I2CManagerDataRequest *dataRequest)
+}
+
+bool I2CSlave_IsBufferEmpty(I2CSlave *self)
+{
+
+}
+
+void I2CManager_Master_WriteToDataTransferBuffer(I2CManager *self, I2CManagerDataRequest *dataRequest)
 {
     // check for room in buffer
     // place data request in buffer
@@ -274,9 +283,9 @@ void I2C_Manager_Master_WriteToDataTransferBuffer(I2CManager *self, I2CManagerDa
 // Add function to check how much room is in the buffer
 
 // @remove old function after re-factoring
-void I2C_Manager_MasterWrite(I2CManager *self, I2CSlave_Node *slave, uint8_t *writeData, uint8_t numBytes)
+void I2CManager_MasterWrite(I2CManager *self, I2CSlave_Node *slave, uint8_t *writeData, uint8_t numBytes)
 {
-    if(I2C_Manager_Fsm.state != I2C_Manager_FsmIdle)
+    if(I2CManager_Fsm.state != I2CManager_FsmIdle)
         return;
 
     slave->writeBuffer = writeData;
@@ -288,14 +297,14 @@ void I2C_Manager_MasterWrite(I2CManager *self, I2CSlave_Node *slave, uint8_t *wr
     event.private.masterRead = false;
     event.private.slaveAddress = slave->slaveAddress << 1;
     event.sig = I2C_SIG_BEGIN_TRANSFER;
-    I2C_Manager_Fsm.state(&event); // call the current state and pass the event
+    I2CManager_Fsm.state(&event); // call the current state and pass the event
 }
 
-void I2C_Manager_MasterRead(I2CManager *self, I2CSlave_Node *slave, uint8_t *readData, uint8_t numBytes)
+void I2CManager_MasterRead(I2CManager *self, I2CSlave_Node *slave, uint8_t *readData, uint8_t numBytes)
 {
     // @todo setup a lock to keep this function from being called if it's
     // already running. Decide if I want to make the return type a bool
-    if(I2C_Manager_Fsm.state != I2C_Manager_FsmIdle)
+    if(I2CManager_Fsm.state != I2CManager_FsmIdle)
         return;
 
     slave->readBuffer = readData;
@@ -307,19 +316,19 @@ void I2C_Manager_MasterRead(I2CManager *self, I2CSlave_Node *slave, uint8_t *rea
     event.private.masterRead = true;
     event.private.slaveAddress = ((slave->slaveAddress << 1) | 1);
     event.sig = I2C_SIG_BEGIN_TRANSFER;
-    I2C_Manager_Fsm.state(&event); // call the current state and pass the event
+    I2CManager_Fsm.state(&event); // call the current state and pass the event
 }
 
-bool I2C_Manager_IsIdle(void)
+bool I2CManager_IsIdle(void)
 {
-    if(I2C_Manager_Fsm.state == I2C_Manager_FsmIdle)
+    if(I2CManager_Fsm.state == I2CManager_FsmIdle)
         return true;
     else
         return false;
 }
 
 // @todo refactor get data function - MS
-void I2C_Manager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave_Node *context)
+void I2CManager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave_Node *context)
 {
     // @todo decide if I want to use a separate static I2C object or just use 
     // the I2C slave object
@@ -351,16 +360,16 @@ static I2CManagerStatusBits GetStatusBits(I2C *peripheral)
     return retValue;
 }
 
-static void I2C_Manager_FsmInit(uint16_t tickRateInNs, uint16_t timeoutInUs)
+static void I2CManager_FsmInit(uint16_t tickRateInNs, uint16_t timeoutInUs)
 {
     I2C1_Event.sig = 0;
-    I2C_Manager_Fsm.state = I2C_Manager_FsmIdle;
+    I2CManager_Fsm.state = I2CManager_FsmIdle;
 
     // @todo finish setting up timer using variables given
     self->fsmTimer.period = (uint16_t)TIMEOUT_PERIOD_COUNT;
 }
 
-static void I2C_Manager_FsmIdle(I2CEvent *e)
+static void I2CManager_FsmIdle(I2CEvent *e)
 {
     switch(e->sig)
     {
@@ -371,19 +380,19 @@ static void I2C_Manager_FsmIdle(I2CEvent *e)
                 e->repeatedStart = false;
                 I2C1_TransmitByte(e->slaveAddress);
                 I2CTimer_Start();
-                I2C_Manager_Fsm.state = I2C_Manager_FsmWriteAddress;
+                I2CManager_Fsm.state = I2CManager_FsmWriteAddress;
             }
             else
             {
                 I2C1_Start();
                 I2CTimer_Start();
-                I2C_Manager_Fsm.state = I2C_Manager_FsmStart;
+                I2CManager_Fsm.state = I2CManager_FsmStart;
             }
             break;
     }
 }
 
-static void I2C_Manager_FsmStart(I2CEvent *e)
+static void I2CManager_FsmStart(I2CEvent *e)
 {
     switch(e->sig)
     {
@@ -392,12 +401,12 @@ static void I2C_Manager_FsmStart(I2CEvent *e)
             // send slave address
             I2C1_TransmitByte(e->slaveAddress);
             I2CTimer_Start();
-            I2C_Manager_Fsm.state = I2C_Manager_FsmWriteAddress;
+            I2CManager_Fsm.state = I2CManager_FsmWriteAddress;
             break;
     }
 }
 
-static void I2C_Manager_FsmWriteAddress(I2CEvent *e)
+static void I2CManager_FsmWriteAddress(I2CEvent *e)
 {
     switch(e->sig)
     {
@@ -410,13 +419,13 @@ static void I2C_Manager_FsmWriteAddress(I2CEvent *e)
                 {
                     // prepare to receive byte
                     I2C1_ReceiveEnable();
-                    I2C_Manager_Fsm.state = I2C_Manager_FsmReadData;
+                    I2CManager_Fsm.state = I2CManager_FsmReadData;
                 }
                 else
                 {
                     // load first data byte
                     I2C1_TransmitByte(ptrI2CSlave->writeBuffer[ptrI2CSlave->private.writeCount]);
-                    I2C_Manager_Fsm.state = I2C_Manager_FsmWriteData;
+                    I2CManager_Fsm.state = I2CManager_FsmWriteData;
                 }
                 I2CTimer_Start();
             }
@@ -424,7 +433,7 @@ static void I2C_Manager_FsmWriteAddress(I2CEvent *e)
     }
 }
 
-static void I2C_Manager_FsmWriteData(I2CEvent *e)
+static void I2CManager_FsmWriteData(I2CEvent *e)
 {
     switch(e->sig)
     {
@@ -448,13 +457,13 @@ static void I2C_Manager_FsmWriteData(I2CEvent *e)
                     {
                         I2C1_Restart(); // send repeated start command
                         I2CTimer_Start();
-                        I2C_Manager_Fsm.state = I2C_Manager_FsmRestart;
+                        I2CManager_Fsm.state = I2CManager_FsmRestart;
                     }
                     else
                     {
                         I2C1_Stop();
                         I2CTimer_Start();
-                        I2C_Manager_Fsm.state = I2C_Manager_FsmStop;
+                        I2CManager_Fsm.state = I2CManager_FsmStop;
                     }
                 }
             }
@@ -462,19 +471,19 @@ static void I2C_Manager_FsmWriteData(I2CEvent *e)
     }
 }
 
-static void I2C_Manager_FsmStop(I2CEvent *e)
+static void I2CManager_FsmStop(I2CEvent *e)
 {
     switch(e->sig)
     {
         case I2C_SIG_BUS_IDLE_EVENT:
             I2CTimer_Stop();
             // Stop is finished.
-            I2C_Manager_Fsm.state = I2C_Manager_FsmIdle;
+            I2CManager_Fsm.state = I2CManager_FsmIdle;
             break;
     }
 }
 
-static void I2C_Manager_FsmRestart(I2CEvent *e)
+static void I2CManager_FsmRestart(I2CEvent *e)
 {
     switch(e->sig)
     {
@@ -483,12 +492,12 @@ static void I2C_Manager_FsmRestart(I2CEvent *e)
             // restart is finished.
             e->private.generateRepeatedStart = false;
             e->private.repeatedStart = true;
-            I2C_Manager_Fsm.state = I2C_Manager_FsmIdle;
+            I2CManager_Fsm.state = I2CManager_FsmIdle;
             break;
     }
 }
 
-static void I2C_Manager_FsmReadData(I2CEvent *e)
+static void I2CManager_FsmReadData(I2CEvent *e)
 {
      switch(e->sig)
     {
@@ -517,7 +526,7 @@ static void I2C_Manager_FsmReadData(I2CEvent *e)
             {
                 I2C1_Stop();
                 I2CTimer_Start();
-                I2C_Manager_Fsm.state = I2C_Manager_FsmStop;
+                I2CManager_Fsm.state = I2CManager_FsmStop;
             }
             break;
     }
