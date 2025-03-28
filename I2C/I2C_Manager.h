@@ -94,20 +94,6 @@ typedef struct I2CSlaveTag
     void *instance;
     uint8_t slaveAddress; // 7-bit address, right justified
 
-    struct
-    {
-        // uint8_t *txBuffer;
-        // uint16_t txBufferSize;
-        // Try using a fixed size for now
-        I2CDataRequest buffer[I2CSLAVE_DR_BUFFER_SIZE];
-        uint16_t head;
-        uint16_t tail;
-
-        bool transferFinished;
-        uint16_t writeCount;
-        uint16_t readCount;
-    } private;
-
     /* @todo add IsTransmitByteReady function pointer?, TransmitByte function 
     pointer similar to wireless module library? */
 } I2CSlave;
@@ -119,7 +105,17 @@ struct I2CSlave_NodeTag
     I2CSlave *super; // include the base class first
 
     I2CSlave_Node *next;
+    struct
+    {
+        // Try using a fixed size for now
+        I2CDataRequest buffer[I2CSLAVE_DR_BUFFER_SIZE];
+        uint16_t head;
+        uint16_t tail;
 
+        bool transferFinished;
+        uint16_t writeCount;
+        uint16_t readCount;
+    } private;
     // @todo transfer finished callback function pointer or transmit and isTransmitReady
 };
 

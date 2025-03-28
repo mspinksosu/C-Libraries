@@ -240,21 +240,10 @@ static void I2CManager_DevicePush(I2CSlave_Node *self, I2CSlave_Node *endOfList)
 
 // ----- @label experimental slave code ----------------------------------------
 
-/* For now the slave will have its own fixed buffer of a small size. I might 
-make it where the buffer is managed externally via pointer in the future.
-Ideally the size of the buffer should be two at minimum to allow for a write 
-followed by a read. Because of that I might keep it defined in the slave. */
-bool I2CSlave_IsDataTransferFinished(I2CSlave *self)
-{
-
-}
-
-// I2CSlave_DataTransferFinishedCallback
-
 #define CircularIncrement(i, size) i == (size - 1) ? 0 : i + 1
 
-// names: RequestDataTransfer? AddDataTransfer
-void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, bool isReadRequest, uint8_t *writeData, uint16_t length)
+// void I2CSlave_SendDataRequest(I2CSlave *self, bool isReadRequest, uint8_t *data, uint16_t length);
+void I2CSlave_Node_SendDataRequest(I2CSlave_Node *self, bool isReadRequest, uint8_t *data, uint16_t length)
 {
     // check if slave is busy already?
     uint8_t tempHead = CircularIncrement(self->private.head, I2CSLAVE_DR_BUFFER_SIZE);
@@ -263,14 +252,15 @@ void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, bool isReadRequest, uint
     {
         // There is space in the buffer
         self->private.buffer[self->private.head].readTypeRequest = isReadRequest;
-        self->private.buffer[self->private.head].data = writeData;
+        self->private.buffer[self->private.head].data = data;
         self->private.buffer[self->private.head].length = length;
         self->private.head = tempHead;
         //self->private.bufferIsNotEmpty = true;
     }
 }
 
-uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataRequest *returnDataRequest)
+// uint8_t I2CSlave_GetDataRequest(I2CSlave *self, I2CDataRequest *returnDataRequest);
+uint8_t I2CSlave_Node_GetDataRequest(I2CSlave_Node *self, I2CDataRequest *returnDataRequest)
 {
     if(self->private.head != self->private.tail)
     {
@@ -287,7 +277,7 @@ uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataRequest *retu
     }
 }
 
-uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self)
+static uint8_t I2CSlave_Node_GetDataTransferBufferCount(I2CSlave_Node *self)
 {
     int16_t count = self->private.head - self->private.tail;
 
@@ -296,6 +286,31 @@ uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self)
         count += I2CSLAVE_DR_BUFFER_SIZE;
     }
     return count;
+}
+
+// bool I2CSlave_IsDataTransferFinished(I2CSlave_Node *self);
+bool I2CSlave_Node_IsDataTransferFinished(I2CSlave_Node *self)
+{
+
+}
+
+// I2CSlave_DataTransferFinishedCallback
+
+typedef struct I2CRxPacketTag
+{
+    uint8_t *ptrDstArray;
+    uint16_t sizeOfDstArray;
+    uint16_t sizeOfReceivedPacket;
+} I2CRxPacket;
+
+bool I2CSlave_IsRxPacketReady(I2CSlave_Node *self)
+{
+
+}
+
+void I2CSlave_GetRxPacket(I2CSlave *self, I2CRxPacket *retPacket)
+{
+
 }
 
 // ----- @label stuff from old state machine. Refactor -------------------------
