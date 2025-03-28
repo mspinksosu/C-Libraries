@@ -242,8 +242,10 @@ static void I2CManager_DevicePush(I2CSlave_Node *self, I2CSlave_Node *endOfList)
 
 #define CircularIncrement(i, size) i == (size - 1) ? 0 : i + 1
 
+// I2CSlave_IsReadyForDataTransfer
+
 // void I2CSlave_SendDataRequest(I2CSlave *self, bool isReadRequest, uint8_t *data, uint16_t length);
-void I2CSlave_Node_SendDataRequest(I2CSlave_Node *self, bool isReadRequest, uint8_t *data, uint16_t length)
+void I2CSlave_Node_DataTransfer(I2CSlave_Node *self, I2CTransferType writeOrRead, uint8_t *data, uint16_t length)
 {
     // check if slave is busy already?
     uint8_t tempHead = CircularIncrement(self->private.head, I2CSLAVE_DR_BUFFER_SIZE);
@@ -251,7 +253,7 @@ void I2CSlave_Node_SendDataRequest(I2CSlave_Node *self, bool isReadRequest, uint
     if(tempHead != self->private.txTail)
     {
         // There is space in the buffer
-        self->private.buffer[self->private.head].requestTypeRead = isReadRequest;
+        self->private.buffer[self->private.head].requestTypeRead = (bool)writeOrRead;
         self->private.buffer[self->private.head].data = data;
         self->private.buffer[self->private.head].length = length;
         self->private.head = tempHead;
@@ -259,8 +261,23 @@ void I2CSlave_Node_SendDataRequest(I2CSlave_Node *self, bool isReadRequest, uint
     }
 }
 
-// uint8_t I2CSlave_GetDataRequest(I2CSlave *self, I2CDataRequest *returnDataRequest);
-uint8_t I2CSlave_Node_GetDataRequest(I2CSlave_Node *self, I2CDataRequest *returnDataRequest)
+// bool I2CSlave_IsDataTransferFinished(I2CSlave *self);
+bool I2CSlave_Node_IsDataTransferFinished(I2CSlave_Node *self)
+{
+
+}
+
+// add a get status or get error and return number of bytes written or read
+
+// I2CSlave_DataTransferFinishedCallback
+
+// void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus);
+void I2CSlave_Node_GetDataTransferStatus(I2CSlave_Node *self, I2CDataTransferStatus *retTransferStatus)
+{
+
+}
+
+static uint8_t I2CSlave_Node_ReadFromDataTransferBuffer(I2CSlave_Node *self, I2CManagerDataRequest *returnDataRequest)
 {
     if(self->private.head != self->private.tail)
     {
@@ -275,22 +292,6 @@ uint8_t I2CSlave_Node_GetDataRequest(I2CSlave_Node *self, I2CDataRequest *return
         returnDataRequest->length = 0;
         return 1;
     }
-}
-
-// bool I2CSlave_IsDataTransferFinished(I2CSlave_Node *self);
-bool I2CSlave_Node_IsDataTransferFinished(I2CSlave_Node *self)
-{
-
-}
-
-// add a get status or get error and return number of bytes written or read
-
-// I2CSlave_DataTransferFinishedCallback
-
-// void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus);
-void I2CSlave_Node_GetDataTransferStatus(I2CSlave_Node *self, I2CDataTransferStatus *retTransferStatus)
-{
-
 }
 
 static uint8_t I2CSlave_Node_GetDataTransferBufferCount(I2CSlave_Node *self)

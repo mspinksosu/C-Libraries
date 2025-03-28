@@ -72,35 +72,39 @@ typedef struct I2CEventTag
 your I2C devices initiated the callback. */
 // typedef void (*I2CSlaveCallbackFunc)(I2CSlave *i2cSlaveContext);
 
-// experiment
-typedef struct I2CDataRequestTag
-{
-    bool requestTypeRead; // true = read, false = write
-    uint8_t *data;
-    uint16_t length;
-} I2CDataRequest;
-
 typedef enum I2CTransferTypeTag
 {
-    I2C_TRANSFER_TYPE_ERROR = 0,
-    I2C_TRANSFER_TYPE_WRITE,
+    I2C_TRANSFER_TYPE_WRITE = 0,
     I2C_TRANSFER_TYPE_READ
 } I2CTransferType;
 
+typedef enum I2CTransferStateTag
+{
+    I2C_TRANSFER_STATE_UNKNOWN = 0,
+    I2C_TRANSFER_STATE_IDLE,
+    I2C_TRANSFER_STATE_BUSY,
+    I2C_TRANSFER_STATE_FINISHED,
+    I2C_TRANSFER_STATE_ERROR,
+    // add more as needed
+} I2CTransferState;
+
+typedef enum I2CTransferStateTag
+{
+    I2C_TRANSFER_ERROR_UNKNOWN = 0,
+    I2C_TRANSFER_ERROR_TX,
+    I2C_TRANSFER_ERROR_RX,
+    // add more as needed
+} I2CTransferError;
+
 typedef struct I2CDataTransferStatusTag
 {
+    I2CTransferError error;
+    I2CTransferState state;
     I2CTransferType transferType;
     uint8_t *ptrArray;
     uint16_t sizeOfArray;
     uint16_t numOfBytesTransferred;
 } I2CDataTransferStatus;
-
-// experiment
-// typedef struct I2CManagerDataRequestTag
-// {
-//     I2CDataRequest *dataRequest;
-//     I2CSlave *slave;
-// } I2CManagerDataRequest;
 
 #define I2CSLAVE_DR_BUFFER_SIZE 2
 
@@ -113,6 +117,13 @@ typedef struct I2CSlaveTag
     pointer similar to wireless module library? */
 } I2CSlave;
 
+typedef struct I2CManagerDataRequestTag
+{
+    bool requestTypeRead; // true = read, false = write
+    uint8_t *data;
+    uint16_t length;
+} I2CManagerDataRequest;
+
 typedef struct I2CSlave_NodeTag I2CSlave_Node; // forward declaration
 
 struct I2CSlave_NodeTag
@@ -123,7 +134,7 @@ struct I2CSlave_NodeTag
     struct
     {
         // Try using a fixed size for now
-        I2CDataRequest buffer[I2CSLAVE_DR_BUFFER_SIZE];
+        I2CManagerDataRequest buffer[I2CSLAVE_DR_BUFFER_SIZE];
         uint16_t head;
         uint16_t tail;
 
