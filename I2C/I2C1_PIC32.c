@@ -22,7 +22,6 @@
 *******************************************************************************/
 
 #include "I2C1.h"
-#include "app.h"
 #include <math.h> // only needed if we want to compute baud rate
 #include <xc.h>
 
@@ -146,19 +145,29 @@ I2CInterface I2C1_FunctionTable = {
 //     return false;
 // }
 
-uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz)
+uint32_t I2C1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz)
 {
 
 }
 
-void UART1_Init(UARTInitType *params)
+void I2C1_Init(I2CInitType *params)
 {
 
 }
 
-void UART1_ReceivedDataEvent(void)
+void I2C1_Enable(void)
 {
+    I2CxCONbits.I2CEN = 1;
+}
 
+void I2C1_Disable(void)
+{
+    I2CxCONbits.I2CEN = 0;
+}
+
+void I2C1_ReceivedDataEvent(void)
+{
+    // @todo receive interrupt stuff
 }
 
 uint8_t I2C1_GetReceivedByte(void)
@@ -166,15 +175,15 @@ uint8_t I2C1_GetReceivedByte(void)
     return I2CxRCV;
 }
 
-bool UART1_IsReceiveRegisterFull(void)
+bool I2C1_IsReceiveRegisterFull(void)
 {
-    if(I2CxSTATbits.RBF == 1) // 1: receive complete
+    if(I2CxSTATbits.RBF)
         return true; 
     else
         return false;
 }
 
-bool UART1_IsReceiveUsingInterrupts(void)
+bool I2C1_IsReceiveUsingInterrupts(void)
 {
     // @todo I2C interrupts
     return false;
@@ -189,12 +198,12 @@ void I2C1_ReceiveEnable(void)
 
 void I2C1_ReceiveDisable(void)
 {
-
+    I2CxCONbits.RCEN = 0;
 }
 
-void UART1_TransmitRegisterEmptyEvent(void)
+void I2C1_TransmitFinishedEvent(void)
 {
-
+    // @todo transmit interrupt stuff
 }
 
 void I2C1_TransmitByte(uint8_t dataToSend)
@@ -204,7 +213,8 @@ void I2C1_TransmitByte(uint8_t dataToSend)
 
 bool I2C1_IsTransmitRegisterEmpty(void)
 {
-    if(I2CxSTATbits.TBF == 1)
+    // transmit buffer full status bit is cleared after 8 bits are shifted out
+    if(I2CxSTATbits.TBF)
         return false;
     else
         return true;
@@ -212,7 +222,11 @@ bool I2C1_IsTransmitRegisterEmpty(void)
 
 bool I2C1_IsTransmitFinished(void)
 {
-
+    // transmit status is set after 9 bits. (8 data bits plus ack or nack)
+    if(I2CxSTATbits.TRSTAT)
+        return true;
+    else
+        return false;
 }
 
 bool I2C1_IsTransmitUsingInterrupts(void)
@@ -229,10 +243,8 @@ bool I2C1_IsBusy(void)
      2, PEN:   0 = stop condition idle
      3, RCEN:  0 = receive sequence not in progress
      4, ACKEN: 0 = acknowledge sequence idle
-     
-     TRSTAT: 0 = master transmit not in progress
-     */
-    if((I2CxCON & 0x0000001F) || I2C1STATbits.TRSTAT)
+     TRSTAT: 0 = master transmit not in progress  */
+    if((I2CxCON & 0x001F) || I2C1STATbits.TRSTAT)
         return true;
     else
         return false;
@@ -263,19 +275,53 @@ void I2C1_SendAck(bool ackOrNack)
     I2CxCONbits.ACKEN = 1; // cleared by module when finished
 }
 
-bool I2C1_GetAckStatus(void)
+bool I2C_GetStartStatus(void)
 {
-    if(I2C1STATbits.ACKSTAT == 1)
-        return false; // acknowledge not received
+    if(I2CxSTATbits.SEN)
+        return true;
+    else
+        return false;
+}
+
+bool I2C_GetStopStatus(void)
+{
+    if(I2CxSTATbits.PEN)
+        return true;
+    else
+        return false;
+}
+
+bool I2C_GetRestartStatus(void)
+{
+    if(I2CxSTATbits.RSEN)
+        return true;
+    else
+        return false;
+}
+
+bool I2C1_GetAckSendStatus(void)
+{
+    if(I2CxSTATbits.ACKEN)
+        return true;
+    else
+        return false;
+}
+
+bool I2C1_GetAckSlaveStatus(void)
+{
+    if(I2CxSTATbits.ACKSTAT)
+        return false; // 1 = ack was not received (NACK)
     else
         return true;
 }
 
-
-
-
-
-
+bool I2C1_GetReceiveEnableStatus(void)
+{
+    if(I2CxSTATbits.RCEN)
+        return true;
+    else
+        return false;
+}
 
 /*
  End of File

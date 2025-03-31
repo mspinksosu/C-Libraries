@@ -84,6 +84,7 @@ typedef struct I2CInterfaceTag
     void (*I2C_Init)(I2CInitType *params);
     void (*I2C_Enable)(void);
     void (*I2C_Disable)(void);
+    bool (*I2C_IsEnabled)(void);
     void (*I2C_ReceivedDataEvent)(void);
     uint8_t (*I2C_GetReceivedByte)(void);
     bool (*I2C_IsReceiveRegisterFull)(void);
@@ -110,7 +111,8 @@ typedef struct I2CInterfaceTag
     bool (*I2C_GetStartStatus)(void);
     bool (*I2C_GetStopStatus)(void);
     bool (*I2C_GetRestartStatus)(void);
-    bool (*I2C_GetAckStatus)(void);
+    bool (*I2C_GetAckSendStatus)(void);
+    bool (*I2C_GetAckSlaveStatus)(void);
 
 } I2CInterface;
 
@@ -156,6 +158,8 @@ void I2C_Enable(I2C *self);
 
 void I2C_Disable(I2C *self);
 
+bool I2C_IsEnabled(I2C *self);
+
 void I2C_ReceivedDataEvent(I2C *self);
 
 uint8_t I2C_GetReceivedByte(I2C *self);
@@ -172,6 +176,7 @@ void I2C_TransmitRegisterEmptyEvent(I2C *self);
 
 void I2C_TransmitByte(I2C *self, uint8_t dataToSend);
 
+// @todo may just remove this and use TransmitFinished only, since we must wait for the 9th bit anyways - MS
 bool I2C_IsTransmitRegisterEmpty(I2C *self);
 
 bool I2C_IsTransmitFinished(I2C *self);
@@ -183,8 +188,6 @@ void I2C_PendingEventHandler(I2C *self);
 void I2C_SetTransmitRegisterEmptyCallback(I2C *self, void (*Function)(void));
 void I2C_SetReceivedDataCallback(I2C *self, void (*Function)(uint8_t (*CallToGetData)(void)));
 
-// Other functions. (from old PIC32 I2C code)
-
 bool I2C_IsBusy(I2C *self);
 
 void I2C_Start(I2C *self);
@@ -195,13 +198,22 @@ void I2C_Restart(I2C *self);
 
 void I2C_SendAck(I2C *self, bool ackOrNack);
 
+/* @todo I will probably replace these specific getters with a get state 
+function later. Other processors may not have specific bits like these. For 
+now, go ahead and use it like it was for the original PIC32 library so that 
+I can test the library. - MS */
+
 bool I2C_GetStartStatus(I2C *self);
 
 bool I2C_GetStopStatus(I2C *self);
 
 bool I2C_GetRestartStatus(I2C *self);
 
-bool I2C_GetAckStatus(I2C *self);
+bool I2C_GetAckSendStatus(I2C *self);
+
+bool I2C_GetAckSlaveStatus(I2C *self);
+
+bool I2C_GetReceiveEnableStatus(I2C *self);
 
 // @todo add IsBusIdle? or just use IsBusy?
 // @todo add get state, make generic states

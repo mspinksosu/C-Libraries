@@ -98,4 +98,10 @@ bool I2C1_GetRestartStatus(void);
 
 bool I2C1_GetAckStatus(void);
 
+bool I2C1_GetAckSendStatus(void);
+
+bool I2C1_GetAckSlaveStatus(void);
+
+bool I2C1_GetReceiveEnableStatus(void);
+
 #endif /* I2C1_H */

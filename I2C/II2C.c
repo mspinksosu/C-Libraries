@@ -116,6 +116,20 @@ void I2C_Disable(I2C *self)
 
 // *****************************************************************************
 
+bool I2C_IsEnabled(I2C *self)
+{
+    if(self->interface->I2C_IsEnabled != NULL)
+    {
+        return (self->interface->I2C_IsEnabled)();
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// *****************************************************************************
+
 void I2C_ReceivedDataEvent(I2C *self)
 {
     if(self->interface->I2C_ReceivedDataEvent != NULL)
@@ -290,21 +304,21 @@ void I2C_Start(I2C *self)
 
 // *****************************************************************************
 
-void I2C_Start(I2C *self)
+void I2C_Stop(I2C *self)
 {
-    if(self->interface->I2C_Start != NULL)
+    if(self->interface->I2C_Stop != NULL)
     {
-        (self->interface->I2C_Start)();
+        (self->interface->I2C_Stop)();
     }
 }
 
 // *****************************************************************************
 
-void I2C_Start(I2C *self)
+void I2C_Restart(I2C *self)
 {
-    if(self->interface->I2C_Start != NULL)
+    if(self->interface->I2C_Restart != NULL)
     {
-        (self->interface->I2C_Start)();
+        (self->interface->I2C_Restart)();
     }
 }
 
@@ -358,13 +372,42 @@ bool I2C_GetRestartStatus(I2C *self)
         return false;
     }
 }
+
 // *****************************************************************************
 
-bool I2C_GetAckStatus(I2C *self)
+bool I2C_GetAckSendStatus(I2C *self)
 {
-    if(self->interface->I2C_GetAckStatus != NULL)
+    if(self->interface->I2C_GetAckSendStatus != NULL)
     {
-        return (self->interface->I2C_GetAckStatus)();
+        return (self->interface->I2C_GetAckSendStatus)();
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// *****************************************************************************
+
+bool I2C_GetAckSlaveStatus(I2C *self)
+{
+    if(self->interface->I2C_GetAckSlaveStatus != NULL)
+    {
+        return (self->interface->I2C_GetAckSlaveStatus)();
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// *****************************************************************************
+
+bool I2C_GetReceiveEnableStatus(I2C *self)
+{
+    if(self->interface->I2C_GetReceiveEnableStatus != NULL)
+    {
+        return (self->interface->I2C_GetReceiveEnableStatus)();
     }
     else
     {
