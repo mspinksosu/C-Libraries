@@ -148,14 +148,14 @@ typedef struct I2CManagerStatusBitsTag
 } I2CManagerStatusBits;
 
 // This is the function pointer type for the state machine functions
-typedef void (*I2CState)(I2CEvent *e);
+typedef void (*I2CFSMState)(I2CEvent *e);
 
 typedef struct I2CManagerTag
 {
     I2C *peripheral;
     I2CSlave *endOfList; // circular linked list
     I2CSlave *device; // current device being processed
-    I2CState state;
+    I2CFSMState fsmState;
     I2CTimer fsmTimer;
     I2CTimer waitTimer;
     I2CManagerStatusBits statusBits;

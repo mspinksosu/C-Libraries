@@ -334,6 +334,35 @@ void I2C_SendAck(I2C *self, bool ackOrNack)
 
 // *****************************************************************************
 
+bool I2C_IsBusy(I2C *self)
+{
+    if(self->interface->I2C_IsBusy != NULL)
+    {
+        return (self->interface->I2C_IsBusy)();
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// *****************************************************************************
+
+I2CState I2C_GetState(I2C *self)
+{
+    I2CState retVal = I2C_STATE_UNKNOWN;
+
+    if(self->interface->I2C_GetState != NULL)
+    {
+        retVal = (self->interface->I2C_GetState)();
+    }
+    
+    return retVal;
+
+}
+
+// *****************************************************************************
+
 bool I2C_GetStartStatus(I2C *self)
 {
     if(self->interface->I2C_GetStartStatus != NULL)

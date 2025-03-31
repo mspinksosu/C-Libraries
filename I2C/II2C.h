@@ -46,9 +46,21 @@ typedef enum I2CRoleTag
     I2C_ROLE_SLAVE,
 } I2CRole;
 
+typedef enum I2CStateTag
+{
+    I2C_STATE_UNKNOWN = 0,
+    I2C_STATE_BUS_IDLE,
+    I2C_STATE_SENDING_START,
+    I2C_STATE_MASTER_TRANSMITTING,
+    I2C_STATE_SENDING_REPEATED_START,
+    I2C_STATE_SENDING_STOP,
+    I2C_STATE_MASTER_RECEIVING,
+    I2C_STATE_MASTER_SENDING_ACK,
+} I2CState;
+
 // @todo make error codes enum?
 
-// @todo add status bits if needed for the peripheral level
+// @todo keep status bits?
 typedef struct I2CStatusBitsTag
 {
     union {
@@ -64,8 +76,6 @@ typedef struct I2CStatusBitsTag
         uint8_t all;
     };
 } I2CStatusBits;
-
-// @todo keep old get status bits function?
 
 typedef struct I2CInitTypeTag
 {
@@ -102,12 +112,12 @@ typedef struct I2CInterfaceTag
     void (*I2C_SetTransmitRegisterEmptyCallback)(void (*Function)(void));
     void (*I2C_SetReceivedDataCallback)(void (*Function)(uint8_t (*CallToGetData)(void)));
 
-    bool (*I2C_IsBusy)(void);
-    // @todo add get state function also?
     void (*I2C_Start)(void);
     void (*I2C_Stop)(void);
     void (*I2C_Restart)(void);
     void (*I2C_SendAck)(bool ackOrNack);
+    bool (*I2C_IsBusy)(void);
+    I2CState (*I2C_GetState)(void);
     bool (*I2C_GetStartStatus)(void);
     bool (*I2C_GetStopStatus)(void);
     bool (*I2C_GetRestartStatus)(void);

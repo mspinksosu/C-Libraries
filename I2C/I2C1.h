@@ -80,8 +80,6 @@ void I2C1_PendingEventHandler(void);
 void I2C1_SetTransmitRegisterEmptyCallback(void (*Function)(void));
 void I2C1_SetReceivedDataCallback(void (*Function)(uint8_t (*CallToGetData)(void)));
 
-bool I2C1_IsBusy(void);
-
 void I2C1_Start(void);
 
 void I2C1_Stop(void);
@@ -89,6 +87,10 @@ void I2C1_Stop(void);
 void I2C1_Restart(void);
 
 void I2C1_SendAck(bool ackOrNack);
+
+bool I2C1_IsBusy(void);
+
+I2CState I2C1_GetState(void);
 
 bool I2C1_GetStartStatus(void);
 
