@@ -25,8 +25,30 @@
 
 // ***** Defines ***************************************************************
 
+#define CircularIncrement(i, size) i == (size - 1) ? 0 : i + 1
 
 // ***** Global Variables ******************************************************
+
+typedef enum I2CSignalTag
+{
+    I2C_SIG_BEGIN_TRANSFER = 1,
+    I2C_SIG_BUS_IDLE_EVENT,
+    I2C_SIG_ACK_RECEIVED,
+    I2C_SIG_NACK_RECEIVED,
+    I2C_SIG_DATA_RECEIVED,
+    I2C_SIG_TIMEOUT,
+} I2CSignal;
+
+typedef struct I2CEventTag
+{
+    I2CSignal sig;
+    uint8_t slaveAddress;
+
+    // @todo refactor and update with extra info for events
+    bool generateRepeatedStart; // at the end of transfer
+    bool repeatedStart;         // repeated start has been performed
+    bool masterRead;            // go into read state after sending address
+} I2CEvent;
 
 static bool I2CManagerEnabled; // @todo enable/disable
 
@@ -50,16 +72,15 @@ static void I2CManager_DevicePush(I2CSlave *self, I2CSlave *endOfList);
 
 // ----- stuff from PIC32 code. @todo clean up ---------------------------------
 
-//static bool IsBusIdle(void);
-static I2CManagerStatusBits I2CManager_GetStatusBits(void);
+void I2CManagerStatusBits I2CManager_GetStatusBits(void);
 
 // @todo Fsm function prototypes from old I2C.h. Currently rewriting I2C.h.
-void I2CManager_FsmInit(uint16_t tickRateInNs, uint16_t timeoutInUs);
-void I2CManager_Process(I2CManager *self);
-void I2CManager_MasterWrite(I2CManager *self, I2CSlave *slave, uint8_t *writeData, uint8_t numBytes, bool repeatedStart);
-void I2CManager_MasterRead(I2CManager *self, I2CSlave *slave, uint8_t *readData, uint8_t numBytes);
-bool I2CManager_IsIdle(void);
-void I2CManager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave *context);
+static void I2CManager_FsmInit(uint16_t tickRateInNs, uint16_t timeoutInUs);
+static void I2CManager_Process(I2CManager *self);
+static void I2CManager_MasterWrite(I2CManager *self, I2CSlave *slave, uint8_t *writeData, uint8_t numBytes, bool repeatedStart);
+static void I2CManager_MasterRead(I2CManager *self, I2CSlave *slave, uint8_t *readData, uint8_t numBytes);
+static bool I2CManager_IsIdle(void);
+static void I2CManager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave *context);
 
 // *****************************************************************************
 
@@ -218,27 +239,7 @@ void I2CManager_Disable(I2CManager *self)
     I2CManagerEnabled = false;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// ***** Local Functions *****************************************************//
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-static void I2CManager_DevicePush(I2CSlave_Node *self, I2CSlave_Node *endOfList)
-{
-    /* Add the new entry to the beginning of the list. Make the "next" pointer
-    point to the head */
-    self->next = endOfList->next;
-    /* Update the beginning of the list to point to the new beginning */
-    endOfList->next = self;
-}
-
-// I2CSlave_Node_Create
-// I2CSlave_Node_Init
-
-// ----- @label experimental slave code ----------------------------------------
-
-#define CircularIncrement(i, size) i == (size - 1) ? 0 : i + 1
+// *****************************************************************************
 
 void I2CSlave_DataTransfer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *data, uint16_t length)
 {
@@ -257,17 +258,36 @@ void I2CSlave_DataTransfer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t 
     }
 }
 
+// *****************************************************************************
+
 bool I2CSlave_IsDataTransferFinished(I2CSlave *self)
 {
 
 }
+
+// *****************************************************************************
 
 void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus)
 {
 
 }
 
-static uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CManagerDataRequest *returnDataRequest)
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Local Functions *****************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+static void I2CManager_DevicePush(I2CSlave_Node *self, I2CSlave_Node *endOfList)
+{
+    /* Add the new entry to the beginning of the list. Make the "next" pointer
+    point to the head */
+    self->next = endOfList->next;
+    /* Update the beginning of the list to point to the new beginning */
+    endOfList->next = self;
+}
+
+static uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataRequest *returnDataRequest)
 {
     if(self->private.head != self->private.tail)
     {
@@ -351,7 +371,7 @@ void I2CManager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlav
 }
 
 // @todo keep status bits?
-static I2CManagerStatusBits GetStatusBits(I2C *peripheral)
+void I2CManagerStatusBits I2CManager_GetStatusBits(I2C *peripheral)
 {
     I2CManagerStatusBits retValue;
     // retValue.sendingStart = I2C1CONbits.SEN;

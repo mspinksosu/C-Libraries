@@ -37,33 +37,9 @@ to just use REPEAT_SEND instead */
 An error flag will be set afterwards */
 #define I2C_REPEAT_LIMIT 5
 
+#define I2CSLAVE_DR_BUFFER_SIZE 2
+
 // ***** Global Variables ******************************************************
-
-// ---- New state machine stuff ------------------------------------------------
-
-typedef enum I2CSignalTag
-{
-    I2C_SIG_BEGIN_TRANSFER = 1,
-    I2C_SIG_BUS_IDLE_EVENT,
-    I2C_SIG_ACK_RECEIVED,
-    I2C_SIG_NACK_RECEIVED,
-    I2C_SIG_DATA_RECEIVED,
-    I2C_SIG_TIMEOUT,
-} I2CSignal;
-
-typedef struct I2CEventTag
-{
-    I2CSignal sig;
-    uint8_t slaveAddress;
-
-    // @todo refactor and update with extra info for events
-    bool generateRepeatedStart; // at the end of transfer
-    bool repeatedStart;         // repeated start has been performed
-    bool masterRead;            // go into read state after sending address
-} I2CEvent;
-
-
-// -----------------------------------------------------------------------------
 
 // typedef struct I2CSlaveTag I2CSlave; // forward declaration
 
@@ -96,6 +72,13 @@ typedef enum I2CTransferStateTag
     // add more as needed
 } I2CTransferError;
 
+typedef struct I2CDataRequestTag
+{
+    I2CTransferType transferType;
+    uint8_t *data;
+    uint16_t length;
+} I2CDataRequest;
+
 typedef struct I2CDataTransferStatusTag
 {
     I2CTransferError error;
@@ -106,39 +89,30 @@ typedef struct I2CDataTransferStatusTag
     uint16_t numOfBytesTransferred;
 } I2CDataTransferStatus;
 
-#define I2CSLAVE_DR_BUFFER_SIZE 2
+// typedef struct I2CSlaveTag // Decide if I want to use a single I2CSlave class or not.
+// {
+//     void *instance;
+//     uint8_t slaveAddress; // 7-bit address, right justified
 
-typedef struct I2CSlaveTag
+//     /* add IsTransmitByteReady function pointer?, TransmitByte function 
+//     pointer similar to wireless module library? */
+// } I2CSlave;
+
+typedef struct I2CSlaveTag I2CSlave; // forward declaration
+
+struct I2CSlaveTag
 {
-    void *instance;
-    uint8_t slaveAddress; // 7-bit address, right justified
-
-    /* @todo add IsTransmitByteReady function pointer?, TransmitByte function 
-    pointer similar to wireless module library? */
-} I2CSlave;
-
-typedef struct I2CManagerDataRequestTag
-{
-    bool requestTypeRead; // true = read, false = write
-    uint8_t *data;
-    uint16_t length;
-} I2CManagerDataRequest;
-
-typedef struct I2CSlave_NodeTag I2CSlave_Node; // forward declaration
-
-struct I2CSlave_NodeTag
-{
-    I2CSlave *super; // include the base class first
-    I2CSlave_Node *next;
+    // I2CSlave *super; // include the base class first
+    I2CSlave *next;
+    uint8_t slaveAddress;
     struct
     {
-        // Try using a fixed size for now
-        I2CManagerDataRequest buffer[I2CSLAVE_DR_BUFFER_SIZE];
+        I2CDataRequest buffer[I2CSLAVE_DR_BUFFER_SIZE];
         uint16_t head;
         uint16_t tail;
-        bool transferFinished;
         uint16_t writeCount;
         uint16_t readCount;
+        bool transferFinished;
     } private;
     // @todo transfer finished callback function pointer or transmit and isTransmitReady
 };
@@ -181,7 +155,7 @@ typedef struct I2CManagerTag
 {
     I2C *peripheral;
     I2CSlave *endOfList; // circular linked list
-    I2CSlave *device;
+    I2CSlave *device; // current device being processed
     I2CState state;
     I2CTimer fsmTimer;
     I2CTimer waitTimer;
@@ -200,13 +174,11 @@ typedef struct I2CManagerTag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/* TODO finish Doxygen */
+/* @todo finish Doxygen */
 
-// @todo change names to I2CManager_Create etc.?
+// @todo add I2C manager get state
 
 void I2CManager_Create(I2CManager *self, I2C *peripheral);
-
-// add create sub class
 
 void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave, uint8_t *writeBuffer, uint8_t *readBuffer);
 
@@ -216,12 +188,19 @@ void I2CManager_Enable(I2CManager *self);
 
 void I2CManager_Disable(I2CManager *self);
 
-void I2CManager_GetState(I2CManager *self); // @todo return state
+void I2CManager_GetState(I2CManager *self);
 
+
+// old I2C Manager functions from PIC32 @remove or re-factor
+void I2CManager_MasterWrite(I2CManager *self, I2CSlave *slave, uint8_t *writeData, uint8_t numBytes);
+void I2CManager_MasterRead(I2CManager *self, I2CSlave *slave, uint8_t *readData, uint8_t numBytes);
+bool I2CManager_IsIdle(void);
+void I2CManager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave *context);
 
 // slave functions // @todo might move slave functions to a new file
-
-// Add isBusy or just use isReadyForDataTransfer
+// Add isBusy or just use isReadyForDataTransfer?
+// I2CSlave_Create?
+// I2CSlave_Init?
 
 bool I2CSlave_IsReadyForDataTransfer(I2CSlave *self);
 
@@ -229,9 +208,8 @@ void I2CSlave_DataTransfer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t 
 
 bool I2CSlave_IsDataTransferFinished(I2CSlave *self);
 
-// I2CSlave_DataTransferFinishedCallback
-
 void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus);
 
+// I2CSlave_DataTransferFinishedCallback
 
-#endif  /* I2C_MANAGER_H */
+#endif /* I2C_MANAGER_H */

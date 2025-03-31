@@ -189,8 +189,6 @@ void I2C_SetReceivedDataCallback(I2C *self, void (*Function)(uint8_t (*CallToGet
 
 bool I2C_IsBusy(I2C *self);
 
-// @todo add get state function also
-
 void I2C_Start(I2C *self);
 
 void I2C_Stop(I2C *self);
@@ -207,6 +205,8 @@ bool I2C_GetRestartStatus(I2C *self);
 
 bool I2C_GetAckStatus(I2C *self);
 
+// @todo add IsBusIdle? or just use IsBusy?
+// @todo add get state, make generic states
 // @todo add get bus errors
 // @todo handle bus collision
 
