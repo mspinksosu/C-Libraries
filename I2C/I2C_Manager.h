@@ -129,7 +129,6 @@ typedef struct I2CSlave_NodeTag I2CSlave_Node; // forward declaration
 struct I2CSlave_NodeTag
 {
     I2CSlave *super; // include the base class first
-
     I2CSlave_Node *next;
     struct
     {
@@ -137,7 +136,6 @@ struct I2CSlave_NodeTag
         I2CManagerDataRequest buffer[I2CSLAVE_DR_BUFFER_SIZE];
         uint16_t head;
         uint16_t tail;
-
         bool transferFinished;
         uint16_t writeCount;
         uint16_t readCount;
@@ -160,7 +158,6 @@ typedef struct I2CTimerTag
     } flags;
 } I2CTimer;
 
-// @todo move this to .c file?
 typedef struct I2CManagerStatusBitsTag
 {
     union {
@@ -188,7 +185,6 @@ typedef struct I2CManagerTag
     I2CState state;
     I2CTimer fsmTimer;
     I2CTimer waitTimer;
-    bool isBusBusy; // @todo is the busy flag needed?
     I2CManagerStatusBits statusBits;
 } I2CManager;
 
@@ -208,24 +204,34 @@ typedef struct I2CManagerTag
 
 // @todo change names to I2CManager_Create etc.?
 
-void I2C_Manager_Create(I2CManager *self, I2C *peripheral);
+void I2CManager_Create(I2CManager *self, I2C *peripheral);
 
-// @todo add create sub class
+// add create sub class
 
-void I2C_Manager_AddSlave(I2CManager *self, I2CSlave_Node *slave, uint8_t *writeBuffer, uint8_t *readBuffer);
+void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave, uint8_t *writeBuffer, uint8_t *readBuffer);
 
-bool I2C_Manager_IsDeviceBusy(I2CSlave_Node *self);
+void I2CManager_Process(I2CManager *self);
 
-void I2C_Manager_BeginTransfer(I2CSlave_Node *self, uint16_t numBytesToSend, uint16_t numBytesToRead);
+void I2CManager_Enable(I2CManager *self);
 
-bool I2C_Manager_IsTransferFinished(I2CSlave_Node *self);
+void I2CManager_Disable(I2CManager *self);
 
-void I2C_Manager_Process(I2CManager *self);
+void I2CManager_GetState(I2CManager *self); // @todo return state
 
-void I2C_Manager_Enable(I2CManager *self);
 
-void I2C_Manager_Disable(I2CManager *self);
+// slave functions // @todo might move slave functions to a new file
 
-void I2C_Manager_GetState(I2CManager *self); // @todo return state
+// Add isBusy or just use isReadyForDataTransfer
+
+bool I2CSlave_IsReadyForDataTransfer(I2CSlave *self);
+
+void I2CSlave_DataTransfer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *data, uint16_t length);
+
+bool I2CSlave_IsDataTransferFinished(I2CSlave *self);
+
+// I2CSlave_DataTransferFinishedCallback
+
+void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus);
+
 
 #endif  /* I2C_MANAGER_H */
