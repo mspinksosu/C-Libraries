@@ -198,8 +198,6 @@ void I2C_PendingEventHandler(I2C *self);
 void I2C_SetTransmitRegisterEmptyCallback(I2C *self, void (*Function)(void));
 void I2C_SetReceivedDataCallback(I2C *self, void (*Function)(uint8_t (*CallToGetData)(void)));
 
-bool I2C_IsBusy(I2C *self);
-
 void I2C_Start(I2C *self);
 
 void I2C_Stop(I2C *self);
@@ -212,6 +210,10 @@ void I2C_SendAck(I2C *self, bool ackOrNack);
 function later. Other processors may not have specific bits like these. For 
 now, go ahead and use it like it was for the original PIC32 library so that 
 I can test the library. - MS */
+
+bool I2C_IsBusy(void);
+
+I2CState I2C_GetState(void);
 
 bool I2C_GetStartStatus(I2C *self);
 

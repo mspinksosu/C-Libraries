@@ -158,7 +158,8 @@ typedef struct I2CManagerTag
     I2CFSMState fsmState;
     I2CTimer fsmTimer;
     I2CTimer waitTimer;
-    I2CManagerStatusBits statusBits;
+    I2CManagerStatusBits statusBits; // @todo might replace this with state
+    I2CState peripheralState;
 } I2CManager;
 
 /**
