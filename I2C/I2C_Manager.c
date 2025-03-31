@@ -43,10 +43,8 @@ typedef struct I2CEventTag
 {
     I2CSignal sig;
     uint8_t slaveAddress;
-
-    // @todo refactor and update with extra info for events
     bool generateRepeatedStart; // at the end of transfer
-    bool repeatedStart;         // repeated start has been performed
+    bool repeatedStartSent;         // repeated start has been performed
     bool masterRead;            // go into read state after sending address
 } I2CEvent;
 
@@ -68,16 +66,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e);
 // ***** Static Function Prototypes ********************************************
 
 static void I2CManager_DevicePush(I2CSlave *self, I2CSlave *endOfList);
-
-
-// ----- stuff from PIC32 code. @todo clean up ---------------------------------
-
 static void I2CManager_FsmInit(I2CManager *self, uint16_t tickRateInNs, uint16_t timeoutInUs);
-static void I2CManager_Process(I2CManager *self);
-static void I2CManager_MasterWrite(I2CManager *self, I2CSlave *slave, uint8_t *writeData, uint8_t numBytes, bool repeatedStart);
-static void I2CManager_MasterRead(I2CManager *self, I2CSlave *slave, uint8_t *readData, uint8_t numBytes);
-static bool I2CManager_IsIdle(I2CManager *self);
-static void I2CManager_GetData(I2CManager *self, uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave *context);
 
 // *****************************************************************************
 
@@ -230,9 +219,19 @@ void I2CManager_Disable(I2CManager *self)
 
 // *****************************************************************************
 
+bool I2CManager_IsIdle(I2CManager *self)
+{
+    if(self->state == I2CManager_FsmIdle)
+        return true;
+    else
+        return false;
+}
+
+// *****************************************************************************
+
 void I2CManager_GetState(I2CManager *self)
 {
-    // @todo manager get state
+    // @todo manager make enum for states
 }
 
 // *****************************************************************************
@@ -372,16 +371,6 @@ void I2CManager_MasterRead(I2CManager *self, I2CSlave *slave, uint8_t *readData,
 }
 
 // *****************************************************************************
-
-bool I2CManager_IsIdle(I2CManager *self)
-{
-    if(self->state == I2CManager_FsmIdle)
-        return true;
-    else
-        return false;
-}
-
-// *****************************************************************************
 // @todo refactor get data function - MS
 void I2CManager_GetData(I2CManager *self, uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave *context)
 {
@@ -408,10 +397,10 @@ static void I2CManager_FsmIdle(I2CManager *self, I2CEvent *e)
     switch(e->sig)
     {
         case I2C_SIG_BEGIN_TRANSFER:
-            if(e->repeatedStart)
+            if(e->repeatedStartSent)
             {
                 // skip the start and go straight to the address
-                e->repeatedStart = false;
+                e->repeatedStartSent = false;
                 I2C_TransmitByte(self->peripheral, e->slaveAddress);
                 self->fsmTimer.flags.start = 1;
                 self->state = I2CManager_FsmWriteAddress;
@@ -535,7 +524,7 @@ static void I2CManager_FsmRestart(I2CManager *self, I2CEvent *e)
             self->fsmTimer.flags.active = 0;
             // restart is finished.
             e->private.generateRepeatedStart = false;
-            e->private.repeatedStart = true;
+            e->private.repeatedStartSent = true;
             self->state = I2CManager_FsmIdle;
             break;
     }

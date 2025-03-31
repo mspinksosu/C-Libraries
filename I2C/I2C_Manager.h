@@ -185,17 +185,16 @@ void I2CManager_Enable(I2CManager *self);
 
 void I2CManager_Disable(I2CManager *self);
 
-void I2CManager_GetState(I2CManager *self); // @todo get state
+bool I2CManager_IsIdle(I2CManager *self);
 
+void I2CManager_GetState(I2CManager *self);
 
 // old I2C Manager functions from PIC32 @remove or re-factor
 void I2CManager_MasterWrite(I2CManager *self, I2CSlave *slave, uint8_t *writeData, uint8_t numBytes);
 void I2CManager_MasterRead(I2CManager *self, I2CSlave *slave, uint8_t *readData, uint8_t numBytes);
-bool I2CManager_IsIdle(void);
 void I2CManager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave *context);
 
 // slave functions // @todo might move slave functions to a new file
-// Add isBusy or just use isReadyForDataTransfer?
 
 void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress);
 
