@@ -65,6 +65,8 @@
 I2CInterface I2C1_FunctionTable = {
     .I2C_ComputeBRGValue = I2C1_ComputeBRGValue,
     .I2C_Init = I2C1_Init,
+    .I2C_Enable = I2C1_Enable,
+    .I2C_Disable = I2C1_Disable,
     .I2C_ReceivedDataEvent = I2C1_ReceivedDataEvent,
     .I2C_GetReceivedByte = I2C1_GetReceivedByte,
     .I2C_IsReceiveRegisterFull = I2C1_IsReceiveRegisterFull,
@@ -76,8 +78,6 @@ I2CInterface I2C1_FunctionTable = {
     .I2C_IsTransmitRegisterEmpty = I2C1_IsTransmitRegisterEmpty,
     .I2C_IsTransmitFinished = I2C1_IsTransmitFinished,
     .I2C_IsTransmitUsingInterrupts = I2C1_IsTransmitUsingInterrupts,
-    .I2C_TransmitEnable = I2C1_TransmitEnable,
-    .I2C_TransmitDisable = I2C1_TransmitDisable,
     .I2C_PendingEventHandler = I2C1_PendingEventHandler,
     .I2C_SetTransmitRegisterEmptyCallback = I2C1_SetTransmitRegisterEmptyCallback,
     .I2C_SetReceivedDataCallback = I2C1_SetReceivedDataCallback,
@@ -108,7 +108,6 @@ I2CInterface I2C1_FunctionTable = {
 // @todo old init functions
 // bool I2C1_InitWithFrequencies(float pbclkInMHz, uint16_t baudInKHz)
 // {
-//     // TODO check bounds
 //     if(pbclkInMHz == 0)
 //     {
 //         return true;
@@ -146,6 +145,81 @@ I2CInterface I2C1_FunctionTable = {
 //     I2C1CONbits.ON = 1; // enable I2C module
 //     return false;
 // }
+
+uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz)
+{
+
+}
+
+void UART1_Init(UARTInitType *params)
+{
+
+}
+
+void UART1_ReceivedDataEvent(void)
+{
+
+}
+
+uint8_t I2C1_GetReceivedByte(void)
+{
+    return I2CxRCV;
+}
+
+bool UART1_IsReceiveRegisterFull(void)
+{
+    if(I2CxSTATbits.RBF == 1) // 1: receive complete
+        return true; 
+    else
+        return false;
+}
+
+bool UART1_IsReceiveUsingInterrupts(void)
+{
+    // @todo I2C interrupts
+    return false;
+}
+
+void I2C1_ReceiveEnable(void)
+{
+    /* RCEN bit is automatically cleared at the end of the 8th bit of a 
+    received data byte */
+    I2CxCONbits.RCEN = 1;
+}
+
+void I2C1_ReceiveDisable(void)
+{
+
+}
+
+void UART1_TransmitRegisterEmptyEvent(void)
+{
+
+}
+
+void I2C1_TransmitByte(uint8_t dataToSend)
+{
+    I2CxTRN = dataToSend;
+}
+
+bool I2C1_IsTransmitRegisterEmpty(void)
+{
+    if(I2CxSTATbits.TBF == 1)
+        return false;
+    else
+        return true;
+}
+
+bool I2C1_IsTransmitFinished(void)
+{
+
+}
+
+bool I2C1_IsTransmitUsingInterrupts(void)
+{
+    // @todo I2C interrupts
+    return false;
+}
 
 bool I2C1_IsBusy(void)
 {
@@ -197,55 +271,11 @@ bool I2C1_GetAckStatus(void)
         return true;
 }
 
-void I2C1_ReceiveEnable(void)
-{
-    /* RCEN bit is automatically cleared at the end of the 8th bit of a 
-    received data byte */
-    I2CxCONbits.RCEN = 1;
-}
 
-void I2C1_ReceiveDisable(void)
-{
 
-}
 
-bool I2C1_IsReceivedDataAvailable(void)
-{
-    if(I2CxSTATbits.RBF == 1) // 1: receive complete
-        return true; 
-    else
-        return false;
-}
 
-uint8_t I2C1_GetReceivedByte(void)
-{
-    return I2CxRCV;
-}
 
-void I2C1_TransmitEnable(void)
-{
-
-}
-
-void I2C1_TransmitDisable(void)
-{
-
-}
-
-void I2C1_TransmitByte(uint8_t dataToSend)
-{
-    I2CxTRN = dataToSend;
-}
-
-bool I2C1_IsTransmitRegisterFull(void)
-{
-    if(I2CxSTATbits.TBF == 1)
-        return true;
-    else
-        return false;
-}
-
-// *****************************************************************************
 
 /*
  End of File

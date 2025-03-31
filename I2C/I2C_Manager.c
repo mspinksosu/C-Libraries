@@ -93,16 +93,8 @@ void I2CManager_Create(I2CManager *self, I2C *peripheral)
 
 // *****************************************************************************
 
-void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave, uint8_t *writeBuffer, uint8_t *readBuffer)
+void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave)
 {
-    slave->writeBuffer = writeBuffer;
-    slave->readBuffer = readBuffer;
-    slave->numBytesToRead = 0;
-    slave->numBytesToSend = 0;
-    slave->readCount = 0;
-    slave->writeCount = 0;
-    slave->transferFinished = false;
-
     if(self->endOfList == NULL)
     {
         /* Begin with a new list */
@@ -241,6 +233,28 @@ void I2CManager_Disable(I2CManager *self)
 
 // *****************************************************************************
 
+void I2CManager_GetState(I2CManager *self)
+{
+    // @todo manager get state
+}
+
+// *****************************************************************************
+
+void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress)
+{
+    self->slaveAddress = slaveAddress;
+    self->private.head = 0;
+    self->private.tail = 0;
+    self->private.writeCount = 0;
+    self->private.readCount = 0;
+    self->private.transferFinished = false;
+}
+
+bool I2CSlave_IsReadyForDataTransfer(I2CSlave *self)
+{
+    // check busy state or buffer full
+}
+
 void I2CSlave_DataTransfer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *data, uint16_t length)
 {
     // check if slave is busy already
@@ -250,7 +264,7 @@ void I2CSlave_DataTransfer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t 
     if(tempHead != self->private.txTail)
     {
         // There is space in the buffer
-        self->private.buffer[self->private.head].requestTypeRead = (bool)writeOrRead;
+        self->private.buffer[self->private.head].transferType = writeOrRead;
         self->private.buffer[self->private.head].data = data;
         self->private.buffer[self->private.head].length = length;
         self->private.head = tempHead;
@@ -262,7 +276,7 @@ void I2CSlave_DataTransfer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t 
 
 bool I2CSlave_IsDataTransferFinished(I2CSlave *self)
 {
-
+    return self->private.transferFinished; // @todo remember to clear transferFinished when transmit register is written to. Similar to UART TIF flag
 }
 
 // *****************************************************************************
@@ -278,7 +292,7 @@ void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTr
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-static void I2CManager_DevicePush(I2CSlave_Node *self, I2CSlave_Node *endOfList)
+static void I2CManager_DevicePush(I2CSlave *self, I2CSlave *endOfList)
 {
     /* Add the new entry to the beginning of the list. Make the "next" pointer
     point to the head */
@@ -286,6 +300,8 @@ static void I2CManager_DevicePush(I2CSlave_Node *self, I2CSlave_Node *endOfList)
     /* Update the beginning of the list to point to the new beginning */
     endOfList->next = self;
 }
+
+// *****************************************************************************
 
 static uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataRequest *returnDataRequest)
 {
@@ -303,6 +319,8 @@ static uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataReques
         return 1;
     }
 }
+
+// *****************************************************************************
 
 static uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self)
 {
@@ -394,6 +412,8 @@ static void I2CManager_FsmInit(uint16_t tickRateInNs, uint16_t timeoutInUs)
     self->fsmTimer.period = (uint16_t)TIMEOUT_PERIOD_COUNT;
 }
 
+// *****************************************************************************
+
 static void I2CManager_FsmIdle(I2CManager *self, I2CEvent *e)
 {
     switch(e->sig)
@@ -417,6 +437,8 @@ static void I2CManager_FsmIdle(I2CManager *self, I2CEvent *e)
     }
 }
 
+// *****************************************************************************
+
 static void I2CManager_FsmStart(I2CManager *self, I2CEvent *e)
 {
     switch(e->sig)
@@ -430,6 +452,8 @@ static void I2CManager_FsmStart(I2CManager *self, I2CEvent *e)
             break;
     }
 }
+
+// *****************************************************************************
 
 static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
 {
@@ -457,6 +481,8 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
             break;
     }
 }
+
+// *****************************************************************************
 
 static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
 {
@@ -496,6 +522,8 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
     }
 }
 
+// *****************************************************************************
+
 static void I2CManager_FsmStop(I2CManager *self, I2CEvent *e)
 {
     switch(e->sig)
@@ -507,6 +535,8 @@ static void I2CManager_FsmStop(I2CManager *self, I2CEvent *e)
             break;
     }
 }
+
+// *****************************************************************************
 
 static void I2CManager_FsmRestart(I2CManager *self, I2CEvent *e)
 {
@@ -521,6 +551,8 @@ static void I2CManager_FsmRestart(I2CManager *self, I2CEvent *e)
             break;
     }
 }
+
+// *****************************************************************************
 
 static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
 {

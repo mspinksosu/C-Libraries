@@ -96,6 +96,26 @@ void I2C_Init(I2C *self, I2CInitType *params)
 
 // *****************************************************************************
 
+void I2C_Enable(I2C *self)
+{
+    if(self->interface->I2C_Enable != NULL)
+    {
+        (self->interface->I2C_Enable)();
+    }
+}
+
+// *****************************************************************************
+
+void I2C_Disable(I2C *self)
+{
+    if(self->interface->I2C_Disable != NULL)
+    {
+        (self->interface->I2C_Disable)();
+    }
+}
+
+// *****************************************************************************
+
 void I2C_ReceivedDataEvent(I2C *self)
 {
     if(self->interface->I2C_ReceivedDataEvent != NULL)
@@ -225,26 +245,6 @@ bool I2C_IsTransmitUsingInterrupts(I2C *self)
     else
     {
         return false;
-    }
-}
-
-// *****************************************************************************
-
-void I2C_TransmitEnable(I2C *self)
-{
-    if(self->interface->I2C_TransmitEnable != NULL)
-    {
-        (self->interface->I2C_TransmitEnable)();
-    }
-}
-
-// *****************************************************************************
-
-void I2C_TransmitDisable(I2C *self)
-{
-    if(self->interface->I2C_TransmitDisable != NULL)
-    {
-        (self->interface->I2C_TransmitDisable)();
     }
 }
 

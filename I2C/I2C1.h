@@ -50,6 +50,10 @@ uint32_t I2C1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz);
 
 void I2C1_Init(I2CInitType *params);
 
+void I2C1_Enable(void);
+
+void I2C1_Disable(void);
+
 void I2C1_ReceivedDataEvent(void);
 
 uint8_t I2C1_GetReceivedByte(void);
@@ -71,10 +75,6 @@ bool I2C1_IsTransmitRegisterEmpty(void);
 bool I2C1_IsTransmitFinished(void);
 
 bool I2C1_IsTransmitUsingInterrupts(void);
-
-void I2C1_TransmitEnable(void);
-
-void I2C1_TransmitDisable(void);
 
 void I2C1_PendingEventHandler(void);
 void I2C1_SetTransmitRegisterEmptyCallback(void (*Function)(void));

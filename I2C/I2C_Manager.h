@@ -59,7 +59,6 @@ typedef enum I2CTransferStateTag
     I2C_TRANSFER_STATE_UNKNOWN = 0,
     I2C_TRANSFER_STATE_IDLE,
     I2C_TRANSFER_STATE_BUSY,
-    I2C_TRANSFER_STATE_FINISHED,
     I2C_TRANSFER_STATE_ERROR,
     // add more as needed
 } I2CTransferState;
@@ -176,11 +175,9 @@ typedef struct I2CManagerTag
 
 /* @todo finish Doxygen */
 
-// @todo add I2C manager get state
-
 void I2CManager_Create(I2CManager *self, I2C *peripheral);
 
-void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave, uint8_t *writeBuffer, uint8_t *readBuffer);
+void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave);
 
 void I2CManager_Process(I2CManager *self);
 
@@ -188,7 +185,7 @@ void I2CManager_Enable(I2CManager *self);
 
 void I2CManager_Disable(I2CManager *self);
 
-void I2CManager_GetState(I2CManager *self);
+void I2CManager_GetState(I2CManager *self); // @todo get state
 
 
 // old I2C Manager functions from PIC32 @remove or re-factor
@@ -199,8 +196,8 @@ void I2CManager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlav
 
 // slave functions // @todo might move slave functions to a new file
 // Add isBusy or just use isReadyForDataTransfer?
-// I2CSlave_Create?
-// I2CSlave_Init?
+
+void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress);
 
 bool I2CSlave_IsReadyForDataTransfer(I2CSlave *self);
 
@@ -210,6 +207,10 @@ bool I2CSlave_IsDataTransferFinished(I2CSlave *self);
 
 void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus);
 
+// @todo add generic get data function? similar to wmod GetRxPacket?
+
 // I2CSlave_DataTransferFinishedCallback
+// I2CSlave_WriteTransferFinishedCallback
+// I2CSlave_ReadTransferFinishedCallback
 
 #endif /* I2C_MANAGER_H */

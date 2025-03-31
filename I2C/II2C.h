@@ -31,6 +31,11 @@
 
 // ***** Defines ***************************************************************
 
+enum
+{
+    I2C_NACK = 0,
+    I2C_ACK = 1
+};
 
 // ***** Global Variables ******************************************************
 
@@ -75,15 +80,10 @@ typedef struct I2CInterfaceTag
     /*  These are the functions that will be called. You will create your own
     interface object for your class that will have these function signatures.
     Set each of your functions equal to one of these pointers */
-
-    /* @todo decide if I want to use a separate enable and disable for transmit 
-    and receive or not. The old PIC32 code currently uses separate enable and 
-    disable like the I2C library. - MS */
-    void (*I2C_Enable)(void);
-    void (*I2C_Disable)(void);
-
     uint32_t (*I2C_ComputeBRGValue)(uint32_t, uint32_t);
     void (*I2C_Init)(I2CInitType *params);
+    void (*I2C_Enable)(void);
+    void (*I2C_Disable)(void);
     void (*I2C_ReceivedDataEvent)(void);
     uint8_t (*I2C_GetReceivedByte)(void);
     bool (*I2C_IsReceiveRegisterFull)(void);
@@ -95,8 +95,6 @@ typedef struct I2CInterfaceTag
     bool (*I2C_IsTransmitRegisterEmpty)(void);
     bool (*I2C_IsTransmitFinished)(void);
     bool (*I2C_IsTransmitUsingInterrupts)(void); // @todo transmit using interrupts
-    void (*I2C_TransmitEnable)(void);
-    void (*I2C_TransmitDisable)(void);
 
     // @todo pending event handler, and function setters
     void (*I2C_PendingEventHandler)(void);
@@ -104,7 +102,7 @@ typedef struct I2CInterfaceTag
     void (*I2C_SetReceivedDataCallback)(void (*Function)(uint8_t (*CallToGetData)(void)));
 
     bool (*I2C_IsBusy)(void);
-    // @todo add get state function also
+    // @todo add get state function also?
     void (*I2C_Start)(void);
     void (*I2C_Stop)(void);
     void (*I2C_Restart)(void);
@@ -154,6 +152,10 @@ uint32_t I2C_ComputeBRGValue(I2C *self, uint32_t desiredBaudRate, uint32_t clkIn
 
 void I2C_Init(I2C *self, I2CInitType *params);
 
+void I2C_Enable(I2C *self);
+
+void I2C_Disable(I2C *self);
+
 void I2C_ReceivedDataEvent(I2C *self);
 
 uint8_t I2C_GetReceivedByte(I2C *self);
@@ -175,10 +177,6 @@ bool I2C_IsTransmitRegisterEmpty(I2C *self);
 bool I2C_IsTransmitFinished(I2C *self);
 
 bool I2C_IsTransmitUsingInterrupts(I2C *self);
-
-void I2C_TransmitEnable(I2C *self);
-
-void I2C_TransmitDisable(I2C *self);
 
 // @todo pending event handler, and function setters
 void I2C_PendingEventHandler(I2C *self);
