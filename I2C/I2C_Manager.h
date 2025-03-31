@@ -33,10 +33,7 @@ to just use REPEAT_SEND instead */
 #define I2C_TIMEOUT_PERIOD_MS 1
 #define I2C_REPEAT_SEND_MS 10
 
-/* How many times to retry a command before giving up.
-An error flag will be set afterwards */
-#define I2C_REPEAT_LIMIT 5
-
+#define I2CMANAGER_REPEAT_LIMIT 5
 #define I2CSLAVE_DR_BUFFER_SIZE 2
 
 // ***** Global Variables ******************************************************
@@ -103,7 +100,7 @@ struct I2CSlaveTag
 {
     // I2CSlave *super; // include the base class first
     I2CSlave *next;
-    uint8_t slaveAddress;
+    uint8_t slaveAddress7Bit; // 7-bit address, right justified
     struct
     {
         I2CDataRequest buffer[I2CSLAVE_DR_BUFFER_SIZE];
@@ -160,6 +157,7 @@ typedef struct I2CManagerTag
     I2CTimer waitTimer;
     I2CManagerStatusBits statusBits; // @todo might replace this with state
     I2CState peripheralState;
+    uint8_t repeatCount;
 } I2CManager;
 
 /**
@@ -181,6 +179,8 @@ void I2CManager_Create(I2CManager *self, I2C *peripheral);
 void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave);
 
 void I2CManager_Process(I2CManager *self);
+
+// @todo do I want a separate I2CManager_Tick function? Or just run the timers at the same speed as Process?
 
 void I2CManager_Enable(I2CManager *self);
 
