@@ -58,8 +58,6 @@
 
 // ***** Global Variables ******************************************************
 
-// ----- @label new interface code ---------------------------------------------
-
 /* Assign functions to the interface */
 I2CInterface I2C1_FunctionTable = {
     .I2C_ComputeBRGValue = I2C1_ComputeBRGValue,
@@ -94,11 +92,15 @@ I2CInterface I2C1_FunctionTable = {
     .I2C_GetReceiveEnableStatus = I2C1_GetReceiveEnableStatus,
 };
 
-// -----------------------------------------------------------------------------
+static bool useRxInterrupt = false, useTxInterrupt = false; // @todo rx and tx interrupts
 
-
+// @todo local function pointers
+// static void (*TransmitRegisterEmptyCallback)(void);
+// static void (*ReceivedDataCallback)(uint8_t (*CallToGetData)(void));
 
 // ***** Static Function Prototypes ********************************************
+
+/* Put static function prototypes here */
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,7 +157,28 @@ uint32_t I2C1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz)
 
 void I2C1_Init(I2CInitType *params)
 {
+    if(params->BRGValue == 0)
+        return;
 
+    useRxInterrupt = params->useRxInterrupt;
+    useTxInterrupt = params->useTxInterrupt;
+
+    // disable interrupts
+
+    /* @note Right now, I'm only implementing master I2C. - MS */
+    I2CxCONbits.IPMIEN = 0; // do not ACK automatically (must be off if master)
+    I2CxCONbits.STREN = 0; // clock stretch off
+    I2CxCONbits.ACKEN = 0;
+    I2CxCONbits.RCEN = 0;
+    I2CxCONbits.PEN = 0;
+    I2CxCONbits.RSEN = 0;
+    I2CxCONbits.SEN = 0;
+
+    I2CxBRG = params->BRGValue; // set baud rate generator
+
+    // @todo enable any interrupts
+
+    I2CxCONbits.I2CEN = 1; // enable peripheral
 }
 
 void I2C1_Enable(void)
@@ -188,8 +211,7 @@ bool I2C1_IsReceiveRegisterFull(void)
 
 bool I2C1_IsReceiveUsingInterrupts(void)
 {
-    // @todo I2C interrupts
-    return false;
+    return useRxInterrupt;
 }
 
 void I2C1_ReceiveByte(void)
@@ -235,8 +257,7 @@ bool I2C1_IsTransmitFinished(void)
 
 bool I2C1_IsTransmitUsingInterrupts(void)
 {
-    // @todo I2C interrupts
-    return false;
+    return useTxInterrupt;
 }
 
 void I2C1_Start(void)
@@ -281,26 +302,28 @@ bool I2C1_IsBusy(void)
 
 I2CState I2C1_GetState(void)
 {
+    I2CState retState = I2C_STATE_UNKNOWN;
     uint8_t enableBits = I2CxCON & 0x001F;
-    uint8_t transmitStatus = I2CxSTATbits.TRSTAT;
 
-    if(enableBits == 0x10)
-        return I2C_STATE_MASTER_SENDING_ACK;
-    else if(enableBits == 0x08)
-        return I2C_STATE_MASTER_RECEIVING;
-    else if(enableBits == 0x04)
-        return I2C_STATE_SENDING_STOP;
-    else if(enableBits == 0x02)
-        return I2C_STATE_SENDING_REPEATED_START;
-    else if(enableBits == 0x01)
-        return I2C_STATE_SENDING_START;
+    if(enableBits == 0x10) // ACKEN
+        retState = I2C_STATE_MASTER_SENDING_ACK;
+    else if(enableBits == 0x08) // RCEN
+        retState = I2C_STATE_MASTER_RECEIVING;
+    else if(enableBits == 0x04) // PEN
+        retState = I2C_STATE_SENDING_STOP;
+    else if(enableBits == 0x02) // RSEN
+        retState = I2C_STATE_SENDING_REPEATED_START;
+    else if(enableBits == 0x01) // SEN
+        retState = I2C_STATE_SENDING_START;
     else if(enableBits == 0x00)
     {
-        if(transmitStatus)
-            return I2C_STATE_MASTER_TRANSMITTING;
+        if(I2CxSTATbits.TRSTAT)
+            retState = I2C_STATE_MASTER_TRANSMITTING;
         else
-            return I2C_STATE_BUS_IDLE;
+            retState = I2C_STATE_BUS_IDLE;
     }
+
+    return retState;
 }
 
 bool I2C1_GetStartStatus(void)
