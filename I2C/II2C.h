@@ -99,8 +99,8 @@ typedef struct I2CInterfaceTag
     uint8_t (*I2C_GetReceivedByte)(void);
     bool (*I2C_IsReceiveRegisterFull)(void);
     bool (*I2C_IsReceiveUsingInterrupts)(void);
-    void (*I2C_ReceiveEnable)(void);
-    void (*I2C_ReceiveDisable)(void);
+    void (*I2C_ReceiveByte)(void);
+    void (*I2C_ReceiveByteCancel)(void);
     void (*I2C_TransmitRegisterEmptyEvent)(void);
     void (*I2C_TransmitByte)(uint8_t);
     bool (*I2C_IsTransmitRegisterEmpty)(void);
@@ -118,11 +118,13 @@ typedef struct I2CInterfaceTag
     void (*I2C_SendAck)(bool ackOrNack);
     bool (*I2C_IsBusy)(void);
     I2CState (*I2C_GetState)(void);
+
     bool (*I2C_GetStartStatus)(void);
     bool (*I2C_GetStopStatus)(void);
     bool (*I2C_GetRestartStatus)(void);
     bool (*I2C_GetAckSendStatus)(void);
     bool (*I2C_GetAckSlaveStatus)(void);
+    bool (*I2C_GetReceiveEnableStatus)(void);
 
 } I2CInterface;
 
@@ -178,9 +180,9 @@ bool I2C_IsReceiveRegisterFull(I2C *self);
 
 bool I2C_IsReceiveUsingInterrupts(I2C *self);
 
-void I2C_ReceiveEnable(I2C *self);
+void I2C_ReceiveByte(I2C *self);
 
-void I2C_ReceiveDisable(I2C *self);
+void I2C_ReceiveByteCancel(I2C *self);
 
 void I2C_TransmitRegisterEmptyEvent(I2C *self);
 

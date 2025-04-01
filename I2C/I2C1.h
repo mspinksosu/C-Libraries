@@ -62,9 +62,9 @@ bool I2C1_IsReceiveRegisterFull(void);
 
 bool I2C1_IsReceiveUsingInterrupts(void);
 
-void I2C1_ReceiveEnable(void);
+void I2C1_ReceiveByte(void);
 
-void I2C1_ReceiveDisable(void);
+void I2C1_ReceiveByteCancel(void);
 
 void I2C1_TransmitRegisterEmptyEvent(void);
 
@@ -97,8 +97,6 @@ bool I2C1_GetStartStatus(void);
 bool I2C1_GetStopStatus(void);
 
 bool I2C1_GetRestartStatus(void);
-
-bool I2C1_GetAckStatus(void);
 
 bool I2C1_GetAckSendStatus(void);
 

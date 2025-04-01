@@ -47,13 +47,13 @@
 #define DEFAULT_BRG_VALUE       0x2C
 
 /* Registers */
-#define I2CxCON I2C1CON           // I2C control
-#define I2CxCONbits I2C1CONbits   // I2C control bits
-#define I2CxSTAT I2C1STAT         // I2C status
+#define I2CxCON      I2C1CON      // I2C control
+#define I2CxCONbits  I2C1CONbits  // I2C control bits
+#define I2CxSTAT     I2C1STAT     // I2C status
 #define I2CxSTATbits I2C1STATbits // I2C status bits
-#define I2CxBRG I2C1BRG           // baud rate generator
-#define I2CxRCV I2C1RCV           // receive register
-#define I2CxTRN I2C1TRN           // transmit register
+#define I2CxBRG      I2C1BRG      // baud rate generator
+#define I2CxRCV      I2C1RCV      // receive register
+#define I2CxTRN      I2C1TRN      // transmit register
 // interrupt status register
 
 // ***** Global Variables ******************************************************
@@ -70,8 +70,8 @@ I2CInterface I2C1_FunctionTable = {
     .I2C_GetReceivedByte = I2C1_GetReceivedByte,
     .I2C_IsReceiveRegisterFull = I2C1_IsReceiveRegisterFull,
     .I2C_IsReceiveUsingInterrupts = I2C1_IsReceiveUsingInterrupts,
-    .I2C_ReceiveEnable = I2C1_ReceiveEnable,
-    .I2C_ReceiveDisable = I2C1_ReceiveDisable,
+    .I2C_ReceiveByte = I2C1_ReceiveByte,
+    .I2C_ReceiveByteCancel = I2C1_ReceiveByteCancel,
     .I2C_TransmitRegisterEmptyEvent = I2C1_TransmitRegisterEmptyEvent,
     .I2C_TransmitByte = I2C1_TransmitByte,
     .I2C_IsTransmitRegisterEmpty = I2C1_IsTransmitRegisterEmpty,
@@ -80,15 +80,18 @@ I2CInterface I2C1_FunctionTable = {
     .I2C_PendingEventHandler = I2C1_PendingEventHandler,
     .I2C_SetTransmitRegisterEmptyCallback = I2C1_SetTransmitRegisterEmptyCallback,
     .I2C_SetReceivedDataCallback = I2C1_SetReceivedDataCallback,
-    .I2C_IsBusy = I2C1_IsBusy,
     .I2C_Start = I2C1_Start,
     .I2C_Stop = I2C1_Stop,
     .I2C_Restart = I2C1_Restart,
     .I2C_SendAck = I2C1_SendAck,
+    .I2C_IsBusy = I2C1_IsBusy,
+    .I2C_GetState = I2C1_GetState,
     .I2C_GetStartStatus = I2C1_GetStartStatus,
     .I2C_GetStopStatus = I2C1_GetStopStatus,
     .I2C_GetRestartStatus = I2C1_GetRestartStatus,
-    .I2C_GetAckStatus = I2C1_GetAckStatus,
+    .I2C_GetAckSendStatus = I2C1_GetAckSendStatus,
+    .I2C_GetAckSlaveStatus = I2C1_GetAckSlaveStatus,
+    .I2C_GetReceiveEnableStatus = I2C1_GetReceiveEnableStatus,
 };
 
 // -----------------------------------------------------------------------------
@@ -189,16 +192,17 @@ bool I2C1_IsReceiveUsingInterrupts(void)
     return false;
 }
 
-void I2C1_ReceiveEnable(void)
+void I2C1_ReceiveByte(void)
 {
     /* RCEN bit is automatically cleared at the end of the 8th bit of a 
     received data byte */
     I2CxCONbits.RCEN = 1;
 }
 
-void I2C1_ReceiveDisable(void)
+void I2C1_ReceiveByteCancel(void)
 {
     I2CxCONbits.RCEN = 0;
+    // @todo send stop if needed. Test - MS
 }
 
 void I2C1_TransmitFinishedEvent(void)
@@ -235,21 +239,6 @@ bool I2C1_IsTransmitUsingInterrupts(void)
     return false;
 }
 
-bool I2C1_IsBusy(void)
-{
-    /* I2CxCON bits:
-     0, SEN:   0 = start condition idle
-     1, RSEN:  0 = restart condition idle
-     2, PEN:   0 = stop condition idle
-     3, RCEN:  0 = receive sequence not in progress
-     4, ACKEN: 0 = acknowledge sequence idle
-     TRSTAT: 0 = master transmit not in progress  */
-    if((I2CxCON & 0x001F) || I2C1STATbits.TRSTAT)
-        return true;
-    else
-        return false;
-}
-
 void I2C1_Start(void)
 {
     I2CxCONbits.SEN = 1; // cleared by module when finished
@@ -275,7 +264,46 @@ void I2C1_SendAck(bool ackOrNack)
     I2CxCONbits.ACKEN = 1; // cleared by module when finished
 }
 
-bool I2C_GetStartStatus(void)
+bool I2C1_IsBusy(void)
+{
+    /* I2CxCON bits:
+     0, SEN:   0 = start condition idle
+     1, RSEN:  0 = restart condition idle
+     2, PEN:   0 = stop condition idle
+     3, RCEN:  0 = receive sequence not in progress
+     4, ACKEN: 0 = acknowledge sequence idle
+     TRSTAT: 0 = master transmit not in progress  */
+    if((I2CxCON & 0x001F) || I2C1STATbits.TRSTAT)
+        return true;
+    else
+        return false;
+}
+
+I2CState I2C1_GetState(void)
+{
+    uint8_t enableBits = I2CxCON & 0x001F;
+    uint8_t transmitStatus = I2CxSTATbits.TRSTAT;
+
+    if(enableBits == 0x10)
+        return I2C_STATE_MASTER_SENDING_ACK;
+    else if(enableBits == 0x08)
+        return I2C_STATE_MASTER_RECEIVING;
+    else if(enableBits == 0x04)
+        return I2C_STATE_SENDING_STOP;
+    else if(enableBits == 0x02)
+        return I2C_STATE_SENDING_REPEATED_START;
+    else if(enableBits == 0x01)
+        return I2C_STATE_SENDING_START;
+    else if(enableBits == 0x00)
+    {
+        if(transmitStatus)
+            return I2C_STATE_MASTER_TRANSMITTING;
+        else
+            return I2C_STATE_BUS_IDLE;
+    }
+}
+
+bool I2C1_GetStartStatus(void)
 {
     if(I2CxSTATbits.SEN)
         return true;
@@ -283,7 +311,7 @@ bool I2C_GetStartStatus(void)
         return false;
 }
 
-bool I2C_GetStopStatus(void)
+bool I2C1_GetStopStatus(void)
 {
     if(I2CxSTATbits.PEN)
         return true;
@@ -291,7 +319,7 @@ bool I2C_GetStopStatus(void)
         return false;
 }
 
-bool I2C_GetRestartStatus(void)
+bool I2C1_GetRestartStatus(void)
 {
     if(I2CxSTATbits.RSEN)
         return true;

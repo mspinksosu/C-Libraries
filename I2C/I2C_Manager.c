@@ -50,7 +50,7 @@ typedef struct I2CEventTag
 
 static bool I2CManagerEnabled; // @todo enable/disable
 
-// @todo local function pointers
+// @todo function pointers
 // void (*I2C1_TransmitFinishedCallback)(void);
 // void (*I2C1_ReceiveInterruptCallback)(void);
 
@@ -314,19 +314,19 @@ static void I2CManager_DevicePush(I2CSlave *self, I2CSlave *endOfList)
 
 // *****************************************************************************
 
-static uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataRequest *returnDataRequest)
+static uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataTransfer *returnDataTransfer)
 {
     if(self->private.head != self->private.tail)
     {
         // The buffer is not empty
         // @follow-up test simple struct assignment first instead of memcpy just for better readability - MS
-        *returnDataRequest = self->private.buffer[self->private.tail];
+        *returnDataTransfer = self->private.buffer[self->private.tail];
         self->private.tail = CircularIncrement(self->private.tail, I2CSLAVE_DR_BUFFER_SIZE);
         return 0; // no error
     }
     else
     {
-        returnDataRequest->length = 0;
+        returnDataTransfer->length = 0;
         return 1;
     }
 }

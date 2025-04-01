@@ -60,7 +60,7 @@ typedef enum I2CTransferStateTag
     // add more as needed
 } I2CTransferState;
 
-typedef enum I2CTransferStateTag
+typedef enum I2CTransferErrorTag
 {
     I2C_TRANSFER_ERROR_UNKNOWN = 0,
     I2C_TRANSFER_ERROR_TX,
@@ -68,12 +68,12 @@ typedef enum I2CTransferStateTag
     // add more as needed
 } I2CTransferError;
 
-typedef struct I2CDataRequestTag
+typedef struct I2CDataTransferTag // may move this to II2C.h
 {
     I2CTransferType transferType;
     uint8_t *data;
     uint16_t length;
-} I2CDataRequest;
+} I2CDataTransfer;
 
 typedef struct I2CDataTransferStatusTag
 {
@@ -103,7 +103,7 @@ struct I2CSlaveTag
     uint8_t slaveAddress7Bit; // 7-bit address, right justified
     struct
     {
-        I2CDataRequest buffer[I2CSLAVE_DR_BUFFER_SIZE];
+        I2CDataTransfer buffer[I2CSLAVE_DR_BUFFER_SIZE];
         uint16_t head;
         uint16_t tail;
         uint16_t writeCount;

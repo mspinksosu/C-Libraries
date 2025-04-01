@@ -182,21 +182,21 @@ bool I2C_IsReceiveUsingInterrupts(I2C *self)
 
 // *****************************************************************************
 
-void I2C_ReceiveEnable(I2C *self)
+void I2C_ReceiveByte(I2C *self)
 {
-    if(self->interface->I2C_ReceiveEnable != NULL)
+    if(self->interface->I2C_ReceiveByte != NULL)
     {
-        (self->interface->I2C_ReceiveEnable)();
+        (self->interface->I2C_ReceiveByte)();
     }
 }
 
 // *****************************************************************************
 
-void I2C_ReceiveDisable(I2C *self)
+void I2C_ReceiveByteCancel(I2C *self)
 {
-    if(self->interface->I2C_ReceiveDisable != NULL)
+    if(self->interface->I2C_ReceiveByteCancel != NULL)
     {
-        (self->interface->I2C_ReceiveDisable)();
+        (self->interface->I2C_ReceiveByteCancel)();
     }
 }
 
