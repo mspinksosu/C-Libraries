@@ -62,13 +62,14 @@ typedef enum I2CTransferStateTag
 
 typedef enum I2CTransferErrorTag
 {
-    I2C_TRANSFER_ERROR_UNKNOWN = 0,
+    I2C_TRANSFER_ERROR_NONE = 0,
+    I2C_TRANSFER_ERROR_UNKOWN,
     I2C_TRANSFER_ERROR_TX,
     I2C_TRANSFER_ERROR_RX,
     // add more as needed
 } I2CTransferError;
 
-typedef struct I2CDataTransferTag // may move this to II2C.h
+typedef struct I2CDataTransferTag // might move this to II2C.h
 {
     I2CTransferType transferType;
     uint8_t *data;
@@ -85,17 +86,9 @@ typedef struct I2CDataTransferStatusTag
     uint16_t numOfBytesTransferred;
 } I2CDataTransferStatus;
 
-// typedef struct I2CSlaveTag // Decide if I want to use a single I2CSlave class or not.
-// {
-//     void *instance;
-//     uint8_t slaveAddress; // 7-bit address, right justified
-
-//     /* add IsTransmitByteReady function pointer?, TransmitByte function 
-//     pointer similar to wireless module library? */
-// } I2CSlave;
-
 typedef struct I2CSlaveTag I2CSlave; // forward declaration
 
+/* @todo decide if I want to make a base class or not */
 struct I2CSlaveTag
 {
     // I2CSlave *super; // include the base class first
@@ -106,10 +99,9 @@ struct I2CSlaveTag
         I2CDataTransfer buffer[I2CSLAVE_DR_BUFFER_SIZE];
         uint16_t head;
         uint16_t tail;
-        uint16_t writeCount;
-        uint16_t readCount;
         bool transferFinished;
     } private;
+    I2CDataTransferStatus finishedTransferReport;
     // @todo transfer finished callback function pointer or transmit and isTransmitReady
 };
 
@@ -144,6 +136,14 @@ typedef struct I2CManagerStatusBitsTag
     };
 } I2CManagerStatusBits;
 
+// @todo decided if I want to use a manager state or keep using old status bits
+typedef enum I2CManagerStateTag
+{
+    I2C_MANAGER_STATE_IDLE = 0,
+    I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS,
+    // I2C_MANAGER_STATE_ERROR,
+} I2CManagerState;
+
 // This is the function pointer type for the state machine functions
 typedef void (*I2CFSMState)(I2CEvent *e);
 
@@ -151,13 +151,18 @@ typedef struct I2CManagerTag
 {
     I2C *peripheral;
     I2CSlave *endOfList; // circular linked list
-    I2CSlave *device; // current device being processed
+    I2CSlave *currentDevice;
+    I2CDataTransfer currentDataTransfer;
+    uint16_t writeCount;
+    uint16_t readCount;
+
     I2CFSMState fsmState;
+    uint8_t fsmRepeatCount;
     I2CTimer fsmTimer;
-    I2CTimer waitTimer;
+
     I2CManagerStatusBits statusBits; // @todo might replace this with state
+    I2CManagerState managerState;
     I2CState peripheralState;
-    uint8_t repeatCount;
 } I2CManager;
 
 /**
@@ -189,11 +194,6 @@ void I2CManager_Disable(I2CManager *self);
 bool I2CManager_IsIdle(I2CManager *self);
 
 void I2CManager_GetState(I2CManager *self);
-
-// old I2C Manager functions from PIC32 @remove or re-factor
-void I2CManager_MasterWrite(I2CManager *self, I2CSlave *slave, uint8_t *writeData, uint8_t numBytes);
-void I2CManager_MasterRead(I2CManager *self, I2CSlave *slave, uint8_t *readData, uint8_t numBytes);
-void I2CManager_GetData(uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave *context);
 
 // slave functions // @todo might move slave functions to a new file
 

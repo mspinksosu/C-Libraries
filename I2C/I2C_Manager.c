@@ -66,6 +66,11 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e);
 // ***** Static Function Prototypes ********************************************
 
 static void I2CManager_DevicePush(I2CSlave *self, I2CSlave *endOfList);
+static uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataTransfer *returnDataTransfer);
+static uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self);
+static void I2CSlave_DataTransferFinished(I2CSlave *self, I2CDataTransferStatus *report);
+static void I2CManager_DataTransfer(I2CManager *self, I2CSlave *slave, I2CDataTransfer *data);
+static void I2CManager_GetFinishedTransferReport(I2CManager *self, I2CDataTransferStatus *retReport);
 static void I2CManager_FsmInit(I2CManager *self, uint16_t tickRateInNs, uint16_t timeoutInUs);
 
 // *****************************************************************************
@@ -110,7 +115,7 @@ void I2CManager_Process(I2CManager *self)
     {
         self->fsmTimer.flags.start = 0;
         self->fsmTimer.count = self->fsmTimer.period;
-        self->repeatCount = 0;
+        self->repeatSendCount = 0;
         self->fsmTimer.flags.active = 1;
     }
 
@@ -192,12 +197,12 @@ void I2CManager_Process(I2CManager *self)
     if(self->fsmTimer.flags.expired)
     {
         self->fsmTimer.flags.expired = 0;
-        self->repeatCount++;
+        self->repeatSendCount++;
         event.sig = I2C_SIG_TIMEOUT;
         // @todo add error
-        if(self->repeatCount > I2CMANAGER_REPEAT_LIMIT)
+        if(self->repeatSendCount > I2CMANAGER_REPEAT_LIMIT)
         {
-            self->repeatCount = 0;
+            self->repeatSendCount = 0;
             self->fsmTimer.flags.start = 0;
             self->fsmTimer.flags.active = 0;
             self->fsmTimer.flags.expired = 0;
@@ -287,14 +292,26 @@ void I2CSlave_DataTransfer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t 
 
 bool I2CSlave_IsDataTransferFinished(I2CSlave *self)
 {
-    return self->private.transferFinished; // @todo remember to clear transferFinished when transmit register is written to. Similar to UART TIF flag
+    return self->private.transferFinished;
 }
 
 // *****************************************************************************
 
+/* @todo not sure how I want to implement this yet. Should the status reflect 
+on going changes during the data transfer, such as the current state? Or should 
+I just use it as a end of data transfer report? - MS */
 void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus)
 {
-    // @todo get data transfer status
+    /* @todo should the FSM write the state to the current slave device? - MS */
+    retTransferStatus->state = I2C_TRANSFER_STATE_UNKNOWN; // @todo I2C states
+    retTransferStatus->error = I2C_TRANSFER_ERROR_NONE; // @todo I2C error codes
+    
+    /* @note cannot get current transfer type without linking to I2C manager... 
+    Maybe have the manager write to the report? - MS */
+    retTransferStatus->transferType = self->finishedTransferReport.transferType;
+    retTransferStatus->ptrArray = self->finishedTransferReport.ptrArray;
+    retTransferStatus->sizeOfArray = self->finishedTransferReport.sizeOfArray;
+    retTransferStatus->numOfBytesTransferred = self->finishedTransferReport.numOfBytesTransferred;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -318,10 +335,12 @@ static uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataTransf
 {
     if(self->private.head != self->private.tail)
     {
-        // The buffer is not empty
+        /* The buffer is not empty. Get the data from the buffer to be 
+        processed and clear the transfer finished flag */
         // @follow-up test simple struct assignment first instead of memcpy just for better readability - MS
         *returnDataTransfer = self->private.buffer[self->private.tail];
         self->private.tail = CircularIncrement(self->private.tail, I2CSLAVE_DR_BUFFER_SIZE);
+        self->private.transferFinished = false;
         return 0; // no error
     }
     else
@@ -346,53 +365,55 @@ static uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self)
 
 // *****************************************************************************
 
-// @remove old function after re-factoring
-void I2CManager_MasterWrite(I2CManager *self, I2CSlave *slave, uint8_t *writeData, uint8_t numBytes)
+static void I2CSlave_DataTransferFinished(I2CSlave *self, I2CDataTransferStatus *report)
+{
+    self->private.transferFinished = true;
+    // @follow-up try a simple struct assignment first instead of memcpy just for better readability - MS
+    self->finishedTransferReport = *report;
+}
+
+// *****************************************************************************
+
+static void I2CManager_DataTransfer(I2CManager *self, I2CSlave *slave, I2CDataTransfer *data)
 {
     if(self->fsmState != I2CManager_FsmIdle)
         return;
 
-    slave->writeBuffer = writeData;
-    slave->numBytesToSend = numBytes;
-    slave->private.writeCount = 0;
+    // get the data
+    // @follow-up try a simple struct assignment first instead of memcpy just for better readability - MS
+    self->currentDataTransfer = *data;
 
     // create an event to give to the state machine
-    I2CEvent event;
-    event.private.masterRead = false;
-    event.private.slaveAddressPlusRW = slave->slaveAddress7Bit << 1;
+    I2CEvent event = {0};
+    if(data->transferType == I2C_TRANSFER_TYPE_WRITE)
+    {
+        event.masterRead = false;
+        event.slaveAddressPlusRW = slave->slaveAddress7Bit << 1;
+        self->writeCount = 0;
+    }
+    else
+    {
+        event.masterRead = true;
+        event.slaveAddressPlusRW = ((slave->slaveAddress7Bit << 1) | 1);
+        self->readCount = 0;
+    }
     event.sig = I2C_SIG_BEGIN_TRANSFER;
     self->fsmState(&event); // call the current state and pass the event
 }
 
 // *****************************************************************************
 
-void I2CManager_MasterRead(I2CManager *self, I2CSlave *slave, uint8_t *readData, uint8_t numBytes)
+static void I2CManager_GetFinishedTransferReport(I2CManager *self, I2CDataTransferStatus *retReport)
 {
-    // @todo setup a lock to keep this function from being called if it's
-    // already running. Decide if I want to make the return type a bool
-    if(self->fsmState != I2CManager_FsmIdle)
-        return;
-
-    slave->readBuffer = readData;
-    slave->numBytesToRead = numBytes;
-    slave->private.readCount = 0;
-
-    // create an event to give to the state machine
-    I2CEvent event;
-    event.private.masterRead = true;
-    event.private.slaveAddressPlusRW = ((slave->slaveAddress7Bit << 1) | 1);
-    event.sig = I2C_SIG_BEGIN_TRANSFER;
-    self->fsmState(&event); // call the current state and pass the event
-}
-
-// *****************************************************************************
-
-// @todo refactor get data function - MS
-void I2CManager_GetData(I2CManager *self, uint8_t *numBytesWritten, uint8_t *numBytesRead, I2CSlave *context)
-{
-    *numBytesWritten = ptrI2CSlave->private.writeCount;
-    *numBytesRead = ptrI2CSlave->private.readCount;
-    // context = ptrI2CSlave; // @todo get data
+    retReport->error = I2C_TRANSFER_ERROR_NONE; // @todo I2C error codes
+    retReport->state = I2C_TRANSFER_STATE_IDLE;
+    retReport->transferType = self->currentDataTransfer.transferType;
+    retReport->ptrArray = self->currentDataTransfer.data;
+    retReport->sizeOfArray = self->currentDataTransfer.length;
+    if(retReport->transferType == I2C_TRANSFER_TYPE_WRITE)
+        retReport->numOfBytesTransferred = self->writeCount;
+    else
+        retReport->numOfBytesTransferred = self->readCount;
 }
 
 // *****************************************************************************
@@ -550,10 +571,12 @@ static void I2CManager_FsmRestart(I2CManager *self, I2CEvent *e)
 
 static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
 {
-     switch(e->sig)
+    // @todo make pointer to data in order to avoid hairy deference of pointer in object in struct etc.
+    switch(e->sig)
     {
         case I2C_SIG_DATA_RECEIVED:
             self->fsmTimer.flags.active = 0;
+            // @todo make sure to check current transfer type first
             ptrI2CSlave->readBuffer[ptrI2CSlave->private.readCount++] = I2C1_GetReceivedByte();
             if(ptrI2CSlave->private.readCount < ptrI2CSlave->numBytesToRead)
             {
