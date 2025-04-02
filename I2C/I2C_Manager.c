@@ -31,7 +31,8 @@
 
 typedef enum I2CSignalTag
 {
-    I2C_SIG_BEGIN_TRANSFER = 1,
+    I2C_SIG_ENTER = 1,
+    I2C_SIG_BEGIN_TRANSFER,
     I2C_SIG_BUS_IDLE_EVENT,
     I2C_SIG_ACK_RECEIVED,
     I2C_SIG_NACK_RECEIVED,
@@ -71,11 +72,10 @@ static uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self);
 static void I2CSlave_DataTransferFinished(I2CSlave *self, I2CDataTransferStatus *report);
 static void I2CManager_DataTransfer(I2CManager *self, I2CSlave *slave, I2CDataTransfer *data);
 static void I2CManager_GetFinishedTransferReport(I2CManager *self, I2CDataTransferStatus *retReport);
-static void I2CManager_FsmInit(I2CManager *self, uint16_t tickRateInNs, uint16_t timeoutInUs);
 
 // *****************************************************************************
 
-void I2CManager_Init(I2CManager *self, I2C *peripheral)
+void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateUs)
 {
     self->peripheral = peripheral;
     self->endOfList = NULL;
@@ -85,7 +85,13 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral)
     self->readCount = 0;
     // @todo init state and error variables
 
-    I2CManager_FsmInit(self, 0, 0); // @todo FSM init
+    if(tickRateUs != 0)
+        self->fsmTimer.period = I2CMANAGER_TIMEOUT_PERIOD_US / tickRateUs;
+
+    if(self->fsmTimer.period == 0)
+        self->fsmTimer.period = 1;
+
+    self->fsmState = I2CManager_FsmIdle;
 }
 
 // *****************************************************************************
@@ -255,7 +261,7 @@ bool I2CManager_IsIdle(I2CManager *self)
 
 void I2CManager_GetState(I2CManager *self)
 {
-    // @todo manager make enum for states
+    // @todo I2C manager state enum
 }
 
 // *****************************************************************************
@@ -427,17 +433,6 @@ static void I2CManager_GetFinishedTransferReport(I2CManager *self, I2CDataTransf
 
 // *****************************************************************************
 
-// @label old PIC32 FSM code
-static void I2CManager_FsmInit(I2CManager *self, uint16_t tickRateInNs, uint16_t timeoutInUs)
-{
-    self->fsmState = I2CManager_FsmIdle;
-
-    // @todo finish setting up timer using variables given
-    self->fsmTimer.period = (uint16_t)TIMEOUT_PERIOD_COUNT;
-}
-
-// *****************************************************************************
-
 static void I2CManager_FsmIdle(I2CManager *self, I2CEvent *e)
 {
     switch(e->sig)
@@ -447,16 +442,14 @@ static void I2CManager_FsmIdle(I2CManager *self, I2CEvent *e)
             {
                 // skip the start and go straight to the address
                 e->repeatedStartSent = false;
-                I2C_TransmitByte(self->peripheral, e->slaveAddressPlusRW);
-                self->fsmTimer.flags.start = 1;
                 self->fsmState = I2CManager_FsmWriteAddress;
             }
             else
             {
-                I2C_Start(self->peripheral);
-                self->fsmTimer.flags.start = 1;
                 self->fsmState = I2CManager_FsmStart;
             }
+            e->sig = I2C_SIG_ENTER;
+            self->fsmState(e);
             break;
     }
 }
@@ -467,11 +460,15 @@ static void I2CManager_FsmStart(I2CManager *self, I2CEvent *e)
 {
     switch(e->sig)
     {
+        case I2C_SIG_ENTER:
+            I2C_Start(self->peripheral);
+            self->fsmTimer.flags.start = 1;
+            break;
         case I2C_SIG_BUS_IDLE_EVENT:
             self->fsmTimer.flags.active = 0;
-            I2C_TransmitByte(self->peripheral, e->slaveAddressPlusRW);
-            self->fsmTimer.flags.start = 1;
+            e->sig = I2C_SIG_ENTER;
             self->fsmState = I2CManager_FsmWriteAddress;
+            self->fsmState(e);
             break;
     }
 }
@@ -482,6 +479,10 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
 {
     switch(e->sig)
     {
+        case I2C_SIG_ENTER:
+            I2C_TransmitByte(self->peripheral, e->slaveAddressPlusRW);
+            self->fsmTimer.flags.start = 1;
+            break;
         case I2C_SIG_BUS_IDLE_EVENT:
             self->fsmTimer.flags.active = 0;
             if(I2C_GetAckStatus())
@@ -489,16 +490,23 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
                 if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_READ)
                 {
                     /* Prepare to receive byte */
-                    I2C_ReceiveByte(self->peripheral);
+                    self->readCount = 0;
+                    e->sig = I2C_SIG_ENTER;
                     self->fsmState = I2CManager_FsmReadData;
+                    self->fsmState(e);
                 }
                 else
                 {
-                    /* Load first data byte */
-                    I2C_TransmitByte(self->peripheral, self->currentDataTransfer.data[self->writeCount]);
+                    /* Prepare to transmit the first byte */
+                    self->writeCount = 0;
+                    e->sig = I2C_SIG_ENTER;
                     self->fsmState = I2CManager_FsmWriteData;
+                    self->fsmState(e);
                 }
-                self->fsmTimer.flags.start = 1;
+            }
+            else
+            {
+                // @todo retransmit address
             }
             break;
         // @todo add timeout event
@@ -511,6 +519,10 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
 {
     switch(e->sig)
     {
+        case I2C_SIG_ENTER:
+            I2C_TransmitByte(self->peripheral, self->currentDataTransfer.data[self->writeCount]);
+            self->fsmTimer.flags.start = 1;
+            break;
         case I2C_SIG_BUS_IDLE_EVENT:
             if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_WRITE) // @follow-up is this extra check needed? - MS
             {
@@ -565,6 +577,10 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
 {
     switch(e->sig)
     {
+        case I2C_SIG_ENTER:
+            I2C_ReceiveByte(self->peripheral);
+            self->fsmTimer.flags.start = 1;
+            break;
         case I2C_SIG_DATA_RECEIVED:
             if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_READ) // @follow-up is this extra check needed? - MS
             {
@@ -592,15 +608,15 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
                 is another transfer ready and generate a repeated start. */
                 if(e->generateRepeatedStart) // @todo replace with slave buffer check
                 {
-                    I2C_Restart(self->peripheral);
-                    self->fsmTimer.flags.start = 1;
+                    e->sig = I2C_SIG_ENTER;
                     self->fsmState = I2CManager_FsmRestart;
+                    self->fsmState(e);
                 }
                 else
                 {
-                    I2C_Stop(self->peripheral);
-                    self->fsmTimer.flags.start = 1;
+                    e->sig = I2C_SIG_ENTER;
                     self->fsmState = I2CManager_FsmStop;
+                    self->fsmState(e);
                 }
             }
             break;
@@ -614,9 +630,13 @@ static void I2CManager_FsmStop(I2CManager *self, I2CEvent *e)
 {
     switch(e->sig)
     {
+        case I2C_SIG_ENTER:
+            I2C_ReceiveByte(self->peripheral);
+            self->fsmTimer.flags.start = 1;
+            break;
         case I2C_SIG_BUS_IDLE_EVENT:
+            /* Stop is finished */
             self->fsmTimer.flags.active = 0;
-            // Stop is finished.
             self->fsmState = I2CManager_FsmIdle;
             break;
         // @todo add timeout event
@@ -629,9 +649,13 @@ static void I2CManager_FsmRestart(I2CManager *self, I2CEvent *e)
 {
     switch(e->sig)
     {
+        case I2C_SIG_ENTER:
+            I2C_Stop(self->peripheral);
+            self->fsmTimer.flags.start = 1;
+            break;
         case I2C_SIG_BUS_IDLE_EVENT:
+            /* Repeat start is finished */
             self->fsmTimer.flags.active = 0;
-            // restart is finished.
             e->generateRepeatedStart = false;
             e->repeatedStartSent = true;
             self->fsmState = I2CManager_FsmIdle;

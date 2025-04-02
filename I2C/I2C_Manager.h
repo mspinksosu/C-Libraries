@@ -27,12 +27,7 @@
 
 // ***** Defines ***************************************************************
 
-/* Desired timeout time in ms */
-/* @todo original library used a dedicated hardware timer. Might change TIMEOUT_PERIOD
-to just use REPEAT_SEND instead */
-#define I2C_TIMEOUT_PERIOD_MS 1
-#define I2C_REPEAT_SEND_MS 10
-
+#define I2CMANAGER_TIMEOUT_PERIOD_US 500 // desired timeout period in us
 #define I2CMANAGER_REPEAT_LIMIT 5
 #define I2CSLAVE_DR_BUFFER_SIZE 2
 
@@ -107,8 +102,8 @@ struct I2CSlaveTag
 
 typedef struct I2CTimerTag
 {
-    uint16_t period;
-    uint16_t count;
+    uint32_t period;
+    uint32_t count;
     union {
         struct {
             unsigned start   :1;
@@ -179,7 +174,7 @@ typedef struct I2CManagerTag
 
 /* @todo finish Doxygen */
 
-void I2CManager_Init(I2CManager *self, I2C *peripheral);
+void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateUs);
 
 void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave);
 

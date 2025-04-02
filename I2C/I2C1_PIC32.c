@@ -27,10 +27,9 @@
 
 // ***** Defines ***************************************************************
 
-// default values defined by the user
+/* @remove old state machine defines later */
 #define PBCLK_FREQ          40000000UL // in Hz
 #define TIMEOUT_PERIOD_US   500 // desired timeout period in us
-#define RETRY_COUNT 5 // how many times to retry a command before failing
 
 /* C macros for computing period value for timeout. The source clock frequency
  * is basically how often you will call the function to update the state 
