@@ -214,9 +214,9 @@ function later. Other processors may not have specific bits like these. For
 now, go ahead and use it like it was for the original PIC32 library so that 
 I can test the library. - MS */
 
-bool I2C_IsBusy(void);
+bool I2C_IsBusy(I2C *self);
 
-I2CState I2C_GetState(void);
+I2CState I2C_GetState(I2C *self);
 
 bool I2C_GetStartStatus(I2C *self);
 

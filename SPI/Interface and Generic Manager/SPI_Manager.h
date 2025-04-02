@@ -79,9 +79,7 @@ typedef struct SPIManagerTag
 
 /* TODO finish Doxygen */
 
-void SPI_Manager_Create(SPIManager *self, SPI *peripheral);
-
-// @todo add SPIManager_Init function?
+void SPI_Manager_Init(SPIManager *self, SPI *peripheral);
 
 void SPI_Manager_AddSlave(SPIManager *self, SPISlave *slave, uint8_t *writeBuffer, uint8_t *readBuffer);
 

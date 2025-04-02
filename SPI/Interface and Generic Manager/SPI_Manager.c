@@ -36,7 +36,7 @@ static void SPI_Manager_DevicePush(SPISlave *self, SPISlave *endOfList);
 
 // *****************************************************************************
 
-void SPI_Manager_Create(SPIManager *self, SPI *peripheral)
+void SPI_Manager_Init(SPIManager *self, SPI *peripheral)
 {
     self->peripheral = peripheral;
     self->endOfList = NULL;

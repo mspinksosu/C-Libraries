@@ -161,7 +161,7 @@ typedef struct I2CManagerTag
     I2CTimer fsmTimer;
 
     I2CManagerStatusBits statusBits; // @todo might replace this with state
-    I2CManagerState managerState;
+    I2CManagerState managerState; // @todo might use slave state instead
     I2CState peripheralState;
 } I2CManager;
 
@@ -179,7 +179,7 @@ typedef struct I2CManagerTag
 
 /* @todo finish Doxygen */
 
-void I2CManager_Create(I2CManager *self, I2C *peripheral);
+void I2CManager_Init(I2CManager *self, I2C *peripheral);
 
 void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave);
 
@@ -193,9 +193,11 @@ void I2CManager_Disable(I2CManager *self);
 
 bool I2CManager_IsIdle(I2CManager *self);
 
-void I2CManager_GetState(I2CManager *self);
+void I2CManager_GetState(I2CManager *self); // @todo get state
 
-// slave functions // @todo might move slave functions to a new file
+void I2CManager_GetCurrentDevice(I2CManager *self, I2CSlave *retDevice); // @todo get current device
+
+// slave functions
 
 void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress);
 
@@ -206,8 +208,6 @@ void I2CSlave_DataTransfer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t 
 bool I2CSlave_IsDataTransferFinished(I2CSlave *self);
 
 void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus);
-
-// @todo add generic get data function? similar to wmod GetRxPacket?
 
 // I2CSlave_DataTransferFinishedCallback
 // I2CSlave_WriteTransferFinishedCallback
