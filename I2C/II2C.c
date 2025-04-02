@@ -141,7 +141,7 @@ void I2C_ReceivedDataEvent(I2C *self)
 // *****************************************************************************
 
 uint8_t I2C_GetReceivedByte(I2C *self)
-{   
+{
     if(self->interface->I2C_GetReceivedByte != NULL)
     {
         return (self->interface->I2C_GetReceivedByte)();
