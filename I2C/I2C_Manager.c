@@ -119,6 +119,8 @@ void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave)
 void I2CManager_Process(I2CManager *self)
 {
     I2CEvent event = {0};
+    I2CDataTransfer tempDataTransfer = {0};
+    I2CDataTransferStatus tempStatusReport = {0};
 
     /* Check if we need to start a timer */
     if(self->fsmTimer.flags.start)
@@ -140,15 +142,12 @@ void I2CManager_Process(I2CManager *self)
         }
     }
 
-// ----- Check for I2C Events --------------------------------------------------
-
+    /* Check for I2C events */
     I2CState currentPeripheralState = I2C_GetState(self->peripheral);
-
     /* @todo Decide if I want to keep the old status bits code or replace it 
     with just the state. I could keep the status bits and make sure the events 
     are explicit. Or just make a simple check if the previous state was not 
     equal to the current state. */
-
     if(self->peripheralState != I2C_STATE_BUS_IDLE && currentPeripheralState == I2C_STATE_BUS_IDLE)
     {
         if(self->statusBits.sendingStart)
@@ -218,16 +217,55 @@ void I2CManager_Process(I2CManager *self)
             self->fsmTimer.flags.expired = 0;
             // @todo stop, change signal, go back to idle state. Set error status
         }
-        /* @follow-up old code had this commented out. I had written that the 
-        timeout value was not long enough. - MS */
+        /* @todo finish old timeout event. The old code had this commented out. I had written that the 
+        timeout value was not long enough. Need to test with debugger. - MS */
         //self->fsmState(&event); 
     }
-
     self->peripheralState = currentPeripheralState;
 
-// ----- Process slave list ----------------------------------------------------
+    /* @todo Go through list and process each slave's data requests. I'll 
+    probably replace the I2C manager state with something else. I haven't 
+    decided. */
+    if(self->currentDevice != NULL)
+    {
+        uint8_t transferError = 1;
 
-    // @todo go through list and process each slave's data requests
+        switch(self->managerState)
+        {
+            case I2C_MANAGER_STATE_IDLE:
+                if(I2CSlave_GetDataTransferBufferCount(self->currentDevice) > 0)
+                {
+                    transferError = I2CSlave_ReadFromDataTransferBuffer(self->currentDevice, &tempDataTransfer);
+                    if(transferError == 0)
+                    {
+                        I2CManager_DataTransfer(self, self->currentDevice, &tempDataTransfer);
+                        self->managerState = I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS;
+                    }
+                }
+                else
+                {
+                    self->currentDevice = self->currentDevice->next;
+                }
+                break;
+            case I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS:
+                if(I2CSlave_IsDataTransferFinished(self->currentDevice))
+                {
+                    /* @todo Check if there is another transfer ready and make 
+                    a repeated start. Else write the transfer report then go 
+                    to the next device. */
+                    // @todo repeated start
+                    I2CManager_GetFinishedTransferReport(self, &tempStatusReport);
+                    I2CSlave_DataTransferFinished(self, &tempStatusReport);
+                    self->currentDevice = self->currentDevice->next;
+                    self->managerState = I2C_MANAGER_STATE_IDLE;
+                }
+                break;
+        }
+    }
+    else
+    {
+        self->currentDevice = self->currentDevice->next;
+    }
 }
 
 // *****************************************************************************
@@ -380,11 +418,11 @@ static uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self)
 
 // *****************************************************************************
 
-static void I2CSlave_DataTransferFinished(I2CSlave *self, I2CDataTransferStatus *report)
+static void I2CSlave_DataTransferFinished(I2CSlave *self, I2CDataTransferStatus *reportToWrite)
 {
     self->private.transferFinished = true;
     // @follow-up try a simple struct assignment first instead of memcpy just for better readability - MS
-    self->finishedTransferReport = *report;
+    self->finishedTransferReport = *reportToWrite;
 }
 
 // *****************************************************************************
