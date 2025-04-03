@@ -1,7 +1,7 @@
 /***************************************************************************//**
- * @brief Basic I2C Peripheral for PIC32
+ * @brief Basic I2C Peripheral for DSPIC33
  * 
- * @file I2C1_PIC32.c
+ * @file I2C1_DSPIC33.c
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
