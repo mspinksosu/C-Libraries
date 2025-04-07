@@ -43,7 +43,9 @@
 #define TIMEOUT_SRC_CLK_US      (1.0 / TIMOUT_SRC_CLK_FREQ * 1000000.0)
 #define TIMEOUT_PERIOD_COUNT    (TIMEOUT_PERIOD_US / TIMEOUT_SRC_CLK_US)
 
-#define DEFAULT_BRG_VALUE       0x2C
+/* This will put the I2C bus somewhere in the 100 kHz to 400 kHz range if the 
+system clock is between 24 MHz and 100 MHz. */
+#define DEFAULT_BRG_VALUE 250
 
 /* Registers */
 #define I2CxCON      I2C1CON      // I2C control
@@ -108,57 +110,17 @@ static bool useRxInterrupt = false, useTxInterrupt = false; // @todo rx and tx i
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-// @todo old init functions
-// bool I2C1_InitWithFrequencies(float pbclkInMHz, uint16_t baudInKHz)
-// {
-//     if(pbclkInMHz == 0)
-//     {
-//         return true;
-//     }
-
-//     /* Calculate baud rate. Use the ceiling function to round up in the 
-//      * second step to get our register value. This will make the actual 
-//      * baud rate slightly slower than the exact value. It is better to be 
-//      * slightly slower, rather than faster, than the computed bus speed. 
-//      * Equation 24-1. Datasheet section 24, page 19 */
-//     uint32_t brgValue = 1000000 / (2 * baudInKHz) - 104;
-//     brgValue = (uint32_t)(ceil(brgValue / 1000.0 * pbclkInMHz - 2));
-//     bool temp = I2C1_InitWithBRGValue(brgValue);
-    
-//     return temp;
-// }
-
-// bool I2C1_InitWithBRGValue(uint32_t brgValue)
-// {
-//     // If you call this function directly I must assume you know what you are 
-//     // doing and that you've already calculated the correct BRG value
-//     if(brgValue == 0x00 || brgValue == 0x01)
-//     {
-//         // You've chosen an incompatible number for the baud rate generator
-//         I2C1BRG = DEFAULT_BRG_VALUE;
-//         return true;
-//     }
-    
-//     I2C1_Fsm.state = I2C1_FsmIdle;
-//     I2C1_Event.sig = 0;
-//     I2C1_FsmTimer.period = (uint16_t)TIMEOUT_PERIOD_COUNT;
-//     I2C1_FsmTimer.retryCount = RETRY_COUNT;
-    
-//     I2C1BRG = (uint16_t)brgValue;
-//     I2C1CONbits.ON = 1; // enable I2C module
-//     return false;
-// }
-
-uint32_t I2C1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz)
+uint32_t I2C1_ComputeBRGValue(uint32_t desiredBaudRateHz, uint32_t pclkInHz)
 {
-
+    /* I2CxBRG = ((1 / Fscl - delay (ns)) * Fcy) - 2
+    Typical delay is 110 ns to 130 ns. (DSPIC33 Family Reference Manual) */
+    float brgFloat;
+    brgFloat = (1.0 / desiredBaudRateHz - 130E-9) * pclkInHz - 2;
+    return ceil(brgFloat);
 }
 
 void I2C1_Init(I2CInitType *params)
 {
-    if(params->BRGValue == 0)
-        return;
-
     useRxInterrupt = params->useRxInterrupt;
     useTxInterrupt = params->useTxInterrupt;
 
@@ -173,9 +135,15 @@ void I2C1_Init(I2CInitType *params)
     I2CxCONbits.RSEN = 0;
     I2CxCONbits.SEN = 0;
 
-    I2CxBRG = params->BRGValue; // set baud rate generator
+    /* If you forgot to set a value for the baud rate, I'll use my default 
+    value. The value I've chosen should make your I2C bus do something as long 
+    as your system clock is somewhere in the 24 MHz to 100 MHz range. - MS */
+    if(params->BRGValue != 0)
+        I2CxBRG = params->BRGValue;
+    else
+        I2CxBRG = DEFAULT_BRG_VALUE;
 
-    // @todo enable any interrupts
+        // enable any interrupts
 
     I2CxCONbits.I2CEN = 1; // enable peripheral
 }
