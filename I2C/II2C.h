@@ -144,7 +144,8 @@ void I2C_Create(I2C *self, I2CInterface *interface);
 
 void I2C_SetInitTypeToDefaultParams(I2CInitType *params);
 
-void I2C_SetInitTypeParams(I2CInitType *params, bool useRxInterrupt, bool useTxInterrupt);
+void I2C_SetInitTypeParams(I2CInitType *params, bool useRxInterrupt, 
+        bool useTxInterrupt, I2CRole role);
 
 void I2C_SetInitBRGValue(I2CInitType *params, uint32_t BRGValue);
 

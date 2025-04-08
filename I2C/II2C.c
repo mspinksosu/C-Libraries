@@ -47,14 +47,17 @@ void I2C_Create(I2C *self, I2CInterface *interface)
 
 void I2C_SetInitTypeToDefaultParams(I2CInitType *params)
 {
+    params->role = I2C_ROLE_MASTER;
     params->useRxInterrupt = false;
     params->useTxInterrupt = false;
 }
 
 // *****************************************************************************
 
-void I2C_SetInitTypeParams(I2CInitType *params, bool useRxInterrupt, bool useTxInterrupt)
+void I2C_SetInitTypeParams(I2CInitType *params, bool useRxInterrupt, 
+    bool useTxInterrupt, I2CRole role)
 {
+    params->role = role;
     params->useRxInterrupt = useRxInterrupt;
     params->useTxInterrupt = useTxInterrupt;
 }
