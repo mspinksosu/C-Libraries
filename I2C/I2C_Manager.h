@@ -139,10 +139,32 @@ typedef enum I2CManagerStateTag
     // I2C_MANAGER_STATE_ERROR,
 } I2CManagerState;
 
-// This is the function pointer type for the state machine functions
-typedef void (*I2CFSMState)(I2CEvent *e);
+typedef enum I2CSignalTag
+{
+    I2C_SIG_ENTER = 1,
+    I2C_SIG_BEGIN_TRANSFER,
+    I2C_SIG_BUS_IDLE_EVENT,
+    I2C_SIG_ACK_RECEIVED,
+    I2C_SIG_NACK_RECEIVED,
+    I2C_SIG_DATA_RECEIVED,
+    I2C_SIG_TIMEOUT,
+} I2CSignal;
 
-typedef struct I2CManagerTag
+typedef struct I2CEventTag
+{
+    I2CSignal sig;
+    uint8_t slaveAddressPlusRW; // 7-bit address + R/W bit
+    bool generateRepeatedStart; // at the end of transfer
+    bool repeatedStartSent;     // repeated start has been performed
+    bool masterRead;            // go into read state after sending address
+} I2CEvent;
+
+typedef struct I2CManagerTag I2CManager; // forward declaration
+
+// This is the function pointer type for the state machine functions
+typedef void (*I2CFSMState)(I2CManager *self, I2CEvent *e);
+
+struct I2CManagerTag
 {
     I2C *peripheral;
     I2CSlave *endOfList; // circular linked list
@@ -158,7 +180,7 @@ typedef struct I2CManagerTag
     I2CManagerStatusBits statusBits; // @todo might replace this with state
     I2CManagerState managerState; // @todo might use slave state instead
     I2CState peripheralState;
-} I2CManager;
+};
 
 /**
  * Description of struct members:

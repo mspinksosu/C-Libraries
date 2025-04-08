@@ -220,7 +220,7 @@ void I2C1_ReceiveByteCancel(void)
 
 // *****************************************************************************
 
-void I2C1_TransmitFinishedEvent(void)
+void I2C1_TransmitRegisterEmptyEvent(void)
 {
     // @todo transmit interrupt
 }
@@ -259,6 +259,20 @@ bool I2C1_IsTransmitFinished(void)
 bool I2C1_IsTransmitUsingInterrupts(void)
 {
     return useTxInterrupt;
+}
+
+// @todo pending event handler, and function setters
+void I2C1_PendingEventHandler(void)
+{
+
+}
+void I2C1_SetTransmitRegisterEmptyCallback(void (*Function)(void))
+{
+
+}
+void I2C1_SetReceivedDataCallback(void (*Function)(uint8_t (*CallToGetData)(void)))
+{
+
 }
 
 // *****************************************************************************
