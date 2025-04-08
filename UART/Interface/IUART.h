@@ -132,7 +132,7 @@ typedef struct UARTInterfaceTag
     bool (*UART_IsReceiveRegisterFull)(void);
     bool (*UART_IsReceiveUsingInterrupts)(void);
     void (*UART_ReceiveEnable)(void);
-    void (*UART_ReceiveDisable)(void);
+    void (*UART_ReceiveDisable)(void); // @todo add isEnabled functions
     void (*UART_TransmitRegisterEmptyEvent)(void);
     void (*UART_TransmitByte)(uint8_t);
     bool (*UART_IsTransmitRegisterEmpty)(void);

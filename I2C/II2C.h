@@ -119,14 +119,7 @@ typedef struct I2CInterfaceTag
     void (*I2C_SendAck)(bool ackOrNack);
     bool (*I2C_IsBusy)(void);
     I2CState (*I2C_GetState)(void);
-
-    bool (*I2C_GetStartStatus)(void);
-    bool (*I2C_GetStopStatus)(void);
-    bool (*I2C_GetRestartStatus)(void);
-    bool (*I2C_GetAckSendStatus)(void);
     bool (*I2C_GetAckSlaveStatus)(void);
-    bool (*I2C_GetReceiveEnableStatus)(void);
-
 } I2CInterface;
 
 typedef struct I2CTag
@@ -151,10 +144,8 @@ void I2C_Create(I2C *self, I2CInterface *interface);
 
 void I2C_SetInitTypeToDefaultParams(I2CInitType *params);
 
-// @todo add more params if needed
 void I2C_SetInitTypeParams(I2CInitType *params, bool useRxInterrupt, bool useTxInterrupt);
 
-// @todo does I2C need a init BRG value function? If not, remove ComputeBRGValue
 void I2C_SetInitBRGValue(I2CInitType *params, uint32_t BRGValue);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -218,20 +209,8 @@ bool I2C_IsBusy(I2C *self);
 
 I2CState I2C_GetState(I2C *self);
 
-bool I2C_GetStartStatus(I2C *self);
-
-bool I2C_GetStopStatus(I2C *self);
-
-bool I2C_GetRestartStatus(I2C *self);
-
-bool I2C_GetAckSendStatus(I2C *self);
-
 bool I2C_GetAckSlaveStatus(I2C *self);
 
-bool I2C_GetReceiveEnableStatus(I2C *self);
-
-// @todo add IsBusIdle? or just use IsBusy?
-// @todo add get state, make generic states
 // @todo add get bus errors
 // @todo handle bus collision
 

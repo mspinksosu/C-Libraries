@@ -360,62 +360,6 @@ I2CState I2C_GetState(I2C *self)
     return retVal;
 
 }
-
-// *****************************************************************************
-
-bool I2C_GetStartStatus(I2C *self)
-{
-    if(self->interface->I2C_GetStartStatus != NULL)
-    {
-        return (self->interface->I2C_GetStartStatus)();
-    }
-    else
-    {
-        return false;
-    }
-}
-
-// *****************************************************************************
-
-bool I2C_GetStopStatus(I2C *self)
-{
-    if(self->interface->I2C_GetStopStatus != NULL)
-    {
-        return (self->interface->I2C_GetStopStatus)();
-    }
-    else
-    {
-        return false;
-    }
-}
-// *****************************************************************************
-
-bool I2C_GetRestartStatus(I2C *self)
-{
-    if(self->interface->I2C_GetRestartStatus != NULL)
-    {
-        return (self->interface->I2C_GetRestartStatus)();
-    }
-    else
-    {
-        return false;
-    }
-}
-
-// *****************************************************************************
-
-bool I2C_GetAckSendStatus(I2C *self)
-{
-    if(self->interface->I2C_GetAckSendStatus != NULL)
-    {
-        return (self->interface->I2C_GetAckSendStatus)();
-    }
-    else
-    {
-        return false;
-    }
-}
-
 // *****************************************************************************
 
 bool I2C_GetAckSlaveStatus(I2C *self)
@@ -423,20 +367,6 @@ bool I2C_GetAckSlaveStatus(I2C *self)
     if(self->interface->I2C_GetAckSlaveStatus != NULL)
     {
         return (self->interface->I2C_GetAckSlaveStatus)();
-    }
-    else
-    {
-        return false;
-    }
-}
-
-// *****************************************************************************
-
-bool I2C_GetReceiveEnableStatus(I2C *self)
-{
-    if(self->interface->I2C_GetReceiveEnableStatus != NULL)
-    {
-        return (self->interface->I2C_GetReceiveEnableStatus)();
     }
     else
     {

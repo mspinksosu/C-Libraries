@@ -65,6 +65,7 @@ I2CInterface I2C1_FunctionTable = {
     .I2C_Init = I2C1_Init,
     .I2C_Enable = I2C1_Enable,
     .I2C_Disable = I2C1_Disable,
+    .I2C_IsEnabled = I2C1_IsEnabled,
     .I2C_ReceivedDataEvent = I2C1_ReceivedDataEvent,
     .I2C_GetReceivedByte = I2C1_GetReceivedByte,
     .I2C_IsReceiveRegisterFull = I2C1_IsReceiveRegisterFull,
@@ -85,12 +86,7 @@ I2CInterface I2C1_FunctionTable = {
     .I2C_SendAck = I2C1_SendAck,
     .I2C_IsBusy = I2C1_IsBusy,
     .I2C_GetState = I2C1_GetState,
-    .I2C_GetStartStatus = I2C1_GetStartStatus,
-    .I2C_GetStopStatus = I2C1_GetStopStatus,
-    .I2C_GetRestartStatus = I2C1_GetRestartStatus,
-    .I2C_GetAckSendStatus = I2C1_GetAckSendStatus,
-    .I2C_GetAckSlaveStatus = I2C1_GetAckSlaveStatus,
-    .I2C_GetReceiveEnableStatus = I2C1_GetReceiveEnableStatus,
+    .I2C_GetAckSlaveStatus = I2C1_GetAckSlaveStatus
 };
 
 static bool useRxInterrupt = false, useTxInterrupt = false; // @todo rx and tx interrupts
@@ -118,6 +114,8 @@ uint32_t I2C1_ComputeBRGValue(uint32_t desiredBaudRateHz, uint32_t pclkInHz)
     brgFloat = (1.0 / desiredBaudRateHz - 130E-9) * pclkInHz - 2;
     return ceil(brgFloat);
 }
+
+// *****************************************************************************
 
 void I2C1_Init(I2CInitType *params)
 {
@@ -148,25 +146,45 @@ void I2C1_Init(I2CInitType *params)
     I2CxCONbits.I2CEN = 1; // enable peripheral
 }
 
+// *****************************************************************************
+
 void I2C1_Enable(void)
 {
     I2CxCONbits.I2CEN = 1;
 }
+
+// *****************************************************************************
 
 void I2C1_Disable(void)
 {
     I2CxCONbits.I2CEN = 0;
 }
 
+// *****************************************************************************
+
+bool I2C1_IsEnabled(void)
+{
+    if(I2CxCONbits.I2CEN)
+        return true;
+    else
+        return false;
+}
+
+// *****************************************************************************
+
 void I2C1_ReceivedDataEvent(void)
 {
     // @todo receive interrupt stuff
 }
 
+// *****************************************************************************
+
 uint8_t I2C1_GetReceivedByte(void)
 {
     return I2CxRCV;
 }
+
+// *****************************************************************************
 
 bool I2C1_IsReceiveRegisterFull(void)
 {
@@ -176,10 +194,14 @@ bool I2C1_IsReceiveRegisterFull(void)
         return false;
 }
 
+// *****************************************************************************
+
 bool I2C1_IsReceiveUsingInterrupts(void)
 {
     return useRxInterrupt;
 }
+
+// *****************************************************************************
 
 void I2C1_ReceiveByte(void)
 {
@@ -188,21 +210,29 @@ void I2C1_ReceiveByte(void)
     I2CxCONbits.RCEN = 1;
 }
 
+// *****************************************************************************
+
 void I2C1_ReceiveByteCancel(void)
 {
     I2CxCONbits.RCEN = 0;
     // @todo send stop if needed. Test - MS
 }
 
+// *****************************************************************************
+
 void I2C1_TransmitFinishedEvent(void)
 {
-    // @todo transmit interrupt stuff
+    // @todo transmit interrupt
 }
+
+// *****************************************************************************
 
 void I2C1_TransmitByte(uint8_t dataToSend)
 {
     I2CxTRN = dataToSend;
 }
+
+// *****************************************************************************
 
 bool I2C1_IsTransmitRegisterEmpty(void)
 {
@@ -213,6 +243,8 @@ bool I2C1_IsTransmitRegisterEmpty(void)
         return true;
 }
 
+// *****************************************************************************
+
 bool I2C1_IsTransmitFinished(void)
 {
     // transmit status is set after 9 bits. (8 data bits plus ack or nack)
@@ -222,25 +254,35 @@ bool I2C1_IsTransmitFinished(void)
         return false;
 }
 
+// *****************************************************************************
+
 bool I2C1_IsTransmitUsingInterrupts(void)
 {
     return useTxInterrupt;
 }
+
+// *****************************************************************************
 
 void I2C1_Start(void)
 {
     I2CxCONbits.SEN = 1; // cleared by module when finished
 }
 
+// *****************************************************************************
+
 void I2C1_Stop(void)
 {
     I2CxCONbits.PEN = 1; // cleared by module when finished
 }
 
+// *****************************************************************************
+
 void I2C1_Restart(void)
 {
     I2CxCONbits.RSEN = 1; // cleared by module when finished
 }
+
+// *****************************************************************************
 
 void I2C1_SendAck(bool ackOrNack)
 {
@@ -251,6 +293,8 @@ void I2C1_SendAck(bool ackOrNack)
     
     I2CxCONbits.ACKEN = 1; // cleared by module when finished
 }
+
+// *****************************************************************************
 
 bool I2C1_IsBusy(void)
 {
@@ -266,6 +310,8 @@ bool I2C1_IsBusy(void)
     else
         return false;
 }
+
+// *****************************************************************************
 
 I2CState I2C1_GetState(void)
 {
@@ -293,37 +339,7 @@ I2CState I2C1_GetState(void)
     return retState;
 }
 
-bool I2C1_GetStartStatus(void)
-{
-    if(I2CxSTATbits.SEN)
-        return true;
-    else
-        return false;
-}
-
-bool I2C1_GetStopStatus(void)
-{
-    if(I2CxSTATbits.PEN)
-        return true;
-    else
-        return false;
-}
-
-bool I2C1_GetRestartStatus(void)
-{
-    if(I2CxSTATbits.RSEN)
-        return true;
-    else
-        return false;
-}
-
-bool I2C1_GetAckSendStatus(void)
-{
-    if(I2CxSTATbits.ACKEN)
-        return true;
-    else
-        return false;
-}
+// *****************************************************************************
 
 bool I2C1_GetAckSlaveStatus(void)
 {
@@ -331,14 +347,6 @@ bool I2C1_GetAckSlaveStatus(void)
         return false; // 1 = ack was not received (NACK)
     else
         return true;
-}
-
-bool I2C1_GetReceiveEnableStatus(void)
-{
-    if(I2CxSTATbits.RCEN)
-        return true;
-    else
-        return false;
 }
 
 /*

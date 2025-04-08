@@ -54,6 +54,8 @@ void I2C1_Enable(void);
 
 void I2C1_Disable(void);
 
+bool I2C1_IsEnabled(void);
+
 void I2C1_ReceivedDataEvent(void);
 
 uint8_t I2C1_GetReceivedByte(void);
@@ -92,16 +94,6 @@ bool I2C1_IsBusy(void);
 
 I2CState I2C1_GetState(void);
 
-bool I2C1_GetStartStatus(void);
-
-bool I2C1_GetStopStatus(void);
-
-bool I2C1_GetRestartStatus(void);
-
-bool I2C1_GetAckSendStatus(void);
-
 bool I2C1_GetAckSlaveStatus(void);
-
-bool I2C1_GetReceiveEnableStatus(void);
 
 #endif /* I2C1_H */
