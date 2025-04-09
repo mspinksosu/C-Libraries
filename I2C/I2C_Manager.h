@@ -136,7 +136,7 @@ typedef enum I2CManagerStateTag
 {
     I2C_MANAGER_STATE_IDLE = 0,
     I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS,
-    // I2C_MANAGER_STATE_ERROR,
+    I2C_MANAGER_STATE_ERROR, // @todo add errors etc.
 } I2CManagerState;
 
 typedef enum I2CSignalTag

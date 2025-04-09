@@ -176,7 +176,7 @@ void I2CManager_Process(I2CManager *self)
         }
     }
     else if(self->statusBits.receiveInProgress && currentPeripheralState == I2C_STATE_BUS_IDLE && 
-        self->peripheralState == I2C_STATE_SENDING_START)
+        self->peripheralState == I2C_STATE_MASTER_RECEIVING) // @todo is this extra check necessary? - MS
     {
         if(I2C_IsReceiveRegisterFull(self->peripheral))
         {
@@ -484,6 +484,7 @@ static void I2CManager_FsmStart(I2CManager *self, I2CEvent *e)
         case I2C_SIG_ENTER:
             I2C_Start(self->peripheral);
             self->fsmTimer.flags.start = 1;
+            self->statusBits.sendingStart = 1;
             break;
         case I2C_SIG_BUS_IDLE_EVENT:
             self->fsmTimer.flags.active = 0;
@@ -503,6 +504,7 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
         case I2C_SIG_ENTER:
             I2C_TransmitByte(self->peripheral, e->slaveAddressPlusRW);
             self->fsmTimer.flags.start = 1;
+            self->statusBits.transmitInProgress = 1;
             break;
         case I2C_SIG_BUS_IDLE_EVENT:
             self->fsmTimer.flags.active = 0;
@@ -543,6 +545,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
         case I2C_SIG_ENTER:
             I2C_TransmitByte(self->peripheral, self->currentDataTransfer.data[self->writeCount]);
             self->fsmTimer.flags.start = 1;
+            self->statusBits.transmitInProgress = 1;
             break;
         case I2C_SIG_BUS_IDLE_EVENT:
             if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_WRITE) // @follow-up is this extra check needed? - MS
@@ -557,6 +560,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
                         /* Stay in this state and continue sending bytes */
                         I2C_TransmitByte(self->peripheral, self->currentDataTransfer.data[self->writeCount]);
                         self->fsmTimer.flags.start = 1;
+                        self->statusBits.transmitInProgress = 1;
                     }
                     else
                     {
@@ -564,15 +568,15 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
                         is another transfer ready and generate a repeated start. */
                         if(e->generateRepeatedStart) // @todo replace with slave buffer check
                         {
-                            I2C_Restart(self->peripheral);
-                            self->fsmTimer.flags.start = 1;
+                            e->sig = I2C_SIG_ENTER;
                             self->fsmState = I2CManager_FsmRestart;
+                            self->fsmState(self, e);
                         }
                         else
                         {
-                            I2C_Stop(self->peripheral);
-                            self->fsmTimer.flags.start = 1;
+                            e->sig = I2C_SIG_ENTER;
                             self->fsmState = I2CManager_FsmStop;
+                            self->fsmState(self, e);
                         }
                     }
                 }
@@ -584,6 +588,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
                     {
                         I2C_TransmitByte(self->peripheral, self->currentDataTransfer.data[self->writeCount]);
                         self->fsmTimer.flags.start = 1;
+                        self->statusBits.transmitInProgress = 1;
                     }
                 }
             }
@@ -601,6 +606,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
         case I2C_SIG_ENTER:
             I2C_ReceiveByte(self->peripheral);
             self->fsmTimer.flags.start = 1;
+            self->statusBits.receiveInProgress = 1;
             break;
         case I2C_SIG_DATA_RECEIVED:
             if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_READ) // @follow-up is this extra check needed? - MS
@@ -612,6 +618,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
                 else
                     I2C_SendAck(self->peripheral, false); // send NACK on last byte
                 self->fsmTimer.flags.start = 1;
+                self->statusBits.sendingAck = 1;
             }
             break;
         case I2C_SIG_BUS_IDLE_EVENT:
@@ -622,6 +629,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
             {
                 I2C_ReceiveByte(self->peripheral);
                 self->fsmTimer.flags.start = 1;
+                self->statusBits.receiveInProgress = 1;
             }
             else
             {
@@ -654,6 +662,7 @@ static void I2CManager_FsmStop(I2CManager *self, I2CEvent *e)
         case I2C_SIG_ENTER:
             I2C_ReceiveByte(self->peripheral);
             self->fsmTimer.flags.start = 1;
+            self->statusBits.sendingStop = 1;
             break;
         case I2C_SIG_BUS_IDLE_EVENT:
             /* Stop is finished */
@@ -673,6 +682,7 @@ static void I2CManager_FsmRestart(I2CManager *self, I2CEvent *e)
         case I2C_SIG_ENTER:
             I2C_Stop(self->peripheral);
             self->fsmTimer.flags.start = 1;
+            self->statusBits.sendingRestart = 1;
             break;
         case I2C_SIG_BUS_IDLE_EVENT:
             /* Repeat start is finished */
