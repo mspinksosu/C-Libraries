@@ -131,36 +131,32 @@ void I2CManager_Process(I2CManager *self)
     with just the state. I could keep the status bits and make sure the events 
     are explicit. Or just make a simple check if the previous state was not 
     equal to the current state. */
-    if(self->peripheralState != I2C_STATE_BUS_IDLE && currentPeripheralState == I2C_STATE_BUS_IDLE)
+    if(self->statusBits.sendingStart && currentPeripheralState == I2C_STATE_BUS_IDLE)
     {
-        if(self->statusBits.sendingStart)
-        {
-            self->statusBits.sendingStart = 0;
-            event.sig = I2C_SIG_BUS_IDLE_EVENT;
-            self->fsmState(self, &event); // call the current state and pass the event
-        }
-        if(self->statusBits.sendingRestart)
-        {
-            self->statusBits.sendingRestart = 0;
-            event.sig = I2C_SIG_BUS_IDLE_EVENT;
-            self->fsmState(self, &event);
-        }
-        if(self->statusBits.sendingStop)
-        {
-            self->statusBits.sendingStop = 0;
-            event.sig = I2C_SIG_BUS_IDLE_EVENT;
-            self->fsmState(self, &event);
-        }
-        if(self->statusBits.sendingAck)
-        {
-            self->statusBits.sendingAck = 0;
-            event.sig = I2C_SIG_BUS_IDLE_EVENT;
-            self->fsmState(self, &event);
-        }
+        self->statusBits.sendingStart = 0;
+        event.sig = I2C_SIG_BUS_IDLE_EVENT;
+        self->fsmState(self, &event); // call the current state and pass the event
+    }
+    if(self->statusBits.sendingRestart && currentPeripheralState == I2C_STATE_BUS_IDLE)
+    {
+        self->statusBits.sendingRestart = 0;
+        event.sig = I2C_SIG_BUS_IDLE_EVENT;
+        self->fsmState(self, &event);
+    }
+    if(self->statusBits.sendingStop && currentPeripheralState == I2C_STATE_BUS_IDLE)
+    {
+        self->statusBits.sendingStop = 0;
+        event.sig = I2C_SIG_BUS_IDLE_EVENT;
+        self->fsmState(self, &event);
+    }
+    if(self->statusBits.sendingAck && currentPeripheralState == I2C_STATE_BUS_IDLE)
+    {
+        self->statusBits.sendingAck = 0;
+        event.sig = I2C_SIG_BUS_IDLE_EVENT;
+        self->fsmState(self, &event);
     }
 
-    if(self->statusBits.transmitInProgress && currentPeripheralState == I2C_STATE_BUS_IDLE && 
-        self->peripheralState == I2C_STATE_MASTER_TRANSMITTING) // @todo is this extra check necessary? - MS
+    if(self->statusBits.transmitInProgress && currentPeripheralState != I2C_STATE_MASTER_TRANSMITTING)
     {
         /* @follow-up In my previous PIC32 library, I had a note to check that 
         the transmit register was completely empty before sending the bus idle 
@@ -175,8 +171,7 @@ void I2CManager_Process(I2CManager *self)
             self->fsmState(self, &event);
         }
     }
-    else if(self->statusBits.receiveInProgress && currentPeripheralState == I2C_STATE_BUS_IDLE && 
-        self->peripheralState == I2C_STATE_MASTER_RECEIVING) // @todo is this extra check necessary? - MS
+    else if(self->statusBits.receiveInProgress && currentPeripheralState != I2C_STATE_MASTER_RECEIVING)
     {
         if(I2C_IsReceiveRegisterFull(self->peripheral))
         {

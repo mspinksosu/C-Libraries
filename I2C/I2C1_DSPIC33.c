@@ -249,9 +249,9 @@ bool I2C1_IsTransmitFinished(void)
 {
     // transmit status is set after 9 bits. (8 data bits plus ack or nack)
     if(I2CxSTATbits.TRSTAT)
-        return true;
-    else
         return false;
+    else
+        return true;
 }
 
 // *****************************************************************************
