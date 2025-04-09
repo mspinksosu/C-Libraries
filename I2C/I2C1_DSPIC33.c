@@ -30,21 +30,13 @@
 /* @remove old state machine defines later */
 #define PBCLK_FREQ          40000000UL // in Hz
 #define TIMEOUT_PERIOD_US   500 // desired timeout period in us
-
-/* C macros for computing period value for timeout. The source clock frequency
- * is basically how often you will call the function to update the state 
- * machine. You can set it to any value you want in Hz. If you update the FSM 
- * once per loop, just leave it the same as the source clock. The timeout value 
- * in us does not have to be very precise. It is just a rough number used for 
- * the FSM to determine if something went wrong. I have it set to 1 millisecond 
- * by default.
- */
 #define TIMOUT_SRC_CLK_FREQ     PBCLK_FREQ // in Hz
 #define TIMEOUT_SRC_CLK_US      (1.0 / TIMOUT_SRC_CLK_FREQ * 1000000.0)
 #define TIMEOUT_PERIOD_COUNT    (TIMEOUT_PERIOD_US / TIMEOUT_SRC_CLK_US)
 
-/* This will put the I2C bus somewhere in the 100 kHz to 400 kHz range if the 
-system clock is between 24 MHz and 100 MHz. */
+/* The default value I've chosen will put the I2C bus somewhere in the 100 kHz 
+to 400 kHz range if the system clock is between 24 MHz and 100 MHz. */
+#define MAX_BRG_VALUE     512 // 9 bits
 #define DEFAULT_BRG_VALUE 250
 
 /* Registers */
@@ -110,9 +102,14 @@ uint32_t I2C1_ComputeBRGValue(uint32_t desiredBaudRateHz, uint32_t pclkInHz)
 {
     /* I2CxBRG = ((1 / Fscl - delay (ns)) * Fcy) - 2
     Typical delay is 110 ns to 130 ns. (DSPIC33 Family Reference Manual) */
+    uint32_t brgInt = 0;
     float brgFloat;
     brgFloat = (1.0 / desiredBaudRateHz - 130E-9) * pclkInHz - 2;
-    return ceil(brgFloat);
+    /* Maximum size of the I2C BRG register is 9 bits */
+    brgInt = (uint32_t)(ceil(brgFloat));
+    if(brgInt > MAX_BRG_VALUE)
+        brgInt = DEFAULT_BRG_VALUE;
+    return brgInt;
 }
 
 // *****************************************************************************
@@ -136,10 +133,10 @@ void I2C1_Init(I2CInitType *params)
     /* If you forgot to set a value for the baud rate, I'll use my default 
     value. The value I've chosen should make your I2C bus do something as long 
     as your system clock is somewhere in the 24 MHz to 100 MHz range. - MS */
-    if(params->BRGValue != 0)
-        I2CxBRG = params->BRGValue;
-    else
+    if(params->BRGValue == 0 || params->BRGValue > MAX_BRG_VALUE)
         I2CxBRG = DEFAULT_BRG_VALUE;
+    else
+        I2CxBRG = params->BRGValue;
 
         // enable any interrupts
 
