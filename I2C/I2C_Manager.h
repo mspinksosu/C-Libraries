@@ -33,13 +33,6 @@
 
 // ***** Global Variables ******************************************************
 
-// typedef struct I2CSlaveTag I2CSlave; // forward declaration
-
-// @todo decided if I want to keep the old callback function pointers
-/* callback function pointer. The context is so that you can know which of
-your I2C devices initiated the callback. */
-// typedef void (*I2CSlaveCallbackFunc)(I2CSlave *i2cSlaveContext);
-
 typedef enum I2CTransferTypeTag
 {
     I2C_TRANSFER_TYPE_WRITE = 0,
@@ -82,6 +75,11 @@ typedef struct I2CDataTransferStatusTag
 } I2CDataTransferStatus;
 
 typedef struct I2CSlaveTag I2CSlave; // forward declaration
+
+// @todo decided if I want to keep the old callback function pointers
+/* callback function pointer. The context is so that you can know which of
+your I2C devices initiated the callback. */
+// typedef void (*I2CSlaveCallbackFunc)(I2CSlave *i2cSlaveContext);
 
 /* @todo decide if I want to make a base class or not */
 struct I2CSlaveTag

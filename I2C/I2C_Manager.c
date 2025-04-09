@@ -50,7 +50,7 @@ static void I2CManager_DevicePush(I2CSlave *self, I2CSlave *endOfList);
 static uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataTransfer *returnDataTransfer);
 static uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self);
 static void I2CSlave_DataTransferFinished(I2CSlave *self, I2CDataTransferStatus *report);
-static void I2CManager_DataTransfer(I2CManager *self, I2CSlave *slave, I2CDataTransfer *data);
+static void I2CManager_DataTransfer(I2CManager *self, I2CDataTransfer *data);
 static void I2CManager_GetFinishedTransferReport(I2CManager *self, I2CDataTransferStatus *retReport);
 
 // *****************************************************************************
@@ -216,7 +216,7 @@ void I2CManager_Process(I2CManager *self)
                     transferError = I2CSlave_ReadFromDataTransferBuffer(self->currentDevice, &tempDataTransfer);
                     if(transferError == 0)
                     {
-                        I2CManager_DataTransfer(self, self->currentDevice, &tempDataTransfer);
+                        I2CManager_DataTransfer(self, &tempDataTransfer);
                         self->managerState = I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS;
                     }
                 }
@@ -405,29 +405,14 @@ static void I2CSlave_DataTransferFinished(I2CSlave *self, I2CDataTransferStatus 
 
 // *****************************************************************************
 
-static void I2CManager_DataTransfer(I2CManager *self, I2CSlave *slave, I2CDataTransfer *data)
+static void I2CManager_DataTransfer(I2CManager *self, I2CDataTransfer *data)
 {
     if(self->fsmState != I2CManager_FsmIdle)
         return;
 
-    // get the data
-    // @follow-up try a simple struct assignment first instead of memcpy just for better readability - MS
+    /* Copy the data over to our temporary transfer buffer */
     self->currentDataTransfer = *data;
-
-    // create an event to give to the state machine
-    I2CEvent event = {0};
-    if(data->transferType == I2C_TRANSFER_TYPE_WRITE)
-    {
-        event.masterRead = false;
-        event.slaveAddressPlusRW = slave->slaveAddress7Bit << 1;
-        self->writeCount = 0;
-    }
-    else
-    {
-        event.masterRead = true;
-        event.slaveAddressPlusRW = ((slave->slaveAddress7Bit << 1) | 1);
-        self->readCount = 0;
-    }
+    I2CEvent event = {0}; // create an event to give to the state machine
     event.sig = I2C_SIG_BEGIN_TRANSFER;
     self->fsmState(self, &event); // call the current state and pass the event
 }
@@ -456,7 +441,7 @@ static void I2CManager_FsmIdle(I2CManager *self, I2CEvent *e)
         case I2C_SIG_BEGIN_TRANSFER:
             if(e->repeatedStartSent)
             {
-                // skip the start and go straight to the address
+                /* Repeat start. Skip start and go straight to the address */
                 e->repeatedStartSent = false;
                 self->fsmState = I2CManager_FsmWriteAddress;
             }
@@ -497,6 +482,19 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
     switch(e->sig)
     {
         case I2C_SIG_ENTER:
+            /* Add event data for read or write purposes */
+            if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_WRITE)
+            {
+                e->masterRead = false;
+                e->slaveAddressPlusRW = (self->currentDevice->slaveAddress7Bit) << 1;
+                self->writeCount = 0;
+            }
+            else
+            {
+                e->masterRead = true;
+                e->slaveAddressPlusRW = ((self->currentDevice->slaveAddress7Bit << 1) | 1);
+                self->readCount = 0;
+            }
             I2C_TransmitByte(self->peripheral, e->slaveAddressPlusRW);
             self->fsmTimer.flags.start = 1;
             self->statusBits.transmitInProgress = 1;
