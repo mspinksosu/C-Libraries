@@ -36,7 +36,7 @@
 
 /* The default value I've chosen will put the I2C bus somewhere in the 100 kHz 
 to 400 kHz range if the system clock is between 24 MHz and 100 MHz. */
-#define MAX_BRG_VALUE     512 // 9 bits
+#define MAX_BRG_VALUE     511 // 9 bits
 #define DEFAULT_BRG_VALUE 250
 
 /* Registers */
