@@ -39,6 +39,8 @@ static void SPI_Manager_DevicePush(SPISlave *self, SPISlave *endOfList);
 void SPI_Manager_Init(SPIManager *self, SPI *peripheral)
 {
     self->peripheral = peripheral;
+    /* @todo setting this to null requires that the init function be called 
+    before the add slave function */
     self->endOfList = NULL;
     self->device = NULL;
     self->busy = false; // @todo busy flag isn't used right now

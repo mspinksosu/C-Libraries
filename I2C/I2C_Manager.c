@@ -55,11 +55,14 @@ static void I2CManager_GetFinishedTransferReport(I2CManager *self, I2CDataTransf
 
 // *****************************************************************************
 
+/* @todo Should init always clear the list by setting the pointers to NULL? This would require that 
+the person using the library makes sure that they call Init before AddSlave. If they accidentally 
+add all slave devices, then call init, the manager list will be erased. - MS */
 void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateUs)
 {
     self->peripheral = peripheral;
-    self->endOfList = NULL;
-    self->currentDevice = NULL;
+    // self->endOfList = NULL;
+    // self->currentDevice = NULL;
     self->currentDataTransfer.length = 0;
     self->writeCount = 0;
     self->readCount = 0;
@@ -157,7 +160,7 @@ void I2CManager_Process(I2CManager *self)
     }
 
     if(self->statusBits.transmitInProgress && currentPeripheralState == I2C_STATE_BUS_IDLE && 
-        self->peripheralState == I2C_STATE_MASTER_TRANSMITTING)
+        self->peripheralState == I2C_STATE_MASTER_TRANSMITTING) // @todo is this extra check necessary? - MS
     {
         /* @follow-up In my previous PIC32 library, I had a note to check that 
         the transmit register was completely empty before sending the bus idle 
@@ -296,7 +299,7 @@ void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress7Bit)
 
 bool I2CSlave_IsReadyForDataTransfer(I2CSlave *self)
 {
-    if(I2CSlave_GetDataTransferBufferCount(self) > 0)
+    if(I2CSLAVE_DR_BUFFER_SIZE - I2CSlave_GetDataTransferBufferCount(self) > 0)
         return true;
     else
         return false;
