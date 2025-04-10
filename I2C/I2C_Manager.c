@@ -240,13 +240,11 @@ void I2CManager_Process(I2CManager *self)
                     if(I2CSlave_GetDataTransferBufferCount(self->currentDevice) > 0)
                     {
                         event.sig = I2C_SIG_SEND_RESTART;
-                        event.repeatedStartSent = false;
                         self->fsmState(self, &event);
                     }
                     else
                     {
                         event.sig = I2C_SIG_SEND_STOP;
-                        event.repeatedStartSent = false;
                         self->fsmState(self, &event);
                         self->currentDevice = self->currentDevice->next;
                     }
@@ -453,10 +451,10 @@ static void I2CManager_FsmIdle(I2CManager *self, I2CEvent *e)
     switch(e->sig)
     {
         case I2C_SIG_BEGIN_TRANSFER:
-            if(e->repeatedStartSent)
+            if(self->statusBits.repeatedStartSent)
             {
                 /* Repeat start. Skip start and go straight to the address */
-                e->repeatedStartSent = false;
+                self->statusBits.repeatedStartSent = 0;
                 self->fsmState = I2CManager_FsmWriteAddress;
             }
             else
@@ -679,6 +677,7 @@ static void I2CManager_FsmStop(I2CManager *self, I2CEvent *e)
         case I2C_SIG_ENTER:
             I2C_Stop(self->peripheral);
             self->fsmTimer.flags.start = 1;
+            self->statusBits.repeatedStartSent = 0;
             self->statusBits.sendingStop = 1;
             break;
         case I2C_SIG_BUS_IDLE_EVENT:
@@ -699,12 +698,13 @@ static void I2CManager_FsmRestart(I2CManager *self, I2CEvent *e)
         case I2C_SIG_ENTER:
             I2C_Restart(self->peripheral);
             self->fsmTimer.flags.start = 1;
+            self->statusBits.repeatedStartSent = 0;
             self->statusBits.sendingRestart = 1;
             break;
         case I2C_SIG_BUS_IDLE_EVENT:
             /* Repeat start is finished */
             self->fsmTimer.flags.active = 0;
-            e->repeatedStartSent = true;
+            self->statusBits.repeatedStartSent = 1;
             self->fsmState = I2CManager_FsmIdle;
             break;
         // @todo add timeout event

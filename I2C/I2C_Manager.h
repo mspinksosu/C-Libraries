@@ -34,7 +34,7 @@
 amount that you would like the slave to be able to hold at once. I would 
 suggest a minimum size of 3. That is enough to hold one write data request, 
 followed by one read data request. - MS */
-#define I2CSLAVE_DR_BUFFER_SIZE 3
+#define I2CSLAVE_DR_BUFFER_SIZE 3 // @todo change name to DT?
 
 // ***** Global Variables ******************************************************
 
@@ -128,7 +128,8 @@ typedef struct I2CManagerStatusBitsTag
             unsigned sendingAck         :1;
             unsigned receiveInProgress  :1;
             unsigned transmitInProgress :1;
-            unsigned                    :2;
+            unsigned repeatedStartSent  :1; // repeated start has been performed
+            unsigned                    :1;
         };
         uint8_t all;
     };
@@ -159,7 +160,6 @@ typedef struct I2CEventTag
 {
     I2CSignal sig;
     uint8_t slaveAddressPlusRW; // 7-bit address + R/W bit
-    bool repeatedStartSent;     // repeated start has been performed
     bool masterRead;            // go into read state after sending address
 } I2CEvent;
 
@@ -224,6 +224,8 @@ void I2CManager_GetCurrentDevice(I2CManager *self, I2CSlave *retDevice); // @tod
 void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress);
 
 bool I2CSlave_IsReadyForDataTransfer(I2CSlave *self);
+
+// @todo Do I want to add a GetDataTransferBufferCount?
 
 void I2CSlave_DataTransfer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *data, uint16_t length);
 
