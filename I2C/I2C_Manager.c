@@ -677,7 +677,7 @@ static void I2CManager_FsmStop(I2CManager *self, I2CEvent *e)
     switch(e->sig)
     {
         case I2C_SIG_ENTER:
-            I2C_ReceiveByte(self->peripheral);
+            I2C_Stop(self->peripheral);
             self->fsmTimer.flags.start = 1;
             self->statusBits.sendingStop = 1;
             break;
@@ -697,7 +697,7 @@ static void I2CManager_FsmRestart(I2CManager *self, I2CEvent *e)
     switch(e->sig)
     {
         case I2C_SIG_ENTER:
-            I2C_Stop(self->peripheral);
+            I2C_Restart(self->peripheral);
             self->fsmTimer.flags.start = 1;
             self->statusBits.sendingRestart = 1;
             break;
