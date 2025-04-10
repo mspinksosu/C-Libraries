@@ -29,7 +29,12 @@
 
 #define I2CMANAGER_TIMEOUT_PERIOD_US 500 // desired timeout period in us
 #define I2CMANAGER_REPEAT_LIMIT 5
-#define I2CSLAVE_DR_BUFFER_SIZE 2
+
+/* @note The size of the data request buffer should be one more than the 
+amount that you would like the slave to be able to hold at once. I would 
+suggest a minimum size of 3. That is enough to hold one write data request, 
+followed by one read data request. - MS */
+#define I2CSLAVE_DR_BUFFER_SIZE 3
 
 // ***** Global Variables ******************************************************
 
