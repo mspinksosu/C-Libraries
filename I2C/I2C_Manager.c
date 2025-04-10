@@ -51,7 +51,7 @@ static uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataTransf
 static uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self);
 static void I2CSlave_DataTransferFinished(I2CSlave *self, I2CDataTransferStatus *report);
 static void I2CManager_DataTransfer(I2CManager *self, I2CDataTransfer *data);
-static void I2CManager_GetFinishedTransferReport(I2CManager *self, I2CDataTransferStatus *retReport);
+static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CDataTransferStatus *retReport);
 
 // *****************************************************************************
 
@@ -207,11 +207,11 @@ void I2CManager_Process(I2CManager *self)
     if(self->currentDevice != NULL)
     {
         uint8_t transferError = 1;
-
         switch(self->managerState)
         {
             case I2C_MANAGER_STATE_IDLE:
-                if(I2CSlave_GetDataTransferBufferCount(self->currentDevice) > 0)
+                if(I2CSlave_GetDataTransferBufferCount(self->currentDevice) > 0 && 
+                    self->fsmState == I2CManager_FsmIdle)
                 {
                     transferError = I2CSlave_ReadFromDataTransferBuffer(self->currentDevice, &tempDataTransfer);
                     if(transferError == 0)
@@ -226,15 +226,30 @@ void I2CManager_Process(I2CManager *self)
                 }
                 break;
             case I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS:
-                if(I2CSlave_IsDataTransferFinished(self->currentDevice))
+                if(self->currentDataTransferFinished)
                 {
-                    /* @todo Check if there is another transfer ready and make 
-                    a repeated start. Else write the transfer report then go 
-                    to the next device. */
-                    // @todo repeated start
-                    I2CManager_GetFinishedTransferReport(self, &tempStatusReport);
+                    /* @todo Should I check for repeated start in the FSM itself, 
+                    or do it here instead? */
+
+                    /* Get the status of the current transfer and write it to 
+                    the slave device */
+                    I2CManager_GenerateFinishedTransferReport(self, &tempStatusReport);
                     I2CSlave_DataTransferFinished(self->currentDevice, &tempStatusReport);
-                    self->currentDevice = self->currentDevice->next;
+                    /* Check if there is more data to transfer. If there is, 
+                    send a repeated start event to the state machine. */
+                    if(I2CSlave_GetDataTransferBufferCount(self->currentDevice) > 0)
+                    {
+                        event.sig = I2C_SIG_SEND_RESTART;
+                        event.repeatedStartSent = false;
+                        self->fsmState(self, &event);
+                    }
+                    else
+                    {
+                        event.sig = I2C_SIG_SEND_STOP;
+                        event.repeatedStartSent = false;
+                        self->fsmState(self, &event);
+                        self->currentDevice = self->currentDevice->next;
+                    }
                     self->managerState = I2C_MANAGER_STATE_IDLE;
                 }
                 break;
@@ -368,7 +383,6 @@ static uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataTransf
     {
         /* The buffer is not empty. Get the data from the buffer to be 
         processed and clear the transfer finished flag */
-        // @follow-up test simple struct assignment first instead of memcpy just for better readability - MS
         *returnDataTransfer = self->private.buffer[self->private.tail];
         self->private.tail = CircularIncrement(self->private.tail, I2CSLAVE_DR_BUFFER_SIZE);
         self->private.transferFinished = false;
@@ -399,7 +413,6 @@ static uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self)
 static void I2CSlave_DataTransferFinished(I2CSlave *self, I2CDataTransferStatus *reportToWrite)
 {
     self->private.transferFinished = true;
-    // @follow-up try a simple struct assignment first instead of memcpy just for better readability - MS
     self->finishedTransferReport = *reportToWrite;
 }
 
@@ -412,6 +425,7 @@ static void I2CManager_DataTransfer(I2CManager *self, I2CDataTransfer *data)
 
     /* Copy the data over to our temporary transfer buffer */
     self->currentDataTransfer = *data;
+    self->currentDataTransferFinished = false;
     I2CEvent event = {0}; // create an event to give to the state machine
     event.sig = I2C_SIG_BEGIN_TRANSFER;
     self->fsmState(self, &event); // call the current state and pass the event
@@ -419,7 +433,7 @@ static void I2CManager_DataTransfer(I2CManager *self, I2CDataTransfer *data)
 
 // *****************************************************************************
 
-static void I2CManager_GetFinishedTransferReport(I2CManager *self, I2CDataTransferStatus *retReport)
+static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CDataTransferStatus *retReport)
 {
     retReport->error = I2C_TRANSFER_ERROR_NONE; // @todo I2C error codes
     retReport->state = I2C_TRANSFER_STATE_IDLE;
@@ -522,8 +536,15 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
             }
             else
             {
+                self->fsmTimer.flags.active = 0;
                 // @todo retransmit address
+                // @todo increment resend counter
             }
+            break;
+        case I2C_SIG_SEND_STOP:
+            e->sig = I2C_SIG_ENTER;
+            self->fsmState = I2CManager_FsmStop;
+            self->fsmState(self, e);
             break;
         // @todo add timeout event
     }
@@ -557,25 +578,17 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
                     }
                     else
                     {
-                        /* We are finished with the transfer. Check to see if there 
-                        is another transfer ready and generate a repeated start. */
-                        if(e->generateRepeatedStart) // @todo replace with slave buffer check
-                        {
-                            e->sig = I2C_SIG_ENTER;
-                            self->fsmState = I2CManager_FsmRestart;
-                            self->fsmState(self, e);
-                        }
-                        else
-                        {
-                            e->sig = I2C_SIG_ENTER;
-                            self->fsmState = I2CManager_FsmStop;
-                            self->fsmState(self, e);
-                        }
+                        /* We are finished with the transfer. Set a flag to tell 
+                        the manager that we are done. The manager will tell us 
+                        if we need to send a stop or a restart. */
+                        self->currentDataTransferFinished = true;
+                        // @todo start timer that will automatically send a stop on timeout
                     }
                 }
                 else
                 {
                     /* Resend */
+                    // @todo increment resend counter
                     self->fsmTimer.flags.active = 0;
                     if(self->writeCount < self->currentDataTransfer.length)
                     {
@@ -585,6 +598,16 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
                     }
                 }
             }
+            break;
+        case I2C_SIG_SEND_STOP:
+            e->sig = I2C_SIG_ENTER;
+            self->fsmState = I2CManager_FsmStop;
+            self->fsmState(self, e);
+            break;
+        case I2C_SIG_SEND_RESTART:
+            e->sig = I2C_SIG_ENTER;
+            self->fsmState = I2CManager_FsmRestart;
+            self->fsmState(self, e);
             break;
         // @todo add timeout event
     }
@@ -626,21 +649,22 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
             }
             else
             {
-                /* We are finished with the transfer. Check to see if there 
-                is another transfer ready and generate a repeated start. */
-                if(e->generateRepeatedStart) // @todo replace with slave buffer check
-                {
-                    e->sig = I2C_SIG_ENTER;
-                    self->fsmState = I2CManager_FsmRestart;
-                    self->fsmState(self, e);
-                }
-                else
-                {
-                    e->sig = I2C_SIG_ENTER;
-                    self->fsmState = I2CManager_FsmStop;
-                    self->fsmState(self, e);
-                }
+                /* We are finished with the transfer. Set a flag to tell 
+                the manager that we are done. The manager will tell us 
+                if we need to send a stop or a restart. */
+                self->currentDataTransferFinished = true;
+                // @todo start timer that will automatically send a stop on timeout
             }
+            break;
+        case I2C_SIG_SEND_STOP:
+            e->sig = I2C_SIG_ENTER;
+            self->fsmState = I2CManager_FsmStop;
+            self->fsmState(self, e);
+            break;
+        case I2C_SIG_SEND_RESTART:
+            e->sig = I2C_SIG_ENTER;
+            self->fsmState = I2CManager_FsmRestart;
+            self->fsmState(self, e);
             break;
         // @todo add timeout event
     }
@@ -680,7 +704,6 @@ static void I2CManager_FsmRestart(I2CManager *self, I2CEvent *e)
         case I2C_SIG_BUS_IDLE_EVENT:
             /* Repeat start is finished */
             self->fsmTimer.flags.active = 0;
-            e->generateRepeatedStart = false;
             e->repeatedStartSent = true;
             self->fsmState = I2CManager_FsmIdle;
             break;

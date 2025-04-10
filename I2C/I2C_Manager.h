@@ -146,13 +146,14 @@ typedef enum I2CSignalTag
     I2C_SIG_NACK_RECEIVED,
     I2C_SIG_DATA_RECEIVED,
     I2C_SIG_TIMEOUT,
+    I2C_SIG_SEND_STOP,
+    I2C_SIG_SEND_RESTART,
 } I2CSignal;
 
 typedef struct I2CEventTag
 {
     I2CSignal sig;
     uint8_t slaveAddressPlusRW; // 7-bit address + R/W bit
-    bool generateRepeatedStart; // at the end of transfer
     bool repeatedStartSent;     // repeated start has been performed
     bool masterRead;            // go into read state after sending address
 } I2CEvent;
@@ -168,6 +169,7 @@ struct I2CManagerTag
     I2CSlave *endOfList; // circular linked list
     I2CSlave *currentDevice;
     I2CDataTransfer currentDataTransfer;
+    bool currentDataTransferFinished;
     uint16_t writeCount;
     uint16_t readCount;
 
