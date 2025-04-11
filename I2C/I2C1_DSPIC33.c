@@ -100,15 +100,17 @@ static bool useRxInterrupt = false, useTxInterrupt = false; // @todo rx and tx i
 
 uint32_t I2C1_ComputeBRGValue(uint32_t desiredBaudRateHz, uint32_t pclkInHz)
 {
-    /* I2CxBRG = ((1 / Fscl - delay (ns)) * Fcy) - 2
+    /* I2CxBRG = ((1 / Fscl - delay (ns)) * Fcy / 2) - 2
     Typical delay is 110 ns to 130 ns. (DSPIC33 Family Reference Manual) */
-    uint32_t brgInt = 0;
+    uint32_t brgInt;
     float brgFloat;
-    brgFloat = (1.0 / desiredBaudRateHz - 130E-9) * pclkInHz - 2;
-    /* Maximum size of the I2C BRG register is 9 bits */
+    brgFloat = (1.0 / desiredBaudRateHz - 130E-9) * (pclkInHz / 2) - 2;
+    /* Maximum size of the I2C BRG register is 9 bits. Minimum is 2. */
     brgInt = (uint32_t)(ceil(brgFloat));
     if(brgInt > MAX_BRG_VALUE)
-        brgInt = DEFAULT_BRG_VALUE;
+        brgInt = MAX_BRG_VALUE;
+    else if(brgInt < 2)
+        brgInt = 2;
     return brgInt;
 }
 
@@ -123,17 +125,17 @@ void I2C1_Init(I2CInitType *params)
 
     /* @note Right now, I'm only implementing master I2C. - MS */
     I2CxCONbits.IPMIEN = 0; // do not ACK automatically (must be off if master)
-    I2CxCONbits.STREN = 0; // clock stretch off
+    I2CxCONbits.STREN = 1; // clock stretch off (when operating as slave only)
     I2CxCONbits.ACKEN = 0;
     I2CxCONbits.RCEN = 0;
     I2CxCONbits.PEN = 0;
     I2CxCONbits.RSEN = 0;
     I2CxCONbits.SEN = 0;
 
-    /* If you forgot to set a value for the baud rate, I'll use my default 
-    value. The value I've chosen should make your I2C bus do something as long 
-    as your system clock is somewhere in the 24 MHz to 100 MHz range. - MS */
-    if(params->BRGValue == 0 || params->BRGValue > MAX_BRG_VALUE)
+    /* If your value cannot be used, I'll use my default value. The value I've 
+    chosen should make your I2C bus do something as long as your system clock 
+    is somewhere in the 24 MHz to 100 MHz range. - MS */
+    if(params->BRGValue < 2 || params->BRGValue > MAX_BRG_VALUE)
         I2CxBRG = DEFAULT_BRG_VALUE;
     else
         I2CxBRG = params->BRGValue;
