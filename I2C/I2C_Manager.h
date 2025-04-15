@@ -226,6 +226,7 @@ void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress);
 bool I2CSlave_IsReadyForDataTransfer(I2CSlave *self);
 
 // @todo Do I want to add a GetDataTransferBufferCount?
+// If so, also add a get buffer size for future. Makes manager more flexible in performing repeated starts versus start then stop
 
 void I2CSlave_DataTransfer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *data, uint16_t length);
 
