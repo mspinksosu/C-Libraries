@@ -213,7 +213,7 @@ void I2CManager_Enable(I2CManager *self);
 
 void I2CManager_Disable(I2CManager *self);
 
-bool I2CManager_IsIdle(I2CManager *self);
+bool I2CManager_IsIdle(I2CManager *self); // @todo change to IsBusy to match I2C function
 
 void I2CManager_GetState(I2CManager *self); // @todo get state
 
@@ -230,6 +230,8 @@ bool I2CSlave_IsReadyForDataTransfer(I2CSlave *self);
 void I2CSlave_DataTransfer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *data, uint16_t length);
 
 bool I2CSlave_IsDataTransferFinished(I2CSlave *self);
+
+// @todo get slave state?
 
 void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus);
 

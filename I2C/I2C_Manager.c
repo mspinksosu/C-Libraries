@@ -560,7 +560,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
             self->statusBits.transmitInProgress = 1;
             break;
         case I2C_SIG_BUS_IDLE_EVENT:
-            if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_WRITE) // @follow-up is this extra check needed? - MS
+            if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_WRITE)
             {
                 if(I2C_GetAckSlaveStatus(self->peripheral))
                 {
