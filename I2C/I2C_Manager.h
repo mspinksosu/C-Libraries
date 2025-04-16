@@ -44,13 +44,13 @@ typedef enum I2CTransferTypeTag
     I2C_TRANSFER_TYPE_READ
 } I2CTransferType;
 
-typedef enum I2CTransferStateTag // @todo replace with slave state
+typedef enum I2CTransferStateTag // @todo transfer state. Haven't decided if I want this or not yet
 {
     I2C_TRANSFER_STATE_UNKNOWN = 0,
-    I2C_TRANSFER_STATE_IDLE,
-    I2C_TRANSFER_STATE_BUSY,
+    I2C_TRANSFER_STATE_READY,
+    I2C_TRANSFER_STATE_IN_PROGRESS,
+    I2C_TRANSFER_STATE_FINISHED,
     I2C_TRANSFER_STATE_ERROR,
-    // add more as needed
 } I2CTransferState;
 
 typedef enum I2CTransferErrorTag
@@ -99,10 +99,6 @@ struct I2CSlaveTag
     // I2CSlave *super; // include the base class first
     I2CSlave *next;
     uint8_t slaveAddress7Bit; // 7-bit address, right justified
-
-    /* @todo haven't decided if the manager will handle the state of the 
-    individual slave device or if the slave should use a pointer to its manager 
-    so it can ask what the manager's state is. */
     I2CSlaveState state;
 
     struct
@@ -114,11 +110,12 @@ struct I2CSlaveTag
         bool transferStartedEventFlag;
         bool transferFinishedEventFlag;
     } private;
+
     I2CDataTransferStatus finishedTransferReport;
     // @todo transfer finished callback function pointer or transmit and isTransmitReady
 };
 
-// @todo decided if I want to use a manager state or keep using old status bits
+// @todo decided if I want to use a manager state or keep status bits
 typedef enum I2CManagerStateTag
 {
     I2C_MANAGER_STATE_IDLE = 0,
@@ -197,8 +194,8 @@ struct I2CManagerTag
     uint8_t fsmRepeatCount;
     I2CTimer fsmTimer;
 
-    I2CManagerStatusBits statusBits; // @todo might replace this with state
-    I2CManagerState managerState; // @todo might use slave state instead
+    I2CManagerStatusBits statusBits;
+    I2CManagerState managerState;
     I2CState peripheralState;
 };
 
@@ -222,19 +219,17 @@ void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave);
 
 void I2CManager_Tick(I2CManager *self);
 
-// @todo do I want a separate I2CManager_Tick function? Or just run the timers at the same speed as Process?
-
 void I2CManager_Enable(I2CManager *self);
 
 void I2CManager_Disable(I2CManager *self);
 
 bool I2CManager_IsBusy(I2CManager *self);
 
-I2CManagerState I2CManager_GetState(I2CManager *self); // @todo get state enum
+I2CManagerState I2CManager_GetState(I2CManager *self);
 
-void I2CManager_GetCurrentDevice(I2CManager *self, I2CSlave *retDevice); // @todo get current device
+void I2CManager_GetCurrentDevice(I2CManager *self, I2CSlave *retDevice);
 
-// slave functions
+/* slave functions */
 
 void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress);
 

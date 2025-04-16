@@ -245,7 +245,8 @@ void I2CManager_Tick(I2CManager *self)
                     }
                     else
                     {
-                        /* go to next device */
+                        /* Finished. Set the state of the current device, then 
+                        go to the next device. */
                         event.sig = I2C_SIG_SEND_STOP;
                         self->fsmState(self, &event);
                         self->currentDevice->state = I2C_SLAVE_STATE_IDLE;
@@ -297,6 +298,17 @@ I2CManagerState I2CManager_GetState(I2CManager *self)
 }
 
 // *****************************************************************************
+
+void I2CManager_GetCurrentDevice(I2CManager *self, I2CSlave *retDevice)
+{
+    *retDevice = *(self->currentDevice);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** Slave Functions *****************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress7Bit)
 {
@@ -467,7 +479,7 @@ static void I2CManager_BeginDataTransfer(I2CManager *self, I2CDataTransfer *data
 static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CDataTransferStatus *retReport)
 {
     retReport->error = I2C_TRANSFER_ERROR_NONE; // @todo I2C error codes
-    // retReport->state = I2C_TRANSFER_STATE_IDLE; // @todo replace with slave state?
+    // retReport->state = I2C_TRANSFER_STATE_FINISHED; // @todo current transfer state?
     retReport->transferType = self->currentDataTransfer.transferType;
     retReport->ptrArray = self->currentDataTransfer.data;
     retReport->sizeOfArray = self->currentDataTransfer.length;
@@ -477,7 +489,11 @@ static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CDataT
         retReport->numOfBytesTransferred = self->readCount;
 }
 
-// *****************************************************************************
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// ***** States **************************************************************//
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 static void I2CManager_FsmIdle(I2CManager *self, I2CEvent *e)
 {
