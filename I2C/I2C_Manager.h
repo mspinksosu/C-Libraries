@@ -64,8 +64,7 @@ typedef enum I2CTransferErrorTag
 
 typedef enum I2CSlaveStateTag
 {
-    I2C_SLAVE_STATE_UNKOWN = 0,
-    I2C_SLAVE_STATE_IDLE,
+    I2C_SLAVE_STATE_IDLE = 0,
     I2C_SLAVE_STATE_TRANSFER_IN_PROGRESS,
     I2C_SLAVE_STATE_ERROR,
 } I2CSlaveState;
@@ -111,6 +110,7 @@ struct I2CSlaveTag
         I2CDataTransfer buffer[I2CSLAVE_DR_BUFFER_SIZE];
         uint16_t head;
         uint16_t tail;
+        uint16_t count;
         bool transferFinished;
     } private;
     I2CDataTransferStatus finishedTransferReport;
@@ -237,11 +237,13 @@ void I2CManager_GetCurrentDevice(I2CManager *self, I2CSlave *retDevice); // @tod
 
 void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress);
 
-bool I2CSlave_IsReadyForDataTransfer(I2CSlave *self);
-
 uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self);
 
-uint8_t I2CSlave_GetDataTransferBufferSize(I2CSlave *self);
+bool I2CSlave_IsDataTransferBufferFull(I2CSlave *self);
+
+bool I2CSlave_IsDataTransferBufferNotEmpty(I2CSlave *self);
+
+uint8_t I2CSlave_GetDataTransferBufferSize(I2CSlave *self); // for future use with external buffer - MS
 
 void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *data, uint16_t length);
 

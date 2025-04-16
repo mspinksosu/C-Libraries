@@ -300,20 +300,44 @@ void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress7Bit)
     self->slaveAddress7Bit = slaveAddress7Bit;
     self->private.head = 0;
     self->private.tail = 0;
-    self->private.transferFinished = false;
+    self->private.count = 0;
+    self->state = I2C_SLAVE_STATE_IDLE;
 }
 
 // *****************************************************************************
 
 uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self)
 {
-    int16_t count = self->private.head - self->private.tail;
+    return self->private.count;
+}
 
-    if(count < 0)
-    {
-        count += I2CSLAVE_DR_BUFFER_SIZE;
-    }
-    return count;
+// *****************************************************************************
+
+bool I2CSlave_IsDataTransferBufferFull(I2CSlave *self)
+{
+    uint8_t tempHead = CircularIncrement(self->private.head, I2CSLAVE_DR_BUFFER_SIZE);
+
+    if(tempHead == self->private.tail)
+        return true;
+    else
+        return false;
+}
+
+// *****************************************************************************
+
+bool I2CSlave_IsDataTransferBufferNotEmpty(I2CSlave *self)
+{
+    if(self->private.count != 0)
+        return true;
+    else
+        return false;
+}
+
+// *****************************************************************************
+
+uint8_t I2CSlave_GetDataTransferBufferSize(I2CSlave *self)
+{
+    return I2CSLAVE_DR_BUFFER_SIZE;
 }
 
 // *****************************************************************************
@@ -331,6 +355,7 @@ void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, I2CTransferType writeOrR
         self->private.buffer[self->private.head].data = data;
         self->private.buffer[self->private.head].length = length;
         self->private.head = tempHead;
+        self->private.count++;
     }
 }
 
@@ -345,6 +370,7 @@ uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataTransfer *ret
         *returnDataTransfer = self->private.buffer[self->private.tail];
         self->private.tail = CircularIncrement(self->private.tail, I2CSLAVE_DR_BUFFER_SIZE);
         self->private.transferFinished = false;
+        self->private.count--;
         return 0; // no error
     }
     else
@@ -363,7 +389,7 @@ bool I2CSlave_IsDataTransferFinished(I2CSlave *self)
 
 // *****************************************************************************
 
-I2CSlaveState I2CManager_GetState(I2CSlave *self)
+I2CSlaveState I2CSlave_GetState(I2CSlave *self)
 {
     return self->state;
 }
