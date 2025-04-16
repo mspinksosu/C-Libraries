@@ -111,7 +111,8 @@ struct I2CSlaveTag
         uint16_t head;
         uint16_t tail;
         uint16_t count;
-        bool transferFinished;
+        bool transferStartedEventFlag;
+        bool transferFinishedEventFlag;
     } private;
     I2CDataTransferStatus finishedTransferReport;
     // @todo transfer finished callback function pointer or transmit and isTransmitReady
@@ -249,7 +250,13 @@ void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, I2CTransferType writeOrR
 
 uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataTransfer *returnDataTransfer);
 
-bool I2CSlave_IsDataTransferFinished(I2CSlave *self);
+bool I2CSlave_GetDataTransferStartedEvent(I2CSlave *self);
+
+void I2CSlave_ClearDataTransferStartedEventFlag(I2CSlave *self);
+
+bool I2CSlave_GetDataTransferFinishedEvent(I2CSlave *self);
+
+void I2CSlave_ClearDataTransferFinishedEventFlag(I2CSlave *self);
 
 I2CSlaveState I2CSlave_GetState(I2CSlave *self);
 

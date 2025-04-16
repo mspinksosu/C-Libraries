@@ -47,8 +47,8 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e);
 // ***** Static Function Prototypes ********************************************
 
 static void I2CManager_DevicePush(I2CSlave *self, I2CSlave *endOfList);
-static void I2CSlave_DataTransferFinished(I2CSlave *self, I2CDataTransferStatus *report);
-static void I2CManager_DataTransfer(I2CManager *self, I2CDataTransfer *data);
+static void I2CSlave_WriteTransferReport(I2CSlave *self, I2CDataTransferStatus *report);
+static void I2CManager_BeginDataTransfer(I2CManager *self, I2CDataTransfer *data);
 static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CDataTransferStatus *retReport);
 
 // *****************************************************************************
@@ -214,9 +214,10 @@ void I2CManager_Tick(I2CManager *self)
                     transferError = I2CSlave_ReadFromDataTransferBuffer(self->currentDevice, &tempDataTransfer);
                     if(transferError == 0)
                     {
-                        I2CManager_DataTransfer(self, &tempDataTransfer);
+                        I2CManager_BeginDataTransfer(self, &tempDataTransfer);
                         self->managerState = I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS;
-                        self->currentDevice->state = I2C_SLAVE_STATE_TRANSFER_IN_PROGRESS; // @todo slave states
+                        self->currentDevice->state = I2C_SLAVE_STATE_TRANSFER_IN_PROGRESS;
+                        self->currentDevice->private.transferStartedEventFlag = true;
                     }
                 }
                 else
@@ -233,7 +234,8 @@ void I2CManager_Tick(I2CManager *self)
                     /* Get the status of the current transfer and write it to 
                     the slave device */
                     I2CManager_GenerateFinishedTransferReport(self, &tempStatusReport);
-                    I2CSlave_DataTransferFinished(self->currentDevice, &tempStatusReport);
+                    self->currentDevice->finishedTransferReport = tempStatusReport;
+                    self->currentDevice->private.transferFinishedEventFlag = true;
                     /* Check if there is more data to transfer. If there is, 
                     send a repeated start event to the state machine. */
                     if(I2CSlave_GetDataTransferBufferCount(self->currentDevice) > 0)
@@ -243,12 +245,13 @@ void I2CManager_Tick(I2CManager *self)
                     }
                     else
                     {
+                        /* go to next device */
                         event.sig = I2C_SIG_SEND_STOP;
                         self->fsmState(self, &event);
+                        self->currentDevice->state = I2C_SLAVE_STATE_IDLE;
                         self->currentDevice = self->currentDevice->next;
                     }
                     self->managerState = I2C_MANAGER_STATE_IDLE;
-                    self->currentDevice->state = I2C_SLAVE_STATE_IDLE; // @todo slave states
                 }
                 break;
         }
@@ -344,8 +347,6 @@ uint8_t I2CSlave_GetDataTransferBufferSize(I2CSlave *self)
 
 void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *data, uint16_t length)
 {
-    // @todo check if slave is busy already
-
     uint8_t tempHead = CircularIncrement(self->private.head, I2CSLAVE_DR_BUFFER_SIZE);
 
     if(tempHead != self->private.tail)
@@ -369,7 +370,6 @@ uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataTransfer *ret
         processed and clear the transfer finished flag */
         *returnDataTransfer = self->private.buffer[self->private.tail];
         self->private.tail = CircularIncrement(self->private.tail, I2CSLAVE_DR_BUFFER_SIZE);
-        self->private.transferFinished = false;
         self->private.count--;
         return 0; // no error
     }
@@ -382,9 +382,30 @@ uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataTransfer *ret
 
 // *****************************************************************************
 
-bool I2CSlave_IsDataTransferFinished(I2CSlave *self)
+bool I2CSlave_GetDataTransferStartedEvent(I2CSlave *self)
 {
-    return self->private.transferFinished;
+    return self->private.transferStartedEventFlag;
+}
+
+// *****************************************************************************
+
+void I2CSlave_ClearDataTransferStartedEventFlag(I2CSlave *self)
+{
+    self->private.transferStartedEventFlag = false;
+}
+
+// *****************************************************************************
+
+bool I2CSlave_GetDataTransferFinishedEvent(I2CSlave *self)
+{
+    return self->private.transferFinishedEventFlag;
+}
+
+// *****************************************************************************
+
+void I2CSlave_ClearDataTransferFinishedEventFlag(I2CSlave *self)
+{
+    self->private.transferFinishedEventFlag = false;
 }
 
 // *****************************************************************************
@@ -417,14 +438,6 @@ void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTr
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-static void I2CSlave_DataTransferFinished(I2CSlave *self, I2CDataTransferStatus *reportToWrite)
-{
-    self->private.transferFinished = true;
-    self->finishedTransferReport = *reportToWrite;
-}
-
-// *****************************************************************************
-
 static void I2CManager_DevicePush(I2CSlave *self, I2CSlave *endOfList)
 {
     /* Add the new entry to the beginning of the list. Make the "next" pointer
@@ -436,7 +449,7 @@ static void I2CManager_DevicePush(I2CSlave *self, I2CSlave *endOfList)
 
 // *****************************************************************************
 
-static void I2CManager_DataTransfer(I2CManager *self, I2CDataTransfer *data)
+static void I2CManager_BeginDataTransfer(I2CManager *self, I2CDataTransfer *data)
 {
     if(self->fsmState != I2CManager_FsmIdle)
         return;
@@ -667,9 +680,9 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
             }
             else
             {
-                /* We are finished with the transfer. Set a flag to tell 
-                the manager that we are done. The manager will tell us 
-                if we need to send a stop or a restart. */
+                /* We are finished with the transfer. Set a flag to tell the 
+                manager process that we are done. The manager process will 
+                tell us if we need to send a stop or a restart. */
                 self->currentDataTransferFinished = true;
                 // @todo start timer that will automatically send a stop on timeout
             }
