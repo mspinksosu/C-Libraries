@@ -44,7 +44,7 @@ typedef enum I2CTransferTypeTag
     I2C_TRANSFER_TYPE_READ
 } I2CTransferType;
 
-typedef enum I2CTransferStateTag
+typedef enum I2CTransferStateTag // @todo replace with slave state
 {
     I2C_TRANSFER_STATE_UNKNOWN = 0,
     I2C_TRANSFER_STATE_IDLE,
@@ -62,6 +62,14 @@ typedef enum I2CTransferErrorTag
     // add more as needed
 } I2CTransferError;
 
+typedef enum I2CSlaveStateTag
+{
+    I2C_SLAVE_STATE_UNKOWN = 0,
+    I2C_SLAVE_STATE_IDLE,
+    I2C_SLAVE_STATE_TRANSFER_IN_PROGRESS,
+    I2C_SLAVE_STATE_ERROR,
+} I2CSlaveState;
+
 typedef struct I2CDataTransferTag // might move this to II2C.h
 {
     I2CTransferType transferType;
@@ -72,7 +80,7 @@ typedef struct I2CDataTransferTag // might move this to II2C.h
 typedef struct I2CDataTransferStatusTag
 {
     I2CTransferError error;
-    I2CTransferState state;
+    // I2CTransferState state;
     I2CTransferType transferType;
     uint8_t *ptrArray;
     uint16_t sizeOfArray;
@@ -92,6 +100,12 @@ struct I2CSlaveTag
     // I2CSlave *super; // include the base class first
     I2CSlave *next;
     uint8_t slaveAddress7Bit; // 7-bit address, right justified
+
+    /* @todo haven't decided if the manager will handle the state of the 
+    individual slave device or if the slave should use a pointer to its manager 
+    so it can ask what the manager's state is. */
+    I2CSlaveState state;
+
     struct
     {
         I2CDataTransfer buffer[I2CSLAVE_DR_BUFFER_SIZE];
@@ -102,6 +116,27 @@ struct I2CSlaveTag
     I2CDataTransferStatus finishedTransferReport;
     // @todo transfer finished callback function pointer or transmit and isTransmitReady
 };
+
+// @todo decided if I want to use a manager state or keep using old status bits
+typedef enum I2CManagerStateTag
+{
+    I2C_MANAGER_STATE_IDLE = 0,
+    I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS,
+    I2C_MANAGER_STATE_ERROR, // @todo add errors etc.
+} I2CManagerState;
+
+typedef enum I2CSignalTag
+{
+    I2C_SIG_ENTER = 1,
+    I2C_SIG_BEGIN_TRANSFER,
+    I2C_SIG_BUS_IDLE_EVENT,
+    I2C_SIG_ACK_RECEIVED,
+    I2C_SIG_NACK_RECEIVED,
+    I2C_SIG_DATA_RECEIVED,
+    I2C_SIG_TIMEOUT,
+    I2C_SIG_SEND_STOP,
+    I2C_SIG_SEND_RESTART,
+} I2CSignal;
 
 typedef struct I2CTimerTag
 {
@@ -134,27 +169,6 @@ typedef struct I2CManagerStatusBitsTag
         uint8_t all;
     };
 } I2CManagerStatusBits;
-
-// @todo decided if I want to use a manager state or keep using old status bits
-typedef enum I2CManagerStateTag
-{
-    I2C_MANAGER_STATE_IDLE = 0,
-    I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS,
-    I2C_MANAGER_STATE_ERROR, // @todo add errors etc.
-} I2CManagerState;
-
-typedef enum I2CSignalTag
-{
-    I2C_SIG_ENTER = 1,
-    I2C_SIG_BEGIN_TRANSFER,
-    I2C_SIG_BUS_IDLE_EVENT,
-    I2C_SIG_ACK_RECEIVED,
-    I2C_SIG_NACK_RECEIVED,
-    I2C_SIG_DATA_RECEIVED,
-    I2C_SIG_TIMEOUT,
-    I2C_SIG_SEND_STOP,
-    I2C_SIG_SEND_RESTART,
-} I2CSignal;
 
 typedef struct I2CEventTag
 {
@@ -205,7 +219,7 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateUs);
 
 void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave);
 
-void I2CManager_Process(I2CManager *self);
+void I2CManager_Tick(I2CManager *self);
 
 // @todo do I want a separate I2CManager_Tick function? Or just run the timers at the same speed as Process?
 
@@ -213,9 +227,9 @@ void I2CManager_Enable(I2CManager *self);
 
 void I2CManager_Disable(I2CManager *self);
 
-bool I2CManager_IsIdle(I2CManager *self); // @todo change to IsBusy to match I2C function
+bool I2CManager_IsBusy(I2CManager *self);
 
-void I2CManager_GetState(I2CManager *self); // @todo get state
+I2CManagerState I2CManager_GetState(I2CManager *self); // @todo get state enum
 
 void I2CManager_GetCurrentDevice(I2CManager *self, I2CSlave *retDevice); // @todo get current device
 
@@ -225,14 +239,17 @@ void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress);
 
 bool I2CSlave_IsReadyForDataTransfer(I2CSlave *self);
 
-// @todo Do I want to add a GetDataTransferBufferCount?
-// If so, also add a get buffer size for future. Makes manager more flexible in performing repeated starts versus start then stop
+uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self);
 
-void I2CSlave_DataTransfer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *data, uint16_t length);
+uint8_t I2CSlave_GetDataTransferBufferSize(I2CSlave *self);
+
+void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *data, uint16_t length);
+
+uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataTransfer *returnDataTransfer);
 
 bool I2CSlave_IsDataTransferFinished(I2CSlave *self);
 
-// @todo get slave state?
+I2CSlaveState I2CSlave_GetState(I2CSlave *self);
 
 void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus);
 

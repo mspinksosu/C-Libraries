@@ -89,7 +89,7 @@ void SPI_Manager_BeginTransfer(SPISlave *self, uint16_t numBytesToSend, uint16_t
 
 bool SPI_Manager_IsTransferFinished(SPISlave *self);
 
-void SPI_Manager_Process(SPIManager *self);
+void SPI_Manager_Tick(SPIManager *self);
 
 void SPI_Manager_Enable(SPIManager *self);
 
