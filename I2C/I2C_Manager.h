@@ -171,8 +171,7 @@ typedef struct I2CManagerStatusBitsTag
 typedef struct I2CEventTag
 {
     I2CSignal sig;
-    uint8_t slaveAddressPlusRW; // 7-bit address + R/W bit
-    bool masterRead;            // go into read state after sending address
+    // uint8_t slaveAddressPlusRW; // 7-bit address + R/W bit // @remove later
 } I2CEvent;
 
 typedef struct I2CManagerTag I2CManager; // forward declaration

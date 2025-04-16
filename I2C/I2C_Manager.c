@@ -543,23 +543,24 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
     switch(e->sig)
     {
         case I2C_SIG_ENTER:
-            /* Add event data for read or write purposes */
+        {
+            /* Prepare to write or read data */
+            uint8_t slaveAddressPlusRW = 0;
             if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_WRITE)
             {
-                e->masterRead = false;
-                e->slaveAddressPlusRW = (self->currentDevice->slaveAddress7Bit) << 1;
+                slaveAddressPlusRW = (self->currentDevice->slaveAddress7Bit) << 1;
                 self->writeCount = 0;
             }
             else
             {
-                e->masterRead = true;
-                e->slaveAddressPlusRW = ((self->currentDevice->slaveAddress7Bit << 1) | 1);
+                slaveAddressPlusRW = ((self->currentDevice->slaveAddress7Bit << 1) | 1);
                 self->readCount = 0;
             }
-            I2C_TransmitByte(self->peripheral, e->slaveAddressPlusRW);
+            I2C_TransmitByte(self->peripheral, slaveAddressPlusRW);
             self->fsmTimer.flags.start = 1;
             self->statusBits.transmitInProgress = 1;
             break;
+        }
         case I2C_SIG_BUS_IDLE_EVENT:
             self->fsmTimer.flags.active = 0;
             if(I2C_GetAckSlaveStatus(self->peripheral))
