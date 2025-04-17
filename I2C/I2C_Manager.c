@@ -25,6 +25,14 @@
 
 // ***** Defines ***************************************************************
 
+#define I2CMANAGER_LONG_TIMEOUT_PERIOD_US  500 // desired timeout period in us
+#define I2CMANAGER_SHORT_TIMEOUT_PERIOD_US 100 // @todo add short timer for start stop?
+#define I2CMANAGER_REPEAT_LIMIT 5
+
+#define I2CMANAGER_DEFAULT_TICK_RATE_NS   50
+#define I2CMANAGER_LONG_TIMEOUT_PERIOD_NS (I2CMANAGER_LONG_TIMEOUT_PERIOD_US * 1000)
+#define I2CMANAGER_SHORT_TIMEOUT_PERIOD_NS (I2CMANAGER_LONG_TIMEOUT_PERIOD_US * 1000)
+
 #define CircularIncrement(i, size) i == (size - 1) ? 0 : i + 1
 
 // ***** Global Variables ******************************************************
@@ -47,18 +55,17 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e);
 // ***** Static Function Prototypes ********************************************
 
 static void I2CManager_DevicePush(I2CSlave *self, I2CSlave *endOfList);
-static void I2CSlave_WriteTransferReport(I2CSlave *self, I2CDataTransferStatus *report);
 static void I2CManager_BeginDataTransfer(I2CManager *self, I2CDataTransfer *data);
 static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CDataTransferStatus *retReport);
 
 // *****************************************************************************
 
-/* @todo Should init always clear the list by setting the pointers to NULL? This would require that 
-the person using the library makes sure that they call Init before AddSlave. If they accidentally 
-add all slave devices, then call init, the manager list will be erased. - MS */
-void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateUs)
+void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
 {
     self->peripheral = peripheral;
+    /* @follow-up Should init always clear the list by setting the pointers to NULL? This would require that 
+    the person using the library makes sure that they call Init before AddSlave. If they accidentally 
+    add all slave devices, then call init, the manager list will be erased. - MS */
     // self->endOfList = NULL;
     // self->currentDevice = NULL;
     self->currentDataTransfer.length = 0;
@@ -66,11 +73,16 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateUs)
     self->readCount = 0;
     // @todo init state and error variables
 
-    if(tickRateUs != 0)
-        self->fsmTimer.period = I2CMANAGER_TIMEOUT_PERIOD_US / tickRateUs;
+    if(tickRateNs == 0)
+        tickRateNs = I2CMANAGER_DEFAULT_TICK_RATE_NS;
+
+    self->fsmLongTimeoutPeriod = I2CMANAGER_LONG_TIMEOUT_PERIOD_US / tickRateNs;
+    self->fsmShortTimeoutPeriod = I2CMANAGER_SHORT_TIMEOUT_PERIOD_US / tickRateNs;
 
     if(self->fsmTimer.period == 0)
-        self->fsmTimer.period = 1;
+        self->fsmLongTimeoutPeriod = 1;
+    if(self->fsmShortTimeoutPeriod == 0)
+        self->fsmShortTimeoutPeriod = 1;
 
     self->fsmState = I2CManager_FsmIdle;
 }
@@ -330,7 +342,7 @@ uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self)
 
 bool I2CSlave_IsDataTransferBufferFull(I2CSlave *self)
 {
-    uint8_t tempHead = CircularIncrement(self->private.head, I2CSLAVE_DR_BUFFER_SIZE);
+    uint8_t tempHead = CircularIncrement(self->private.head, I2CSLAVE_DT_BUFFER_SIZE);
 
     if(tempHead == self->private.tail)
         return true;
@@ -352,14 +364,14 @@ bool I2CSlave_IsDataTransferBufferNotEmpty(I2CSlave *self)
 
 uint8_t I2CSlave_GetDataTransferBufferSize(I2CSlave *self)
 {
-    return I2CSLAVE_DR_BUFFER_SIZE;
+    return I2CSLAVE_DT_BUFFER_SIZE;
 }
 
 // *****************************************************************************
 
 void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *data, uint16_t length)
 {
-    uint8_t tempHead = CircularIncrement(self->private.head, I2CSLAVE_DR_BUFFER_SIZE);
+    uint8_t tempHead = CircularIncrement(self->private.head, I2CSLAVE_DT_BUFFER_SIZE);
 
     if(tempHead != self->private.tail)
     {
@@ -381,7 +393,7 @@ uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataTransfer *ret
         /* The buffer is not empty. Get the data from the buffer to be 
         processed and clear the transfer finished flag */
         *returnDataTransfer = self->private.buffer[self->private.tail];
-        self->private.tail = CircularIncrement(self->private.tail, I2CSLAVE_DR_BUFFER_SIZE);
+        self->private.tail = CircularIncrement(self->private.tail, I2CSLAVE_DT_BUFFER_SIZE);
         self->private.count--;
         return 0; // no error
     }
@@ -422,16 +434,9 @@ void I2CSlave_ClearDataTransferFinishedEventFlag(I2CSlave *self)
 
 // *****************************************************************************
 
-I2CSlaveState I2CSlave_GetState(I2CSlave *self)
-{
-    return self->state;
-}
-
-// *****************************************************************************
-
-/* @todo not sure how I want to implement this yet. Should the status reflect 
-on going changes during the data transfer, such as the current state? Or should 
-I just use it as a end of data transfer report? - MS */
+/* @todo not sure if/how I want to implement this yet. Should status reflect 
+on going changes during the data transfer, such as the current number of bytes
+transferred? Or should I just use it as a end of data transfer report? - MS */
 void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus)
 {
     retTransferStatus->error = I2C_TRANSFER_ERROR_NONE; // @todo I2C error codes
@@ -442,6 +447,13 @@ void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTr
     retTransferStatus->ptrArray = self->finishedTransferReport.ptrArray;
     retTransferStatus->sizeOfArray = self->finishedTransferReport.sizeOfArray;
     retTransferStatus->numOfBytesTransferred = self->finishedTransferReport.numOfBytesTransferred;
+}
+
+// *****************************************************************************
+
+I2CSlaveState I2CSlave_GetState(I2CSlave *self)
+{
+    return self->state;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -479,7 +491,7 @@ static void I2CManager_BeginDataTransfer(I2CManager *self, I2CDataTransfer *data
 static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CDataTransferStatus *retReport)
 {
     retReport->error = I2C_TRANSFER_ERROR_NONE; // @todo I2C error codes
-    // retReport->state = I2C_TRANSFER_STATE_FINISHED; // @todo current transfer state?
+
     retReport->transferType = self->currentDataTransfer.transferType;
     retReport->ptrArray = self->currentDataTransfer.data;
     retReport->sizeOfArray = self->currentDataTransfer.length;
@@ -524,6 +536,7 @@ static void I2CManager_FsmStart(I2CManager *self, I2CEvent *e)
     {
         case I2C_SIG_ENTER:
             I2C_Start(self->peripheral);
+            self->fsmTimer.period = self->fsmShortTimeoutPeriod;
             self->fsmTimer.flags.start = 1;
             self->statusBits.sendingStart = 1;
             break;
@@ -532,6 +545,9 @@ static void I2CManager_FsmStart(I2CManager *self, I2CEvent *e)
             e->sig = I2C_SIG_ENTER;
             self->fsmState = I2CManager_FsmWriteAddress;
             self->fsmState(self, e);
+            break;
+        case I2C_SIG_TIMEOUT:
+
             break;
     }
 }
@@ -557,6 +573,7 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
                 self->readCount = 0;
             }
             I2C_TransmitByte(self->peripheral, slaveAddressPlusRW);
+            self->fsmTimer.period = self->fsmLongTimeoutPeriod;
             self->fsmTimer.flags.start = 1;
             self->statusBits.transmitInProgress = 1;
             break;
@@ -594,7 +611,9 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
             self->fsmState = I2CManager_FsmStop;
             self->fsmState(self, e);
             break;
-        // @todo add timeout event
+        case I2C_SIG_TIMEOUT:
+
+            break;
     }
 }
 
@@ -606,6 +625,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
     {
         case I2C_SIG_ENTER:
             I2C_TransmitByte(self->peripheral, self->currentDataTransfer.data[self->writeCount]);
+            self->fsmTimer.period = self->fsmLongTimeoutPeriod;
             self->fsmTimer.flags.start = 1;
             self->statusBits.transmitInProgress = 1;
             break;
@@ -621,6 +641,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
                     {
                         /* Stay in this state and continue sending bytes */
                         I2C_TransmitByte(self->peripheral, self->currentDataTransfer.data[self->writeCount]);
+                        self->fsmTimer.period = self->fsmLongTimeoutPeriod;
                         self->fsmTimer.flags.start = 1;
                         self->statusBits.transmitInProgress = 1;
                     }
@@ -641,6 +662,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
                     if(self->writeCount < self->currentDataTransfer.length)
                     {
                         I2C_TransmitByte(self->peripheral, self->currentDataTransfer.data[self->writeCount]);
+                        self->fsmTimer.period = self->fsmLongTimeoutPeriod;
                         self->fsmTimer.flags.start = 1;
                         self->statusBits.transmitInProgress = 1;
                     }
@@ -657,7 +679,9 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
             self->fsmState = I2CManager_FsmRestart;
             self->fsmState(self, e);
             break;
-        // @todo add timeout event
+        case I2C_SIG_TIMEOUT:
+
+            break;
     }
 }
 
@@ -669,6 +693,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
     {
         case I2C_SIG_ENTER:
             I2C_ReceiveByte(self->peripheral);
+            self->fsmTimer.period = self->fsmLongTimeoutPeriod;
             self->fsmTimer.flags.start = 1;
             self->statusBits.receiveInProgress = 1;
             break;
@@ -681,6 +706,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
                     I2C_SendAck(self->peripheral, true);
                 else
                     I2C_SendAck(self->peripheral, false); // send NACK on last byte
+                self->fsmTimer.period = self->fsmShortTimeoutPeriod;
                 self->fsmTimer.flags.start = 1;
                 self->statusBits.sendingAck = 1;
             }
@@ -692,6 +718,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
             if(self->readCount < self->currentDataTransfer.length)
             {
                 I2C_ReceiveByte(self->peripheral);
+                self->fsmTimer.period = self->fsmLongTimeoutPeriod;
                 self->fsmTimer.flags.start = 1;
                 self->statusBits.receiveInProgress = 1;
             }
@@ -702,6 +729,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
                 tell us if we need to send a stop or a restart. */
                 self->currentDataTransferFinished = true;
                 // @todo start timer that will automatically send a stop on timeout
+                // fsmAutoStopTimer.flags.start = 1; // change fsmTimer to fsmRetryTimer
             }
             break;
         case I2C_SIG_SEND_STOP:
@@ -714,7 +742,9 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
             self->fsmState = I2CManager_FsmRestart;
             self->fsmState(self, e);
             break;
-        // @todo add timeout event
+        case I2C_SIG_TIMEOUT:
+
+            break;
     }
 }
 
@@ -726,6 +756,7 @@ static void I2CManager_FsmStop(I2CManager *self, I2CEvent *e)
     {
         case I2C_SIG_ENTER:
             I2C_Stop(self->peripheral);
+            self->fsmTimer.period = self->fsmShortTimeoutPeriod;
             self->fsmTimer.flags.start = 1;
             self->statusBits.repeatedStartSent = 0;
             self->statusBits.sendingStop = 1;
@@ -735,7 +766,9 @@ static void I2CManager_FsmStop(I2CManager *self, I2CEvent *e)
             self->fsmTimer.flags.active = 0;
             self->fsmState = I2CManager_FsmIdle;
             break;
-        // @todo add timeout event
+        case I2C_SIG_TIMEOUT:
+
+            break;
     }
 }
 
@@ -747,6 +780,7 @@ static void I2CManager_FsmRestart(I2CManager *self, I2CEvent *e)
     {
         case I2C_SIG_ENTER:
             I2C_Restart(self->peripheral);
+            self->fsmTimer.period = self->fsmShortTimeoutPeriod;
             self->fsmTimer.flags.start = 1;
             self->statusBits.repeatedStartSent = 0;
             self->statusBits.sendingRestart = 1;
@@ -757,7 +791,9 @@ static void I2CManager_FsmRestart(I2CManager *self, I2CEvent *e)
             self->statusBits.repeatedStartSent = 1;
             self->fsmState = I2CManager_FsmIdle;
             break;
-        // @todo add timeout event
+        case I2C_SIG_TIMEOUT:
+
+            break;
     }
 }
 

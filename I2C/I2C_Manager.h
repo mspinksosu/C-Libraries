@@ -27,14 +27,11 @@
 
 // ***** Defines ***************************************************************
 
-#define I2CMANAGER_TIMEOUT_PERIOD_US 500 // desired timeout period in us
-#define I2CMANAGER_REPEAT_LIMIT 5
-
-/* @note The size of the data request buffer should be one more than the 
+/* @note The size of the data transfer buffer should be one more than the 
 amount that you would like the slave to be able to hold at once. I would 
 suggest a minimum size of 3. That is enough to hold one write data request, 
 followed by one read data request. - MS */
-#define I2CSLAVE_DR_BUFFER_SIZE 3 // @todo change name to DT?
+#define I2CSLAVE_DT_BUFFER_SIZE 3
 
 // ***** Global Variables ******************************************************
 
@@ -76,6 +73,7 @@ typedef struct I2CDataTransferTag // might move this to II2C.h
     uint16_t length;
 } I2CDataTransfer;
 
+/* @todo not sure if I want to include state in status report */
 typedef struct I2CDataTransferStatusTag
 {
     I2CTransferError error;
@@ -103,7 +101,7 @@ struct I2CSlaveTag
 
     struct
     {
-        I2CDataTransfer buffer[I2CSLAVE_DR_BUFFER_SIZE];
+        I2CDataTransfer buffer[I2CSLAVE_DT_BUFFER_SIZE];
         uint16_t head;
         uint16_t tail;
         uint16_t count;
@@ -112,7 +110,6 @@ struct I2CSlaveTag
     } private;
 
     I2CDataTransferStatus finishedTransferReport;
-    // @todo transfer finished callback function pointer or transmit and isTransmitReady
 };
 
 // @todo decided if I want to use a manager state or keep status bits
@@ -131,9 +128,11 @@ typedef enum I2CSignalTag
     I2C_SIG_ACK_RECEIVED,
     I2C_SIG_NACK_RECEIVED,
     I2C_SIG_DATA_RECEIVED,
-    I2C_SIG_TIMEOUT,
     I2C_SIG_SEND_STOP,
     I2C_SIG_SEND_RESTART,
+    I2C_SIG_TIMEOUT,
+    I2C_SIG_NO_RESPONSE, // or RETRY_FAILED?
+    I2C_SIG_BUS_COLLISION, // @todo bus collision, etc.
 } I2CSignal;
 
 typedef struct I2CTimerTag
@@ -192,6 +191,8 @@ struct I2CManagerTag
     I2CFSMState fsmState;
     uint8_t fsmRepeatCount;
     I2CTimer fsmTimer;
+    uint32_t fsmLongTimeoutPeriod;
+    uint32_t fsmShortTimeoutPeriod; // @todo add short timer for start and stop?
 
     I2CManagerStatusBits statusBits;
     I2CManagerState managerState;
@@ -212,7 +213,7 @@ struct I2CManagerTag
 
 /* @todo finish Doxygen */
 
-void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateUs);
+void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs);
 
 void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave);
 
@@ -252,9 +253,9 @@ bool I2CSlave_GetDataTransferFinishedEvent(I2CSlave *self);
 
 void I2CSlave_ClearDataTransferFinishedEventFlag(I2CSlave *self);
 
-I2CSlaveState I2CSlave_GetState(I2CSlave *self);
+void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus); // @todo transfer status
 
-void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus);
+I2CSlaveState I2CSlave_GetState(I2CSlave *self);
 
 // I2CSlave_DataTransferFinishedCallback
 // I2CSlave_WriteTransferFinishedCallback

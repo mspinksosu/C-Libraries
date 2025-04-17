@@ -27,13 +27,6 @@
 
 // ***** Defines ***************************************************************
 
-/* @remove old state machine defines later */
-#define PBCLK_FREQ          40000000UL // in Hz
-#define TIMEOUT_PERIOD_US   500 // desired timeout period in us
-#define TIMOUT_SRC_CLK_FREQ     PBCLK_FREQ // in Hz
-#define TIMEOUT_SRC_CLK_US      (1.0 / TIMOUT_SRC_CLK_FREQ * 1000000.0)
-#define TIMEOUT_PERIOD_COUNT    (TIMEOUT_PERIOD_US / TIMEOUT_SRC_CLK_US)
-
 /* The default value I've chosen will put the I2C bus somewhere in the 100 kHz 
 to 400 kHz range if the system clock is between 24 MHz and 100 MHz. */
 #define MAX_BRG_VALUE     511 // 9 bits
