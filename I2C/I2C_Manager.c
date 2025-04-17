@@ -85,6 +85,7 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
         self->fsmShortTimeoutPeriod = 1;
 
     self->fsmState = I2CManager_FsmIdle;
+    self->fsmTimerStateEnterCallback = I2CManager_FsmIdle;
 }
 
 // *****************************************************************************
@@ -191,23 +192,29 @@ void I2CManager_Tick(I2CManager *self)
         }
     }
 
+    /* @todo ----- add something to handle bus collision -------------------- */
+
     if(self->fsmTimer.flags.expired)
     {
         self->fsmTimer.flags.expired = 0;
         self->fsmRepeatCount++;
-        event.sig = I2C_SIG_TIMEOUT;
-        // @todo add error
-        if(self->fsmRepeatCount > I2CMANAGER_REPEAT_LIMIT)
+        if(self->fsmRepeatCount <= self->fsmRepeatLimit)
+        {
+            /* @todo timeout retry event. Test with debugger. Decided if I just 
+            want to always call the enter signal by default, or have the ability 
+            to set a specific action. */
+            event.sig = I2C_SIG_ENTER;
+            self->fsmState(self, &event);
+        }
+        else
         {
             self->fsmRepeatCount = 0;
             self->fsmTimer.flags.start = 0;
             self->fsmTimer.flags.active = 0;
             self->fsmTimer.flags.expired = 0;
-            // @todo stop, change signal, go back to idle state. Set error status
+            event.sig = I2C_SIG_TIMEOUT;
+            self->fsmState(self, &event);
         }
-        /* @todo finish old timeout event. The old code had this commented out. I had written that the 
-        timeout value was not long enough. Need to test with debugger. - MS */
-        //self->fsmState(self, &event); 
     }
     self->peripheralState = currentPeripheralState;
 
@@ -522,6 +529,8 @@ static void I2CManager_FsmIdle(I2CManager *self, I2CEvent *e)
             {
                 self->fsmState = I2CManager_FsmStart;
             }
+            self->fsmRepeatCount = 0;
+            self->fsmRepeatLimit = I2CMANAGER_REPEAT_LIMIT;
             e->sig = I2C_SIG_ENTER;
             self->fsmState(self, e);
             break;
@@ -538,16 +547,39 @@ static void I2CManager_FsmStart(I2CManager *self, I2CEvent *e)
             I2C_Start(self->peripheral);
             self->fsmTimer.period = self->fsmShortTimeoutPeriod;
             self->fsmTimer.flags.start = 1;
+            self->fsmTimerStateEnterCallback = I2CManager_FsmStart;
             self->statusBits.sendingStart = 1;
             break;
-        case I2C_SIG_BUS_IDLE_EVENT:
+        case I2C_SIG_EXIT:
+            self->fsmTimer.flags.start = 0;
             self->fsmTimer.flags.active = 0;
+            self->fsmTimer.flags.expired = 0;
+            self->fsmRepeatCount = 0;
+            break;
+        case I2C_SIG_BUS_IDLE_EVENT:
+            /* Transition to next state. Perform our exit action, 
+            then perform entry action. */
+            e->sig = I2C_SIG_EXIT;
+            self->fsmState(self, e);
             e->sig = I2C_SIG_ENTER;
             self->fsmState = I2CManager_FsmWriteAddress;
             self->fsmState(self, e);
             break;
+        case I2C_SIG_SEND_STOP:
+            e->sig = I2C_SIG_EXIT;
+            self->fsmState(self, e);
+            e->sig = I2C_SIG_ENTER;
+            self->fsmState = I2CManager_FsmStop;
+            self->fsmState(self, e);
+            break;
         case I2C_SIG_TIMEOUT:
-
+            /* @todo set a error flag of some kind, then transition to 
+            stop state */
+            e->sig = I2C_SIG_EXIT;
+            self->fsmState(self, e);
+            e->sig = I2C_SIG_ENTER;
+            self->fsmState = I2CManager_FsmStop;
+            self->fsmState(self, e);
             break;
     }
 }
@@ -573,15 +605,25 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
                 self->readCount = 0;
             }
             I2C_TransmitByte(self->peripheral, slaveAddressPlusRW);
+            self->fsmTimerStateEnterCallback = I2CManager_FsmWriteAddress;
             self->fsmTimer.period = self->fsmLongTimeoutPeriod;
             self->fsmTimer.flags.start = 1;
             self->statusBits.transmitInProgress = 1;
             break;
         }
-        case I2C_SIG_BUS_IDLE_EVENT:
+        case I2C_SIG_EXIT:
+            self->fsmTimer.flags.start = 0;
             self->fsmTimer.flags.active = 0;
+            self->fsmTimer.flags.expired = 0;
+            self->fsmRepeatCount = 0;
+            break;
+        case I2C_SIG_BUS_IDLE_EVENT:
             if(I2C_GetAckSlaveStatus(self->peripheral))
             {
+                /* Address acknowledged. Perform our exit action, 
+                then transition to next state. */
+                e->sig = I2C_SIG_EXIT;
+                self->fsmState(self, e);
                 if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_READ)
                 {
                     /* Prepare to receive byte */
@@ -601,18 +643,27 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
             }
             else
             {
+                /* Force timer to callback immediately instead of waiting */
+                self->fsmTimerStateEnterCallback = I2CManager_FsmWriteAddress;
                 self->fsmTimer.flags.active = 0;
-                // @todo retransmit address
-                // @todo increment resend counter
+                self->fsmTimer.flags.expired = 1;
             }
             break;
         case I2C_SIG_SEND_STOP:
+            e->sig = I2C_SIG_EXIT;
+            self->fsmState(self, e);
             e->sig = I2C_SIG_ENTER;
             self->fsmState = I2CManager_FsmStop;
             self->fsmState(self, e);
             break;
         case I2C_SIG_TIMEOUT:
-
+            /* @todo set a error flag of some kind, then transition to 
+            stop state */
+            e->sig = I2C_SIG_EXIT;
+            self->fsmState(self, e);
+            e->sig = I2C_SIG_ENTER;
+            self->fsmState = I2CManager_FsmStop;
+            self->fsmState(self, e);
             break;
     }
 }
@@ -625,25 +676,32 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
     {
         case I2C_SIG_ENTER:
             I2C_TransmitByte(self->peripheral, self->currentDataTransfer.data[self->writeCount]);
+            self->fsmTimerStateEnterCallback = I2CManager_FsmWriteData;
             self->fsmTimer.period = self->fsmLongTimeoutPeriod;
             self->fsmTimer.flags.start = 1;
             self->statusBits.transmitInProgress = 1;
+            break;
+        case I2C_SIG_EXIT:
+            self->fsmTimer.flags.start = 0;
+            self->fsmTimer.flags.active = 0;
+            self->fsmTimer.flags.expired = 0;
+            self->fsmRepeatCount = 0;
             break;
         case I2C_SIG_BUS_IDLE_EVENT:
             if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_WRITE)
             {
                 if(I2C_GetAckSlaveStatus(self->peripheral))
                 {
-                    self->fsmTimer.flags.active = 0;
                     /* Data acknowledged. Check if there are more bytes to send */
                     self->writeCount++;
                     if(self->writeCount < self->currentDataTransfer.length)
                     {
-                        /* Stay in this state and continue sending bytes */
-                        I2C_TransmitByte(self->peripheral, self->currentDataTransfer.data[self->writeCount]);
-                        self->fsmTimer.period = self->fsmLongTimeoutPeriod;
-                        self->fsmTimer.flags.start = 1;
-                        self->statusBits.transmitInProgress = 1;
+                        /* Stay in this state and continue sending bytes. 
+                        Perform exit action and re-enter to send next byte. */
+                        e->sig = I2C_SIG_EXIT;
+                        self->fsmState(self, e);
+                        e->sig = I2C_SIG_ENTER;
+                        self->fsmState(self, e);
                     }
                     else
                     {
@@ -651,36 +709,46 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
                         the manager that we are done. The manager will tell us 
                         if we need to send a stop or a restart. */
                         self->currentDataTransferFinished = true;
-                        // @todo start timer that will automatically send a stop on timeout
+                        /* Have the timer automatically send a stop on timeout 
+                        as a failsafe. */
+                        e->sig = I2C_SIG_EXIT;
+                        self->fsmState(self, e);
+                        self->fsmTimerStateEnterCallback = I2CManager_FsmStop;
+                        self->fsmTimer.period = self->fsmLongTimeoutPeriod;
+                        self->fsmTimer.flags.start = 1;
                     }
                 }
                 else
                 {
-                    /* Resend */
-                    // @todo increment resend counter
+                    /* Force timer to callback immediately instead of waiting */
+                    self->fsmTimerStateEnterCallback = I2CManager_FsmWriteData;
                     self->fsmTimer.flags.active = 0;
-                    if(self->writeCount < self->currentDataTransfer.length)
-                    {
-                        I2C_TransmitByte(self->peripheral, self->currentDataTransfer.data[self->writeCount]);
-                        self->fsmTimer.period = self->fsmLongTimeoutPeriod;
-                        self->fsmTimer.flags.start = 1;
-                        self->statusBits.transmitInProgress = 1;
-                    }
+                    self->fsmTimer.flags.expired = 1;
                 }
             }
             break;
         case I2C_SIG_SEND_STOP:
+            e->sig = I2C_SIG_EXIT;
+            self->fsmState(self, e);
             e->sig = I2C_SIG_ENTER;
             self->fsmState = I2CManager_FsmStop;
             self->fsmState(self, e);
             break;
         case I2C_SIG_SEND_RESTART:
+            e->sig = I2C_SIG_EXIT;
+            self->fsmState(self, e);
             e->sig = I2C_SIG_ENTER;
             self->fsmState = I2CManager_FsmRestart;
             self->fsmState(self, e);
             break;
         case I2C_SIG_TIMEOUT:
-
+            /* @todo set a error flag of some kind, then transition to 
+            stop state */
+            e->sig = I2C_SIG_EXIT;
+            self->fsmState(self, e);
+            e->sig = I2C_SIG_ENTER;
+            self->fsmState = I2CManager_FsmStop;
+            self->fsmState(self, e);
             break;
     }
 }
@@ -693,34 +761,40 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
     {
         case I2C_SIG_ENTER:
             I2C_ReceiveByte(self->peripheral);
+            self->fsmTimerStateEnterCallback = I2CManager_FsmReadData;
             self->fsmTimer.period = self->fsmLongTimeoutPeriod;
             self->fsmTimer.flags.start = 1;
             self->statusBits.receiveInProgress = 1;
             break;
+        case I2C_SIG_EXIT:
+            self->fsmTimer.flags.start = 0;
+            self->fsmTimer.flags.active = 0;
+            self->fsmTimer.flags.expired = 0;
+            self->fsmRepeatCount = 0;
+            break;
         case I2C_SIG_DATA_RECEIVED:
             if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_READ) // @follow-up is this extra check needed? - MS
             {
-                self->fsmTimer.flags.active = 0;
                 self->currentDataTransfer.data[self->readCount++] = I2C_GetReceivedByte(self->peripheral);
                 if(self->readCount < self->currentDataTransfer.length)
-                    I2C_SendAck(self->peripheral, true);
+                    I2C_SendAck(self->peripheral, true); // @todo change to FSM state send ack or send nack?
                 else
                     I2C_SendAck(self->peripheral, false); // send NACK on last byte
                 self->fsmTimer.period = self->fsmShortTimeoutPeriod;
-                self->fsmTimer.flags.start = 1;
+                self->fsmTimer.flags.start = 1; // restart
                 self->statusBits.sendingAck = 1;
             }
             break;
         case I2C_SIG_BUS_IDLE_EVENT:
-            self->fsmTimer.flags.active = 0;
             /* Send ack finished. Prepare to receive byte if there are more 
             bytes to read. Otherwise, end transfer. */
             if(self->readCount < self->currentDataTransfer.length)
             {
-                I2C_ReceiveByte(self->peripheral);
-                self->fsmTimer.period = self->fsmLongTimeoutPeriod;
-                self->fsmTimer.flags.start = 1;
-                self->statusBits.receiveInProgress = 1;
+                /* Re-enter this state. Perform exit action and entry action */
+                e->sig = I2C_SIG_EXIT;
+                self->fsmState(self, e);
+                e->sig = I2C_SIG_ENTER;
+                self->fsmState(self, e);
             }
             else
             {
@@ -728,22 +802,37 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
                 manager process that we are done. The manager process will 
                 tell us if we need to send a stop or a restart. */
                 self->currentDataTransferFinished = true;
-                // @todo start timer that will automatically send a stop on timeout
-                // fsmAutoStopTimer.flags.start = 1; // change fsmTimer to fsmRetryTimer
+                /* Have the timer automatically send a stop on timeout 
+                as a failsafe. */
+                e->sig = I2C_SIG_EXIT;
+                self->fsmState(self, e);
+                self->fsmTimerStateEnterCallback = I2CManager_FsmStop;
+                self->fsmTimer.period = self->fsmLongTimeoutPeriod;
+                self->fsmTimer.flags.start = 1;
             }
             break;
         case I2C_SIG_SEND_STOP:
+            e->sig = I2C_SIG_EXIT;
+            self->fsmState(self, e);
             e->sig = I2C_SIG_ENTER;
             self->fsmState = I2CManager_FsmStop;
             self->fsmState(self, e);
             break;
         case I2C_SIG_SEND_RESTART:
+            e->sig = I2C_SIG_EXIT;
+            self->fsmState(self, e);
             e->sig = I2C_SIG_ENTER;
             self->fsmState = I2CManager_FsmRestart;
             self->fsmState(self, e);
             break;
         case I2C_SIG_TIMEOUT:
-
+            /* @todo set a error flag of some kind, then transition to 
+            stop state */
+            e->sig = I2C_SIG_EXIT;
+            self->fsmState(self, e);
+            e->sig = I2C_SIG_ENTER;
+            self->fsmState = I2CManager_FsmStop;
+            self->fsmState(self, e);
             break;
     }
 }
@@ -761,13 +850,26 @@ static void I2CManager_FsmStop(I2CManager *self, I2CEvent *e)
             self->statusBits.repeatedStartSent = 0;
             self->statusBits.sendingStop = 1;
             break;
+        case I2C_SIG_EXIT:
+            self->fsmTimer.flags.start = 0;
+            self->fsmTimer.flags.active = 0;
+            self->fsmTimer.flags.expired = 0;
+            self->fsmRepeatCount = 0;
+            break;
         case I2C_SIG_BUS_IDLE_EVENT:
-            /* Stop is finished */
+            /* Stop is finished. Transition back to idle state. Perform exit 
+            action. No entry action. */
+            e->sig = I2C_SIG_EXIT;
+            self->fsmState(self, e);
             self->fsmTimer.flags.active = 0;
             self->fsmState = I2CManager_FsmIdle;
             break;
         case I2C_SIG_TIMEOUT:
-
+            /* @todo Sending a stop failed somehow. Set a error flag of some 
+            kind. Do something to reset the bus then transition to idle state */
+            e->sig = I2C_SIG_ENTER;
+            self->fsmState = I2CManager_FsmIdle;
+            self->fsmState(self, e);
             break;
     }
 }
@@ -785,14 +887,27 @@ static void I2CManager_FsmRestart(I2CManager *self, I2CEvent *e)
             self->statusBits.repeatedStartSent = 0;
             self->statusBits.sendingRestart = 1;
             break;
+        case I2C_SIG_EXIT:
+            self->fsmTimer.flags.start = 0;
+            self->fsmTimer.flags.active = 0;
+            self->fsmTimer.flags.expired = 0;
+            self->fsmRepeatCount = 0;
+            break;
         case I2C_SIG_BUS_IDLE_EVENT:
             /* Repeat start is finished */
-            self->fsmTimer.flags.active = 0;
+            e->sig = I2C_SIG_EXIT;
+            self->fsmState(self, e);
             self->statusBits.repeatedStartSent = 1;
             self->fsmState = I2CManager_FsmIdle;
             break;
         case I2C_SIG_TIMEOUT:
-
+            /* @todo set a error flag of some kind, then transition to 
+            stop state */
+            e->sig = I2C_SIG_EXIT;
+            self->fsmState(self, e);
+            e->sig = I2C_SIG_ENTER;
+            self->fsmState = I2CManager_FsmStop;
+            self->fsmState(self, e);
             break;
     }
 }

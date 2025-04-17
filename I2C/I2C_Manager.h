@@ -123,6 +123,7 @@ typedef enum I2CManagerStateTag
 typedef enum I2CSignalTag
 {
     I2C_SIG_ENTER = 1,
+    I2C_SIG_EXIT,
     I2C_SIG_BEGIN_TRANSFER,
     I2C_SIG_BUS_IDLE_EVENT,
     I2C_SIG_ACK_RECEIVED,
@@ -131,7 +132,6 @@ typedef enum I2CSignalTag
     I2C_SIG_SEND_STOP,
     I2C_SIG_SEND_RESTART,
     I2C_SIG_TIMEOUT,
-    I2C_SIG_NO_RESPONSE, // or RETRY_FAILED?
     I2C_SIG_BUS_COLLISION, // @todo bus collision, etc.
 } I2CSignal;
 
@@ -189,8 +189,10 @@ struct I2CManagerTag
     uint16_t readCount;
 
     I2CFSMState fsmState;
-    uint8_t fsmRepeatCount;
     I2CTimer fsmTimer;
+    uint8_t fsmRepeatCount;
+    uint8_t fsmRepeatLimit;
+    I2CFSMState fsmTimerStateEnterCallback;
     uint32_t fsmLongTimeoutPeriod;
     uint32_t fsmShortTimeoutPeriod; // @todo add short timer for start and stop?
 
