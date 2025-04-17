@@ -76,8 +76,8 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
     if(tickRateNs == 0)
         tickRateNs = I2CMANAGER_DEFAULT_TICK_RATE_NS;
 
-    self->fsmLongTimeoutPeriod = I2CMANAGER_LONG_TIMEOUT_PERIOD_US / tickRateNs;
-    self->fsmShortTimeoutPeriod = I2CMANAGER_SHORT_TIMEOUT_PERIOD_US / tickRateNs;
+    self->fsmLongTimeoutPeriod = I2CMANAGER_LONG_TIMEOUT_PERIOD_NS / tickRateNs;
+    self->fsmShortTimeoutPeriod = I2CMANAGER_SHORT_TIMEOUT_PERIOD_NS / tickRateNs;
 
     if(self->fsmTimer.period == 0)
         self->fsmLongTimeoutPeriod = 1;
@@ -110,7 +110,7 @@ void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave)
 
 // *****************************************************************************
 
-void I2CManager_Tick(I2CManager *self)
+void I2CManager_Process(I2CManager *self)
 {
     I2CEvent event = {0};
     I2CDataTransfer tempDataTransfer = {0};

@@ -219,7 +219,7 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs);
 
 void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave);
 
-void I2CManager_Tick(I2CManager *self);
+void I2CManager_Process(I2CManager *self);
 
 void I2CManager_Enable(I2CManager *self);
 
