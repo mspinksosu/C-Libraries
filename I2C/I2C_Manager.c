@@ -201,8 +201,8 @@ void I2CManager_Process(I2CManager *self)
             /* @todo timeout retry event. Test with debugger. Decided if I just 
             want to always call the enter signal by default, or have the ability 
             to set a specific action. */
-            event.sig = I2C_SIG_ENTER;
-            self->fsmState(self, &event);
+            // event.sig = I2C_SIG_ENTER;
+            // self->fsmTimerStateEnterCallback(self, &event); // @debug testing timeout
         }
         else
         {
@@ -210,8 +210,8 @@ void I2CManager_Process(I2CManager *self)
             self->fsmTimer.flags.start = 0;
             self->fsmTimer.flags.active = 0;
             self->fsmTimer.flags.expired = 0;
-            event.sig = I2C_SIG_TIMEOUT;
-            self->fsmState(self, &event);
+            // event.sig = I2C_SIG_TIMEOUT;
+            // self->fsmTimerStateEnterCallback(self, &event); // @debug testing timeout
         }
     }
     self->peripheralState = currentPeripheralState;
@@ -226,7 +226,21 @@ void I2CManager_Process(I2CManager *self)
         self->currentDevice->private.transferStartedEventFlag = false;
         self->currentDevice->private.transferFinishedEventFlag = false;
         // @todo I2CManager. Send some sort of error to notify user
-        // @todo I2CManager. May need to make some sort of function to reset the bus manually
+        /* @todo Tested purposely breaking the I2C bus then recovering it. 
+        Take this code and turn it into a function and remove dependencies 
+        on GPIO. - MS */
+        I2C_Disable(self->peripheral);
+        TRISDbits.TRISD10 = 0; // I2C1 SCL
+        for(uint8_t i = 0; i < 10; i++)
+        {
+            uint16_t count = 1000;
+            LATDbits.LATD10 = 0;
+            while(count--);
+            LATDbits.LATD10 = 1;
+            count = 1000;
+            while(count--);
+        }
+        I2C_Enable(self->peripheral);
     }
 
     /* Go through list and process each slaves data requests. */
@@ -882,7 +896,7 @@ static void I2CManager_FsmStop(I2CManager *self, I2CEvent *e)
             break;
         case I2C_SIG_TIMEOUT:
             /* @todo Sending a stop failed somehow. Set a error flag of some 
-            kind. Do something to reset the bus then transition to idle state */
+            kind then transition to idle state */
             e->sig = I2C_SIG_ENTER;
             self->fsmState = I2CManager_FsmIdle;
             self->fsmState(self, e);
