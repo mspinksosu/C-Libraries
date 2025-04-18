@@ -132,7 +132,6 @@ typedef enum I2CSignalTag
     I2C_SIG_SEND_STOP,
     I2C_SIG_SEND_RESTART,
     I2C_SIG_TIMEOUT,
-    I2C_SIG_BUS_COLLISION, // @todo bus collision, etc.
 } I2CSignal;
 
 typedef struct I2CTimerTag

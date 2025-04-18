@@ -363,6 +363,7 @@ I2CState I2C_GetState(I2C *self)
     return retVal;
 
 }
+
 // *****************************************************************************
 
 bool I2C_GetAckSlaveStatus(I2C *self)
@@ -370,6 +371,20 @@ bool I2C_GetAckSlaveStatus(I2C *self)
     if(self->interface->I2C_GetAckSlaveStatus != NULL)
     {
         return (self->interface->I2C_GetAckSlaveStatus)();
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// *****************************************************************************
+
+bool I2C_GetBusError(I2C *self)
+{
+    if(self->interface->I2C_GetBusError != NULL)
+    {
+        return (self->interface->I2C_GetBusError)();
     }
     else
     {

@@ -71,7 +71,8 @@ I2CInterface I2C1_FunctionTable = {
     .I2C_SendAck = I2C1_SendAck,
     .I2C_IsBusy = I2C1_IsBusy,
     .I2C_GetState = I2C1_GetState,
-    .I2C_GetAckSlaveStatus = I2C1_GetAckSlaveStatus
+    .I2C_GetAckSlaveStatus = I2C1_GetAckSlaveStatus,
+    .I2C_GetBusError = I2C1_GetBusError,
 };
 
 static bool useRxInterrupt = false, useTxInterrupt = false; // @todo rx and tx interrupts
@@ -353,6 +354,22 @@ bool I2C1_GetAckSlaveStatus(void)
         return false; // 1 = ack was not received (NACK)
     else
         return true;
+}
+
+// *****************************************************************************
+
+bool I2C1_GetBusError(void)
+{
+    /* Bus collision bit must be cleared by software */
+    if(I2CxSTATbits.BCL)
+    {
+        I2CxSTATbits.BCL = 0;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 /*

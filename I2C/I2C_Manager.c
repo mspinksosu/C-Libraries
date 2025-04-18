@@ -192,8 +192,6 @@ void I2CManager_Process(I2CManager *self)
         }
     }
 
-    /* @todo ----- add something to handle bus collision -------------------- */
-
     if(self->fsmTimer.flags.expired)
     {
         self->fsmTimer.flags.expired = 0;
@@ -218,9 +216,20 @@ void I2CManager_Process(I2CManager *self)
     }
     self->peripheralState = currentPeripheralState;
 
-    /* @todo Go through list and process each slave's data requests. I'll 
-    probably replace the I2C manager state with something else. I haven't 
-    decided. */
+    // @debug testing recover from bus collision
+    if(I2C_GetBusError(self->peripheral))
+    {
+        event.sig = I2C_SIG_SEND_STOP;
+        self->fsmState(self, &event);
+        self->managerState = I2C_MANAGER_STATE_IDLE;
+        self->currentDevice->state = I2C_SLAVE_STATE_IDLE;
+        self->currentDevice->private.transferStartedEventFlag = false;
+        self->currentDevice->private.transferFinishedEventFlag = false;
+        // @todo I2CManager. Send some sort of error to notify user
+        // @todo I2CManager. May need to make some sort of function to reset the bus manually
+    }
+
+    /* Go through list and process each slaves data requests. */
     if(self->currentDevice != NULL)
     {
         uint8_t transferError = 1;
@@ -247,9 +256,6 @@ void I2CManager_Process(I2CManager *self)
             case I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS:
                 if(self->currentDataTransferFinished)
                 {
-                    /* @todo Should I check for repeated start in the FSM itself, 
-                    or do it here instead? */
-
                     /* Get the status of the current transfer and write it to 
                     the slave device */
                     I2CManager_GenerateFinishedTransferReport(self, &tempStatusReport);
@@ -534,6 +540,8 @@ static void I2CManager_FsmIdle(I2CManager *self, I2CEvent *e)
             e->sig = I2C_SIG_ENTER;
             self->fsmState(self, e);
             break;
+        default:
+            break;
     }
 }
 
@@ -580,6 +588,8 @@ static void I2CManager_FsmStart(I2CManager *self, I2CEvent *e)
             e->sig = I2C_SIG_ENTER;
             self->fsmState = I2CManager_FsmStop;
             self->fsmState(self, e);
+            break;
+        default:
             break;
     }
 }
@@ -664,6 +674,8 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
             e->sig = I2C_SIG_ENTER;
             self->fsmState = I2CManager_FsmStop;
             self->fsmState(self, e);
+            break;
+        default:
             break;
     }
 }
@@ -750,6 +762,8 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
             self->fsmState = I2CManager_FsmStop;
             self->fsmState(self, e);
             break;
+        default:
+            break;
     }
 }
 
@@ -834,6 +848,8 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
             self->fsmState = I2CManager_FsmStop;
             self->fsmState(self, e);
             break;
+        default:
+            break;
     }
 }
 
@@ -870,6 +886,18 @@ static void I2CManager_FsmStop(I2CManager *self, I2CEvent *e)
             e->sig = I2C_SIG_ENTER;
             self->fsmState = I2CManager_FsmIdle;
             self->fsmState(self, e);
+            break;
+        case I2C_SIG_SEND_STOP:
+            /* Something went wrong and the manager requested a stop. We are 
+            already in stop, so perform one last stop action then transition
+            back to idle. Perform exit action. No entry action. */
+            I2C_Stop(self->peripheral);
+            e->sig = I2C_SIG_EXIT;
+            self->fsmState(self, e);
+            self->fsmTimer.flags.active = 0;
+            self->fsmState = I2CManager_FsmIdle;
+            break;
+        default:
             break;
     }
 }
@@ -908,6 +936,8 @@ static void I2CManager_FsmRestart(I2CManager *self, I2CEvent *e)
             e->sig = I2C_SIG_ENTER;
             self->fsmState = I2CManager_FsmStop;
             self->fsmState(self, e);
+            break;
+        default:
             break;
     }
 }

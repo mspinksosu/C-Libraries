@@ -96,4 +96,6 @@ I2CState I2C1_GetState(void);
 
 bool I2C1_GetAckSlaveStatus(void);
 
+bool I2C1_GetBusError(void);
+
 #endif /* I2C1_H */

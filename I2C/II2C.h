@@ -120,6 +120,7 @@ typedef struct I2CInterfaceTag
     bool (*I2C_IsBusy)(void);
     I2CState (*I2C_GetState)(void);
     bool (*I2C_GetAckSlaveStatus)(void);
+    bool (*I2C_GetBusError)(void);
 } I2CInterface;
 
 typedef struct I2CTag
@@ -212,7 +213,9 @@ I2CState I2C_GetState(I2C *self);
 
 bool I2C_GetAckSlaveStatus(I2C *self);
 
-// @todo add get bus errors
-// @todo handle bus collision
+/* @todo should I make the bus collision a state, or just an event? The bus 
+collision bit is set when a collision is detected, but has to be cleared by 
+software. So it's not really a state. */
+bool I2C_GetBusError(I2C *self);
 
 #endif /* I2C_H */
