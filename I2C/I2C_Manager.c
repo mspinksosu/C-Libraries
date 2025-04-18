@@ -30,8 +30,8 @@
 #define I2CMANAGER_REPEAT_LIMIT 5
 
 #define I2CMANAGER_DEFAULT_TICK_RATE_NS   50
-#define I2CMANAGER_LONG_TIMEOUT_PERIOD_NS (I2CMANAGER_LONG_TIMEOUT_PERIOD_US * 1000)
-#define I2CMANAGER_SHORT_TIMEOUT_PERIOD_NS (I2CMANAGER_LONG_TIMEOUT_PERIOD_US * 1000)
+#define I2CMANAGER_LONG_TIMEOUT_PERIOD_NS (I2CMANAGER_LONG_TIMEOUT_PERIOD_US * 1000UL)
+#define I2CMANAGER_SHORT_TIMEOUT_PERIOD_NS (I2CMANAGER_SHORT_TIMEOUT_PERIOD_US * 1000UL)
 
 #define CircularIncrement(i, size) i == (size - 1) ? 0 : i + 1
 
@@ -79,7 +79,7 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
     self->fsmLongTimeoutPeriod = I2CMANAGER_LONG_TIMEOUT_PERIOD_NS / tickRateNs;
     self->fsmShortTimeoutPeriod = I2CMANAGER_SHORT_TIMEOUT_PERIOD_NS / tickRateNs;
 
-    if(self->fsmTimer.period == 0)
+    if(self->fsmLongTimeoutPeriod == 0)
         self->fsmLongTimeoutPeriod = 1;
     if(self->fsmShortTimeoutPeriod == 0)
         self->fsmShortTimeoutPeriod = 1;
