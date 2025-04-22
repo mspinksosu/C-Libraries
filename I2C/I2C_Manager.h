@@ -91,10 +91,9 @@ typedef struct I2CSlaveTag I2CSlave; // forward declaration
 your I2C devices initiated the callback. */
 // typedef void (*I2CSlaveCallbackFunc)(I2CSlave *i2cSlaveContext);
 
-/* @todo decide if I want to make a base class or not */
+/* @todo decide if I want to make this the base class or not */
 struct I2CSlaveTag
 {
-    // I2CSlave *super; // include the base class first
     I2CSlave *next;
     uint8_t slaveAddress7Bit; // 7-bit address, right justified
     I2CSlaveState state;
@@ -110,6 +109,7 @@ struct I2CSlaveTag
     } private;
 
     I2CDataTransferStatus finishedTransferReport;
+    void *instance;
 };
 
 // @todo decided if I want to use a manager state or keep status bits
@@ -234,6 +234,7 @@ void I2CManager_GetCurrentDevice(I2CManager *self, I2CSlave *retDevice);
 
 void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress);
 
+// non-interface functions?
 uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self);
 
 bool I2CSlave_IsDataTransferBufferFull(I2CSlave *self);
