@@ -109,7 +109,6 @@ struct I2CSlaveTag
     } private;
 
     I2CDataTransferStatus finishedTransferReport;
-    void *instance;
 };
 
 // @todo decided if I want to use a manager state or keep status bits
@@ -234,7 +233,6 @@ void I2CManager_GetCurrentDevice(I2CManager *self, I2CSlave *retDevice);
 
 void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress);
 
-// non-interface functions?
 uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self);
 
 bool I2CSlave_IsDataTransferBufferFull(I2CSlave *self);
