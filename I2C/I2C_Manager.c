@@ -404,7 +404,7 @@ void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, I2CTransferType writeOrR
     {
         // There is space in the buffer
         self->private.buffer[self->private.head].transferType = writeOrRead;
-        self->private.buffer[self->private.head].data = data;
+        self->private.buffer[self->private.head].data = data; // @todo change this name to be dataPtr or something to make it obvious we are giving a reference - MS
         self->private.buffer[self->private.head].length = length;
         self->private.head = tempHead;
         self->private.count++;
