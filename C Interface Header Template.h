@@ -119,4 +119,4 @@ uint16_t Foo_GetValue(Foo *self);
  */
 void Foo_SetValue(Foo *self, uint16_t data);
 
-#endif  /* IFOO_H */
+#endif /* IFOO_H */

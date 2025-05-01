@@ -103,4 +103,4 @@ uint16_t Foo_MCU1_GetValue(Foo_MCU1 *self);
  */
 void Foo_MCU1_SetValue(Foo_MCU1 *self, uint16_t data);
 
-#endif  /* FOO_MCU1_H */
+#endif /* FOO_MCU1_H */

@@ -60,4 +60,4 @@ void Library_Init(void);
  */
 void Library_Process(void);
 
-#endif  /* BLANK_H */
+#endif /* BLANK_H */
