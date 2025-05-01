@@ -34,10 +34,107 @@
 
 // *****************************************************************************
 
-
+void DTBuffer_BufferInit(DTBuffer *self, DataTransfer *arrayIn, uint8_t arrayInSize)
+{
+    self->private.buffer = arrayIn;
+    self->private.size = arrayInSize;
+    self->count = 0;
+}
 
 // *****************************************************************************
 
+void DTBuffer_WriteDataTransfer(DTBuffer *self, DataTransferType writeOrRead, uint8_t *dataArray, uint16_t length)
+{
+    uint8_t tempHead = CircularIncrement(self->private.head, self->private.size);
+
+    if(tempHead != self->private.tail)
+    {
+        // There is space in the buffer
+        self->private.buffer[self->private.head].transferType = writeOrRead;
+        self->private.buffer[self->private.head].dataArray = dataArray;
+        self->private.buffer[self->private.head].length = length;
+        self->private.head = tempHead;
+        self->count++;
+    }
+}
+
+// *****************************************************************************
+
+uint8_t DTBuffer_ReadDataTransfer(DTBuffer *self, DataTransfer *returnDataTransfer)
+{
+    if(self->private.head != self->private.tail)
+    {
+        /* The buffer is not empty. Get the data from the buffer to be 
+        processed and clear the transfer finished flag */
+        *returnDataTransfer = self->private.buffer[self->private.tail];
+        self->private.tail = CircularIncrement(self->private.tail, self->private.size);
+        self->count--;
+        return 0; // no error
+    }
+    else
+    {
+        returnDataTransfer->length = 0;
+        return 1;
+    }
+}
+
+// *****************************************************************************
+
+uint8_t DTBuffer_GetCount(DTBuffer *self)
+{
+    return self->count;
+}
+
+// *****************************************************************************
+
+bool DTBuffer_IsFull(DTBuffer *self)
+{
+    uint8_t tempHead = CircularIncrement(self->private.head, self->private.size);
+
+    if(tempHead == self->private.tail)
+        return true;
+    else
+        return false;
+}
+
+// *****************************************************************************
+
+bool DTBuffer_IsNotEmpty(DTBuffer *self)
+{
+    if(self->count != 0)
+        return true;
+    else
+        return false;
+}
+
+// *****************************************************************************
+
+void DTBuffer_Peek(DTBuffer *self, DataTransfer *returnDataTransfer)
+{
+    if(self->private.head != self->private.tail)
+    {
+        *returnDataTransfer = self->private.buffer[self->private.tail];
+    }
+    else
+    {
+        returnDataTransfer->length = 0;
+    }
+}
+
+// *****************************************************************************
+
+void DTBuffer_Flush(DTBuffer *self)
+{
+    self->private.tail = self->private.head;
+    self->count = 0;
+}
+
+// *****************************************************************************
+
+uint8_t DTBuffer_GetSize(DTBuffer *self)
+{
+    return self->private.size;
+}
 
 /*
  End of File

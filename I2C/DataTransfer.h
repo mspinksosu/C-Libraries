@@ -70,21 +70,24 @@ typedef struct DTBufferTag
 /* @todo Do I want to add functions similar to my buffer library to handle 
 managing an array of data transfer objects? */
 
-void DTBuffer_BufferInit(DTBuffer *self, DataTransfer *arrayIn, uint8_t arrayInSize);
+void DTBuffer_Init(DTBuffer *self, DataTransfer *arrayIn, uint8_t arrayInSize);
 
-void DTBuffer_InitWithOverwrite(DTBuffer *self, DataTransfer *arrayIn, uint8_t arrayInSize, bool overwrite);
+void DTBuffer_WriteDataTransfer(DTBuffer *self, DataTransferType writeOrRead, uint8_t *dataArray, uint16_t length);
 
-uint8_t DTBuffer_GetBufferCount(DTBuffer *self);
+// returns error 1 if no data found // @todo could just have it set length to 0 instead
+uint8_t DTBuffer_ReadDataTransfer(DTBuffer *self, DataTransfer *returnDataTransfer);
 
-bool DTBuffer_IsBufferFull(DTBuffer *self);
+uint8_t DTBuffer_GetCount(DTBuffer *self);
 
-bool DTBuffer_IsBufferNotEmpty(DTBuffer *self);
+bool DTBuffer_IsFull(DTBuffer *self);
 
-uint8_t DTBuffer_GetBufferSize(DTBuffer *self);
+bool DTBuffer_IsNotEmpty(DTBuffer *self);
 
-void DTBuffer_WriteToBuffer(DTBuffer *self, DataTransferType writeOrRead, uint8_t *data, uint16_t length);
+uint8_t DTBuffer_Peek(DTBuffer *self, DataTransfer *returnDataTransfer);
 
-uint8_t DTBuffer_ReadFromBuffer(DTBuffer *self, DataTransfer *returnDataTransfer);
+void DTBuffer_Flush(DTBuffer *self);
+
+uint8_t DTBuffer_GetSize(DTBuffer *self);
 
 /* @follow-up I could change the name to TargetDevice and make the I2C temperature 
 sensor and I2C accelerometer a subclass of that.
