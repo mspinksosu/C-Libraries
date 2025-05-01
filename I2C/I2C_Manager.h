@@ -66,10 +66,10 @@ typedef enum I2CSlaveStateTag
     I2C_SLAVE_STATE_ERROR,
 } I2CSlaveState;
 
-typedef struct I2CDataTransferTag // might move this to II2C.h
+typedef struct I2CDataTransferTag
 {
     I2CTransferType transferType;
-    uint8_t *data;
+    uint8_t *dataArray;
     uint16_t length;
 } I2CDataTransfer;
 
@@ -239,9 +239,9 @@ bool I2CSlave_IsDataTransferBufferFull(I2CSlave *self);
 
 bool I2CSlave_IsDataTransferBufferNotEmpty(I2CSlave *self);
 
-uint8_t I2CSlave_GetDataTransferBufferSize(I2CSlave *self); // for future use with external buffer - MS
+uint8_t I2CSlave_GetDataTransferBufferSize(I2CSlave *self);
 
-void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *data, uint16_t length);
+void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *array, uint16_t length);
 
 uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataTransfer *returnDataTransfer);
 

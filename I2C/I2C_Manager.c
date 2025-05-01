@@ -25,13 +25,11 @@
 
 // ***** Defines ***************************************************************
 
-#define I2CMANAGER_LONG_TIMEOUT_PERIOD_US  500 // desired timeout period in us
-#define I2CMANAGER_SHORT_TIMEOUT_PERIOD_US 100 // @todo add short timer for start stop?
-#define I2CMANAGER_REPEAT_LIMIT 5
-
-#define I2CMANAGER_DEFAULT_TICK_RATE_NS   50
-#define I2CMANAGER_LONG_TIMEOUT_PERIOD_NS (I2CMANAGER_LONG_TIMEOUT_PERIOD_US * 1000UL)
-#define I2CMANAGER_SHORT_TIMEOUT_PERIOD_NS (I2CMANAGER_SHORT_TIMEOUT_PERIOD_US * 1000UL)
+/* desired timeout in ns */ // @todo use a shortened timer for start stop?
+#define I2CMANAGER_LONG_TIMEOUT_PERIOD_NS  (500000UL) // 500 us
+#define I2CMANAGER_SHORT_TIMEOUT_PERIOD_NS (100000UL) // 100 us
+#define I2CMANAGER_DEFAULT_TICK_RATE_NS    50
+#define I2CMANAGER_REPEAT_LIMIT            5
 
 #define CircularIncrement(i, size) i == (size - 1) ? 0 : i + 1
 
@@ -396,7 +394,7 @@ uint8_t I2CSlave_GetDataTransferBufferSize(I2CSlave *self)
 
 // *****************************************************************************
 
-void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *data, uint16_t length)
+void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *array, uint16_t length)
 {
     uint8_t tempHead = CircularIncrement(self->private.head, I2CSLAVE_DT_BUFFER_SIZE);
 
@@ -404,7 +402,7 @@ void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, I2CTransferType writeOrR
     {
         // There is space in the buffer
         self->private.buffer[self->private.head].transferType = writeOrRead;
-        self->private.buffer[self->private.head].data = data; // @todo change this name to be dataPtr or something to make it obvious we are giving a reference - MS
+        self->private.buffer[self->private.head].dataArray = array;
         self->private.buffer[self->private.head].length = length;
         self->private.head = tempHead;
         self->private.count++;
@@ -520,7 +518,7 @@ static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CDataT
     retReport->error = I2C_TRANSFER_ERROR_NONE; // @todo I2C error codes
 
     retReport->transferType = self->currentDataTransfer.transferType;
-    retReport->ptrArray = self->currentDataTransfer.data;
+    retReport->ptrArray = self->currentDataTransfer.dataArray;
     retReport->sizeOfArray = self->currentDataTransfer.length;
     if(retReport->transferType == I2C_TRANSFER_TYPE_WRITE)
         retReport->numOfBytesTransferred = self->writeCount;
@@ -701,7 +699,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
     switch(e->sig)
     {
         case I2C_SIG_ENTER:
-            I2C_TransmitByte(self->peripheral, self->currentDataTransfer.data[self->writeCount]);
+            I2C_TransmitByte(self->peripheral, self->currentDataTransfer.dataArray[self->writeCount]);
             self->fsmTimerStateEnterCallback = I2CManager_FsmWriteData;
             self->fsmTimer.period = self->fsmLongTimeoutPeriod;
             self->fsmTimer.flags.start = 1;
@@ -803,7 +801,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
         case I2C_SIG_DATA_RECEIVED:
             if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_READ) // @follow-up is this extra check needed? - MS
             {
-                self->currentDataTransfer.data[self->readCount++] = I2C_GetReceivedByte(self->peripheral);
+                self->currentDataTransfer.dataArray[self->readCount++] = I2C_GetReceivedByte(self->peripheral);
                 if(self->readCount < self->currentDataTransfer.length)
                     I2C_SendAck(self->peripheral, true); // @todo change to FSM state send ack or send nack?
                 else
