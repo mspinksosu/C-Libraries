@@ -5,7 +5,7 @@
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
- * @date 5/1/25   Original creation
+ * @date 5/1/25    Original creation
  * 
  * @details
  *      @todo details

@@ -1,16 +1,17 @@
 /***************************************************************************//**
  * @brief I2C Manager Header (Non-Processor Specific)
  * 
- * @file I2C_Manager.h
+ * @file I2CManager.h
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
  * @date 2/27/25   Original creation
+ * @date 4/25/25   Refactored
  * 
  * @details
  *      @todo details
  *      @todo Add more details about data transfer object buffer used in the 
- * I2C slave device as well. Also, should I make a version that does not 
+ * I2C target device as well. Also, should I make a version that does not 
  * use the DT object?
  * 
  * @section license License
@@ -27,42 +28,31 @@
 #define I2C_MANAGER_H
 
 #include "DataTransfer.h"
+#include "I2CTarget.h"
 #include "II2C.h"
 
 // ***** Defines ***************************************************************
 
-/* @note The size of the data transfer buffer should be one more than the 
-amount that you would like the slave to be able to hold at once. I would 
-suggest a minimum size of 3. That is enough to hold one write data request, 
-followed by one read data request. - MS */
-#define I2CSLAVE_DT_BUFFER_SIZE 3
 
 // ***** Global Variables ******************************************************
 
 typedef enum I2CTransferStateTag // @todo transfer state. Haven't decided if I want this or not yet
 {
-    I2C_TRANSFER_STATE_UNKNOWN = 0,
-    I2C_TRANSFER_STATE_READY,
-    I2C_TRANSFER_STATE_IN_PROGRESS,
-    I2C_TRANSFER_STATE_FINISHED,
-    I2C_TRANSFER_STATE_ERROR,
+    I2C_MANAGER_TRANSFER_STATE_UNKNOWN = 0,
+    I2C_MANAGER_TRANSFER_STATE_READY,
+    I2C_MANAGER_TRANSFER_STATE_IN_PROGRESS,
+    I2C_MANAGER_TRANSFER_STATE_FINISHED,
+    I2C_MANAGER_TRANSFER_STATE_ERROR,
 } I2CTransferState;
 
 typedef enum I2CTransferErrorTag
 {
-    I2C_TRANSFER_ERROR_NONE = 0,
-    I2C_TRANSFER_ERROR_UNKOWN,
-    I2C_TRANSFER_ERROR_TX,
-    I2C_TRANSFER_ERROR_RX,
+    I2C_MANAGER_TRANSFER_ERROR_NONE = 0,
+    I2C_MANAGER_TRANSFER_ERROR_UNKOWN,
+    I2C_MANAGER_TRANSFER_ERROR_TX,
+    I2C_MANAGER_TRANSFER_ERROR_RX,
     // add more as needed
 } I2CTransferError;
-
-typedef enum I2CSlaveStateTag
-{
-    I2C_SLAVE_STATE_IDLE = 0,
-    I2C_SLAVE_STATE_TRANSFER_IN_PROGRESS,
-    I2C_SLAVE_STATE_ERROR,
-} I2CSlaveState;
 
 /* @todo not sure if I want to include state in status report */
 typedef struct I2CDataTransferStatusTag
@@ -75,27 +65,12 @@ typedef struct I2CDataTransferStatusTag
     uint16_t numOfBytesTransferred;
 } I2CDataTransferStatus;
 
-typedef struct I2CSlaveTag I2CSlave; // forward declaration
+typedef struct I2CTarget_NodeTag I2CTarget_Node;
 
-// @todo decided if I want to keep the old callback function pointers
-/* callback function pointer. The context is so that you can know which of
-your I2C devices initiated the callback. */
-// typedef void (*I2CSlaveCallbackFunc)(I2CSlave *i2cSlaveContext);
-
-/* @todo decide if I want to make this the base class or not */
-struct I2CSlaveTag
+struct I2CTarget_NodeTag
 {
-    I2CSlave *next;
-    uint8_t slaveAddress7Bit; // 7-bit address, right justified
-    I2CSlaveState state;
-
-    struct
-    {
-        DTBuffer *buffer;
-        DataTransfer dtArray[I2CSLAVE_DT_BUFFER_SIZE];
-        bool transferStartedEventFlag;
-        bool transferFinishedEventFlag;
-    } private;
+    I2CTarget_Node *next;
+    I2CTarget *i2cDevice;
 
     I2CDataTransferStatus finishedTransferReport;
 };
@@ -110,16 +85,16 @@ typedef enum I2CManagerStateTag
 
 typedef enum I2CSignalTag
 {
-    I2C_SIG_ENTER = 1,
-    I2C_SIG_EXIT,
-    I2C_SIG_BEGIN_TRANSFER,
-    I2C_SIG_BUS_IDLE_EVENT,
-    I2C_SIG_ACK_RECEIVED,
-    I2C_SIG_NACK_RECEIVED,
-    I2C_SIG_DATA_RECEIVED,
-    I2C_SIG_SEND_STOP,
-    I2C_SIG_SEND_RESTART,
-    I2C_SIG_TIMEOUT,
+    I2C_MANAGER_SIG_ENTER = 1,
+    I2C_MANAGER_SIG_EXIT,
+    I2C_MANAGER_SIG_BEGIN_TRANSFER,
+    I2C_MANAGER_SIG_BUS_IDLE_EVENT,
+    I2C_MANAGER_SIG_ACK_RECEIVED,
+    I2C_MANAGER_SIG_NACK_RECEIVED,
+    I2C_MANAGER_SIG_DATA_RECEIVED,
+    I2C_MANAGER_SIG_SEND_STOP,
+    I2C_MANAGER_SIG_SEND_RESTART,
+    I2C_MANAGER_SIG_TIMEOUT,
 } I2CSignal;
 
 typedef struct I2CTimerTag
@@ -157,7 +132,7 @@ typedef struct I2CManagerStatusBitsTag
 typedef struct I2CEventTag
 {
     I2CSignal sig;
-    // uint8_t slaveAddressPlusRW; // 7-bit address + R/W bit // @remove later
+
 } I2CEvent;
 
 typedef struct I2CManagerTag I2CManager; // forward declaration
@@ -168,8 +143,8 @@ typedef void (*I2CFSMState)(I2CManager *self, I2CEvent *e);
 struct I2CManagerTag
 {
     I2C *peripheral;
-    I2CSlave *endOfList; // circular linked list
-    I2CSlave *currentDevice;
+    I2CTarget_Node *endOfList; // circular linked list
+    I2CTarget_Node *currentDevice;
     DataTransfer currentDataTransfer;
     bool currentDataTransferFinished;
     uint16_t writeCount;
@@ -204,7 +179,11 @@ struct I2CManagerTag
 
 void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs);
 
-void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave);
+// @todo add function to set pointer in node object to I2C target device
+
+void I2CManager_AddDevice(I2CManager *self, I2CTarget_Node *target);
+
+// @todo add remove device function
 
 void I2CManager_Process(I2CManager *self);
 
@@ -216,43 +195,8 @@ bool I2CManager_IsBusy(I2CManager *self);
 
 I2CManagerState I2CManager_GetState(I2CManager *self);
 
-void I2CManager_GetCurrentDevice(I2CManager *self, I2CSlave *retDevice);
+void I2CManager_GetCurrentDevice(I2CManager *self, I2CTarget *retDevice);
 
-/* slave functions */
-
-void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress);
-
-void I2CSlave_WriteDataTransfer(I2CSlave *self, DataTransferType writeOrRead, uint8_t *array, uint16_t length);
-
-uint8_t I2CSlave_ReadDataTransfer(I2CSlave *self, DataTransfer *returnDataTransfer);
-
-uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self);
-
-bool I2CSlave_IsDataTransferBufferFull(I2CSlave *self);
-
-bool I2CSlave_IsDataTransferBufferNotEmpty(I2CSlave *self);
-
-uint8_t I2CSlave_GetDataTransferBufferSize(I2CSlave *self);
-
-void I2CSlave_FlushDataTransferBuffer(I2CSlave *self);
-
-// @todo shorten names to something like GetDTStartedEvent
-
-bool I2CSlave_GetDataTransferStartedEvent(I2CSlave *self);
-
-void I2CSlave_ClearDataTransferStartedEventFlag(I2CSlave *self);
-
-bool I2CSlave_GetDataTransferFinishedEvent(I2CSlave *self);
-
-void I2CSlave_ClearDataTransferFinishedEventFlag(I2CSlave *self);
-
-void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus); // @todo transfer status
-
-I2CSlaveState I2CSlave_GetState(I2CSlave *self);
-
-// @todo possible callback functions
-// I2CSlave_TransferFinishedCallback
-// I2CSlave_WriteTransferFinishedCallback
-// I2CSlave_ReadTransferFinishedCallback
+void I2CManager_GetDataTransferStatus(I2CTarget *self, I2CDataTransferStatus *retTransferStatus); // @todo transfer status
 
 #endif /* I2C_MANAGER_H */

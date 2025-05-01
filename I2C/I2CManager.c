@@ -61,7 +61,7 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
     self->peripheral = peripheral;
     /* @follow-up Should init always clear the list by setting the pointers to NULL? This would require that 
     the person using the library makes sure that they call Init before AddSlave. If they accidentally 
-    add all slave devices, then call init, the manager list will be erased. - MS */
+    add all target devices, then call init, the manager list will be erased. - MS */
     // self->endOfList = NULL;
     // self->currentDevice = NULL;
     self->currentDataTransfer.length = 0;
@@ -86,12 +86,12 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
 
 // *****************************************************************************
 
-void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave)
+void I2CManager_AddDevice(I2CManager *self, I2CSlave *targetDevice)
 {
     if(self->endOfList == NULL)
     {
         /* Begin with a new list */
-        self->endOfList = slave;
+        self->endOfList = targetDevice;
 
         /* Since the list only contains one entry, the "next" pointer will
         also point to itself */
@@ -99,7 +99,7 @@ void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave)
     }
     else
     {
-        I2CManager_DevicePush(slave, self->endOfList);
+        I2CManager_DevicePush(targetDevice, self->endOfList);
     }
     self->currentDevice = self->endOfList->next; // reset the index
 }
@@ -267,7 +267,7 @@ void I2CManager_Process(I2CManager *self)
                 if(self->currentDataTransferFinished)
                 {
                     /* Get the status of the current transfer and write it to 
-                    the slave device */
+                    the target device */
                     I2CManager_GenerateFinishedTransferReport(self, &tempStatusReport);
                     self->currentDevice->finishedTransferReport = tempStatusReport;
                     self->currentDevice->private.transferFinishedEventFlag = true;
@@ -334,102 +334,9 @@ I2CManagerState I2CManager_GetState(I2CManager *self)
 
 // *****************************************************************************
 
-void I2CManager_GetCurrentDevice(I2CManager *self, I2CSlave *retDevice)
+void I2CManager_GetCurrentDevice(I2CManager *self, I2CTarget *retDevice)
 {
-    *retDevice = *(self->currentDevice);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// ***** Slave Functions *****************************************************//
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress7Bit)
-{
-    self->slaveAddress7Bit = slaveAddress7Bit;
-
-    // initialize buffer
-    DTBuffer_Init(&(self->private.buffer), &(self->private.dtArray), I2CSLAVE_DT_BUFFER_SIZE);
-
-    self->state = I2C_SLAVE_STATE_IDLE;
-}
-
-// *****************************************************************************
-
-void I2CSlave_WriteDataTransfer(I2CSlave *self, DataTransferType writeOrRead, uint8_t *array, uint16_t length)
-{
-    DTBuffer_WriteDataTransfer(&(self->private.buffer), writeOrRead, array, length);
-}
-
-// *****************************************************************************
-
-uint8_t I2CSlave_ReadDataTransfer(I2CSlave *self, DataTransfer *returnDataTransfer)
-{
-    return DTBuffer_ReadDataTransfer(&(self->private.buffer), returnDataTransfer);
-}
-
-// *****************************************************************************
-
-uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self)
-{
-    return DTBuffer_GetCount(&(self->private.buffer));
-}
-
-// *****************************************************************************
-
-bool I2CSlave_IsDataTransferBufferFull(I2CSlave *self)
-{
-    return DTBuffer_IsFull(&(self->private.buffer));
-}
-
-// *****************************************************************************
-
-bool I2CSlave_IsDataTransferBufferNotEmpty(I2CSlave *self)
-{
-    return DTBuffer_IsNotEmpty(&(self->private.buffer));
-}
-
-// *****************************************************************************
-
-uint8_t I2CSlave_GetDataTransferBufferSize(I2CSlave *self)
-{
-    return DTBuffer_GetCount(&(self->private.buffer));
-}
-
-// *****************************************************************************
-
-void I2CSlave_FlushDataTransferBuffer(I2CSlave *self)
-{
-    DTBuffer_Flush(&(self->private.buffer));
-}
-
-// *****************************************************************************
-
-bool I2CSlave_GetDataTransferStartedEvent(I2CSlave *self)
-{
-    return self->private.transferStartedEventFlag;
-}
-
-// *****************************************************************************
-
-void I2CSlave_ClearDataTransferStartedEventFlag(I2CSlave *self)
-{
-    self->private.transferStartedEventFlag = false;
-}
-
-// *****************************************************************************
-
-bool I2CSlave_GetDataTransferFinishedEvent(I2CSlave *self)
-{
-    return self->private.transferFinishedEventFlag;
-}
-
-// *****************************************************************************
-
-void I2CSlave_ClearDataTransferFinishedEventFlag(I2CSlave *self)
-{
-    self->private.transferFinishedEventFlag = false;
+    *retDevice = *(self->currentDevice->i2cDevice);
 }
 
 // *****************************************************************************
@@ -437,23 +344,16 @@ void I2CSlave_ClearDataTransferFinishedEventFlag(I2CSlave *self)
 /* @todo not sure if/how I want to implement this yet. Should status reflect 
 on going changes during the data transfer, such as the current number of bytes
 transferred? Or should I just use it as a end of data transfer report? - MS */
-void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTransferStatus)
+void I2CManager_GetDataTransferStatus(I2CManager *self, I2CDataTransferStatus *retTransferStatus)
 {
     retTransferStatus->error = I2C_TRANSFER_ERROR_NONE; // @todo I2C error codes
 
     /* @note cannot get current transfer type without linking to I2C manager... 
     Maybe have the manager write to the report? - MS */
-    retTransferStatus->transferType = self->finishedTransferReport.transferType;
-    retTransferStatus->ptrArray = self->finishedTransferReport.ptrArray;
-    retTransferStatus->sizeOfArray = self->finishedTransferReport.sizeOfArray;
-    retTransferStatus->numOfBytesTransferred = self->finishedTransferReport.numOfBytesTransferred;
-}
-
-// *****************************************************************************
-
-I2CSlaveState I2CSlave_GetState(I2CSlave *self)
-{
-    return self->state;
+    retTransferStatus->transferType = self->currentDevice->finishedTransferReport.transferType;
+    retTransferStatus->ptrArray = self->currentDevice->finishedTransferReport.ptrArray;
+    retTransferStatus->sizeOfArray = self->currentDevice->finishedTransferReport.sizeOfArray;
+    retTransferStatus->numOfBytesTransferred = self->currentDevice->finishedTransferReport.numOfBytesTransferred;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -462,7 +362,7 @@ I2CSlaveState I2CSlave_GetState(I2CSlave *self)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-static void I2CManager_DevicePush(I2CSlave *self, I2CSlave *endOfList)
+static void I2CManager_DevicePush(I2CTarget_Node *self, I2CTarget_Node *endOfList)
 {
     /* Add the new entry to the beginning of the list. Make the "next" pointer
     point to the head */
