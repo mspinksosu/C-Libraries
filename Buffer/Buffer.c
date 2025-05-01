@@ -40,14 +40,14 @@ but it restricted the buffer size to powers of two only. */
 
 // *****************************************************************************
 
-void Buffer_Init(Buffer *self, uint8_t *arrayIn, uint8_t arrayInSize)
+void Buffer_Init(Buffer *self, uint8_t *arrayIn, uint16_t arrayInSize)
 {
     Buffer_InitWithOverwrite(self, arrayIn, arrayInSize, false);
 }
 
 // *****************************************************************************
 
-void Buffer_InitWithOverwrite(Buffer *self, uint8_t *arrayIn, uint8_t arrayInSize, bool overwrite)
+void Buffer_InitWithOverwrite(Buffer *self, uint8_t *arrayIn, uint16_t arrayInSize, bool overwrite)
 {
     self->private.buffer = arrayIn;
     self->private.size = arrayInSize;
@@ -59,7 +59,7 @@ void Buffer_InitWithOverwrite(Buffer *self, uint8_t *arrayIn, uint8_t arrayInSiz
 
 void Buffer_WriteByte(Buffer *self, uint8_t receivedByte)
 {
-    uint8_t tempHead = CircularIncrement(self->private.head, self->private.size);
+    uint16_t tempHead = CircularIncrement(self->private.head, self->private.size);
     
     if(tempHead != self->private.tail)
     {
@@ -134,7 +134,7 @@ void Buffer_Flush(Buffer *self)
 
 // *****************************************************************************
 
-uint8_t Buffer_GetCount(Buffer *self)
+uint16_t Buffer_GetCount(Buffer *self)
 {
     /* For now, I'm using a simple counter. If I choose to limit by buffer 
     to powers of two, then I can do away with the counter and get the size 
@@ -148,7 +148,7 @@ uint8_t Buffer_GetCount(Buffer *self)
 
 bool Buffer_IsFull(Buffer *self)
 {
-    uint8_t tempHead = CircularIncrement(self->private.head, self->private.size);
+    uint16_t tempHead = CircularIncrement(self->private.head, self->private.size);
 
     if(tempHead == self->private.tail)
         return true;

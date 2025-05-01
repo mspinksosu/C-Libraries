@@ -54,7 +54,7 @@ typedef void (*BufferOverflowCallbackFunc)(void);
 
 typedef struct Buffer
 {
-    uint8_t count;
+    uint16_t count;
     bool overflow;
     bool enableOverwrite;
     
@@ -105,7 +105,7 @@ typedef struct Buffer
  * 
  * @param arrayInSize  the size of said array 
  */
-void Buffer_Init(Buffer *self, uint8_t *arrayIn, uint8_t arrayInSize);
+void Buffer_Init(Buffer *self, uint8_t *arrayIn, uint16_t arrayInSize);
 
 /*******************************************************************************
  * @brief Initializes a Buffer object with overwrite option.
@@ -129,7 +129,7 @@ void Buffer_Init(Buffer *self, uint8_t *arrayIn, uint8_t arrayInSize);
  * 
  * @param overwrite  enable overwrite of buffer data if true
  */
-void Buffer_InitWithOverwrite(Buffer *self, uint8_t *arrayIn, uint8_t arrayInSize, bool overwrite);
+void Buffer_InitWithOverwrite(Buffer *self, uint8_t *arrayIn, uint16_t arrayInSize, bool overwrite);
 
 /*******************************************************************************
  * @brief Put a byte into the buffer then update the head.
@@ -174,9 +174,9 @@ void Buffer_Flush(Buffer *self);
  * 
  * @param self  pointer to the Buffer that you are using
  *
- * @return uint8_t  number of bytes in the buffer
+ * @return uint16_t  number of bytes in the buffer
  */
-uint8_t Buffer_GetCount(Buffer *self);
+uint16_t Buffer_GetCount(Buffer *self);
 
 /*******************************************************************************
  * @brief Is the buffer full
