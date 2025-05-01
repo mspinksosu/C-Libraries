@@ -83,7 +83,7 @@ bool DTBuffer_IsFull(DTBuffer *self);
 
 bool DTBuffer_IsNotEmpty(DTBuffer *self);
 
-uint8_t DTBuffer_Peek(DTBuffer *self, DataTransfer *returnDataTransfer);
+void DTBuffer_Peek(DTBuffer *self, DataTransfer *returnDataTransfer);
 
 void DTBuffer_Flush(DTBuffer *self);
 

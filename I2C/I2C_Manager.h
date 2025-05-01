@@ -8,7 +8,10 @@
  * @date 2/27/25   Original creation
  * 
  * @details
- *      // @todo details
+ *      @todo details
+ *      @todo Add more details about data transfer object buffer used in the 
+ * I2C slave device as well. Also, should I make a version that does not 
+ * use the DT object?
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2025 Matthew Spinks
@@ -23,6 +26,7 @@
 #ifndef I2C_MANAGER_H
 #define I2C_MANAGER_H
 
+#include "DataTransfer.h"
 #include "II2C.h"
 
 // ***** Defines ***************************************************************
@@ -34,12 +38,6 @@ followed by one read data request. - MS */
 #define I2CSLAVE_DT_BUFFER_SIZE 3
 
 // ***** Global Variables ******************************************************
-
-typedef enum I2CTransferTypeTag
-{
-    I2C_TRANSFER_TYPE_WRITE = 0,
-    I2C_TRANSFER_TYPE_READ
-} I2CTransferType;
 
 typedef enum I2CTransferStateTag // @todo transfer state. Haven't decided if I want this or not yet
 {
@@ -66,19 +64,12 @@ typedef enum I2CSlaveStateTag
     I2C_SLAVE_STATE_ERROR,
 } I2CSlaveState;
 
-typedef struct I2CDataTransferTag
-{
-    I2CTransferType transferType;
-    uint8_t *dataArray;
-    uint16_t length;
-} I2CDataTransfer;
-
 /* @todo not sure if I want to include state in status report */
 typedef struct I2CDataTransferStatusTag
 {
     I2CTransferError error;
     // I2CTransferState state;
-    I2CTransferType transferType;
+    DataTransferType transferType;
     uint8_t *ptrArray;
     uint16_t sizeOfArray;
     uint16_t numOfBytesTransferred;
@@ -100,10 +91,8 @@ struct I2CSlaveTag
 
     struct
     {
-        I2CDataTransfer buffer[I2CSLAVE_DT_BUFFER_SIZE];
-        uint16_t head;
-        uint16_t tail;
-        uint16_t count;
+        DTBuffer *buffer;
+        DataTransfer dtArray[I2CSLAVE_DT_BUFFER_SIZE];
         bool transferStartedEventFlag;
         bool transferFinishedEventFlag;
     } private;
@@ -181,7 +170,7 @@ struct I2CManagerTag
     I2C *peripheral;
     I2CSlave *endOfList; // circular linked list
     I2CSlave *currentDevice;
-    I2CDataTransfer currentDataTransfer;
+    DataTransfer currentDataTransfer;
     bool currentDataTransferFinished;
     uint16_t writeCount;
     uint16_t readCount;
@@ -233,6 +222,10 @@ void I2CManager_GetCurrentDevice(I2CManager *self, I2CSlave *retDevice);
 
 void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress);
 
+void I2CSlave_WriteDataTransfer(I2CSlave *self, DataTransferType writeOrRead, uint8_t *array, uint16_t length);
+
+uint8_t I2CSlave_ReadDataTransfer(I2CSlave *self, DataTransfer *returnDataTransfer);
+
 uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self);
 
 bool I2CSlave_IsDataTransferBufferFull(I2CSlave *self);
@@ -241,9 +234,9 @@ bool I2CSlave_IsDataTransferBufferNotEmpty(I2CSlave *self);
 
 uint8_t I2CSlave_GetDataTransferBufferSize(I2CSlave *self);
 
-void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *array, uint16_t length);
+void I2CSlave_FlushDataTransferBuffer(I2CSlave *self);
 
-uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataTransfer *returnDataTransfer);
+// @todo shorten names to something like GetDTStartedEvent
 
 bool I2CSlave_GetDataTransferStartedEvent(I2CSlave *self);
 
@@ -257,7 +250,8 @@ void I2CSlave_GetDataTransferStatus(I2CSlave *self, I2CDataTransferStatus *retTr
 
 I2CSlaveState I2CSlave_GetState(I2CSlave *self);
 
-// I2CSlave_DataTransferFinishedCallback
+// @todo possible callback functions
+// I2CSlave_TransferFinishedCallback
 // I2CSlave_WriteTransferFinishedCallback
 // I2CSlave_ReadTransferFinishedCallback
 

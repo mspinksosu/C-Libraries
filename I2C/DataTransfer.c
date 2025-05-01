@@ -34,7 +34,7 @@
 
 // *****************************************************************************
 
-void DTBuffer_BufferInit(DTBuffer *self, DataTransfer *arrayIn, uint8_t arrayInSize)
+void DTBuffer_Init(DTBuffer *self, DataTransfer *arrayIn, uint8_t arrayInSize)
 {
     self->private.buffer = arrayIn;
     self->private.size = arrayInSize;

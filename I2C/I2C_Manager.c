@@ -8,7 +8,7 @@
  * @date 2/27/25   Original creation
  * 
  * @details
- *      // @todo details
+ *      @todo details
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2025 Matthew Spinks
@@ -31,8 +31,6 @@
 #define I2CMANAGER_DEFAULT_TICK_RATE_NS    50
 #define I2CMANAGER_REPEAT_LIMIT            5
 
-#define CircularIncrement(i, size) i == (size - 1) ? 0 : i + 1
-
 // ***** Global Variables ******************************************************
 
 static bool I2CManagerEnabled; // @todo enable/disable
@@ -43,7 +41,7 @@ static bool I2CManagerEnabled; // @todo enable/disable
 
 // states
 static void I2CManager_FsmIdle(I2CManager *self, I2CEvent *e);
-static void I2CManager_FsmStart(I2CManager *self, I2CEvent *e); // @todo add enter event
+static void I2CManager_FsmStart(I2CManager *self, I2CEvent *e);
 static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e);
 static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e);
 static void I2CManager_FsmStop(I2CManager *self, I2CEvent *e);
@@ -53,7 +51,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e);
 // ***** Static Function Prototypes ********************************************
 
 static void I2CManager_DevicePush(I2CSlave *self, I2CSlave *endOfList);
-static void I2CManager_BeginDataTransfer(I2CManager *self, I2CDataTransfer *data);
+static void I2CManager_BeginDataTransfer(I2CManager *self, DataTransfer *dtObject);
 static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CDataTransferStatus *retReport);
 
 // *****************************************************************************
@@ -111,7 +109,7 @@ void I2CManager_AddSlave(I2CManager *self, I2CSlave *slave)
 void I2CManager_Process(I2CManager *self)
 {
     I2CEvent event = {0};
-    I2CDataTransfer tempDataTransfer = {0};
+    DataTransfer tempDataTransfer = {0};
     I2CDataTransferStatus tempStatusReport = {0};
 
     /* Check if we need to start a timer */
@@ -251,7 +249,7 @@ void I2CManager_Process(I2CManager *self)
                 if(I2CSlave_GetDataTransferBufferCount(self->currentDevice) > 0 && 
                     self->fsmState == I2CManager_FsmIdle)
                 {
-                    transferError = I2CSlave_ReadFromDataTransferBuffer(self->currentDevice, &tempDataTransfer);
+                    transferError = I2CSlave_ReadDataTransfer(self->currentDevice, &tempDataTransfer);
                     if(transferError == 0)
                     {
                         I2CManager_BeginDataTransfer(self, &tempDataTransfer);
@@ -350,83 +348,60 @@ void I2CManager_GetCurrentDevice(I2CManager *self, I2CSlave *retDevice)
 void I2CSlave_Init(I2CSlave *self, uint8_t slaveAddress7Bit)
 {
     self->slaveAddress7Bit = slaveAddress7Bit;
-    self->private.head = 0;
-    self->private.tail = 0;
-    self->private.count = 0;
+
+    // initialize buffer
+    DTBuffer_Init(&(self->private.buffer), &(self->private.dtArray), I2CSLAVE_DT_BUFFER_SIZE);
+
     self->state = I2C_SLAVE_STATE_IDLE;
+}
+
+// *****************************************************************************
+
+void I2CSlave_WriteDataTransfer(I2CSlave *self, DataTransferType writeOrRead, uint8_t *array, uint16_t length)
+{
+    DTBuffer_WriteDataTransfer(&(self->private.buffer), writeOrRead, array, length);
+}
+
+// *****************************************************************************
+
+uint8_t I2CSlave_ReadDataTransfer(I2CSlave *self, DataTransfer *returnDataTransfer)
+{
+    return DTBuffer_ReadDataTransfer(&(self->private.buffer), returnDataTransfer);
 }
 
 // *****************************************************************************
 
 uint8_t I2CSlave_GetDataTransferBufferCount(I2CSlave *self)
 {
-    return self->private.count;
+    return DTBuffer_GetCount(&(self->private.buffer));
 }
 
 // *****************************************************************************
 
 bool I2CSlave_IsDataTransferBufferFull(I2CSlave *self)
 {
-    uint8_t tempHead = CircularIncrement(self->private.head, I2CSLAVE_DT_BUFFER_SIZE);
-
-    if(tempHead == self->private.tail)
-        return true;
-    else
-        return false;
+    return DTBuffer_IsFull(&(self->private.buffer));
 }
 
 // *****************************************************************************
 
 bool I2CSlave_IsDataTransferBufferNotEmpty(I2CSlave *self)
 {
-    if(self->private.count != 0)
-        return true;
-    else
-        return false;
+    return DTBuffer_IsNotEmpty(&(self->private.buffer));
 }
 
 // *****************************************************************************
 
 uint8_t I2CSlave_GetDataTransferBufferSize(I2CSlave *self)
 {
-    return I2CSLAVE_DT_BUFFER_SIZE;
+    return DTBuffer_GetCount(&(self->private.buffer));
 }
 
 // *****************************************************************************
 
-void I2CSlave_WriteToDataTransferBuffer(I2CSlave *self, I2CTransferType writeOrRead, uint8_t *array, uint16_t length)
+void I2CSlave_FlushDataTransferBuffer(I2CSlave *self)
 {
-    uint8_t tempHead = CircularIncrement(self->private.head, I2CSLAVE_DT_BUFFER_SIZE);
-
-    if(tempHead != self->private.tail)
-    {
-        // There is space in the buffer
-        self->private.buffer[self->private.head].transferType = writeOrRead;
-        self->private.buffer[self->private.head].dataArray = array;
-        self->private.buffer[self->private.head].length = length;
-        self->private.head = tempHead;
-        self->private.count++;
-    }
-}
-
-// *****************************************************************************
-
-uint8_t I2CSlave_ReadFromDataTransferBuffer(I2CSlave *self, I2CDataTransfer *returnDataTransfer)
-{
-    if(self->private.head != self->private.tail)
-    {
-        /* The buffer is not empty. Get the data from the buffer to be 
-        processed and clear the transfer finished flag */
-        *returnDataTransfer = self->private.buffer[self->private.tail];
-        self->private.tail = CircularIncrement(self->private.tail, I2CSLAVE_DT_BUFFER_SIZE);
-        self->private.count--;
-        return 0; // no error
-    }
-    else
-    {
-        returnDataTransfer->length = 0;
-        return 1;
-    }
+    DTBuffer_Flush(&(self->private.buffer));
 }
 
 // *****************************************************************************
@@ -498,13 +473,13 @@ static void I2CManager_DevicePush(I2CSlave *self, I2CSlave *endOfList)
 
 // *****************************************************************************
 
-static void I2CManager_BeginDataTransfer(I2CManager *self, I2CDataTransfer *data)
+static void I2CManager_BeginDataTransfer(I2CManager *self, DataTransfer *dtObject)
 {
     if(self->fsmState != I2CManager_FsmIdle)
         return;
 
     /* Copy the data over to our temporary transfer buffer */
-    self->currentDataTransfer = *data;
+    self->currentDataTransfer = *dtObject;
     self->currentDataTransferFinished = false;
     I2CEvent event = {0}; // create an event to give to the state machine
     event.sig = I2C_SIG_BEGIN_TRANSFER;
@@ -520,7 +495,7 @@ static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CDataT
     retReport->transferType = self->currentDataTransfer.transferType;
     retReport->ptrArray = self->currentDataTransfer.dataArray;
     retReport->sizeOfArray = self->currentDataTransfer.length;
-    if(retReport->transferType == I2C_TRANSFER_TYPE_WRITE)
+    if(retReport->transferType == DATA_TRANSFER_TYPE_WRITE)
         retReport->numOfBytesTransferred = self->writeCount;
     else
         retReport->numOfBytesTransferred = self->readCount;
@@ -616,7 +591,7 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
         {
             /* Prepare to write or read data */
             uint8_t slaveAddressPlusRW = 0;
-            if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_WRITE)
+            if(self->currentDataTransfer.transferType == DATA_TRANSFER_TYPE_WRITE)
             {
                 slaveAddressPlusRW = (self->currentDevice->slaveAddress7Bit) << 1;
                 self->writeCount = 0;
@@ -646,7 +621,7 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
                 then transition to next state. */
                 e->sig = I2C_SIG_EXIT;
                 self->fsmState(self, e);
-                if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_READ)
+                if(self->currentDataTransfer.transferType == DATA_TRANSFER_TYPE_READ)
                 {
                     /* Prepare to receive byte */
                     self->readCount = 0;
@@ -712,7 +687,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
             self->fsmRepeatCount = 0;
             break;
         case I2C_SIG_BUS_IDLE_EVENT:
-            if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_WRITE)
+            if(self->currentDataTransfer.transferType == DATA_TRANSFER_TYPE_WRITE)
             {
                 if(I2C_GetAckSlaveStatus(self->peripheral))
                 {
@@ -799,11 +774,11 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
             self->fsmRepeatCount = 0;
             break;
         case I2C_SIG_DATA_RECEIVED:
-            if(self->currentDataTransfer.transferType == I2C_TRANSFER_TYPE_READ) // @follow-up is this extra check needed? - MS
+            if(self->currentDataTransfer.transferType == DATA_TRANSFER_TYPE_READ) // @follow-up is this extra check needed? - MS
             {
                 self->currentDataTransfer.dataArray[self->readCount++] = I2C_GetReceivedByte(self->peripheral);
                 if(self->readCount < self->currentDataTransfer.length)
-                    I2C_SendAck(self->peripheral, true); // @todo change to FSM state send ack or send nack?
+                    I2C_SendAck(self->peripheral, true); // @todo change to FSM state send ack or send nack rather than call I2C directly? - MS
                 else
                     I2C_SendAck(self->peripheral, false); // send NACK on last byte
                 self->fsmTimer.period = self->fsmShortTimeoutPeriod;
