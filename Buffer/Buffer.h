@@ -198,6 +198,15 @@ bool Buffer_IsFull(Buffer *self);
  */
 bool Buffer_IsNotEmpty(Buffer *self);
 
+/***************************************************************************//**
+ * @brief Get the size of the buffer
+ * 
+ * @param self  pointer to the Buffer that you are using
+ * 
+ * @return uint16_t  the size of the buffer in bytes
+ */
+uint16_t Buffer_GetSize(Buffer *self);
+
 /*******************************************************************************
  * @brief Check if the buffer overflowed
  * 

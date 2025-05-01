@@ -168,6 +168,13 @@ bool Buffer_IsNotEmpty(Buffer *self)
 
 // *****************************************************************************
 
+uint16_t Buffer_GetSize(Buffer *self)
+{
+    return self->private.size;
+}
+
+// *****************************************************************************
+
 bool Buffer_DidOverflow(Buffer *self)
 {
     // Automatically clear the flag
