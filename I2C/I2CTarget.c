@@ -36,9 +36,9 @@
 
 // *****************************************************************************
 
-void I2CTarget_Init(I2CTarget *self, uint8_t targetAddress7Bit)
+void I2CTarget_Init(I2CTarget *self, I2CTargetInitType *params)
 {
-    self->targetAddress7Bit = targetAddress7Bit;
+    self->targetAddress7Bit = params->targetAddress7Bit;
 
     self->state = I2C_TARGET_STATE_IDLE;
     self->transferStartedEventFlag = false;
