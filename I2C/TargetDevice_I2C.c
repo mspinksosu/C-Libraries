@@ -132,7 +132,7 @@ void TargetDevice_I2C_GetFinishedDataTransfer(TargetDevice_I2C *self, bool *retI
         *retIsReadType = true;
     else
         *retIsReadType = false;
-    **retPtrArray = self->finishedTransfer.ptrDataArray;
+    *retPtrArray = self->finishedTransfer.ptrDataArray;
     *retLength = self->finishedTransfer.length;
 
     // @todo clear finished flag here?
@@ -180,7 +180,7 @@ void TargetDevice_I2C_GetPendingDataTransfer(TargetDevice_I2C *self, bool *retIs
             *retIsReadType = true;
         else
             *retIsReadType = false;
-        **retPtrArray = retDataTransfer.ptrDataArray;
+        *retPtrArray = retDataTransfer.ptrDataArray;
         *retLength = retDataTransfer.length;
     }
 
