@@ -197,6 +197,6 @@ I2CManagerState I2CManager_GetState(I2CManager *self);
 
 void I2CManager_GetCurrentDevice(I2CManager *self, I2CTarget *retDevice);
 
-void I2CManager_GetDataTransferStatus(I2CTarget *self, I2CDataTransferStatus *retTransferStatus); // @todo transfer status
+void I2CManager_GetDataTransferStatus(I2CManager *self, I2CDataTransferStatus *retTransferStatus); // @todo transfer status
 
 #endif /* I2C_MANAGER_H */
