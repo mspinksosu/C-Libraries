@@ -21,7 +21,7 @@
  * 
  ******************************************************************************/
 
-#include "I2CTarget.h" // @todo change name to something that includes data transfer buffer? I2CTarget_DT? - MS
+#include "TargetDevice_I2C.h" // @todo change name to something that includes data transfer buffer? I2CTarget_DT? - MS
 #include <stddef.h>
 
 // ***** Defines ***************************************************************
@@ -34,11 +34,8 @@
     (which are function pointers) the our local functions. Typecasting is 
     necessary. When a new sub class object is created, we will set its interface
     member equal to this table. */
-FooInterface FooFunctionTable = {
-    .Foo_Func = (void (*)(void *))Foo_MCU1_Func,
-    .Foo_GetValue = (uint16_t (*)(void *))Foo_MCU1_GetValue,
-    .Foo_SetValue = (void (*)(void *, uint16_t))Foo_MCU1_SetValue,
-    // Add the rest of the functions listed in the interface
+TargetDeviceInterface FooFunctionTable = {
+    .TargetDevice_Init = (void (*)(void *))Foo_MCU1_Func,
 };
 
 // ***** Static Function Prototypes ********************************************

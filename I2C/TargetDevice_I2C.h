@@ -21,10 +21,13 @@
  * 
  ******************************************************************************/
 
-#ifndef I2C_TARGET_H
-#define I2C_TARGET_H
+/* @todo Should I stick with my usual naming convention of "Class_Subclass.." 
+or change the name of the file to I2CTarget to shorten it a little bit ? - MS */
 
-#include "II2CTarget.h"
+#ifndef TARGET_DEVICE_I2C_H
+#define TARGET_DEVICE_I2C_H
+
+#include "ITargetDevice.h"
 
 // ***** Defines ***************************************************************
 
@@ -34,13 +37,21 @@
 /* If you need to extend the base class, then declare your processor specific
 class here. Your processor specific functions should all use this type in place 
 of the base class type. */
-typedef struct Foo_MCU1Tag
+typedef struct TargetDevice_I2CTag
 {
-    Foo *super; // include the base class first
-    
-    /* Add any processor specific variables you need here */
-    
-} Foo_MCU1;
+    TargetDevice *super; // include the base class first
+
+    uint8_t targetAddress7Bit; // 7-bit address, right justified
+    TargetDeviceState state;
+    bool transferStartedEventFlag;
+    bool transferFinishedEventFlag;
+} TargetDevice_I2C;
+
+typedef struct TargetDeviceInitType_I2CTag
+{
+    TargetDeviceInitType *super; // include the base class first
+    uint8_t targetAddress7Bit; // 7-bit address, right justified
+} TargetDeviceInitType_I2C;
 
 /** 
  * Description of struct
@@ -61,15 +72,15 @@ typedef struct Foo_MCU1Tag
  * @param self
  * @param base
  */
-void Foo_MCU1_Create(Foo_MCU1 *self, Foo *base);
+void TargetDevice_I2C_Create(TargetDevice_I2C *self, TargetDevice *base);
 
 /***************************************************************************//**
- * @brief
+ * @brief 
  * 
  * @param self 
- * @param data 
+ * @param base 
  */
-void Foo_MCU1_ProcessorSpecificNonInterfaceFunc(Foo_MCU1 *self, uint16_t data);
+void TargetDevice_I2C_CreateInitType(TargetDeviceInitType_I2C *self, TargetDeviceInitType *base);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -77,27 +88,34 @@ void Foo_MCU1_ProcessorSpecificNonInterfaceFunc(Foo_MCU1 *self, uint16_t data);
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- */
-void Foo_MCU1_Func(Foo_MCU1 *self);
+// @todo doxygen
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * @return uint16_t 
- */
-uint16_t Foo_MCU1_GetValue(Foo_MCU1 *self);
+void TargetDevice_I2C_Init(TargetDevice_I2C *self, TargetDeviceInitType_I2C *params);
 
-/***************************************************************************//**
- * @brief 
- * 
- * @param self 
- * @param data 
- */
-void Foo_MCU1_SetValue(Foo_MCU1 *self, uint16_t data);
+void TargetDevice_I2C_DataTransferFinishedEvent(TargetDevice_I2C *self);
 
-#endif /* I2C_TARGET_H */
+bool TargetDevice_I2C_IsDataTransferFinished(TargetDevice_I2C *self);
+
+void TargetDevice_I2C_GetFinishedDataTransfer(TargetDevice_I2C *self);
+
+void TargetDevice_I2C_RequestDataTransfer(TargetDevice_I2C *self, bool readTypeTransfer, 
+    uint8_t *array, uint16_t length);
+
+void TargetDevice_I2C_DataTransferStartedEvent(TargetDevice_I2C *self);
+
+bool TargetDevice_I2C_IsDataTransferPending(TargetDevice_I2C *self);
+
+void TargetDevice_I2C_GetPendingDataTransfer(TargetDevice_I2C *self, bool *retIsReadType, 
+    uint8_t *retPtrArray, uint16_t *retLength);
+
+uint8_t TargetDevice_I2C_GetDataTransferBufferCount(TargetDevice_I2C *self);
+
+bool TargetDevice_I2C_IsDataTransferBufferFull(TargetDevice_I2C *self);
+
+uint8_t TargetDevice_I2C_GetDataTransferBufferSize(TargetDevice_I2C *self);
+
+void TargetDevice_I2C_ClearDataTransferBuffer(TargetDevice_I2C *self);
+
+TargetDeviceState TargetDevice_I2C_GetState(TargetDevice_I2C *self);
+
+#endif /* TARGET_DEVICE_I2C_H */

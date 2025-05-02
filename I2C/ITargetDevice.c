@@ -1,7 +1,7 @@
 /***************************************************************************//**
- * @brief I2C Target Library
+ * @brief Target Device Interface
  * 
- * @file I2CTarget.h
+ * @file ITargetDevice.h
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
@@ -23,7 +23,7 @@
  * 
  ******************************************************************************/
 
-#include "II2CTarget.h"
+#include "ITargetDevice.h"
 
 // ***** Defines ***************************************************************
 
@@ -40,13 +40,13 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void I2CTarget_Create(I2CTarget *self, void *instanceOfSubclass, I2CTargetInterface *interface)
+void TargetDevice_Create(TargetDevice *self, void *instanceOfSubclass, TargetDeviceInterface *interface)
 {
     self->instance = instanceOfSubclass;
     self->interface = interface;
 }
 
-void I2CTarget_CreateInitType(I2CTargetInitType *params, void *instanceOfSubClass)
+void TargetDevice_CreateInitType(TargetDeviceInitType *params, void *instanceOfSubClass)
 {
     params->instance = instanceOfSubClass;
 }
@@ -57,32 +57,32 @@ void I2CTarget_CreateInitType(I2CTargetInitType *params, void *instanceOfSubClas
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void I2CTarget_Init(I2CTarget *self, I2CTargetInitType *params)
+void TargetDevice_Init(TargetDevice *self, TargetDeviceInitType *params)
 {
-    if(self->interface->I2CTarget_Init != NULL && self->instance != NULL 
+    if(self->interface->TargetDevice_Init != NULL && self->instance != NULL 
         && params->instance != NULL)
     {
-        (self->interface->I2CTarget_Init)(self->instance, params->instance);
+        (self->interface->TargetDevice_Init)(self->instance, params->instance);
     }
 }
 
 // *****************************************************************************
 
-void I2CTarget_DataTransferFinishedEvent(I2CTarget *self)
+void TargetDevice_DataTransferFinishedEvent(TargetDevice *self)
 {
-    if(self->interface->I2CTarget_DataTransferFinishedEvent != NULL && self->instance != NULL)
+    if(self->interface->TargetDevice_DataTransferFinishedEvent != NULL && self->instance != NULL)
     {
-        (self->interface->I2CTarget_DataTransferFinishedEvent)(self->instance);
+        (self->interface->TargetDevice_DataTransferFinishedEvent)(self->instance);
     }
 }
 
 // *****************************************************************************
 
-bool I2CTarget_IsDataTransferFinished(I2CTarget *self)
+bool TargetDevice_IsDataTransferFinished(TargetDevice *self)
 {
-    if(self->interface->I2CTarget_IsDataTransferFinished != NULL && self->instance != NULL)
+    if(self->interface->TargetDevice_IsDataTransferFinished != NULL && self->instance != NULL)
     {
-        return (self->interface->I2CTarget_IsDataTransferFinished)(self->instance);
+        return (self->interface->TargetDevice_IsDataTransferFinished)(self->instance);
     }
     else
     {
@@ -92,43 +92,43 @@ bool I2CTarget_IsDataTransferFinished(I2CTarget *self)
 
 // *****************************************************************************
 
-void I2CTarget_GetFinishedDataTransfer(I2CTarget *self)
+void TargetDevice_GetFinishedDataTransfer(TargetDevice *self)
 {
-    if(self->interface->I2CTarget_GetFinishedDataTransfer != NULL && self->instance != NULL)
+    if(self->interface->TargetDevice_GetFinishedDataTransfer != NULL && self->instance != NULL)
     {
-        (self->interface->I2CTarget_GetFinishedDataTransfer)(self->instance);
+        (self->interface->TargetDevice_GetFinishedDataTransfer)(self->instance);
     }
 }
 
 // *****************************************************************************
 
-void I2CTarget_RequestDataTransfer(I2CTarget *self, bool readTypeTransfer, 
+void TargetDevice_RequestDataTransfer(TargetDevice *self, bool readTypeTransfer, 
     uint8_t *array, uint16_t length)
 {
-    if(self->interface->I2CTarget_RequestDataTransfer != NULL && self->instance != NULL)
+    if(self->interface->TargetDevice_RequestDataTransfer != NULL && self->instance != NULL)
     {
-        (self->interface->I2CTarget_RequestDataTransfer)(self->instance, 
+        (self->interface->TargetDevice_RequestDataTransfer)(self->instance, 
             readTypeTransfer, array, length);
     }
 }
 
 // *****************************************************************************
 
-void I2CTarget_DataTransferStartedEvent(I2CTarget *self)
+void TargetDevice_DataTransferStartedEvent(TargetDevice *self)
 {
-    if(self->interface->I2CTarget_DataTransferStartedEvent != NULL && self->instance != NULL)
+    if(self->interface->TargetDevice_DataTransferStartedEvent != NULL && self->instance != NULL)
     {
-        (self->interface->I2CTarget_DataTransferStartedEvent)(self->instance);
+        (self->interface->TargetDevice_DataTransferStartedEvent)(self->instance);
     }
 }
 
 // *****************************************************************************
 
-bool I2CTarget_IsDataTransferPending(I2CTarget *self)
+bool TargetDevice_IsDataTransferPending(TargetDevice *self)
 {
-    if(self->interface->I2CTarget_IsDataTransferPending != NULL && self->instance != NULL)
+    if(self->interface->TargetDevice_IsDataTransferPending != NULL && self->instance != NULL)
     {
-        return (self->interface->I2CTarget_IsDataTransferPending)(self->instance);
+        return (self->interface->TargetDevice_IsDataTransferPending)(self->instance);
     }
     else
     {
@@ -138,23 +138,23 @@ bool I2CTarget_IsDataTransferPending(I2CTarget *self)
 
 // *****************************************************************************
 
-void I2CTarget_GetPendingDataTransfer(I2CTarget *self, bool *retIsReadType, 
+void TargetDevice_GetPendingDataTransfer(TargetDevice *self, bool *retIsReadType, 
     uint8_t *retPtrArray, uint16_t *retLength)
 {
-    if(self->interface->I2CTarget_GetPendingDataTransfer != NULL && self->instance != NULL)
+    if(self->interface->TargetDevice_GetPendingDataTransfer != NULL && self->instance != NULL)
     {
-        (self->interface->I2CTarget_GetPendingDataTransfer)(self->instance, 
+        (self->interface->TargetDevice_GetPendingDataTransfer)(self->instance, 
             retIsReadType, retPtrArray, retLength);
     }
 }
 
 // *****************************************************************************
 
-uint8_t I2CTarget_GetDataTransferBufferCount(I2CTarget *self)
+uint8_t TargetDevice_GetDataTransferBufferCount(TargetDevice *self)
 {
-    if(self->interface->I2CTarget_GetDataTransferBufferCount != NULL && self->instance != NULL)
+    if(self->interface->TargetDevice_GetDataTransferBufferCount != NULL && self->instance != NULL)
     {
-        return (self->interface->I2CTarget_GetDataTransferBufferCount)(self->instance);
+        return (self->interface->TargetDevice_GetDataTransferBufferCount)(self->instance);
     }
     else
     {
@@ -164,11 +164,11 @@ uint8_t I2CTarget_GetDataTransferBufferCount(I2CTarget *self)
 
 // *****************************************************************************
 
-bool I2CTarget_IsDataTransferBufferFull(I2CTarget *self)
+bool TargetDevice_IsDataTransferBufferFull(TargetDevice *self)
 {
-    if(self->interface->I2CTarget_IsDataTransferBufferFull != NULL && self->instance != NULL)
+    if(self->interface->TargetDevice_IsDataTransferBufferFull != NULL && self->instance != NULL)
     {
-        return (self->interface->I2CTarget_IsDataTransferBufferFull)(self->instance);
+        return (self->interface->TargetDevice_IsDataTransferBufferFull)(self->instance);
     }
     else
     {
@@ -178,11 +178,11 @@ bool I2CTarget_IsDataTransferBufferFull(I2CTarget *self)
 
 // *****************************************************************************
 
-uint8_t I2CTarget_GetDataTransferBufferSize(I2CTarget *self)
+uint8_t TargetDevice_GetDataTransferBufferSize(TargetDevice *self)
 {
-    if(self->interface->I2CTarget_GetDataTransferBufferSize != NULL && self->instance != NULL)
+    if(self->interface->TargetDevice_GetDataTransferBufferSize != NULL && self->instance != NULL)
     {
-        return (self->interface->I2CTarget_GetDataTransferBufferSize)(self->instance);
+        return (self->interface->TargetDevice_GetDataTransferBufferSize)(self->instance);
     }
     else
     {
@@ -192,23 +192,23 @@ uint8_t I2CTarget_GetDataTransferBufferSize(I2CTarget *self)
 
 // *****************************************************************************
 
-void I2CTarget_ClearDataTransferBuffer(I2CTarget *self)
+void TargetDevice_ClearDataTransferBuffer(TargetDevice *self)
 {
-    if(self->interface->I2CTarget_ClearDataTransferBuffer != NULL && self->instance != NULL)
+    if(self->interface->TargetDevice_ClearDataTransferBuffer != NULL && self->instance != NULL)
     {
-        (self->interface->I2CTarget_ClearDataTransferBuffer)(self->instance);
+        (self->interface->TargetDevice_ClearDataTransferBuffer)(self->instance);
     }
 }
 
 // *****************************************************************************
 
-I2CTargetState I2CTarget_GetState(I2CTarget *self)
+TargetDeviceState TargetDevice_GetState(TargetDevice *self)
 {
-    I2CTargetState retVal = I2C_TARGET_STATE_ERROR;
+    TargetDeviceState retVal = I2C_TARGET_STATE_ERROR;
 
-    if(self->interface->I2CTarget_GetState != NULL && self->instance != NULL)
+    if(self->interface->TargetDevice_GetState != NULL && self->instance != NULL)
     {
-        retVal = (self->interface->I2CTarget_GetState)(self->instance);
+        retVal = (self->interface->TargetDevice_GetState)(self->instance);
     }
     return retVal;
 }
