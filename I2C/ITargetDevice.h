@@ -67,21 +67,17 @@ typedef struct TargetDeviceInterfaceTag
     person using the library to implement those functions, even if it is just 
     a buffer of size one. - MS */
     void (*TargetDevice_Init)(void *instance, void *params);
-
     void (*TargetDevice_DataTransferFinishedEvent)(void *instance);
     bool (*TargetDevice_IsDataTransferFinished)(void *instance);
-    void (*TargetDevice_GetFinishedDataTransfer)(void *instance);
-
+    void (*TargetDevice_GetFinishedDataTransfer)(void *instance, bool *, uint8_t *, uint16_t *);
     void (*TargetDevice_RequestDataTransfer)(void *instance, bool, uint8_t *, uint16_t);
     void (*TargetDevice_DataTransferStartedEvent)(void *instance);
     bool (*TargetDevice_IsDataTransferPending)(void *instance);
     void (*TargetDevice_GetPendingDataTransfer)(void *instance, bool *, uint8_t *, uint16_t *);
-
     uint8_t (*TargetDevice_GetDataTransferBufferCount)(void *instance);
     bool (*TargetDevice_IsDataTransferBufferFull)(void *instance);
     uint8_t (*TargetDevice_GetDataTransferBufferSize)(void *instance);
     void (*TargetDevice_ClearDataTransferBuffer)(void *instance);
-
     TargetDeviceState (*TargetDevice_GetState)(void *instance);
 } TargetDeviceInterface;
 
@@ -95,12 +91,6 @@ typedef struct TargetDeviceTag
 {
     TargetDeviceInterface *interface;
     void *instance;
-
-    // struct
-    // {
-    //     DTBuffer *buffer;
-    //     DataTransfer dtArray[I2CTARGET_DT_BUFFER_SIZE];
-    // } private;
 } TargetDevice;
 
 typedef struct TargetDeviceInitTypeTage
@@ -137,7 +127,8 @@ void TargetDevice_DataTransferFinishedEvent(TargetDevice *self);
 
 bool TargetDevice_IsDataTransferFinished(TargetDevice *self);
 
-void TargetDevice_GetFinishedDataTransfer(TargetDevice *self);
+void TargetDevice_GetFinishedDataTransfer(TargetDevice *self, bool *retIsReadType, 
+    uint8_t *retPtrArray, uint16_t *retLength);
 
 // place in buffer
 void TargetDevice_RequestDataTransfer(TargetDevice *self, bool readTypeTransfer, 

@@ -34,8 +34,20 @@
     (which are function pointers) the our local functions. Typecasting is 
     necessary. When a new sub class object is created, we will set its interface
     member equal to this table. */
-TargetDeviceInterface FooFunctionTable = {
-    .TargetDevice_Init = (void (*)(void *))Foo_MCU1_Func,
+TargetDeviceInterface TargetDeviceFunctionTable = {
+    .TargetDevice_Init = (void (*)(void *))TargetDevice_I2C_Init,
+    .TargetDevice_DataTransferFinishedEvent = (void (*)(void *))TargetDevice_I2C_DataTransferFinishedEvent,
+    .TargetDevice_IsDataTransferFinished = (bool (*)(void *))TargetDevice_I2C_IsDataTransferFinished,
+    .TargetDevice_GetFinishedDataTransfer = (void (*)(bool *, uint8_t *, uint16_t *))TargetDevice_I2C_GetFinishedDataTransfer,
+    .TargetDevice_RequestDataTransfer = (void (*)(void *, uint8_t *, uint16_t))TargetDevice_I2C_RequestDataTransfer,
+    .TargetDevice_DataTransferStartedEvent = (void (*)(void *))TargetDevice_I2C_DataTransferStartedEvent,
+    .TargetDevice_IsDataTransferPending = (bool (*)(void *))TargetDevice_I2C_IsDataTransferPending,
+    .TargetDevice_GetPendingDataTransfer = (void (*)(bool *, uint8_t *, uint16_t *))TargetDevice_I2C_GetPendingDataTransfer,
+    .TargetDevice_GetDataTransferBufferCount = (uint8_t (*)(void *))TargetDevice_I2C_GetDataTransferBufferCount,
+    .TargetDevice_IsDataTransferBufferFull = (bool (*)(void *))TargetDevice_I2C_IsDataTransferBufferFull,
+    .TargetDevice_GetDataTransferBufferSize = (uint8_t (*)(void *))TargetDevice_I2C_GetDataTransferBufferSize,
+    .TargetDevice_ClearDataTransferBuffer = (void (*)(void *))TargetDevice_I2C_ClearDataTransferBuffer,
+    .TargetDevice_GetState = (TargetDeviceState (*)(void *))TargetDevice_I2C_GetState,
 };
 
 // ***** Static Function Prototypes ********************************************
@@ -49,7 +61,7 @@ TargetDeviceInterface FooFunctionTable = {
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void Foo_MCU1_Create(Foo_MCU1 *self, Foo *base)
+void TargetDevice_I2C_Create(TargetDevice_I2C *self, TargetDevice *base)
 {
     self->super = base;
 
@@ -59,16 +71,24 @@ void Foo_MCU1_Create(Foo_MCU1 *self, Foo *base)
     base class's instance member to the instance of the sub class that you just 
     created, along with the list of functions that will be used. From now on,
     you'll be able to use the base class for function calls */
-    Foo_Create(base, self, &FooFunctionTable);
+    TargetDevice_Create(base, self, &TargetDeviceFunctionTable);
 }
 
 // *****************************************************************************
 
-void Foo_MCU1_ProcessorSpecificNonInterfaceFunc(Foo_MCU1 *self, uint16_t data)
+void TargetDevice_I2C_CreateInitType(TargetDeviceInitType_I2C *self, TargetDeviceInitType *base)
 {
-    /* Optional function to do some specific initialization or whatever else
-    you want to do */
+    self->super = base;
+    TargetDevice_CreateInitType(base, self);
 }
+
+// *****************************************************************************
+
+void TargetDevice_I2C_SetInitTypeParams(TargetDevice_I2C *self, uint8_t targetAddress7Bit)
+{
+    // @todo add pointers to data transfer buffer, etc.
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -76,23 +96,92 @@ void Foo_MCU1_ProcessorSpecificNonInterfaceFunc(Foo_MCU1 *self, uint16_t data)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/* Don't forget to add these functions to the function table */
-
-void Foo_MCU1_Func(Foo *self)
+void TargetDevice_I2C_Init(TargetDevice_I2C *self, TargetDeviceInitType_I2C *params)
 {
 
 }
 
 // *****************************************************************************
 
-uint16_t Foo_MCU1_GetValue(Foo *self)
+void TargetDevice_I2C_DataTransferFinishedEvent(TargetDevice_I2C *self)
 {
 
 }
 
 // *****************************************************************************
 
-void Foo_MCU1_SetValue(Foo *self, uint16_t data)
+bool TargetDevice_I2C_IsDataTransferFinished(TargetDevice_I2C *self)
+{
+
+}
+
+// *****************************************************************************
+
+void TargetDevice_I2C_GetFinishedDataTransfer(TargetDevice_I2C *self, bool *retIsReadType, 
+    uint8_t *retPtrArray, uint16_t *retLength)
+{
+
+}
+
+// *****************************************************************************
+
+void TargetDevice_I2C_RequestDataTransfer(TargetDevice_I2C *self, bool readTypeTransfer, 
+    uint8_t *array, uint16_t length)
+{
+
+}
+
+// *****************************************************************************
+
+void TargetDevice_I2C_DataTransferStartedEvent(TargetDevice_I2C *self)
+{
+
+}
+
+// *****************************************************************************
+
+bool TargetDevice_I2C_IsDataTransferPending(TargetDevice_I2C *self)
+{
+
+}
+
+void TargetDevice_I2C_GetPendingDataTransfer(TargetDevice_I2C *self, bool *retIsReadType, 
+    uint8_t *retPtrArray, uint16_t *retLength)
+{
+    
+}
+
+// *****************************************************************************
+
+uint8_t TargetDevice_I2C_GetDataTransferBufferCount(TargetDevice_I2C *self)
+{
+
+}
+
+// *****************************************************************************
+
+bool TargetDevice_I2C_IsDataTransferBufferFull(TargetDevice_I2C *self)
+{
+
+}
+
+// *****************************************************************************
+
+uint8_t TargetDevice_I2C_GetDataTransferBufferSize(TargetDevice_I2C *self)
+{
+
+}
+
+// *****************************************************************************
+
+void TargetDevice_I2C_ClearDataTransferBuffer(TargetDevice_I2C *self)
+{
+
+}
+
+// *****************************************************************************
+
+TargetDeviceState TargetDevice_I2C_GetState(TargetDevice_I2C *self)
 {
 
 }

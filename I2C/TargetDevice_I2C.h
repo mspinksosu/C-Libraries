@@ -45,6 +45,13 @@ typedef struct TargetDevice_I2CTag
     TargetDeviceState state;
     bool transferStartedEventFlag;
     bool transferFinishedEventFlag;
+    
+    // @todo add data transfer buffer to implementation
+    // struct
+    // {
+    //     DTBuffer *buffer;
+    //     DataTransfer dtArray[I2CTARGET_DT_BUFFER_SIZE];
+    // } private;
 } TargetDevice_I2C;
 
 typedef struct TargetDeviceInitType_I2CTag
@@ -82,6 +89,14 @@ void TargetDevice_I2C_Create(TargetDevice_I2C *self, TargetDevice *base);
  */
 void TargetDevice_I2C_CreateInitType(TargetDeviceInitType_I2C *self, TargetDeviceInitType *base);
 
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param targetAddress7Bit 
+ */
+void TargetDevice_I2C_SetInitTypeParams(TargetDevice_I2C *self, uint8_t targetAddress7Bit);
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Interface Functions *************************************************//
@@ -96,7 +111,8 @@ void TargetDevice_I2C_DataTransferFinishedEvent(TargetDevice_I2C *self);
 
 bool TargetDevice_I2C_IsDataTransferFinished(TargetDevice_I2C *self);
 
-void TargetDevice_I2C_GetFinishedDataTransfer(TargetDevice_I2C *self);
+void TargetDevice_I2C_GetFinishedDataTransfer(TargetDevice_I2C *self, bool *retIsReadType, 
+    uint8_t *retPtrArray, uint16_t *retLength);
 
 void TargetDevice_I2C_RequestDataTransfer(TargetDevice_I2C *self, bool readTypeTransfer, 
     uint8_t *array, uint16_t length);

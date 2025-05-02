@@ -92,11 +92,13 @@ bool TargetDevice_IsDataTransferFinished(TargetDevice *self)
 
 // *****************************************************************************
 
-void TargetDevice_GetFinishedDataTransfer(TargetDevice *self)
+void TargetDevice_GetFinishedDataTransfer(TargetDevice *self, bool *retIsReadType, 
+    uint8_t *retPtrArray, uint16_t *retLength)
 {
     if(self->interface->TargetDevice_GetFinishedDataTransfer != NULL && self->instance != NULL)
     {
-        (self->interface->TargetDevice_GetFinishedDataTransfer)(self->instance);
+        (self->interface->TargetDevice_GetFinishedDataTransfer)(self->instance, 
+            retIsReadType, retPtrArray, retLength);
     }
 }
 
