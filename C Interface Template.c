@@ -38,7 +38,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void Foo_Create(Foo *self, void *instanceOfSubclass, Foo_Interface *interface)
+void Foo_Create(Foo *self, void *instanceOfSubclass, FooInterface *interface)
 {
     self->instance = instanceOfSubclass;
     self->interface = interface;

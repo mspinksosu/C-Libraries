@@ -60,30 +60,29 @@ typedef enum I2CTargetStateTag
 
 typedef struct I2CTargetInterfaceTag
 {
-    /* @note Haven't decided if I want to implement this where a single DT is 
-    processed at a time (similar to UART). Or use the buffer functions. If I 
-    use the buffer functions and load multiple DT's at a time it can be useful 
-    for generated repeated starts if needed. But it does force the person 
-    using the library to implement those functions, even if it is just a buffer 
-    of size one. - MS */
+    /* @note @todo Haven't decided if I want to implement this where a single 
+    DT is processed at a time (similar to UART). Or use the buffer functions. 
+    If I use the buffer functions and load multiple DT's at a time it can be 
+    useful for generating repeated starts if needed. But it does force the 
+    person using the library to implement those functions, even if it is just 
+    a buffer of size one. - MS */
     void (*I2CTarget_Init)(void *instance, void *params);
 
-    void I2CTarget_RequestDataTransfer(I2CTarget *self, bool readTypeTransfer, uint8_t *array, uint16_t length);
+    void (*I2CTarget_DataTransferFinishedEvent)(void *instance);
+    bool (*I2CTarget_IsDataTransferFinished)(void *instance);
+    void (*I2CTarget_GetFinishedDataTransfer)(void *instance);
 
-    void I2CTarget_DataTransferStartedEvent(I2CTarget *self);
-    bool I2CTarget_IsDataTransferPending(I2CTarget *self);
-    void I2CTarget_GetPendingDataTransfer(I2CTarget *self, bool *retIsReadType, uint8_t *retPtrArray, uint16_t *retLength);
+    void (*I2CTarget_RequestDataTransfer)(void *instance, bool, uint8_t *, uint16_t);
+    void (*I2CTarget_DataTransferStartedEvent)(void *instance);
+    bool (*I2CTarget_IsDataTransferPending)(void *instance);
+    void (*I2CTarget_GetPendingDataTransfer)(void *instance, bool *, uint8_t *, uint16_t *);
 
-    void I2CTarget_DataTransferFinishedEvent(I2CTarget *self);
-    bool I2CTarget_IsDataTransferFinished(I2CTarget *self);
-    void I2CTarget_GetFinishedDataTransfer(I2CTarget *self);
+    uint8_t (*I2CTarget_GetDataTransferBufferCount)(void *instance);
+    bool (*I2CTarget_IsDataTransferBufferFull)(void *instance);
+    uint8_t (*I2CTarget_GetDataTransferBufferSize)(void *instance);
+    void (*I2CTarget_ClearDataTransferBuffer)(void *instance);
 
-    uint8_t I2CTarget_GetDataTransferBufferCount(I2CTarget *self);
-    bool I2CTarget_IsDataTransferBufferFull(I2CTarget *self);
-    bool I2CTarget_IsDataTransferBufferNotEmpty(I2CTarget *self); // replace with isPending function above?
-    uint8_t I2CTarget_GetDataTransferBufferSize(I2CTarget *self);
-    void I2CTarget_ClearDataTransferBuffer(I2CTarget *self);
-
+    I2CTargetState (*I2CTarget_GetState)(void *instance);
 } I2CTargetInterface;
 
 // @todo decided if I want to keep the old callback function pointers
@@ -94,6 +93,7 @@ your I2C devices initiated the callback. */
 /* @todo decide if I want to make this the base class or not */
 typedef struct I2CTargetTag
 {
+    I2CTargetInterface *interface;
     uint8_t targetAddress7Bit; // 7-bit address, right justified
     I2CTargetState state;
     // bool transferStartedEventFlag;
@@ -119,7 +119,9 @@ typedef struct I2CTargetInitTypeTage
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+void I2CTarget_Create(I2CTarget *self, void *instanceOfSubclass, I2CTargetInterface *interface);
 
+void I2CTarget_CreateInitType(I2CTargetInitType *params, void *instanceOfSubClass);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -129,50 +131,33 @@ typedef struct I2CTargetInitTypeTage
 
 void I2CTarget_Init(I2CTarget *self, I2CTargetInitType *params);
 
-// void I2CTarget_WriteDataTransfer(I2CTarget *self, bool readTypeTransfer, uint8_t *array, uint16_t length);
-
-// @todo should I2CTarget be dependent on DataTransfer.h?
-// uint8_t I2CTarget_GetDataTransfer(I2CTarget *self, bool *retIsReadType, uint8_t *retPtrArray, uint16_t *retLength);
-
 void I2CTarget_DataTransferFinishedEvent(I2CTarget *self);
-
-void I2CTarget_GetFinishedDataTransfer(I2CTarget *self);
 
 bool I2CTarget_IsDataTransferFinished(I2CTarget *self);
 
+void I2CTarget_GetFinishedDataTransfer(I2CTarget *self);
 
-// void I2CTarget_ReadyForDataTransferEvent(I2CTarget *self);
+// place in buffer
+void I2CTarget_RequestDataTransfer(I2CTarget *self, bool readTypeTransfer, 
+    uint8_t *array, uint16_t length);
+
+// not pending anymore
 void I2CTarget_DataTransferStartedEvent(I2CTarget *self);
-// void I2CTarget_DataTransferNotPendingEvent(I2CTarget *self);
 
 bool I2CTarget_IsDataTransferPending(I2CTarget *self);
 
-void I2CTarget_RequestDataTransfer(I2CTarget *self, bool readTypeTransfer, uint8_t *array, uint16_t length);
-
 // sets transferPending to false after calling
-void I2CTarget_GetPendingDataTransfer(I2CTarget *self, bool *retIsReadType, uint8_t *retPtrArray, uint16_t *retLength);
-
+void I2CTarget_GetPendingDataTransfer(I2CTarget *self, bool *retIsReadType, 
+    uint8_t *retPtrArray, uint16_t *retLength);
 
 // @todo should these become part of I2CTarget_Node?
 uint8_t I2CTarget_GetDataTransferBufferCount(I2CTarget *self);
 
 bool I2CTarget_IsDataTransferBufferFull(I2CTarget *self);
 
-bool I2CTarget_IsDataTransferBufferNotEmpty(I2CTarget *self);
-
 uint8_t I2CTarget_GetDataTransferBufferSize(I2CTarget *self);
 
 void I2CTarget_ClearDataTransferBuffer(I2CTarget *self);
-
-
-// bool I2CTarget_GetDTStartedEvent(I2CTarget *self);
-
-// void I2CTarget_ClearDTStartedEventFlag(I2CTarget *self);
-
-// bool I2CTarget_GetDTFinishedEvent(I2CTarget *self);
-
-// void I2CTarget_ClearDTFinishedEventFlag(I2CTarget *self);
-
 
 I2CTargetState I2CTarget_GetState(I2CTarget *self);
 

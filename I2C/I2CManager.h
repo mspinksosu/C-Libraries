@@ -28,7 +28,7 @@
 #define I2C_MANAGER_H
 
 #include "DataTransfer.h"
-#include "I2CTarget.h"
+#include "II2CTarget.h"
 #include "II2C.h"
 
 // ***** Defines ***************************************************************
