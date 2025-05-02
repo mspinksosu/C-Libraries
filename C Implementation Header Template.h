@@ -45,6 +45,13 @@ typedef struct Foo_MCU1Tag
     
 } Foo_MCU1;
 
+typedef struct FooInitType_MCU1Tag
+{
+    FooInitType *super; // include the base class first
+
+    /* Add any processor specific variables you need here */
+} FooInitType_MCU1;
+
 /** 
  * Description of struct
  * 
@@ -65,6 +72,14 @@ typedef struct Foo_MCU1Tag
  * @param base
  */
 void Foo_MCU1_Create(Foo_MCU1 *self, Foo *base);
+
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param base 
+ */
+void Foo_MCU1_CreateInitType(FooInitType_MCU1 *self, FooInitType *base);
 
 /***************************************************************************//**
  * @brief

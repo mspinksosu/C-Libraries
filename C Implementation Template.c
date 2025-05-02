@@ -67,6 +67,14 @@ void Foo_MCU1_Create(Foo_MCU1 *self, Foo *base)
 
 // *****************************************************************************
 
+void Foo_MCU1_CreateInitType(FooInitType_MCU1 *self, FooInitType *base)
+{
+    self->super = base;
+    Foo_CreateInitType(base, self);
+}
+
+// *****************************************************************************
+
 void Foo_MCU1_ProcessorSpecificNonInterfaceFunc(Foo_MCU1 *self, uint16_t data)
 {
     /* Optional function to do some specific initialization or whatever else

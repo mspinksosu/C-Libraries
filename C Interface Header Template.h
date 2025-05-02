@@ -55,12 +55,23 @@ typedef struct FooTag
     // Add more necessary members
 } Foo;
 
+/* Create the base class */
+typedef struct FooInitTypeTag
+{
+    void *instance;
+
+    // Add more necessary members
+} FooInitType;
+
 /**
  * Description of struct members:
  * 
  * FooInterface The table of functions that need to be implemented
  * 
  * Foo          The base class object
+ * 
+ * FooInitType  A base class initialization object. Contains variables needed 
+ *              to initialize the Foo object.
  * 
  * interface    A pointer to the interface that will be used. This will be set
  *              to the function table declared in the sub class, by means of
@@ -89,6 +100,15 @@ typedef struct FooTag
  * @param interface 
  */
 void Foo_Create(Foo *self, void *instanceOfSubclass, FooInterface *interface);
+
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param params 
+ * @param self  pointer to the FooInitType that you are using
+ * @param instanceOfSubClass 
+ */
+void Foo_CreateInitType(FooInitType *params, void *instanceOfSubClass);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //

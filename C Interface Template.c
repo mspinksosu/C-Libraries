@@ -56,6 +56,13 @@ void Foo_Create(Foo *self, void *instanceOfSubclass, FooInterface *interface)
     class, that method will still work. @see Foo_MCU1_Create */
 }
 
+// *****************************************************************************
+
+void Foo_CreateInitType(FooInitType *params, void *instanceOfSubClass)
+{
+    params->instance = instanceOfSubClass;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Interface Functions *************************************************//
