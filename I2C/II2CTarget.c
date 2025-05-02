@@ -14,7 +14,7 @@
  * "target" since that is what is preferred now.
  * 
  * @section license License
- * SPDX-FileCopyrightText: © 2019 Matthew Spinks
+ * SPDX-FileCopyrightText: © 2025 Matthew Spinks
  * SPDX-License-Identifier: Zlib
  * 
  * This software is released under the Zlib license. You are free alter and

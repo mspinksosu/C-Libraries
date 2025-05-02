@@ -18,7 +18,7 @@
  * 
  * 
  * @section license License
- * SPDX-FileCopyrightText: © 2019 Matthew Spinks
+ * SPDX-FileCopyrightText: © 2025 Matthew Spinks
  * SPDX-License-Identifier: Zlib
  * 
  * This software is released under the Zlib license. You are free alter and
@@ -27,8 +27,8 @@
  * 
  ******************************************************************************/
 
-#ifndef I2C_TARGET_H
-#define I2C_TARGET_H
+#ifndef II2C_TARGET_H
+#define II2C_TARGET_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -164,4 +164,4 @@ I2CTargetState I2CTarget_GetState(I2CTarget *self);
 // @todo possible callback functions
 // I2CTarget_SetTransferFinishedCallbackFunc
 
-#endif /* I2C_TARGET_H */
+#endif /* II2C_TARGET_H */
