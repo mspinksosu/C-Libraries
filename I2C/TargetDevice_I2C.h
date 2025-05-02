@@ -28,6 +28,7 @@ or change the name of the file to I2CTarget to shorten it a little bit ? - MS */
 #define TARGET_DEVICE_I2C_H
 
 #include "ITargetDevice.h"
+#include "DataTransfer.h"
 
 // ***** Defines ***************************************************************
 
@@ -42,22 +43,29 @@ typedef struct TargetDevice_I2CTag
     TargetDevice *super; // include the base class first
 
     uint8_t targetAddress7Bit; // 7-bit address, right justified
-    TargetDeviceState state;
-    bool transferStartedEventFlag;
-    bool transferFinishedEventFlag;
-    
-    // @todo add data transfer buffer to implementation
-    // struct
-    // {
-    //     DTBuffer *buffer;
-    //     DataTransfer dtArray[I2CTARGET_DT_BUFFER_SIZE];
-    // } private;
+    struct
+    {
+        TargetDeviceState state;
+        DTBuffer dtBuffer;
+        union {
+            struct {
+                unsigned transferPending        :1;
+                unsigned transferStarted        :1;
+                unsigned transferFinished       :1;
+                unsigned                        :5;
+            };
+            uint8_t all;
+        } flags;
+    } private;
+    DataTransfer finishedTransfer;
 } TargetDevice_I2C;
 
 typedef struct TargetDeviceInitType_I2CTag
 {
     TargetDeviceInitType *super; // include the base class first
     uint8_t targetAddress7Bit; // 7-bit address, right justified
+    DataTransfer *ptrToDTArray;
+    uint8_t dtArraySize;
 } TargetDeviceInitType_I2C;
 
 /** 
@@ -112,17 +120,20 @@ void TargetDevice_I2C_DataTransferFinishedEvent(TargetDevice_I2C *self);
 bool TargetDevice_I2C_IsDataTransferFinished(TargetDevice_I2C *self);
 
 void TargetDevice_I2C_GetFinishedDataTransfer(TargetDevice_I2C *self, bool *retIsReadType, 
-    uint8_t *retPtrArray, uint16_t *retLength);
+    uint8_t **retPtrArray, uint16_t *retLength);
 
+// place in buffer
 void TargetDevice_I2C_RequestDataTransfer(TargetDevice_I2C *self, bool readTypeTransfer, 
-    uint8_t *array, uint16_t length);
+    uint8_t *dataArray, uint16_t length);
 
+// not pending anymore
 void TargetDevice_I2C_DataTransferStartedEvent(TargetDevice_I2C *self);
 
 bool TargetDevice_I2C_IsDataTransferPending(TargetDevice_I2C *self);
 
+// sets transferPending to false after calling
 void TargetDevice_I2C_GetPendingDataTransfer(TargetDevice_I2C *self, bool *retIsReadType, 
-    uint8_t *retPtrArray, uint16_t *retLength);
+    uint8_t **retPtrArray, uint16_t *retLength);
 
 uint8_t TargetDevice_I2C_GetDataTransferBufferCount(TargetDevice_I2C *self);
 

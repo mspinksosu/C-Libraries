@@ -134,7 +134,6 @@ void TargetDevice_GetFinishedDataTransfer(TargetDevice *self, bool *retIsReadTyp
 void TargetDevice_RequestDataTransfer(TargetDevice *self, bool readTypeTransfer, 
     uint8_t *array, uint16_t length);
 
-// not pending anymore
 void TargetDevice_DataTransferStartedEvent(TargetDevice *self);
 
 bool TargetDevice_IsDataTransferPending(TargetDevice *self);

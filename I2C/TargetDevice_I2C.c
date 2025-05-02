@@ -76,19 +76,21 @@ void TargetDevice_I2C_Create(TargetDevice_I2C *self, TargetDevice *base)
 
 // *****************************************************************************
 
-void TargetDevice_I2C_CreateInitType(TargetDeviceInitType_I2C *self, TargetDeviceInitType *base)
+void TargetDevice_I2C_CreateInitType(TargetDeviceInitType_I2C *params, TargetDeviceInitType *base)
 {
-    self->super = base;
-    TargetDevice_CreateInitType(base, self);
+    params->super = base;
+    TargetDevice_CreateInitType(base, params);
 }
 
 // *****************************************************************************
 
-void TargetDevice_I2C_SetInitTypeParams(TargetDevice_I2C *self, uint8_t targetAddress7Bit)
+void TargetDevice_I2C_SetInitTypeParams(TargetDeviceInitType_I2C *params, uint8_t targetAddress7Bit, 
+    DataTransfer *dtArray, uint8_t arraySize)
 {
-    // @todo add pointers to data transfer buffer, etc.
+    params->targetAddress7Bit = targetAddress7Bit;
+    params->ptrToDTArray = dtArray;
+    params->dtArraySize = arraySize;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -98,7 +100,10 @@ void TargetDevice_I2C_SetInitTypeParams(TargetDevice_I2C *self, uint8_t targetAd
 
 void TargetDevice_I2C_Init(TargetDevice_I2C *self, TargetDeviceInitType_I2C *params)
 {
-
+    self->targetAddress7Bit = params->targetAddress7Bit;
+    self->private.state = I2C_TARGET_STATE_IDLE;
+    self->private.flags.all = 0;
+    DTBuffer_Init(&(self->private.dtBuffer), params->ptrToDTArray, params->dtArraySize);
 }
 
 // *****************************************************************************
@@ -112,71 +117,102 @@ void TargetDevice_I2C_DataTransferFinishedEvent(TargetDevice_I2C *self)
 
 bool TargetDevice_I2C_IsDataTransferFinished(TargetDevice_I2C *self)
 {
-
+    if(self->private.flags.transferFinished)
+        return true;
+    else
+        return false;
 }
 
 // *****************************************************************************
 
 void TargetDevice_I2C_GetFinishedDataTransfer(TargetDevice_I2C *self, bool *retIsReadType, 
-    uint8_t *retPtrArray, uint16_t *retLength)
+    uint8_t **retPtrArray, uint16_t *retLength)
 {
+    if(self->finishedTransfer.transferType = DATA_TRANSFER_TYPE_READ)
+        *retIsReadType = true;
+    else
+        *retIsReadType = false;
+    **retPtrArray = self->finishedTransfer.ptrDataArray;
+    *retLength = self->finishedTransfer.length;
 
+    // @todo clear finished flag here?
 }
 
 // *****************************************************************************
 
 void TargetDevice_I2C_RequestDataTransfer(TargetDevice_I2C *self, bool readTypeTransfer, 
-    uint8_t *array, uint16_t length)
+    uint8_t *dataArray, uint16_t length)
 {
+    DataTransferType type = DATA_TRANSFER_TYPE_WRITE;
+    if(readTypeTransfer)
+        type = DATA_TRANSFER_TYPE_READ;
 
+    DTBuffer_WriteDataTransfer(&(self->private.dtBuffer), type, dataArray, length);
 }
 
 // *****************************************************************************
 
 void TargetDevice_I2C_DataTransferStartedEvent(TargetDevice_I2C *self)
 {
-
+    // @todo private.flags.transferStarted? clear finished?
 }
 
 // *****************************************************************************
 
 bool TargetDevice_I2C_IsDataTransferPending(TargetDevice_I2C *self)
 {
-
+    if(self->private.flags.transferPending)
+        return true;
+    else
+        return false;
 }
 
+// *****************************************************************************
+
 void TargetDevice_I2C_GetPendingDataTransfer(TargetDevice_I2C *self, bool *retIsReadType, 
-    uint8_t *retPtrArray, uint16_t *retLength)
+    uint8_t **retPtrArray, uint16_t *retLength)
 {
-    
+    DataTransfer retDataTransfer;
+    uint8_t error = DTBuffer_ReadDataTransfer(&(self->private.dtBuffer), &retDataTransfer);
+    if(error == 0)
+    {
+        if(retDataTransfer.transferType = DATA_TRANSFER_TYPE_READ)
+            *retIsReadType = true;
+        else
+            *retIsReadType = false;
+        **retPtrArray = retDataTransfer.ptrDataArray;
+        *retLength = retDataTransfer.length;
+    }
+
+    // @todo call transfer started event?
 }
 
 // *****************************************************************************
 
 uint8_t TargetDevice_I2C_GetDataTransferBufferCount(TargetDevice_I2C *self)
 {
-
+    return DTBuffer_GetCount(&(self->private.dtBuffer));
 }
 
 // *****************************************************************************
 
 bool TargetDevice_I2C_IsDataTransferBufferFull(TargetDevice_I2C *self)
 {
-
+    return DTBuffer_IsFull(&(self->private.dtBuffer));
 }
 
 // *****************************************************************************
 
 uint8_t TargetDevice_I2C_GetDataTransferBufferSize(TargetDevice_I2C *self)
 {
-
+    return DTBuffer_GetSize(&(self->private.dtBuffer));
 }
 
 // *****************************************************************************
 
 void TargetDevice_I2C_ClearDataTransferBuffer(TargetDevice_I2C *self)
 {
-
+    DTBuffer_Flush(&(self->private.dtBuffer));
 }
 
 // *****************************************************************************

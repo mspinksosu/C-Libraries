@@ -44,7 +44,7 @@ typedef enum DataTransferTypeTag
 typedef struct DataTransferTag
 {
     DataTransferType transferType;
-    uint8_t *dataArray;
+    uint8_t *ptrDataArray;
     uint16_t length;
 } DataTransfer;
 
