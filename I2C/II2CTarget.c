@@ -68,11 +68,13 @@ void I2CTarget_Init(I2CTarget *self, I2CTargetInitType *params)
 
 // *****************************************************************************
 
-void I2CTarget_DataTransferFinishedEvent(I2CTarget *self)
+void I2CTarget_DataTransferFinishedEvent(I2CTarget *self, bool readTypeTransfer, 
+    uint8_t *dataArray, uint16_t length)
 {
     if(self->interface->I2CTarget_DataTransferFinishedEvent != NULL && self->instance != NULL)
     {
-        (self->interface->I2CTarget_DataTransferFinishedEvent)(self->instance);
+        (self->interface->I2CTarget_DataTransferFinishedEvent)(self->instance, 
+            readTypeTransfer, dataArray, length);
     }
 }
 
@@ -93,7 +95,7 @@ bool I2CTarget_IsDataTransferFinished(I2CTarget *self)
 // *****************************************************************************
 
 void I2CTarget_GetFinishedDataTransfer(I2CTarget *self, bool *retIsReadType, 
-    uint8_t *retPtrArray, uint16_t *retLength)
+    uint8_t **retPtrArray, uint16_t *retLength)
 {
     if(self->interface->I2CTarget_GetFinishedDataTransfer != NULL && self->instance != NULL)
     {
@@ -104,12 +106,12 @@ void I2CTarget_GetFinishedDataTransfer(I2CTarget *self, bool *retIsReadType,
 
 // *****************************************************************************
 
-void I2CTarget_RequestDataTransfer(I2CTarget *self, bool readTypeTransfer, 
+void I2CTarget_WriteToDataTransferBuffer(I2CTarget *self, bool readTypeTransfer, 
     uint8_t *array, uint16_t length)
 {
-    if(self->interface->I2CTarget_RequestDataTransfer != NULL && self->instance != NULL)
+    if(self->interface->I2CTarget_WriteToDataTransferBuffer != NULL && self->instance != NULL)
     {
-        (self->interface->I2CTarget_RequestDataTransfer)(self->instance, 
+        (self->interface->I2CTarget_WriteToDataTransferBuffer)(self->instance, 
             readTypeTransfer, array, length);
     }
 }
@@ -126,11 +128,11 @@ void I2CTarget_DataTransferStartedEvent(I2CTarget *self)
 
 // *****************************************************************************
 
-bool I2CTarget_IsDataTransferPending(I2CTarget *self)
+bool I2CTarget_IsDataTransferStarted(I2CTarget *self)
 {
-    if(self->interface->I2CTarget_IsDataTransferPending != NULL && self->instance != NULL)
+    if(self->interface->I2CTarget_IsDataTransferStarted != NULL && self->instance != NULL)
     {
-        return (self->interface->I2CTarget_IsDataTransferPending)(self->instance);
+        return (self->interface->I2CTarget_IsDataTransferStarted)(self->instance);
     }
     else
     {
@@ -140,12 +142,12 @@ bool I2CTarget_IsDataTransferPending(I2CTarget *self)
 
 // *****************************************************************************
 
-void I2CTarget_GetPendingDataTransfer(I2CTarget *self, bool *retIsReadType, 
-    uint8_t *retPtrArray, uint16_t *retLength)
+void I2CTarget_ReadFromDataTransferBuffer(I2CTarget *self, bool *retIsReadType, 
+    uint8_t **retPtrArray, uint16_t *retLength)
 {
-    if(self->interface->I2CTarget_GetPendingDataTransfer != NULL && self->instance != NULL)
+    if(self->interface->I2CTarget_ReadFromDataTransferBuffer != NULL && self->instance != NULL)
     {
-        (self->interface->I2CTarget_GetPendingDataTransfer)(self->instance, 
+        (self->interface->I2CTarget_ReadFromDataTransferBuffer)(self->instance, 
             retIsReadType, retPtrArray, retLength);
     }
 }
@@ -171,6 +173,20 @@ bool I2CTarget_IsDataTransferBufferFull(I2CTarget *self)
     if(self->interface->I2CTarget_IsDataTransferBufferFull != NULL && self->instance != NULL)
     {
         return (self->interface->I2CTarget_IsDataTransferBufferFull)(self->instance);
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// *****************************************************************************
+
+bool I2CTarget_IsDataTransferBufferNotEmpty(I2CTarget *self)
+{
+    if(self->interface->I2CTarget_IsDataTransferBufferNotEmpty != NULL && self->instance != NULL)
+    {
+        return (self->interface->I2CTarget_IsDataTransferBufferNotEmpty)(self->instance);
     }
     else
     {

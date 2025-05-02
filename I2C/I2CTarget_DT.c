@@ -36,15 +36,16 @@
     member equal to this table. */
 I2CTargetInterface I2CTargetFunctionTable = {
     .I2CTarget_Init = (void (*)(void *))I2CTarget_DT_Init,
-    .I2CTarget_DataTransferFinishedEvent = (void (*)(void *))I2CTarget_DT_DataTransferFinishedEvent,
+    .I2CTarget_DataTransferFinishedEvent = (void (*)(void *, bool, uint8_t *, uint16_t))I2CTarget_DT_DataTransferFinishedEvent,
     .I2CTarget_IsDataTransferFinished = (bool (*)(void *))I2CTarget_DT_IsDataTransferFinished,
-    .I2CTarget_GetFinishedDataTransfer = (void (*)(bool *, uint8_t *, uint16_t *))I2CTarget_DT_GetFinishedDataTransfer,
-    .I2CTarget_RequestDataTransfer = (void (*)(void *, uint8_t *, uint16_t))I2CTarget_DT_RequestDataTransfer,
+    .I2CTarget_GetFinishedDataTransfer = (void (*)(void *, bool *, uint8_t **, uint16_t *))I2CTarget_DT_GetFinishedDataTransfer,
+    .I2CTarget_WriteToDataTransferBuffer = (void (*)(void *, bool, uint8_t *, uint16_t))I2CTarget_DT_WriteToDataTransferBuffer,
     .I2CTarget_DataTransferStartedEvent = (void (*)(void *))I2CTarget_DT_DataTransferStartedEvent,
-    .I2CTarget_IsDataTransferPending = (bool (*)(void *))I2CTarget_DT_IsDataTransferPending,
-    .I2CTarget_GetPendingDataTransfer = (void (*)(bool *, uint8_t *, uint16_t *))I2CTarget_DT_GetPendingDataTransfer,
+    .I2CTarget_IsDataTransferStarted = (bool (*)(void *))I2CTarget_DT_IsDataTransferStarted,
+    .I2CTarget_ReadFromDataTransferBuffer = (void (*)(void *, bool *, uint8_t **, uint16_t *))I2CTarget_DT_ReadFromDataTransferBuffer,
     .I2CTarget_GetDataTransferBufferCount = (uint8_t (*)(void *))I2CTarget_DT_GetDataTransferBufferCount,
     .I2CTarget_IsDataTransferBufferFull = (bool (*)(void *))I2CTarget_DT_IsDataTransferBufferFull,
+    .I2CTarget_IsDataTransferBufferNotEmpty = (bool (*)(void *))I2CTarget_DT_IsDataTransferBufferNotEmpty,
     .I2CTarget_GetDataTransferBufferSize = (uint8_t (*)(void *))I2CTarget_DT_GetDataTransferBufferSize,
     .I2CTarget_ClearDataTransferBuffer = (void (*)(void *))I2CTarget_DT_ClearDataTransferBuffer,
     .I2CTarget_GetState = (I2CTargetState (*)(void *))I2CTarget_DT_GetState,
@@ -108,9 +109,19 @@ void I2CTarget_DT_Init(I2CTarget_DT *self, I2CTargetInitType_DT *params)
 
 // *****************************************************************************
 
-void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self)
+void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self, bool readTypeTransfer, 
+    uint8_t *dataArray, uint16_t length)
 {
+    DataTransferType type = DATA_TRANSFER_TYPE_WRITE;
+    if(readTypeTransfer)
+        type = DATA_TRANSFER_TYPE_READ;
 
+    self->finishedTransfer.transferType = type;
+    self->finishedTransfer.ptrDataArray = dataArray;
+    self->finishedTransfer.length = length;
+
+    self->private.flags.transferFinished = 1;
+    self->private.state = I2C_TARGET_STATE_IDLE;
 }
 
 // *****************************************************************************
@@ -125,6 +136,10 @@ bool I2CTarget_DT_IsDataTransferFinished(I2CTarget_DT *self)
 
 // *****************************************************************************
 
+/* @todo Call the get finished function to clear the flags? It is kind of 
+similar to how other modules like a UART work, where you have to read the 
+receive register in order to clear the rx flag. - MS */
+
 void I2CTarget_DT_GetFinishedDataTransfer(I2CTarget_DT *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength)
 {
@@ -136,11 +151,13 @@ void I2CTarget_DT_GetFinishedDataTransfer(I2CTarget_DT *self, bool *retIsReadTyp
     *retLength = self->finishedTransfer.length;
 
     // @todo clear finished flag here?
+    self->private.flags.transferStarted = 0;
+    self->private.flags.transferFinished = 0;
 }
 
 // *****************************************************************************
 
-void I2CTarget_DT_RequestDataTransfer(I2CTarget_DT *self, bool readTypeTransfer, 
+void I2CTarget_DT_WriteToDataTransferBuffer(I2CTarget_DT *self, bool readTypeTransfer, 
     uint8_t *dataArray, uint16_t length)
 {
     DataTransferType type = DATA_TRANSFER_TYPE_WRITE;
@@ -154,14 +171,15 @@ void I2CTarget_DT_RequestDataTransfer(I2CTarget_DT *self, bool readTypeTransfer,
 
 void I2CTarget_DT_DataTransferStartedEvent(I2CTarget_DT *self)
 {
-    // @todo private.flags.transferStarted? clear finished?
+    self->private.flags.transferStarted = 1;
+    self->private.state = I2C_TARGET_STATE_TRANSFER_IN_PROGRESS;
 }
 
 // *****************************************************************************
 
-bool I2CTarget_DT_IsDataTransferPending(I2CTarget_DT *self)
+bool I2CTarget_DT_IsDataTransferStarted(I2CTarget_DT *self)
 {
-    if(self->private.flags.transferPending)
+    if(self->private.flags.transferStarted)
         return true;
     else
         return false;
@@ -169,7 +187,7 @@ bool I2CTarget_DT_IsDataTransferPending(I2CTarget_DT *self)
 
 // *****************************************************************************
 
-void I2CTarget_DT_GetPendingDataTransfer(I2CTarget_DT *self, bool *retIsReadType, 
+void I2CTarget_DT_ReadFromDataTransferBuffer(I2CTarget_DT *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength)
 {
     DataTransfer retDataTransfer;
@@ -183,8 +201,6 @@ void I2CTarget_DT_GetPendingDataTransfer(I2CTarget_DT *self, bool *retIsReadType
         *retPtrArray = retDataTransfer.ptrDataArray;
         *retLength = retDataTransfer.length;
     }
-
-    // @todo call transfer started event?
 }
 
 // *****************************************************************************
@@ -199,6 +215,13 @@ uint8_t I2CTarget_DT_GetDataTransferBufferCount(I2CTarget_DT *self)
 bool I2CTarget_DT_IsDataTransferBufferFull(I2CTarget_DT *self)
 {
     return DTBuffer_IsFull(&(self->private.dtBuffer));
+}
+
+// *****************************************************************************
+
+bool I2CTarget_DT_IsDataTransferBufferNotEmpty(I2CTarget_DT *self)
+{
+    return DTBuffer_IsNotEmpty(&(self->private.dtBuffer));
 }
 
 // *****************************************************************************

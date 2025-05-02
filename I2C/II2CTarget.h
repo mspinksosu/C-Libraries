@@ -67,15 +67,16 @@ typedef struct I2CTargetInterfaceTag
     person using the library to implement those functions, even if it is just 
     a buffer of size one. - MS */
     void (*I2CTarget_Init)(void *instance, void *params);
-    void (*I2CTarget_DataTransferFinishedEvent)(void *instance);
+    void (*I2CTarget_DataTransferFinishedEvent)(void *instance, bool, uint8_t *, uint16_t);
     bool (*I2CTarget_IsDataTransferFinished)(void *instance);
-    void (*I2CTarget_GetFinishedDataTransfer)(void *instance, bool *, uint8_t *, uint16_t *);
-    void (*I2CTarget_RequestDataTransfer)(void *instance, bool, uint8_t *, uint16_t);
+    void (*I2CTarget_GetFinishedDataTransfer)(void *instance, bool *, uint8_t **, uint16_t *);
+    void (*I2CTarget_WriteToDataTransferBuffer)(void *instance, bool, uint8_t *, uint16_t);
     void (*I2CTarget_DataTransferStartedEvent)(void *instance);
-    bool (*I2CTarget_IsDataTransferPending)(void *instance);
-    void (*I2CTarget_GetPendingDataTransfer)(void *instance, bool *, uint8_t *, uint16_t *);
+    bool (*I2CTarget_IsDataTransferStarted)(void *instance);
+    void (*I2CTarget_ReadFromDataTransferBuffer)(void *instance, bool *, uint8_t **, uint16_t *);
     uint8_t (*I2CTarget_GetDataTransferBufferCount)(void *instance);
     bool (*I2CTarget_IsDataTransferBufferFull)(void *instance);
+    bool (*I2CTarget_IsDataTransferBufferNotEmpty)(void *instance);
     uint8_t (*I2CTarget_GetDataTransferBufferSize)(void *instance);
     void (*I2CTarget_ClearDataTransferBuffer)(void *instance);
     I2CTargetState (*I2CTarget_GetState)(void *instance);
@@ -123,28 +124,29 @@ void I2CTarget_CreateInitType(I2CTargetInitType *params, void *instanceOfSubClas
 
 void I2CTarget_Init(I2CTarget *self, I2CTargetInitType *params);
 
-void I2CTarget_DataTransferFinishedEvent(I2CTarget *self);
+void I2CTarget_DataTransferFinishedEvent(I2CTarget *self, bool readTypeTransfer, 
+    uint8_t *dataArray, uint16_t length);
 
 bool I2CTarget_IsDataTransferFinished(I2CTarget *self);
 
 void I2CTarget_GetFinishedDataTransfer(I2CTarget *self, bool *retIsReadType, 
-    uint8_t *retPtrArray, uint16_t *retLength);
+    uint8_t **retPtrArray, uint16_t *retLength);
 
-// place in buffer
-void I2CTarget_RequestDataTransfer(I2CTarget *self, bool readTypeTransfer, 
-    uint8_t *array, uint16_t length);
+void I2CTarget_WriteToDataTransferBuffer(I2CTarget *self, bool readTypeTransfer, 
+    uint8_t *dataArray, uint16_t length);
 
 void I2CTarget_DataTransferStartedEvent(I2CTarget *self);
 
-bool I2CTarget_IsDataTransferPending(I2CTarget *self);
+bool I2CTarget_IsDataTransferStarted(I2CTarget *self);
 
-// sets transferPending to false after calling
-void I2CTarget_GetPendingDataTransfer(I2CTarget *self, bool *retIsReadType, 
-    uint8_t *retPtrArray, uint16_t *retLength);
+void I2CTarget_ReadFromDataTransferBuffer(I2CTarget *self, bool *retIsReadType, 
+    uint8_t **retPtrArray, uint16_t *retLength);
 
 uint8_t I2CTarget_GetDataTransferBufferCount(I2CTarget *self);
 
 bool I2CTarget_IsDataTransferBufferFull(I2CTarget *self);
+
+bool I2CTarget_IsDataTransferBufferNotEmpty(I2CTarget *self);
 
 uint8_t I2CTarget_GetDataTransferBufferSize(I2CTarget *self);
 

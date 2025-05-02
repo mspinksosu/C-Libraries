@@ -118,29 +118,29 @@ void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, uint8_t target
 
 void I2CTarget_DT_Init(I2CTarget_DT *self, I2CTargetInitType_DT *params);
 
-void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self);
+void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self, bool readTypeTransfer, 
+    uint8_t *dataArray, uint16_t length);
 
 bool I2CTarget_DT_IsDataTransferFinished(I2CTarget_DT *self);
 
 void I2CTarget_DT_GetFinishedDataTransfer(I2CTarget_DT *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength);
 
-// place in buffer
-void I2CTarget_DT_RequestDataTransfer(I2CTarget_DT *self, bool readTypeTransfer, 
+void I2CTarget_DT_WriteToDataTransferBuffer(I2CTarget_DT *self, bool readTypeTransfer, 
     uint8_t *dataArray, uint16_t length);
 
-// not pending anymore
 void I2CTarget_DT_DataTransferStartedEvent(I2CTarget_DT *self);
 
-bool I2CTarget_DT_IsDataTransferPending(I2CTarget_DT *self);
+bool I2CTarget_DT_IsDataTransferStarted(I2CTarget_DT *self);
 
-// sets transferPending to false after calling
-void I2CTarget_DT_GetPendingDataTransfer(I2CTarget_DT *self, bool *retIsReadType, 
+void I2CTarget_DT_ReadFromDataTransferBuffer(I2CTarget_DT *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength);
 
 uint8_t I2CTarget_DT_GetDataTransferBufferCount(I2CTarget_DT *self);
 
 bool I2CTarget_DT_IsDataTransferBufferFull(I2CTarget_DT *self);
+
+bool I2CTarget_DT_IsDataTransferBufferNotEmpty(I2CTarget *self);
 
 uint8_t I2CTarget_DT_GetDataTransferBufferSize(I2CTarget_DT *self);
 
