@@ -1,7 +1,7 @@
 /***************************************************************************//**
- * @brief I2C Target Implementation (Non-Processor Specific)
+ * @brief I2C Target Implementation
  * 
- * @file I2CTarget.c
+ * @file I2CTarget_DT.c
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
@@ -21,7 +21,7 @@
  * 
  ******************************************************************************/
 
-#include "TargetDevice_I2C.h" // @todo change name to something that includes data transfer buffer? I2CTarget_DT? - MS
+#include "I2CTarget_DT.h"
 #include <stddef.h>
 
 // ***** Defines ***************************************************************
@@ -34,20 +34,20 @@
     (which are function pointers) the our local functions. Typecasting is 
     necessary. When a new sub class object is created, we will set its interface
     member equal to this table. */
-TargetDeviceInterface TargetDeviceFunctionTable = {
-    .TargetDevice_Init = (void (*)(void *))TargetDevice_I2C_Init,
-    .TargetDevice_DataTransferFinishedEvent = (void (*)(void *))TargetDevice_I2C_DataTransferFinishedEvent,
-    .TargetDevice_IsDataTransferFinished = (bool (*)(void *))TargetDevice_I2C_IsDataTransferFinished,
-    .TargetDevice_GetFinishedDataTransfer = (void (*)(bool *, uint8_t *, uint16_t *))TargetDevice_I2C_GetFinishedDataTransfer,
-    .TargetDevice_RequestDataTransfer = (void (*)(void *, uint8_t *, uint16_t))TargetDevice_I2C_RequestDataTransfer,
-    .TargetDevice_DataTransferStartedEvent = (void (*)(void *))TargetDevice_I2C_DataTransferStartedEvent,
-    .TargetDevice_IsDataTransferPending = (bool (*)(void *))TargetDevice_I2C_IsDataTransferPending,
-    .TargetDevice_GetPendingDataTransfer = (void (*)(bool *, uint8_t *, uint16_t *))TargetDevice_I2C_GetPendingDataTransfer,
-    .TargetDevice_GetDataTransferBufferCount = (uint8_t (*)(void *))TargetDevice_I2C_GetDataTransferBufferCount,
-    .TargetDevice_IsDataTransferBufferFull = (bool (*)(void *))TargetDevice_I2C_IsDataTransferBufferFull,
-    .TargetDevice_GetDataTransferBufferSize = (uint8_t (*)(void *))TargetDevice_I2C_GetDataTransferBufferSize,
-    .TargetDevice_ClearDataTransferBuffer = (void (*)(void *))TargetDevice_I2C_ClearDataTransferBuffer,
-    .TargetDevice_GetState = (TargetDeviceState (*)(void *))TargetDevice_I2C_GetState,
+I2CTargetInterface I2CTargetFunctionTable = {
+    .I2CTarget_Init = (void (*)(void *))I2CTarget_DT_Init,
+    .I2CTarget_DataTransferFinishedEvent = (void (*)(void *))I2CTarget_DT_DataTransferFinishedEvent,
+    .I2CTarget_IsDataTransferFinished = (bool (*)(void *))I2CTarget_DT_IsDataTransferFinished,
+    .I2CTarget_GetFinishedDataTransfer = (void (*)(bool *, uint8_t *, uint16_t *))I2CTarget_DT_GetFinishedDataTransfer,
+    .I2CTarget_RequestDataTransfer = (void (*)(void *, uint8_t *, uint16_t))I2CTarget_DT_RequestDataTransfer,
+    .I2CTarget_DataTransferStartedEvent = (void (*)(void *))I2CTarget_DT_DataTransferStartedEvent,
+    .I2CTarget_IsDataTransferPending = (bool (*)(void *))I2CTarget_DT_IsDataTransferPending,
+    .I2CTarget_GetPendingDataTransfer = (void (*)(bool *, uint8_t *, uint16_t *))I2CTarget_DT_GetPendingDataTransfer,
+    .I2CTarget_GetDataTransferBufferCount = (uint8_t (*)(void *))I2CTarget_DT_GetDataTransferBufferCount,
+    .I2CTarget_IsDataTransferBufferFull = (bool (*)(void *))I2CTarget_DT_IsDataTransferBufferFull,
+    .I2CTarget_GetDataTransferBufferSize = (uint8_t (*)(void *))I2CTarget_DT_GetDataTransferBufferSize,
+    .I2CTarget_ClearDataTransferBuffer = (void (*)(void *))I2CTarget_DT_ClearDataTransferBuffer,
+    .I2CTarget_GetState = (I2CTargetState (*)(void *))I2CTarget_DT_GetState,
 };
 
 // ***** Static Function Prototypes ********************************************
@@ -61,7 +61,7 @@ TargetDeviceInterface TargetDeviceFunctionTable = {
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void TargetDevice_I2C_Create(TargetDevice_I2C *self, TargetDevice *base)
+void I2CTarget_DT_Create(I2CTarget_DT *self, I2CTarget *base)
 {
     self->super = base;
 
@@ -71,20 +71,20 @@ void TargetDevice_I2C_Create(TargetDevice_I2C *self, TargetDevice *base)
     base class's instance member to the instance of the sub class that you just 
     created, along with the list of functions that will be used. From now on,
     you'll be able to use the base class for function calls */
-    TargetDevice_Create(base, self, &TargetDeviceFunctionTable);
+    I2CTarget_Create(base, self, &I2CTargetFunctionTable);
 }
 
 // *****************************************************************************
 
-void TargetDevice_I2C_CreateInitType(TargetDeviceInitType_I2C *params, TargetDeviceInitType *base)
+void I2CTarget_DT_CreateInitType(I2CTargetInitType_DT *params, I2CTargetInitType *base)
 {
     params->super = base;
-    TargetDevice_CreateInitType(base, params);
+    I2CTarget_CreateInitType(base, params);
 }
 
 // *****************************************************************************
 
-void TargetDevice_I2C_SetInitTypeParams(TargetDeviceInitType_I2C *params, uint8_t targetAddress7Bit, 
+void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, uint8_t targetAddress7Bit, 
     DataTransfer *dtArray, uint8_t arraySize)
 {
     params->targetAddress7Bit = targetAddress7Bit;
@@ -98,7 +98,7 @@ void TargetDevice_I2C_SetInitTypeParams(TargetDeviceInitType_I2C *params, uint8_
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void TargetDevice_I2C_Init(TargetDevice_I2C *self, TargetDeviceInitType_I2C *params)
+void I2CTarget_DT_Init(I2CTarget_DT *self, I2CTargetInitType_DT *params)
 {
     self->targetAddress7Bit = params->targetAddress7Bit;
     self->private.state = I2C_TARGET_STATE_IDLE;
@@ -108,14 +108,14 @@ void TargetDevice_I2C_Init(TargetDevice_I2C *self, TargetDeviceInitType_I2C *par
 
 // *****************************************************************************
 
-void TargetDevice_I2C_DataTransferFinishedEvent(TargetDevice_I2C *self)
+void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self)
 {
 
 }
 
 // *****************************************************************************
 
-bool TargetDevice_I2C_IsDataTransferFinished(TargetDevice_I2C *self)
+bool I2CTarget_DT_IsDataTransferFinished(I2CTarget_DT *self)
 {
     if(self->private.flags.transferFinished)
         return true;
@@ -125,7 +125,7 @@ bool TargetDevice_I2C_IsDataTransferFinished(TargetDevice_I2C *self)
 
 // *****************************************************************************
 
-void TargetDevice_I2C_GetFinishedDataTransfer(TargetDevice_I2C *self, bool *retIsReadType, 
+void I2CTarget_DT_GetFinishedDataTransfer(I2CTarget_DT *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength)
 {
     if(self->finishedTransfer.transferType = DATA_TRANSFER_TYPE_READ)
@@ -140,7 +140,7 @@ void TargetDevice_I2C_GetFinishedDataTransfer(TargetDevice_I2C *self, bool *retI
 
 // *****************************************************************************
 
-void TargetDevice_I2C_RequestDataTransfer(TargetDevice_I2C *self, bool readTypeTransfer, 
+void I2CTarget_DT_RequestDataTransfer(I2CTarget_DT *self, bool readTypeTransfer, 
     uint8_t *dataArray, uint16_t length)
 {
     DataTransferType type = DATA_TRANSFER_TYPE_WRITE;
@@ -152,14 +152,14 @@ void TargetDevice_I2C_RequestDataTransfer(TargetDevice_I2C *self, bool readTypeT
 
 // *****************************************************************************
 
-void TargetDevice_I2C_DataTransferStartedEvent(TargetDevice_I2C *self)
+void I2CTarget_DT_DataTransferStartedEvent(I2CTarget_DT *self)
 {
     // @todo private.flags.transferStarted? clear finished?
 }
 
 // *****************************************************************************
 
-bool TargetDevice_I2C_IsDataTransferPending(TargetDevice_I2C *self)
+bool I2CTarget_DT_IsDataTransferPending(I2CTarget_DT *self)
 {
     if(self->private.flags.transferPending)
         return true;
@@ -169,7 +169,7 @@ bool TargetDevice_I2C_IsDataTransferPending(TargetDevice_I2C *self)
 
 // *****************************************************************************
 
-void TargetDevice_I2C_GetPendingDataTransfer(TargetDevice_I2C *self, bool *retIsReadType, 
+void I2CTarget_DT_GetPendingDataTransfer(I2CTarget_DT *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength)
 {
     DataTransfer retDataTransfer;
@@ -189,35 +189,35 @@ void TargetDevice_I2C_GetPendingDataTransfer(TargetDevice_I2C *self, bool *retIs
 
 // *****************************************************************************
 
-uint8_t TargetDevice_I2C_GetDataTransferBufferCount(TargetDevice_I2C *self)
+uint8_t I2CTarget_DT_GetDataTransferBufferCount(I2CTarget_DT *self)
 {
     return DTBuffer_GetCount(&(self->private.dtBuffer));
 }
 
 // *****************************************************************************
 
-bool TargetDevice_I2C_IsDataTransferBufferFull(TargetDevice_I2C *self)
+bool I2CTarget_DT_IsDataTransferBufferFull(I2CTarget_DT *self)
 {
     return DTBuffer_IsFull(&(self->private.dtBuffer));
 }
 
 // *****************************************************************************
 
-uint8_t TargetDevice_I2C_GetDataTransferBufferSize(TargetDevice_I2C *self)
+uint8_t I2CTarget_DT_GetDataTransferBufferSize(I2CTarget_DT *self)
 {
     return DTBuffer_GetSize(&(self->private.dtBuffer));
 }
 
 // *****************************************************************************
 
-void TargetDevice_I2C_ClearDataTransferBuffer(TargetDevice_I2C *self)
+void I2CTarget_DT_ClearDataTransferBuffer(I2CTarget_DT *self)
 {
     DTBuffer_Flush(&(self->private.dtBuffer));
 }
 
 // *****************************************************************************
 
-TargetDeviceState TargetDevice_I2C_GetState(TargetDevice_I2C *self)
+I2CTargetState I2CTarget_DT_GetState(I2CTarget_DT *self)
 {
 
 }

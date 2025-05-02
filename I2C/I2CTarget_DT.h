@@ -1,7 +1,7 @@
 /***************************************************************************//**
- * @brief I2C Target Implementation Header (Non-Processor Specific)
+ * @brief I2C Target Implementation Header
  * 
- * @file I2CTarget.h
+ * @file I2CTarget_DT.h
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
@@ -24,10 +24,10 @@
 /* @todo Should I stick with my usual naming convention of "Class_Subclass.." 
 or change the name of the file to I2CTarget to shorten it a little bit ? - MS */
 
-#ifndef TARGET_DEVICE_I2C_H
-#define TARGET_DEVICE_I2C_H
+#ifndef I2CTARGET_H
+#define I2CTARGET_H
 
-#include "ITargetDevice.h"
+#include "II2CTarget.h"
 #include "DataTransfer.h"
 
 // ***** Defines ***************************************************************
@@ -38,14 +38,14 @@ or change the name of the file to I2CTarget to shorten it a little bit ? - MS */
 /* If you need to extend the base class, then declare your processor specific
 class here. Your processor specific functions should all use this type in place 
 of the base class type. */
-typedef struct TargetDevice_I2CTag
+typedef struct I2CTarget_DTTag
 {
-    TargetDevice *super; // include the base class first
+    I2CTarget *super; // include the base class first
 
     uint8_t targetAddress7Bit; // 7-bit address, right justified
     struct
     {
-        TargetDeviceState state;
+        I2CTargetState state;
         DTBuffer dtBuffer;
         union {
             struct {
@@ -58,15 +58,15 @@ typedef struct TargetDevice_I2CTag
         } flags;
     } private;
     DataTransfer finishedTransfer;
-} TargetDevice_I2C;
+} I2CTarget_DT;
 
-typedef struct TargetDeviceInitType_I2CTag
+typedef struct I2CTargetInitType_DTTag
 {
-    TargetDeviceInitType *super; // include the base class first
+    I2CTargetInitType *super; // include the base class first
     uint8_t targetAddress7Bit; // 7-bit address, right justified
     DataTransfer *ptrToDTArray;
     uint8_t dtArraySize;
-} TargetDeviceInitType_I2C;
+} I2CTargetInitType_DT;
 
 /** 
  * Description of struct
@@ -87,7 +87,7 @@ typedef struct TargetDeviceInitType_I2CTag
  * @param self
  * @param base
  */
-void TargetDevice_I2C_Create(TargetDevice_I2C *self, TargetDevice *base);
+void I2CTarget_DT_Create(I2CTarget_DT *self, I2CTarget *base);
 
 /***************************************************************************//**
  * @brief 
@@ -95,15 +95,18 @@ void TargetDevice_I2C_Create(TargetDevice_I2C *self, TargetDevice *base);
  * @param self 
  * @param base 
  */
-void TargetDevice_I2C_CreateInitType(TargetDeviceInitType_I2C *self, TargetDeviceInitType *base);
+void I2CTarget_DT_CreateInitType(I2CTargetInitType_DT *self, I2CTargetInitType *base);
 
 /***************************************************************************//**
  * @brief 
  * 
- * @param self 
+ * @param params 
  * @param targetAddress7Bit 
+ * @param dtArray 
+ * @param arraySize 
  */
-void TargetDevice_I2C_SetInitTypeParams(TargetDevice_I2C *self, uint8_t targetAddress7Bit);
+void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, uint8_t targetAddress7Bit, 
+    DataTransfer *dtArray, uint8_t arraySize);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -113,36 +116,36 @@ void TargetDevice_I2C_SetInitTypeParams(TargetDevice_I2C *self, uint8_t targetAd
 
 // @todo doxygen
 
-void TargetDevice_I2C_Init(TargetDevice_I2C *self, TargetDeviceInitType_I2C *params);
+void I2CTarget_DT_Init(I2CTarget_DT *self, I2CTargetInitType_DT *params);
 
-void TargetDevice_I2C_DataTransferFinishedEvent(TargetDevice_I2C *self);
+void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self);
 
-bool TargetDevice_I2C_IsDataTransferFinished(TargetDevice_I2C *self);
+bool I2CTarget_DT_IsDataTransferFinished(I2CTarget_DT *self);
 
-void TargetDevice_I2C_GetFinishedDataTransfer(TargetDevice_I2C *self, bool *retIsReadType, 
+void I2CTarget_DT_GetFinishedDataTransfer(I2CTarget_DT *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength);
 
 // place in buffer
-void TargetDevice_I2C_RequestDataTransfer(TargetDevice_I2C *self, bool readTypeTransfer, 
+void I2CTarget_DT_RequestDataTransfer(I2CTarget_DT *self, bool readTypeTransfer, 
     uint8_t *dataArray, uint16_t length);
 
 // not pending anymore
-void TargetDevice_I2C_DataTransferStartedEvent(TargetDevice_I2C *self);
+void I2CTarget_DT_DataTransferStartedEvent(I2CTarget_DT *self);
 
-bool TargetDevice_I2C_IsDataTransferPending(TargetDevice_I2C *self);
+bool I2CTarget_DT_IsDataTransferPending(I2CTarget_DT *self);
 
 // sets transferPending to false after calling
-void TargetDevice_I2C_GetPendingDataTransfer(TargetDevice_I2C *self, bool *retIsReadType, 
+void I2CTarget_DT_GetPendingDataTransfer(I2CTarget_DT *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength);
 
-uint8_t TargetDevice_I2C_GetDataTransferBufferCount(TargetDevice_I2C *self);
+uint8_t I2CTarget_DT_GetDataTransferBufferCount(I2CTarget_DT *self);
 
-bool TargetDevice_I2C_IsDataTransferBufferFull(TargetDevice_I2C *self);
+bool I2CTarget_DT_IsDataTransferBufferFull(I2CTarget_DT *self);
 
-uint8_t TargetDevice_I2C_GetDataTransferBufferSize(TargetDevice_I2C *self);
+uint8_t I2CTarget_DT_GetDataTransferBufferSize(I2CTarget_DT *self);
 
-void TargetDevice_I2C_ClearDataTransferBuffer(TargetDevice_I2C *self);
+void I2CTarget_DT_ClearDataTransferBuffer(I2CTarget_DT *self);
 
-TargetDeviceState TargetDevice_I2C_GetState(TargetDevice_I2C *self);
+I2CTargetState I2CTarget_DT_GetState(I2CTarget_DT *self);
 
-#endif /* TARGET_DEVICE_I2C_H */
+#endif /* I2CTARGET_H */

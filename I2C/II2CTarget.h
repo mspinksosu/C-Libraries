@@ -1,7 +1,7 @@
 /***************************************************************************//**
- * @brief Target Device Interface Header
+ * @brief I2C Target Device Interface Header
  * 
- * @file ITargetDevice.h
+ * @file II2CTarget.h
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
@@ -27,8 +27,8 @@
  * 
  ******************************************************************************/
 
-#ifndef ITARGET_DEVICE_H
-#define ITARGET_DEVICE_H
+#ifndef II2C_TARGET_H
+#define II2C_TARGET_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -51,14 +51,14 @@ followed by one read data request. - MS */
 
 // ***** Global Variables ******************************************************
 
-typedef enum TargetDeviceStateTag
+typedef enum I2CTargetStateTag
 {
     I2C_TARGET_STATE_IDLE = 0,
     I2C_TARGET_STATE_TRANSFER_IN_PROGRESS,
     I2C_TARGET_STATE_ERROR,
-} TargetDeviceState;
+} I2CTargetState;
 
-typedef struct TargetDeviceInterfaceTag
+typedef struct I2CTargetInterfaceTag
 {
     /* @note @todo Haven't decided if I want to implement this where a single 
     DT is processed at a time (similar to UART). Or use the buffer functions. 
@@ -66,37 +66,37 @@ typedef struct TargetDeviceInterfaceTag
     useful for generating repeated starts if needed. But it does force the 
     person using the library to implement those functions, even if it is just 
     a buffer of size one. - MS */
-    void (*TargetDevice_Init)(void *instance, void *params);
-    void (*TargetDevice_DataTransferFinishedEvent)(void *instance);
-    bool (*TargetDevice_IsDataTransferFinished)(void *instance);
-    void (*TargetDevice_GetFinishedDataTransfer)(void *instance, bool *, uint8_t *, uint16_t *);
-    void (*TargetDevice_RequestDataTransfer)(void *instance, bool, uint8_t *, uint16_t);
-    void (*TargetDevice_DataTransferStartedEvent)(void *instance);
-    bool (*TargetDevice_IsDataTransferPending)(void *instance);
-    void (*TargetDevice_GetPendingDataTransfer)(void *instance, bool *, uint8_t *, uint16_t *);
-    uint8_t (*TargetDevice_GetDataTransferBufferCount)(void *instance);
-    bool (*TargetDevice_IsDataTransferBufferFull)(void *instance);
-    uint8_t (*TargetDevice_GetDataTransferBufferSize)(void *instance);
-    void (*TargetDevice_ClearDataTransferBuffer)(void *instance);
-    TargetDeviceState (*TargetDevice_GetState)(void *instance);
-} TargetDeviceInterface;
+    void (*I2CTarget_Init)(void *instance, void *params);
+    void (*I2CTarget_DataTransferFinishedEvent)(void *instance);
+    bool (*I2CTarget_IsDataTransferFinished)(void *instance);
+    void (*I2CTarget_GetFinishedDataTransfer)(void *instance, bool *, uint8_t *, uint16_t *);
+    void (*I2CTarget_RequestDataTransfer)(void *instance, bool, uint8_t *, uint16_t);
+    void (*I2CTarget_DataTransferStartedEvent)(void *instance);
+    bool (*I2CTarget_IsDataTransferPending)(void *instance);
+    void (*I2CTarget_GetPendingDataTransfer)(void *instance, bool *, uint8_t *, uint16_t *);
+    uint8_t (*I2CTarget_GetDataTransferBufferCount)(void *instance);
+    bool (*I2CTarget_IsDataTransferBufferFull)(void *instance);
+    uint8_t (*I2CTarget_GetDataTransferBufferSize)(void *instance);
+    void (*I2CTarget_ClearDataTransferBuffer)(void *instance);
+    I2CTargetState (*I2CTarget_GetState)(void *instance);
+} I2CTargetInterface;
 
 // @todo decided if I want to keep the old callback function pointers
 /* callback function pointer. The context is so that you can know which of
 your I2C devices initiated the callback. */
-// typedef void (*TargetDeviceCallbackFunc)(TargetDevice *i2cTargetContext);
+// typedef void (*I2CTargetCallbackFunc)(I2CTarget *i2cTargetContext);
 
 /* @todo decide if I want to make this the base class or not */
-typedef struct TargetDeviceTag
+typedef struct I2CTargetTag
 {
-    TargetDeviceInterface *interface;
+    I2CTargetInterface *interface;
     void *instance;
-} TargetDevice;
+} I2CTarget;
 
-typedef struct TargetDeviceInitTypeTage
+typedef struct I2CTargetInitTypeTage
 {
     void *instance;
-} TargetDeviceInitType;
+} I2CTargetInitType;
 
 /** 
  * Description of struct
@@ -111,9 +111,9 @@ typedef struct TargetDeviceInitTypeTage
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void TargetDevice_Create(TargetDevice *self, void *instanceOfSubclass, TargetDeviceInterface *interface);
+void I2CTarget_Create(I2CTarget *self, void *instanceOfSubclass, I2CTargetInterface *interface);
 
-void TargetDevice_CreateInitType(TargetDeviceInitType *params, void *instanceOfSubClass);
+void I2CTarget_CreateInitType(I2CTargetInitType *params, void *instanceOfSubClass);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -121,38 +121,38 @@ void TargetDevice_CreateInitType(TargetDeviceInitType *params, void *instanceOfS
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void TargetDevice_Init(TargetDevice *self, TargetDeviceInitType *params);
+void I2CTarget_Init(I2CTarget *self, I2CTargetInitType *params);
 
-void TargetDevice_DataTransferFinishedEvent(TargetDevice *self);
+void I2CTarget_DataTransferFinishedEvent(I2CTarget *self);
 
-bool TargetDevice_IsDataTransferFinished(TargetDevice *self);
+bool I2CTarget_IsDataTransferFinished(I2CTarget *self);
 
-void TargetDevice_GetFinishedDataTransfer(TargetDevice *self, bool *retIsReadType, 
+void I2CTarget_GetFinishedDataTransfer(I2CTarget *self, bool *retIsReadType, 
     uint8_t *retPtrArray, uint16_t *retLength);
 
 // place in buffer
-void TargetDevice_RequestDataTransfer(TargetDevice *self, bool readTypeTransfer, 
+void I2CTarget_RequestDataTransfer(I2CTarget *self, bool readTypeTransfer, 
     uint8_t *array, uint16_t length);
 
-void TargetDevice_DataTransferStartedEvent(TargetDevice *self);
+void I2CTarget_DataTransferStartedEvent(I2CTarget *self);
 
-bool TargetDevice_IsDataTransferPending(TargetDevice *self);
+bool I2CTarget_IsDataTransferPending(I2CTarget *self);
 
 // sets transferPending to false after calling
-void TargetDevice_GetPendingDataTransfer(TargetDevice *self, bool *retIsReadType, 
+void I2CTarget_GetPendingDataTransfer(I2CTarget *self, bool *retIsReadType, 
     uint8_t *retPtrArray, uint16_t *retLength);
 
-uint8_t TargetDevice_GetDataTransferBufferCount(TargetDevice *self);
+uint8_t I2CTarget_GetDataTransferBufferCount(I2CTarget *self);
 
-bool TargetDevice_IsDataTransferBufferFull(TargetDevice *self);
+bool I2CTarget_IsDataTransferBufferFull(I2CTarget *self);
 
-uint8_t TargetDevice_GetDataTransferBufferSize(TargetDevice *self);
+uint8_t I2CTarget_GetDataTransferBufferSize(I2CTarget *self);
 
-void TargetDevice_ClearDataTransferBuffer(TargetDevice *self);
+void I2CTarget_ClearDataTransferBuffer(I2CTarget *self);
 
-TargetDeviceState TargetDevice_GetState(TargetDevice *self);
+I2CTargetState I2CTarget_GetState(I2CTarget *self);
 
 // @todo possible callback functions
-// TargetDevice_SetTransferFinishedCallbackFunc
+// I2CTarget_SetTransferFinishedCallbackFunc
 
-#endif /* ITARGET_DEVICE_H */
+#endif /* II2C_TARGET_H */

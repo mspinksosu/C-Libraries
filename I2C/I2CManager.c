@@ -347,9 +347,6 @@ transferred? Or should I just use it as a end of data transfer report? - MS */
 void I2CManager_GetDataTransferStatus(I2CManager *self, I2CDataTransferStatus *retTransferStatus)
 {
     retTransferStatus->error = I2C_TRANSFER_ERROR_NONE; // @todo I2C error codes
-
-    /* @note cannot get current transfer type without linking to I2C manager... 
-    Maybe have the manager write to the report? - MS */
     retTransferStatus->transferType = self->currentDevice->finishedTransferReport.transferType;
     retTransferStatus->ptrArray = self->currentDevice->finishedTransferReport.ptrArray;
     retTransferStatus->sizeOfArray = self->currentDevice->finishedTransferReport.sizeOfArray;
