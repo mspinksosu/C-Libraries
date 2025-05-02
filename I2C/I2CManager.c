@@ -254,8 +254,7 @@ void I2CManager_Process(I2CManager *self)
                     {
                         I2CManager_BeginDataTransfer(self, &tempDataTransfer);
                         self->managerState = I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS;
-                        self->currentDevice->state = I2C_SLAVE_STATE_TRANSFER_IN_PROGRESS;
-                        self->currentDevice->private.transferStartedEventFlag = true;
+                        I2CTarget_DataTransferStartedEvent(self->currentDevice->i2cDevice);
                     }
                 }
                 else
@@ -268,7 +267,7 @@ void I2CManager_Process(I2CManager *self)
                 {
                     /* Get the status of the current transfer and write it to 
                     the target device */
-                    I2CManager_GenerateFinishedTransferReport(self, &tempStatusReport);
+                    I2CManager_GenerateFinishedTransferReport(self, &tempStatusReport); // @todo call new transfer finished function
                     self->currentDevice->finishedTransferReport = tempStatusReport;
                     self->currentDevice->private.transferFinishedEventFlag = true;
                     /* Check if there is more data to transfer. If there is, 
@@ -490,12 +489,12 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
             uint8_t targetAddressPlusRW = 0;
             if(self->currentDataTransfer.transferType == DATA_TRANSFER_TYPE_WRITE)
             {
-                targetAddressPlusRW = (self->currentDevice->targetAddress7Bit) << 1;
+                targetAddressPlusRW = (self->currentDevice->i2cDevice->targetAddress7Bit) << 1;
                 self->writeCount = 0;
             }
             else
             {
-                targetAddressPlusRW = ((self->currentDevice->targetAddress7Bit << 1) | 1);
+                targetAddressPlusRW = ((self->currentDevice->i2cDevice->targetAddress7Bit << 1) | 1);
                 self->readCount = 0;
             }
             I2C_TransmitByte(self->peripheral, targetAddressPlusRW);

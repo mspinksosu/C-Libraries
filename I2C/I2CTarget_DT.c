@@ -85,10 +85,9 @@ void I2CTarget_DT_CreateInitType(I2CTargetInitType_DT *params, I2CTargetInitType
 
 // *****************************************************************************
 
-void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, uint8_t targetAddress7Bit, 
+void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, 
     DataTransfer *dtArray, uint8_t arraySize)
 {
-    params->targetAddress7Bit = targetAddress7Bit;
     params->ptrToDTArray = dtArray;
     params->dtArraySize = arraySize;
 }
@@ -101,7 +100,7 @@ void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, uint8_t target
 
 void I2CTarget_DT_Init(I2CTarget_DT *self, I2CTargetInitType_DT *params)
 {
-    self->targetAddress7Bit = params->targetAddress7Bit;
+    // @todo should the sub class call the super class init function to set the address?
     self->private.state = I2C_TARGET_STATE_IDLE;
     self->private.flags.all = 0;
     DTBuffer_Init(&(self->private.dtBuffer), params->ptrToDTArray, params->dtArraySize);

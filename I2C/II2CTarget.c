@@ -46,9 +46,18 @@ void I2CTarget_Create(I2CTarget *self, void *instanceOfSubclass, I2CTargetInterf
     self->interface = interface;
 }
 
+// *****************************************************************************
+
 void I2CTarget_CreateInitType(I2CTargetInitType *params, void *instanceOfSubClass)
 {
     params->instance = instanceOfSubClass;
+}
+
+// *****************************************************************************
+
+void I2CTarget_SetAddress(I2CTargetInitType *params, uint8_t targetAddress7Bit)
+{
+    params->targetAddress7Bit = targetAddress7Bit;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
