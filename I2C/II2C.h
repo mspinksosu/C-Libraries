@@ -43,8 +43,8 @@ enum
 typedef enum I2CRoleTag
 {
     I2C_ROLE_UNKNOWN = 0,
-    I2C_ROLE_MASTER,
-    I2C_ROLE_SLAVE,
+    I2C_ROLE_CONTROLLER,
+    I2C_ROLE_TARGET,
 } I2CRole;
 
 typedef enum I2CStateTag
@@ -52,11 +52,11 @@ typedef enum I2CStateTag
     I2C_STATE_UNKNOWN = 0,
     I2C_STATE_BUS_IDLE,
     I2C_STATE_SENDING_START,
-    I2C_STATE_MASTER_TRANSMITTING,
+    I2C_STATE_CONTROLLER_TRANSMITTING,
     I2C_STATE_SENDING_REPEATED_START,
     I2C_STATE_SENDING_STOP,
-    I2C_STATE_MASTER_RECEIVING,
-    I2C_STATE_MASTER_SENDING_ACK,
+    I2C_STATE_CONTROLLER_RECEIVING,
+    I2C_STATE_CONTROLLER_SENDING_ACK,
 } I2CState;
 
 // @todo make error codes enum?
@@ -119,7 +119,7 @@ typedef struct I2CInterfaceTag
     void (*I2C_SendAck)(bool ackOrNack);
     bool (*I2C_IsBusy)(void);
     I2CState (*I2C_GetState)(void);
-    bool (*I2C_GetAckSlaveStatus)(void);
+    bool (*I2C_GetAckTargetStatus)(void);
     bool (*I2C_GetBusError)(void);
 } I2CInterface;
 
@@ -211,7 +211,7 @@ bool I2C_IsBusy(I2C *self);
 
 I2CState I2C_GetState(I2C *self);
 
-bool I2C_GetAckSlaveStatus(I2C *self);
+bool I2C_GetAckTargetStatus(I2C *self);
 
 /* @todo should I make the bus collision a state, or just an event? The bus 
 collision bit is set when a collision is detected, but has to be cleared by 

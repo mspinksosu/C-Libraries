@@ -366,11 +366,11 @@ I2CState I2C_GetState(I2C *self)
 
 // *****************************************************************************
 
-bool I2C_GetAckSlaveStatus(I2C *self)
+bool I2C_GetAckTargetStatus(I2C *self)
 {
-    if(self->interface->I2C_GetAckSlaveStatus != NULL)
+    if(self->interface->I2C_GetAckTargetStatus != NULL)
     {
-        return (self->interface->I2C_GetAckSlaveStatus)();
+        return (self->interface->I2C_GetAckTargetStatus)();
     }
     else
     {

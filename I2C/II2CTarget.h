@@ -60,12 +60,6 @@ typedef enum I2CTargetStateTag
 
 typedef struct I2CTargetInterfaceTag
 {
-    /* @note @todo Haven't decided if I want to implement this where a single 
-    DT is processed at a time (similar to UART). Or use the buffer functions. 
-    If I use the buffer functions and load multiple DT's at a time it can be 
-    useful for generating repeated starts if needed. But it does force the 
-    person using the library to implement those functions, even if it is just 
-    a buffer of size one. - MS */
     void (*I2CTarget_Init)(void *instance, void *params);
     void (*I2CTarget_DataTransferFinishedEvent)(void *instance, bool, uint8_t *, uint16_t);
     bool (*I2CTarget_IsDataTransferFinished)(void *instance);
@@ -87,7 +81,6 @@ typedef struct I2CTargetInterfaceTag
 your I2C devices initiated the callback. */
 // typedef void (*I2CTargetCallbackFunc)(I2CTarget *i2cTargetContext);
 
-/* @todo decide if I want to make this the base class or not */
 typedef struct I2CTargetTag
 {
     I2CTargetInterface *interface;
@@ -125,7 +118,8 @@ void I2CTarget_BaseInit(I2CTarget *self, uint8_t targetAddress7Bit);
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-// @follow-up should I force sub class to include arguments for base class like targetAddress7Bit? - MS
+/* @follow-up should I force sub class to include arguments for base class like 
+targetAddress7Bit? or just let them be treated as two separate things? - MS */
 void I2CTarget_Init(I2CTarget *self, I2CTargetInitType *params);
 
 void I2CTarget_DataTransferFinishedEvent(I2CTarget *self, bool readTypeTransfer, 
@@ -143,6 +137,7 @@ void I2CTarget_DataTransferStartedEvent(I2CTarget *self);
 
 bool I2CTarget_IsDataTransferStarted(I2CTarget *self);
 
+// Set return length to 0 if no data available
 void I2CTarget_ReadFromDataTransferBuffer(I2CTarget *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength);
 

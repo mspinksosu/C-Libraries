@@ -52,7 +52,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e);
 
 static void I2CManager_DevicePush(I2CTarget_Node *self, I2CTarget_Node *endOfList);
 static void I2CManager_BeginDataTransfer(I2CManager *self, DataTransfer *dtObject);
-static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CDataTransferStatus *retReport);
+static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CManagerTransferStatus *retReport);
 
 // *****************************************************************************
 
@@ -63,7 +63,7 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
     the person using the library makes sure that they call Init before AddSlave. If they accidentally 
     add all target devices, then call init, the manager list will be erased. - MS */
     // self->endOfList = NULL;
-    // self->currentDevice = NULL;
+    // self->currentNode->i2cDevice = NULL;
     self->currentDataTransfer.length = 0;
     self->writeCount = 0;
     self->readCount = 0;
@@ -101,7 +101,7 @@ void I2CManager_AddDevice(I2CManager *self, I2CTarget_Node *targetDevice)
     {
         I2CManager_DevicePush(targetDevice, self->endOfList);
     }
-    self->currentDevice = self->endOfList->next; // reset the index
+    self->currentNode = self->endOfList->next; // reset the index
 }
 
 // *****************************************************************************
@@ -110,7 +110,7 @@ void I2CManager_Process(I2CManager *self)
 {
     I2CEvent event = {0};
     DataTransfer tempDataTransfer = {0};
-    I2CDataTransferStatus tempStatusReport = {0};
+    I2CManagerTransferStatus tempStatusReport = {0};
 
     /* Check if we need to start a timer */
     if(self->fsmTimer.flags.start)
@@ -163,7 +163,7 @@ void I2CManager_Process(I2CManager *self)
         self->fsmState(self, &event);
     }
 
-    if(self->statusBits.transmitInProgress && currentPeripheralState != I2C_STATE_MASTER_TRANSMITTING)
+    if(self->statusBits.transmitInProgress && currentPeripheralState != I2C_STATE_CONTROLLER_TRANSMITTING)
     {
         /* @follow-up In my previous PIC32 library, I had a note to check that 
         the transmit register was completely empty before sending the bus idle 
@@ -178,7 +178,7 @@ void I2CManager_Process(I2CManager *self)
             self->fsmState(self, &event);
         }
     }
-    else if(self->statusBits.receiveInProgress && currentPeripheralState != I2C_STATE_MASTER_RECEIVING)
+    else if(self->statusBits.receiveInProgress && currentPeripheralState != I2C_STATE_CONTROLLER_RECEIVING)
     {
         if(I2C_IsReceiveRegisterFull(self->peripheral))
         {
@@ -218,9 +218,11 @@ void I2CManager_Process(I2CManager *self)
         event.sig = I2C_MANAGER_SIG_SEND_STOP;
         self->fsmState(self, &event);
         self->managerState = I2C_MANAGER_STATE_IDLE;
-        self->currentDevice->state = I2C_SLAVE_STATE_IDLE;
-        self->currentDevice->private.transferStartedEventFlag = false;
-        self->currentDevice->private.transferFinishedEventFlag = false;
+        /* @todo Should I make some sort of function to reset the target device's flags. 
+        Or I could just do an empty read - MS */
+        // self->currentNode->i2cDevice->state = I2C_SLAVE_STATE_IDLE;
+        // self->currentNode->i2cDevice->private.transferStartedEventFlag = false;
+        // self->currentNode->i2cDevice->private.transferFinishedEventFlag = false;
         // @todo I2CManager. Send some sort of error to notify user
         /* @todo Tested purposely breaking the I2C bus then recovering it. 
         Take this code and turn it into a function and remove dependencies 
@@ -240,40 +242,50 @@ void I2CManager_Process(I2CManager *self)
     }
 
     /* Go through list and process each targets data requests. */
-    if(self->currentDevice != NULL)
+    if(self->currentNode != NULL)
     {
-        uint8_t transferError = 1;
         switch(self->managerState)
         {
             case I2C_MANAGER_STATE_IDLE:
-                if(I2CSlave_GetDataTransferBufferCount(self->currentDevice) > 0 && 
+                if(I2CTarget_GetDataTransferBufferCount(self->currentNode->i2cDevice) > 0 && 
                     self->fsmState == I2CManager_FsmIdle)
                 {
-                    transferError = I2CSlave_ReadDataTransfer(self->currentDevice, &tempDataTransfer);
-                    if(transferError == 0)
+                    tempDataTransfer.length = 0;
+                    I2CTarget_ReadFromDataTransferBuffer(self->currentNode->i2cDevice, 
+                        &(tempDataTransfer.transferType),
+                        &(tempDataTransfer.ptrDataArray),
+                        &(tempDataTransfer.length));
+                    
+                    if(tempDataTransfer.length == 0)
                     {
                         I2CManager_BeginDataTransfer(self, &tempDataTransfer);
                         self->managerState = I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS;
-                        I2CTarget_DataTransferStartedEvent(self->currentDevice->i2cDevice);
+                        I2CTarget_DataTransferStartedEvent(self->currentNode->i2cDevice);
                     }
                 }
                 else
                 {
-                    self->currentDevice = self->currentDevice->next;
+                    self->currentNode = self->currentNode->next;
                 }
                 break;
             case I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS:
                 if(self->currentDataTransferFinished)
                 {
-                    /* Get the status of the current transfer and write it to 
-                    the target device */
-                    I2CManager_GenerateFinishedTransferReport(self, &tempStatusReport); // @todo call new transfer finished function
-                    self->currentDevice->finishedTransferReport = tempStatusReport;
-                    self->currentDevice->private.transferFinishedEventFlag = true;
+                    /* Get the report of the current transfer and write the 
+                    report to the manager. Then call the target device's 
+                    finished transfer event function to finish the transfer. */
+                    I2CManager_GenerateFinishedTransferReport(self, &tempStatusReport);
+                    self->currentNode->finishedTransferReport = tempStatusReport;
+                    
+                    I2CTarget_DataTransferFinishedEvent(self->currentNode->i2cDevice, 
+                                                       (bool)tempStatusReport.transferType, 
+                                                        tempStatusReport.ptrArray, 
+                                                        tempStatusReport.sizeOfArray);
                     /* Check if there is more data to transfer. If there is, 
                     send a repeated start event to the state machine. */
-                    if(I2CSlave_GetDataTransferBufferCount(self->currentDevice) > 0)
+                    if(I2CTarget_GetDataTransferBufferCount(self->currentNode->i2cDevice) > 0)
                     {
+                        I2CTarget_DataTransferStartedEvent(self->currentNode->i2cDevice);
                         event.sig = I2C_MANAGER_SIG_SEND_RESTART;
                         self->fsmState(self, &event);
                     }
@@ -283,8 +295,7 @@ void I2CManager_Process(I2CManager *self)
                         go to the next device. */
                         event.sig = I2C_MANAGER_SIG_SEND_STOP;
                         self->fsmState(self, &event);
-                        self->currentDevice->state = I2C_SLAVE_STATE_IDLE;
-                        self->currentDevice = self->currentDevice->next;
+                        self->currentNode = self->currentNode->next;
                     }
                     self->managerState = I2C_MANAGER_STATE_IDLE;
                 }
@@ -293,7 +304,7 @@ void I2CManager_Process(I2CManager *self)
     }
     else
     {
-        self->currentDevice = self->currentDevice->next;
+        self->currentNode = self->currentNode->next;
     }
 }
 
@@ -335,7 +346,7 @@ I2CManagerState I2CManager_GetState(I2CManager *self)
 
 void I2CManager_GetCurrentDevice(I2CManager *self, I2CTarget *retDevice)
 {
-    *retDevice = *(self->currentDevice->i2cDevice);
+    *retDevice = *(self->currentNode->i2cDevice);
 }
 
 // *****************************************************************************
@@ -343,13 +354,13 @@ void I2CManager_GetCurrentDevice(I2CManager *self, I2CTarget *retDevice)
 /* @todo not sure if/how I want to implement this yet. Should status reflect 
 on going changes during the data transfer, such as the current number of bytes
 transferred? Or should I just use it as a end of data transfer report? - MS */
-void I2CManager_GetDataTransferStatus(I2CManager *self, I2CDataTransferStatus *retTransferStatus)
+void I2CManager_GetDataTransferStatus(I2CManager *self, I2CManagerTransferStatus *retTransferStatus)
 {
     retTransferStatus->error = I2C_MANAGER_TRANSFER_ERROR_NONE; // @todo I2C error codes
-    retTransferStatus->transferType = self->currentDevice->finishedTransferReport.transferType;
-    retTransferStatus->ptrArray = self->currentDevice->finishedTransferReport.ptrArray;
-    retTransferStatus->sizeOfArray = self->currentDevice->finishedTransferReport.sizeOfArray;
-    retTransferStatus->numOfBytesTransferred = self->currentDevice->finishedTransferReport.numOfBytesTransferred;
+    retTransferStatus->transferType = self->currentNode->finishedTransferReport.transferType;
+    retTransferStatus->ptrArray = self->currentNode->finishedTransferReport.ptrArray;
+    retTransferStatus->sizeOfArray = self->currentNode->finishedTransferReport.sizeOfArray;
+    retTransferStatus->numOfBytesTransferred = self->currentNode->finishedTransferReport.numOfBytesTransferred;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -384,7 +395,7 @@ static void I2CManager_BeginDataTransfer(I2CManager *self, DataTransfer *dtObjec
 
 // *****************************************************************************
 
-static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CDataTransferStatus *retReport)
+static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CManagerTransferStatus *retReport)
 {
     retReport->error = I2C_MANAGER_TRANSFER_ERROR_NONE; // @todo I2C error codes
 
@@ -489,12 +500,12 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
             uint8_t targetAddressPlusRW = 0;
             if(self->currentDataTransfer.transferType == DATA_TRANSFER_TYPE_WRITE)
             {
-                targetAddressPlusRW = (self->currentDevice->i2cDevice->targetAddress7Bit) << 1;
+                targetAddressPlusRW = (self->currentNode->i2cDevice->targetAddress7Bit) << 1;
                 self->writeCount = 0;
             }
             else
             {
-                targetAddressPlusRW = ((self->currentDevice->i2cDevice->targetAddress7Bit << 1) | 1);
+                targetAddressPlusRW = ((self->currentNode->i2cDevice->targetAddress7Bit << 1) | 1);
                 self->readCount = 0;
             }
             I2C_TransmitByte(self->peripheral, targetAddressPlusRW);

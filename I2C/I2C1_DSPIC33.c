@@ -71,7 +71,7 @@ I2CInterface I2C1_FunctionTable = {
     .I2C_SendAck = I2C1_SendAck,
     .I2C_IsBusy = I2C1_IsBusy,
     .I2C_GetState = I2C1_GetState,
-    .I2C_GetAckSlaveStatus = I2C1_GetAckSlaveStatus,
+    .I2C_GetAckTargetStatus = I2C1_GetAckTargetStatus,
     .I2C_GetBusError = I2C1_GetBusError,
 };
 
@@ -326,9 +326,9 @@ I2CState I2C1_GetState(void)
     uint8_t enableBits = I2CxCON & 0x001F;
 
     if(enableBits == 0x10) // ACKEN
-        retState = I2C_STATE_MASTER_SENDING_ACK;
+        retState = I2C_STATE_CONTROLLER_SENDING_ACK;
     else if(enableBits == 0x08) // RCEN
-        retState = I2C_STATE_MASTER_RECEIVING;
+        retState = I2C_STATE_CONTROLLER_RECEIVING;
     else if(enableBits == 0x04) // PEN
         retState = I2C_STATE_SENDING_STOP;
     else if(enableBits == 0x02) // RSEN
@@ -338,7 +338,7 @@ I2CState I2C1_GetState(void)
     else if(enableBits == 0x00)
     {
         if(I2CxSTATbits.TRSTAT)
-            retState = I2C_STATE_MASTER_TRANSMITTING;
+            retState = I2C_STATE_CONTROLLER_TRANSMITTING;
         else
             retState = I2C_STATE_BUS_IDLE;
     }
@@ -348,7 +348,7 @@ I2CState I2C1_GetState(void)
 
 // *****************************************************************************
 
-bool I2C1_GetAckSlaveStatus(void)
+bool I2C1_GetAckTargetStatus(void)
 {
     if(I2CxSTATbits.ACKSTAT)
         return false; // 1 = ack was not received (NACK)

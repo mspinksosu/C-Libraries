@@ -48,10 +48,9 @@ typedef struct I2CTarget_DTTag
         DTBuffer dtBuffer;
         union {
             struct {
-                unsigned transferPending        :1;
                 unsigned transferStarted        :1;
                 unsigned transferFinished       :1;
-                unsigned                        :5;
+                unsigned                        :6;
             };
             uint8_t all;
         } flags;
@@ -145,5 +144,7 @@ uint8_t I2CTarget_DT_GetDataTransferBufferSize(I2CTarget_DT *self);
 void I2CTarget_DT_ClearDataTransferBuffer(I2CTarget_DT *self);
 
 I2CTargetState I2CTarget_DT_GetState(I2CTarget_DT *self);
+
+// @todo add function to set state? @todo add function to reset started/finished flags?
 
 #endif /* I2CTARGET_H */

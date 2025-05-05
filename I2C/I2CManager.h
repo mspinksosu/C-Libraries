@@ -55,7 +55,7 @@ typedef enum I2CManagerTransferErrorTag
 } I2CManagerTransferError;
 
 /* @todo not sure if I want to include state in status report */
-typedef struct I2CDataTransferStatusTag
+typedef struct I2CManagerTransferStatusTag
 {
     I2CManagerTransferError error;
     // I2CTransferState state;
@@ -63,7 +63,7 @@ typedef struct I2CDataTransferStatusTag
     uint8_t *ptrArray;
     uint16_t sizeOfArray;
     uint16_t numOfBytesTransferred;
-} I2CDataTransferStatus;
+} I2CManagerTransferStatus;
 
 typedef struct I2CTarget_NodeTag I2CTarget_Node;
 
@@ -72,7 +72,7 @@ struct I2CTarget_NodeTag
     I2CTarget_Node *next;
     I2CTarget *i2cDevice;
 
-    I2CDataTransferStatus finishedTransferReport;
+    I2CManagerTransferStatus finishedTransferReport;
 };
 
 // @todo decided if I want to use a manager state or keep status bits
@@ -144,7 +144,7 @@ struct I2CManagerTag
 {
     I2C *peripheral;
     I2CTarget_Node *endOfList; // circular linked list
-    I2CTarget_Node *currentDevice;
+    I2CTarget_Node *currentNode;
     DataTransfer currentDataTransfer;
     bool currentDataTransferFinished;
     uint16_t writeCount;
@@ -197,6 +197,6 @@ I2CManagerState I2CManager_GetState(I2CManager *self);
 
 void I2CManager_GetCurrentDevice(I2CManager *self, I2CTarget *retDevice);
 
-void I2CManager_GetDataTransferStatus(I2CManager *self, I2CDataTransferStatus *retTransferStatus); // @todo transfer status
+void I2CManager_GetDataTransferStatus(I2CManager *self, I2CManagerTransferStatus *retTransferStatus); // @todo transfer status
 
 #endif /* I2C_MANAGER_H */
