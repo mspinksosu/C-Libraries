@@ -61,6 +61,7 @@ typedef struct I2CTarget_DTTag
 typedef struct I2CTargetInitType_DTTag
 {
     I2CTargetInitType *super; // include the base class first
+    uint8_t targetAddress7Bit; // 7-bit address, right justified
     DataTransfer *ptrToDTArray;
     uint8_t dtArraySize;
 } I2CTargetInitType_DT;
@@ -102,7 +103,7 @@ void I2CTarget_DT_CreateInitType(I2CTargetInitType_DT *self, I2CTargetInitType *
  * @param dtArray 
  * @param arraySize 
  */
-void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, 
+void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, uint8_t targetAddress7Bit, 
     DataTransfer *dtArray, uint8_t arraySize);
 
 ////////////////////////////////////////////////////////////////////////////////

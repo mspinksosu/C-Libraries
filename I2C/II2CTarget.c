@@ -55,9 +55,9 @@ void I2CTarget_CreateInitType(I2CTargetInitType *params, void *instanceOfSubClas
 
 // *****************************************************************************
 
-void I2CTarget_SetAddress(I2CTargetInitType *params, uint8_t targetAddress7Bit)
+void I2CTarget_BaseInit(I2CTarget *self, uint8_t targetAddress7Bit)
 {
-    params->targetAddress7Bit = targetAddress7Bit;
+    self->targetAddress7Bit = targetAddress7Bit;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

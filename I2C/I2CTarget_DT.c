@@ -83,24 +83,27 @@ void I2CTarget_DT_CreateInitType(I2CTargetInitType_DT *params, I2CTargetInitType
     I2CTarget_CreateInitType(base, params);
 }
 
-// *****************************************************************************
-
-void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, 
-    DataTransfer *dtArray, uint8_t arraySize)
-{
-    params->ptrToDTArray = dtArray;
-    params->dtArraySize = arraySize;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // ***** Interface Functions *************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, uint8_t targetAddress7Bit, 
+    DataTransfer *dtArray, uint8_t arraySize)
+{
+    params->targetAddress7Bit = targetAddress7Bit;
+    params->ptrToDTArray = dtArray;
+    params->dtArraySize = arraySize;
+}
+
+// *****************************************************************************
+
 void I2CTarget_DT_Init(I2CTarget_DT *self, I2CTargetInitType_DT *params)
 {
-    // @todo should the sub class call the super class init function to set the address?
+    // Call the base initialization
+    I2CTarget_BaseInit(self->super, params->targetAddress7Bit);
+    // Now finish setting up the buffer
     self->private.state = I2C_TARGET_STATE_IDLE;
     self->private.flags.all = 0;
     DTBuffer_Init(&(self->private.dtBuffer), params->ptrToDTArray, params->dtArraySize);

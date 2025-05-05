@@ -97,7 +97,6 @@ typedef struct I2CTargetTag
 
 typedef struct I2CTargetInitTypeTage
 {
-    uint8_t targetAddress7Bit; // 7-bit address, right justified
     void *instance;
 } I2CTargetInitType;
 
@@ -118,7 +117,7 @@ void I2CTarget_Create(I2CTarget *self, void *instanceOfSubclass, I2CTargetInterf
 
 void I2CTarget_CreateInitType(I2CTargetInitType *params, void *instanceOfSubClass);
 
-void I2CTarget_SetAddress(I2CTargetInitType *params, uint8_t targetAddress7Bit);
+void I2CTarget_BaseInit(I2CTarget *self, uint8_t targetAddress7Bit);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -126,8 +125,7 @@ void I2CTarget_SetAddress(I2CTargetInitType *params, uint8_t targetAddress7Bit);
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-// @todo add 7 bit address
-
+// @follow-up should I force sub class to include arguments for base class like targetAddress7Bit? - MS
 void I2CTarget_Init(I2CTarget *self, I2CTargetInitType *params);
 
 void I2CTarget_DataTransferFinishedEvent(I2CTarget *self, bool readTypeTransfer, 
