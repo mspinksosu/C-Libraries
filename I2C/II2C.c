@@ -47,7 +47,7 @@ void I2C_Create(I2C *self, I2CInterface *interface)
 
 void I2C_SetInitTypeToDefaultParams(I2CInitType *params)
 {
-    params->role = I2C_ROLE_MASTER;
+    params->role = I2C_ROLE_CONTROLLER;
     params->useRxInterrupt = false;
     params->useTxInterrupt = false;
 }

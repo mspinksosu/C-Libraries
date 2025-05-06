@@ -50,7 +50,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e);
 
 // ***** Static Function Prototypes ********************************************
 
-static void I2CManager_DevicePush(I2CTarget_Node *self, I2CTarget_Node *endOfList);
+static void I2CManager_DevicePush(I2CManager_Node *self, I2CManager_Node *endOfList);
 static void I2CManager_BeginDataTransfer(I2CManager *self, DataTransfer *dtObject);
 static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CManagerTransferStatus *retReport);
 
@@ -86,12 +86,19 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
 
 // *****************************************************************************
 
-void I2CManager_AddDevice(I2CManager *self, I2CTarget_Node *targetDevice)
+void I2CManager_SetDeviceTarget(I2CManager_Node *device, I2CTarget *target)
+{
+    device->i2cDevice = target;
+}
+
+// *****************************************************************************
+
+void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device)
 {
     if(self->endOfList == NULL)
     {
         /* Begin with a new list */
-        self->endOfList = targetDevice;
+        self->endOfList = device;
 
         /* Since the list only contains one entry, the "next" pointer will
         also point to itself */
@@ -99,7 +106,7 @@ void I2CManager_AddDevice(I2CManager *self, I2CTarget_Node *targetDevice)
     }
     else
     {
-        I2CManager_DevicePush(targetDevice, self->endOfList);
+        I2CManager_DevicePush(device, self->endOfList);
     }
     self->currentNode = self->endOfList->next; // reset the index
 }
@@ -369,7 +376,7 @@ void I2CManager_GetDataTransferStatus(I2CManager *self, I2CManagerTransferStatus
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-static void I2CManager_DevicePush(I2CTarget_Node *self, I2CTarget_Node *endOfList)
+static void I2CManager_DevicePush(I2CManager_Node *self, I2CManager_Node *endOfList)
 {
     /* Add the new entry to the beginning of the list. Make the "next" pointer
     point to the head */

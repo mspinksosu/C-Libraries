@@ -118,8 +118,7 @@ void I2CTarget_BaseInit(I2CTarget *self, uint8_t targetAddress7Bit);
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/* @follow-up should I force sub class to include arguments for base class like 
-targetAddress7Bit? or just let them be treated as two separate things? - MS */
+// @note make sure this function initializes the base class
 void I2CTarget_Init(I2CTarget *self, I2CTargetInitType *params);
 
 void I2CTarget_DataTransferFinishedEvent(I2CTarget *self, bool readTypeTransfer, 

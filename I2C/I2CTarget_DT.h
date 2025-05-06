@@ -103,7 +103,7 @@ void I2CTarget_DT_CreateInitType(I2CTargetInitType_DT *self, I2CTargetInitType *
  * @param arraySize 
  */
 void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, uint8_t targetAddress7Bit, 
-    DataTransfer *dtArray, uint8_t arraySize);
+    DataTransfer *dtArray, uint8_t dtArraySize);
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //

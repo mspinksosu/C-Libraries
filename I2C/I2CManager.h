@@ -65,11 +65,11 @@ typedef struct I2CManagerTransferStatusTag
     uint16_t numOfBytesTransferred;
 } I2CManagerTransferStatus;
 
-typedef struct I2CTarget_NodeTag I2CTarget_Node;
+typedef struct I2CManager_NodeTag I2CManager_Node;
 
-struct I2CTarget_NodeTag
+struct I2CManager_NodeTag
 {
-    I2CTarget_Node *next;
+    I2CManager_Node *next;
     I2CTarget *i2cDevice;
 
     I2CManagerTransferStatus finishedTransferReport;
@@ -143,8 +143,8 @@ typedef void (*I2CFSMState)(I2CManager *self, I2CEvent *e);
 struct I2CManagerTag
 {
     I2C *peripheral;
-    I2CTarget_Node *endOfList; // circular linked list
-    I2CTarget_Node *currentNode;
+    I2CManager_Node *endOfList; // circular linked list
+    I2CManager_Node *currentNode;
     DataTransfer currentDataTransfer;
     bool currentDataTransferFinished;
     uint16_t writeCount;
@@ -179,9 +179,9 @@ struct I2CManagerTag
 
 void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs);
 
-// @todo add function to set pointer in node object to I2C target device
+void I2CManager_SetDeviceTarget(I2CManager_Node *device, I2CTarget *target);
 
-void I2CManager_AddDevice(I2CManager *self, I2CTarget_Node *target);
+void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device);
 
 // @todo add remove device function
 

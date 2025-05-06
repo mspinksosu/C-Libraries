@@ -90,11 +90,11 @@ void I2CTarget_DT_CreateInitType(I2CTargetInitType_DT *params, I2CTargetInitType
 ////////////////////////////////////////////////////////////////////////////////
 
 void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, uint8_t targetAddress7Bit, 
-    DataTransfer *dtArray, uint8_t arraySize)
+    DataTransfer *dtArray, uint8_t dtArraySize)
 {
     params->targetAddress7Bit = targetAddress7Bit;
     params->ptrToDTArray = dtArray;
-    params->dtArraySize = arraySize;
+    params->dtArraySize = dtArraySize;
 }
 
 // *****************************************************************************
@@ -244,7 +244,7 @@ void I2CTarget_DT_ClearDataTransferBuffer(I2CTarget_DT *self)
 
 I2CTargetState I2CTarget_DT_GetState(I2CTarget_DT *self)
 {
-
+    return self->private.state;
 }
 
 /*
