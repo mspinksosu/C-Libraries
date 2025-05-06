@@ -60,7 +60,7 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
 {
     self->peripheral = peripheral;
     /* @follow-up Should init always clear the list by setting the pointers to NULL? This would require that 
-    the person using the library makes sure that they call Init before AddSlave. If they accidentally 
+    the person using the library makes sure that they call Init before AddDevice. If they accidentally 
     add all target devices, then call init, the manager list will be erased. - MS */
     // self->endOfList = NULL;
     // self->currentNode->i2cDevice = NULL;
@@ -225,9 +225,9 @@ void I2CManager_Process(I2CManager *self)
         event.sig = I2C_MANAGER_SIG_SEND_STOP;
         self->fsmState(self, &event);
         self->managerState = I2C_MANAGER_STATE_IDLE;
-        /* @todo Should I make some sort of function to reset the target device's flags. 
-        Or I could just do an empty read - MS */
-        // self->currentNode->i2cDevice->state = I2C_SLAVE_STATE_IDLE;
+        /* @todo Should I make some sort of function to reset the target device's flags?
+        Or maybe I could just do an empty read - MS */
+        // self->currentNode->i2cDevice->state = I2C_TARGET_STATE_IDLE;
         // self->currentNode->i2cDevice->private.transferStartedEventFlag = false;
         // self->currentNode->i2cDevice->private.transferFinishedEventFlag = false;
         // @todo I2CManager. Send some sort of error to notify user
@@ -529,7 +529,7 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
             self->fsmRepeatCount = 0;
             break;
         case I2C_MANAGER_SIG_BUS_IDLE_EVENT:
-            if(I2C_GetAckSlaveStatus(self->peripheral))
+            if(I2C_GetAckTargetStatus(self->peripheral))
             {
                 /* Address acknowledged. Perform our exit action, 
                 then transition to next state. */
@@ -603,7 +603,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
         case I2C_MANAGER_SIG_BUS_IDLE_EVENT:
             if(self->currentDataTransfer.transferType == DATA_TRANSFER_TYPE_WRITE)
             {
-                if(I2C_GetAckSlaveStatus(self->peripheral))
+                if(I2C_GetAckTargetStatus(self->peripheral))
                 {
                     /* Data acknowledged. Check if there are more bytes to send */
                     self->writeCount++;

@@ -137,7 +137,7 @@ uint8_t I2CTarget_DT_GetDataTransferBufferCount(I2CTarget_DT *self);
 
 bool I2CTarget_DT_IsDataTransferBufferFull(I2CTarget_DT *self);
 
-bool I2CTarget_DT_IsDataTransferBufferNotEmpty(I2CTarget *self);
+bool I2CTarget_DT_IsDataTransferBufferNotEmpty(I2CTarget_DT *self);
 
 uint8_t I2CTarget_DT_GetDataTransferBufferSize(I2CTarget_DT *self);
 

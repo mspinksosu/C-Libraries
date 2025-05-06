@@ -51,7 +51,7 @@ void DTBuffer_WriteDataTransfer(DTBuffer *self, DataTransferType writeOrRead, ui
     {
         // There is space in the buffer
         self->private.buffer[self->private.head].transferType = writeOrRead;
-        self->private.buffer[self->private.head].dataArray = dataArray;
+        self->private.buffer[self->private.head].ptrDataArray = dataArray;
         self->private.buffer[self->private.head].length = length;
         self->private.head = tempHead;
         self->count++;
