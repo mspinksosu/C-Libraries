@@ -152,6 +152,10 @@ void I2CTarget_ClearDataTransferBuffer(I2CTarget *self);
 
 I2CTargetState I2CTarget_GetState(I2CTarget *self);
 
+/* @todo Should I include error as a state or just have a flag? It isn't really 
+used right now. Make a function to get error (implementation based) and clear 
+state? - MS */
+
 // @todo possible callback functions
 // I2CTarget_SetTransferFinishedCallbackFunc
 

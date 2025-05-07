@@ -141,10 +141,7 @@ void I2CManager_Process(I2CManager *self)
 
     /* Check for I2C events */
     I2CState currentPeripheralState = I2C_GetState(self->peripheral);
-    /* @todo Decide if I want to keep the old status bits code or replace it 
-    with just the state. I could keep the status bits and make sure the events 
-    are explicit. Or just make a simple check if the previous state was not 
-    equal to the current state. */
+
     if(self->statusBits.sendingStart && currentPeripheralState == I2C_STATE_BUS_IDLE)
     {
         self->statusBits.sendingStart = 0;
@@ -263,7 +260,7 @@ void I2CManager_Process(I2CManager *self)
                         &(tempDataTransfer.ptrDataArray),
                         &(tempDataTransfer.length));
                     
-                    if(tempDataTransfer.length == 0)
+                    if(tempDataTransfer.length > 0)
                     {
                         I2CManager_BeginDataTransfer(self, &tempDataTransfer);
                         self->managerState = I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS;

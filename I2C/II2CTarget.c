@@ -117,12 +117,12 @@ void I2CTarget_GetFinishedDataTransfer(I2CTarget *self, bool *retIsReadType,
 // *****************************************************************************
 
 void I2CTarget_WriteToDataTransferBuffer(I2CTarget *self, bool readTypeTransfer, 
-    uint8_t *array, uint16_t length)
+    uint8_t *dataArray, uint16_t length)
 {
     if(self->interface->I2CTarget_WriteToDataTransferBuffer != NULL && self->instance != NULL)
     {
         (self->interface->I2CTarget_WriteToDataTransferBuffer)(self->instance, 
-            readTypeTransfer, array, length);
+            readTypeTransfer, dataArray, length);
     }
 }
 

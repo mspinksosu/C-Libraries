@@ -145,11 +145,12 @@ receive register in order to clear the rx flag. - MS */
 void I2CTarget_DT_GetFinishedDataTransfer(I2CTarget_DT *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength)
 {
-    if(self->finishedTransfer.transferType = DATA_TRANSFER_TYPE_READ)
+    if(self->finishedTransfer.transferType == DATA_TRANSFER_TYPE_READ)
         *retIsReadType = true;
     else
         *retIsReadType = false;
-    *retPtrArray = self->finishedTransfer.ptrDataArray;
+    /* Change the value of the pointer to point to the new address */
+    (*retPtrArray) = self->finishedTransfer.ptrDataArray;
     *retLength = self->finishedTransfer.length;
 
     // @todo clear finished flag here?
@@ -196,11 +197,12 @@ void I2CTarget_DT_ReadFromDataTransferBuffer(I2CTarget_DT *self, bool *retIsRead
     uint8_t error = DTBuffer_ReadDataTransfer(&(self->private.dtBuffer), &retDataTransfer);
     if(error == 0)
     {
-        if(retDataTransfer.transferType = DATA_TRANSFER_TYPE_READ)
+        if(retDataTransfer.transferType == DATA_TRANSFER_TYPE_READ)
             *retIsReadType = true;
         else
             *retIsReadType = false;
-        *retPtrArray = retDataTransfer.ptrDataArray;
+        /* Change the value of the pointer to point to the new address */
+        (*retPtrArray) = retDataTransfer.ptrDataArray;
         *retLength = retDataTransfer.length;
     }
 }
