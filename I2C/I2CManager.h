@@ -27,7 +27,6 @@
 #ifndef I2C_MANAGER_H
 #define I2C_MANAGER_H
 
-#include "DataTransfer.h"
 #include "II2CTarget.h"
 #include "II2C.h"
 
@@ -59,7 +58,7 @@ typedef struct I2CManagerTransferStatusTag
 {
     I2CManagerTransferError error;
     // I2CTransferState state;
-    DataTransferType transferType;
+    bool isReadType;
     uint8_t *ptrArray;
     uint16_t sizeOfArray;
     uint16_t numOfBytesTransferred;
@@ -69,10 +68,8 @@ typedef struct I2CManager_NodeTag I2CManager_Node;
 
 struct I2CManager_NodeTag
 {
-    I2CManager_Node *next;
     I2CTarget *i2cDevice;
-
-    I2CManagerTransferStatus finishedTransferReport;
+    I2CManager_Node *next;
 };
 
 // @todo decided if I want to use a manager state or keep status bits
@@ -145,10 +142,17 @@ struct I2CManagerTag
     I2C *peripheral;
     I2CManager_Node *endOfList; // circular linked list
     I2CManager_Node *currentNode;
-    DataTransfer currentDataTransfer;
+
+    struct {
+        bool isReadType;
+        uint8_t *ptrDataArray;
+        uint16_t length;
+    } currentDataTransfer;
+
     bool currentDataTransferFinished;
     uint16_t writeCount;
     uint16_t readCount;
+    I2CManagerTransferStatus finishedTransferReport;
 
     I2CFSMState fsmState;
     I2CTimer fsmTimer;
@@ -179,9 +183,7 @@ struct I2CManagerTag
 
 void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs);
 
-void I2CManager_SetDeviceTarget(I2CManager_Node *device, I2CTarget *target);
-
-void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device);
+void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device, I2CTarget *target);
 
 // @todo add remove device function
 
@@ -198,5 +200,7 @@ I2CManagerState I2CManager_GetState(I2CManager *self);
 void I2CManager_GetCurrentDevice(I2CManager *self, I2CTarget *retDevice);
 
 void I2CManager_GetDataTransferStatus(I2CManager *self, I2CManagerTransferStatus *retTransferStatus); // @todo transfer status
+
+void I2CManager_RemoveDevice(I2CManager *self, I2CManager_Node *device);
 
 #endif /* I2C_MANAGER_H */

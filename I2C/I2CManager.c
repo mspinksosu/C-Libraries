@@ -21,6 +21,7 @@
  ******************************************************************************/
 
 #include "I2CManager.h"
+#include "DataTransfer.h"
 #include <stddef.h> // needed for NULL
 
 // ***** Defines ***************************************************************
@@ -51,6 +52,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e);
 // ***** Static Function Prototypes ********************************************
 
 static void I2CManager_DevicePush(I2CManager_Node *self, I2CManager_Node *endOfList);
+static void I2CManager_DeviceDelete(I2CManager_Node *key, I2CManager_Node *endOfList);
 static void I2CManager_BeginDataTransfer(I2CManager *self, DataTransfer *dtObject);
 static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CManagerTransferStatus *retReport);
 
@@ -86,15 +88,12 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
 
 // *****************************************************************************
 
-void I2CManager_SetDeviceTarget(I2CManager_Node *device, I2CTarget *target)
+void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device, I2CTarget *target)
 {
+    /* Combine the I2C target with the node */
     device->i2cDevice = target;
-}
 
-// *****************************************************************************
-
-void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device)
-{
+    /* Now add the node to the list */
     if(self->endOfList == NULL)
     {
         /* Begin with a new list */
@@ -109,6 +108,15 @@ void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device)
         I2CManager_DevicePush(device, self->endOfList);
     }
     self->currentNode = self->endOfList->next; // reset the index
+}
+
+// @todo Test experimental code
+void I2CManager_RemoveDevice(I2CManager *self, I2CManager_Node *device)
+{
+    if(device != NULL)
+    {
+        I2CManager_DeviceDelete(device, self->endOfList);
+    }
 }
 
 // *****************************************************************************
@@ -279,10 +287,10 @@ void I2CManager_Process(I2CManager *self)
                     report to the manager. Then call the target device's 
                     finished transfer event function to finish the transfer. */
                     I2CManager_GenerateFinishedTransferReport(self, &tempStatusReport);
-                    self->currentNode->finishedTransferReport = tempStatusReport;
+                    self->finishedTransferReport = tempStatusReport;
                     
                     I2CTarget_DataTransferFinishedEvent(self->currentNode->i2cDevice, 
-                                                       (bool)tempStatusReport.transferType, 
+                                                        tempStatusReport.isReadType, 
                                                         tempStatusReport.ptrArray, 
                                                         tempStatusReport.sizeOfArray);
                     /* Check if there is more data to transfer. If there is, 
@@ -361,10 +369,10 @@ transferred? Or should I just use it as a end of data transfer report? - MS */
 void I2CManager_GetDataTransferStatus(I2CManager *self, I2CManagerTransferStatus *retTransferStatus)
 {
     retTransferStatus->error = I2C_MANAGER_TRANSFER_ERROR_NONE; // @todo I2C error codes
-    retTransferStatus->transferType = self->currentNode->finishedTransferReport.transferType;
-    retTransferStatus->ptrArray = self->currentNode->finishedTransferReport.ptrArray;
-    retTransferStatus->sizeOfArray = self->currentNode->finishedTransferReport.sizeOfArray;
-    retTransferStatus->numOfBytesTransferred = self->currentNode->finishedTransferReport.numOfBytesTransferred;
+    retTransferStatus->isReadType = self->finishedTransferReport.isReadType;
+    retTransferStatus->ptrArray = self->finishedTransferReport.ptrArray;
+    retTransferStatus->sizeOfArray = self->finishedTransferReport.sizeOfArray;
+    retTransferStatus->numOfBytesTransferred = self->finishedTransferReport.numOfBytesTransferred;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -381,6 +389,35 @@ static void I2CManager_DevicePush(I2CManager_Node *self, I2CManager_Node *endOfL
     /* Update the beginning of the list to point to the new beginning */
     endOfList->next = self;
 }
+// *****************************************************************************
+
+static void I2CManager_DeviceDelete(I2CManager_Node *key, I2CManager_Node *endOfList)
+{
+    if(endOfList == NULL)
+        return;
+
+    /* Store the beginning of the list in a temporary variable */
+    I2CManager_Node *prev = endOfList, *temp = endOfList->next;
+
+    while(temp != endOfList && temp->i2cDevice != key)
+    {
+        prev = temp;
+        temp = temp->next;
+    }
+
+    /* Make the previous entry point to the one after the next entry. 
+    Check if the key was at the end of the list and update the endOfList 
+    pointer if needed. */
+    if(temp->i2cDevice == key)
+    {
+        if(temp->next == prev->next) // list size 1
+            endOfList == NULL;
+        else if(temp == endOfList)
+            endOfList = prev;
+
+        prev->next = temp->next;
+    }
+}
 
 // *****************************************************************************
 
@@ -390,7 +427,13 @@ static void I2CManager_BeginDataTransfer(I2CManager *self, DataTransfer *dtObjec
         return;
 
     /* Copy the data over to our temporary transfer buffer */
-    self->currentDataTransfer = *dtObject;
+    if(dtObject->transferType == DATA_TRANSFER_TYPE_READ)
+        self->currentDataTransfer.isReadType = true;
+    else
+        self->currentDataTransfer.isReadType = false;
+    self->currentDataTransfer.ptrDataArray = dtObject->ptrDataArray;
+    self->currentDataTransfer.length = dtObject->length;
+    /* Begin data transfer */
     self->currentDataTransferFinished = false;
     I2CEvent event = {0}; // create an event to give to the state machine
     event.sig = I2C_MANAGER_SIG_BEGIN_TRANSFER;
@@ -403,13 +446,13 @@ static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CManag
 {
     retReport->error = I2C_MANAGER_TRANSFER_ERROR_NONE; // @todo I2C error codes
 
-    retReport->transferType = self->currentDataTransfer.transferType;
+    retReport->isReadType = self->currentDataTransfer.isReadType;
     retReport->ptrArray = self->currentDataTransfer.ptrDataArray;
     retReport->sizeOfArray = self->currentDataTransfer.length;
-    if(retReport->transferType == DATA_TRANSFER_TYPE_WRITE)
-        retReport->numOfBytesTransferred = self->writeCount;
-    else
+    if(retReport->isReadType == true)
         retReport->numOfBytesTransferred = self->readCount;
+    else
+        retReport->numOfBytesTransferred = self->writeCount;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -502,7 +545,7 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
         {
             /* Prepare to write or read data */
             uint8_t targetAddressPlusRW = 0;
-            if(self->currentDataTransfer.transferType == DATA_TRANSFER_TYPE_WRITE)
+            if(self->currentDataTransfer.isReadType == false)
             {
                 targetAddressPlusRW = (self->currentNode->i2cDevice->targetAddress7Bit) << 1;
                 self->writeCount = 0;
@@ -532,7 +575,7 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
                 then transition to next state. */
                 e->sig = I2C_MANAGER_SIG_EXIT;
                 self->fsmState(self, e);
-                if(self->currentDataTransfer.transferType == DATA_TRANSFER_TYPE_READ)
+                if(self->currentDataTransfer.isReadType == true)
                 {
                     /* Prepare to receive byte */
                     self->readCount = 0;
@@ -598,7 +641,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
             self->fsmRepeatCount = 0;
             break;
         case I2C_MANAGER_SIG_BUS_IDLE_EVENT:
-            if(self->currentDataTransfer.transferType == DATA_TRANSFER_TYPE_WRITE)
+            if(self->currentDataTransfer.isReadType == false)
             {
                 if(I2C_GetAckTargetStatus(self->peripheral))
                 {
@@ -685,7 +728,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
             self->fsmRepeatCount = 0;
             break;
         case I2C_MANAGER_SIG_DATA_RECEIVED:
-            if(self->currentDataTransfer.transferType == DATA_TRANSFER_TYPE_READ) // @follow-up is this extra check needed? - MS
+            if(self->currentDataTransfer.isReadType == true) // @follow-up is this extra check needed? - MS
             {
                 self->currentDataTransfer.ptrDataArray[self->readCount++] = I2C_GetReceivedByte(self->peripheral);
                 if(self->readCount < self->currentDataTransfer.length)
