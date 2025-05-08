@@ -51,8 +51,8 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e);
 
 // ***** Static Function Prototypes ********************************************
 
-static void I2CManager_DevicePush(I2CManager_Node *self, I2CManager_Node *endOfList);
-static void I2CManager_DeviceDelete(I2CManager_Node *key, I2CManager_Node *endOfList);
+static void I2CManager_PushNode(I2CManager_Node *self, I2CManager_Node *endOfList);
+static void I2CManager_DeleteNode(I2CManager_Node *key, I2CManager_Node *endOfList);
 static void I2CManager_BeginDataTransfer(I2CManager *self, DataTransfer *dtObject);
 static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CManagerTransferStatus *retReport);
 
@@ -105,18 +105,20 @@ void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device, I2CTarget *
     }
     else
     {
-        I2CManager_DevicePush(device, self->endOfList);
+        I2CManager_PushNode(device, self->endOfList);
     }
     self->currentNode = self->endOfList->next; // reset the index
 }
 
-// @todo Test experimental code
+// *****************************************************************************
+
 void I2CManager_RemoveDevice(I2CManager *self, I2CManager_Node *device)
 {
     if(device != NULL)
     {
-        I2CManager_DeviceDelete(device, self->endOfList);
+        I2CManager_DeleteNode(device, self->endOfList);
     }
+    self->currentNode = self->endOfList->next; // reset the index
 }
 
 // *****************************************************************************
@@ -264,10 +266,10 @@ void I2CManager_Process(I2CManager *self)
                 {
                     tempDataTransfer.length = 0;
                     I2CTarget_ReadFromDataTransferBuffer(self->currentNode->i2cDevice, 
-                        &(tempDataTransfer.transferType),
+                        (bool*)&(tempDataTransfer.transferType),
                         &(tempDataTransfer.ptrDataArray),
                         &(tempDataTransfer.length));
-                    
+
                     if(tempDataTransfer.length > 0)
                     {
                         I2CManager_BeginDataTransfer(self, &tempDataTransfer);
@@ -311,6 +313,12 @@ void I2CManager_Process(I2CManager *self)
                     }
                     self->managerState = I2C_MANAGER_STATE_IDLE;
                 }
+                break;
+            case I2C_MANAGER_STATE_ERROR:
+                /* @todo decide if I actually want this to be a state or not */
+                event.sig = I2C_MANAGER_SIG_SEND_STOP;
+                self->fsmState(self, &event);
+                self->managerState = I2C_MANAGER_STATE_IDLE;
                 break;
         }
     }
@@ -381,7 +389,7 @@ void I2CManager_GetDataTransferStatus(I2CManager *self, I2CManagerTransferStatus
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-static void I2CManager_DevicePush(I2CManager_Node *self, I2CManager_Node *endOfList)
+static void I2CManager_PushNode(I2CManager_Node *self, I2CManager_Node *endOfList)
 {
     /* Add the new entry to the beginning of the list. Make the "next" pointer
     point to the head */
@@ -391,15 +399,16 @@ static void I2CManager_DevicePush(I2CManager_Node *self, I2CManager_Node *endOfL
 }
 // *****************************************************************************
 
-static void I2CManager_DeviceDelete(I2CManager_Node *key, I2CManager_Node *endOfList)
+static void I2CManager_DeleteNode(I2CManager_Node *node, I2CManager_Node *endOfList)
 {
     if(endOfList == NULL)
         return;
 
-    /* Store the beginning of the list in a temporary variable */
+    /* Store the beginning of the list in a temporary variable. Keep track of 
+    previous entry in order to update nodes on either side of the key item. */
     I2CManager_Node *prev = endOfList, *temp = endOfList->next;
 
-    while(temp != endOfList && temp->i2cDevice != key)
+    while(temp != endOfList && temp != node)
     {
         prev = temp;
         temp = temp->next;
@@ -408,10 +417,10 @@ static void I2CManager_DeviceDelete(I2CManager_Node *key, I2CManager_Node *endOf
     /* Make the previous entry point to the one after the next entry. 
     Check if the key was at the end of the list and update the endOfList 
     pointer if needed. */
-    if(temp->i2cDevice == key)
+    if(temp == node)
     {
         if(temp->next == prev->next) // list size 1
-            endOfList == NULL;
+            endOfList = NULL;
         else if(temp == endOfList)
             endOfList = prev;
 

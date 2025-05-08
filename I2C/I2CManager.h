@@ -68,16 +68,17 @@ typedef struct I2CManager_NodeTag I2CManager_Node;
 
 struct I2CManager_NodeTag
 {
-    I2CTarget *i2cDevice;
     I2CManager_Node *next;
+    I2CTarget *i2cDevice;
 };
 
-// @todo decided if I want to use a manager state or keep status bits
+/* @todo decide if I actually want an I2C manager error state
+or just make it an event a go back to idle - MS */
 typedef enum I2CManagerStateTag
 {
     I2C_MANAGER_STATE_IDLE = 0,
     I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS,
-    I2C_MANAGER_STATE_ERROR, // @todo add errors etc.
+    I2C_MANAGER_STATE_ERROR, // @todo I2C manager errors
 } I2CManagerState;
 
 typedef enum I2CSignalTag
@@ -169,7 +170,7 @@ struct I2CManagerTag
 
 /**
  * Description of struct members:
- * // TODO description
+ * // @todo description of struct members
  * 
  */
 
@@ -185,7 +186,7 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs);
 
 void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device, I2CTarget *target);
 
-// @todo add remove device function
+void I2CManager_RemoveDevice(I2CManager *self, I2CManager_Node *device);
 
 void I2CManager_Process(I2CManager *self);
 
@@ -199,8 +200,7 @@ I2CManagerState I2CManager_GetState(I2CManager *self);
 
 void I2CManager_GetCurrentDevice(I2CManager *self, I2CTarget *retDevice);
 
-void I2CManager_GetDataTransferStatus(I2CManager *self, I2CManagerTransferStatus *retTransferStatus); // @todo transfer status
-
-void I2CManager_RemoveDevice(I2CManager *self, I2CManager_Node *device);
+/* @todo decide how I want to implement I2C manager transfer status - MS */
+void I2CManager_GetDataTransferStatus(I2CManager *self, I2CManagerTransferStatus *retTransferStatus);
 
 #endif /* I2C_MANAGER_H */
