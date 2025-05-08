@@ -120,6 +120,7 @@ void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self, bool readTypeTra
 
 bool I2CTarget_DT_IsDataTransferFinished(I2CTarget_DT *self);
 
+// @follow-up clear transfer finished flag
 void I2CTarget_DT_GetFinishedDataTransfer(I2CTarget_DT *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength);
 
@@ -129,6 +130,8 @@ void I2CTarget_DT_WriteToDataTransferBuffer(I2CTarget_DT *self, bool readTypeTra
 void I2CTarget_DT_DataTransferStartedEvent(I2CTarget_DT *self);
 
 bool I2CTarget_DT_IsDataTransferStarted(I2CTarget_DT *self);
+
+// @todo add clear transfer started flag?
 
 void I2CTarget_DT_ReadFromDataTransferBuffer(I2CTarget_DT *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength);
