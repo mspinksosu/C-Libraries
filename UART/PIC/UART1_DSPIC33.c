@@ -346,10 +346,8 @@ bool UART1_IsTransmitRegisterEmpty(void)
 {
     bool txReady = false;
 
-    /* The transmit interrupt flag is set whenever the transmitter is enabled
-    and there is no character in the register for transmission. It is cleared 
-    when the transmit register is written to */
-    if(UxTXIF)
+    /* UTXBF is 1 when the transmit buffer is full */
+    if(UxSTAbits.UTXBF == 0)
         txReady = true;
 
     /* If the user chooses to poll this function instead of using the transmit
