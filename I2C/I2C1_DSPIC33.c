@@ -94,11 +94,12 @@ static bool useRxInterrupt = false, useTxInterrupt = false; // @todo rx and tx i
 
 uint32_t I2C1_ComputeBRGValue(uint32_t desiredBaudRateHz, uint32_t pclkInHz)
 {
-    /* I2CxBRG = ((1 / Fscl - delay (ns)) * Fcy / 2) - 2
+    /* I2CxBRG = ((1 / Fscl - delay (ns)) * Fcy) - 2
+    Fcy is same as instruction clock, which is typically Fosc/2
     Typical delay is 110 ns to 130 ns. (DSPIC33 Family Reference Manual) */
     uint32_t brgInt;
     float brgFloat;
-    brgFloat = (1.0 / desiredBaudRateHz - 130E-9) * (pclkInHz / 2) - 2;
+    brgFloat = (1.0 / desiredBaudRateHz - 130E-9) * (pclkInHz) - 2;
     /* Maximum size of the I2C BRG register is 9 bits. Minimum is 2. */
     brgInt = (uint32_t)(ceil(brgFloat));
     if(brgInt > MAX_BRG_VALUE)
