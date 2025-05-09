@@ -8,8 +8,9 @@
  * @date 5/1/25    Original creation
  * 
  * @details
- *      @todo add more details. Generic I2C target object. Will use my data 
- * transfer buffer. - MS
+ *      @todo add more details. Generic I2C target object. "DT" stands for 
+ * data transfer as this implementation will include my data transfer buffer 
+ * library that I made. - MS
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2025 Matthew Spinks
@@ -21,8 +22,11 @@
  * 
  ******************************************************************************/
 
-/* @todo Should I stick with my usual naming convention of "Class_Subclass.." 
-or change the name of the file to I2CTarget to shorten it a little bit ? - MS */
+/* @note The size of the data transfer buffer should be one more than the 
+amount that you would like the target to be able to hold at once. I would 
+suggest a minimum size of 3. That is enough to hold one write data request, 
+followed by one read data request. So that you could perform a repeated start 
+if needed. - MS */
 
 #ifndef I2CTARGET_H
 #define I2CTARGET_H
@@ -111,8 +115,6 @@ void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, uint8_t target
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-// @todo doxygen
-
 void I2CTarget_DT_Init(I2CTarget_DT *self, I2CTargetInitType_DT *params);
 
 void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self, bool readTypeTransfer, 
@@ -120,7 +122,6 @@ void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self, bool readTypeTra
 
 bool I2CTarget_DT_IsDataTransferFinished(I2CTarget_DT *self);
 
-// @follow-up clear transfer finished flag
 void I2CTarget_DT_GetFinishedDataTransfer(I2CTarget_DT *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength);
 
@@ -131,7 +132,7 @@ void I2CTarget_DT_DataTransferStartedEvent(I2CTarget_DT *self);
 
 bool I2CTarget_DT_IsDataTransferStarted(I2CTarget_DT *self);
 
-// @todo add clear transfer started flag?
+void I2CTarget_DT_ClearDataTransferStartedFlag(I2CTarget_DT *self);
 
 void I2CTarget_DT_ReadFromDataTransferBuffer(I2CTarget_DT *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength);
@@ -147,7 +148,5 @@ uint8_t I2CTarget_DT_GetDataTransferBufferSize(I2CTarget_DT *self);
 void I2CTarget_DT_ClearDataTransferBuffer(I2CTarget_DT *self);
 
 I2CTargetState I2CTarget_DT_GetState(I2CTarget_DT *self);
-
-// @todo add function to set state? @todo add function to reset started/finished flags?
 
 #endif /* I2CTARGET_H */

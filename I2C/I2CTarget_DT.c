@@ -42,6 +42,7 @@ I2CTargetInterface I2CTargetFunctionTable = {
     .I2CTarget_WriteToDataTransferBuffer = (void (*)(void *, bool, uint8_t *, uint16_t))I2CTarget_DT_WriteToDataTransferBuffer,
     .I2CTarget_DataTransferStartedEvent = (void (*)(void *))I2CTarget_DT_DataTransferStartedEvent,
     .I2CTarget_IsDataTransferStarted = (bool (*)(void *))I2CTarget_DT_IsDataTransferStarted,
+    .I2CTarget_ClearDataTransferStartedFlag = (void (*)(void *))I2CTarget_DT_ClearDataTransferStartedFlag,
     .I2CTarget_ReadFromDataTransferBuffer = (void (*)(void *, bool *, uint8_t **, uint16_t *))I2CTarget_DT_ReadFromDataTransferBuffer,
     .I2CTarget_GetDataTransferBufferCount = (uint8_t (*)(void *))I2CTarget_DT_GetDataTransferBufferCount,
     .I2CTarget_IsDataTransferBufferFull = (bool (*)(void *))I2CTarget_DT_IsDataTransferBufferFull,
@@ -153,9 +154,11 @@ void I2CTarget_DT_GetFinishedDataTransfer(I2CTarget_DT *self, bool *retIsReadTyp
     (*retPtrArray) = self->finishedTransfer.ptrDataArray;
     *retLength = self->finishedTransfer.length;
 
-    // @todo clear finished flag here?
-    self->private.flags.transferStarted = 0;
     self->private.flags.transferFinished = 0;
+
+    /* @todo Should I also clear the transfer started flag here as well? 
+    Or let the user handle it with the separate function? */
+    self->private.flags.transferStarted = 0;
 }
 
 // *****************************************************************************
@@ -190,12 +193,19 @@ bool I2CTarget_DT_IsDataTransferStarted(I2CTarget_DT *self)
 
 // *****************************************************************************
 
+void I2CTarget_DT_ClearDataTransferStartedFlag(I2CTarget_DT *self)
+{
+    self->private.flags.transferStarted = 0;
+}
+
+// *****************************************************************************
+
 void I2CTarget_DT_ReadFromDataTransferBuffer(I2CTarget_DT *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength)
 {
     DataTransfer retDataTransfer;
-    uint8_t error = DTBuffer_ReadDataTransfer(&(self->private.dtBuffer), &retDataTransfer);
-    if(error == 0)
+    DTBuffer_ReadDataTransfer(&(self->private.dtBuffer), &retDataTransfer);
+    if(retDataTransfer.length > 0)
     {
         if(retDataTransfer.transferType == DATA_TRANSFER_TYPE_READ)
             *retIsReadType = true;

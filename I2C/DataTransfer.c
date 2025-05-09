@@ -60,7 +60,7 @@ void DTBuffer_WriteDataTransfer(DTBuffer *self, DataTransferType writeOrRead, ui
 
 // *****************************************************************************
 
-uint8_t DTBuffer_ReadDataTransfer(DTBuffer *self, DataTransfer *returnDataTransfer)
+void DTBuffer_ReadDataTransfer(DTBuffer *self, DataTransfer *returnDataTransfer)
 {
     if(self->private.head != self->private.tail)
     {
@@ -69,12 +69,11 @@ uint8_t DTBuffer_ReadDataTransfer(DTBuffer *self, DataTransfer *returnDataTransf
         *returnDataTransfer = self->private.buffer[self->private.tail];
         self->private.tail = CircularIncrement(self->private.tail, self->private.size);
         self->count--;
-        return 0; // no error
     }
     else
     {
+        /* The buffer is empty. Set the returned data length to 0 */
         returnDataTransfer->length = 0;
-        return 1;
     }
 }
 

@@ -33,21 +33,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/* @note @todo For now I'm going to go ahead and make the I2C target dependent 
-on the data transfer type, while I think of different ways to implement the 
-library. It is sort of universal type object anyway, so I might end up keeping 
-it like this. The only function that really needs it right now is the receive 
-function. In a way it behaves sort of like the normal receive function, 
-except that instead of returning a byte, it is returning an object. - MS */
-// #include "DataTransfer.h"
-
 // ***** Defines ***************************************************************
 
-/* @note The size of the data transfer buffer should be one more than the 
-amount that you would like the target to be able to hold at once. I would 
-suggest a minimum size of 3. That is enough to hold one write data request, 
-followed by one read data request. - MS */
-#define I2CTARGET_DT_BUFFER_SIZE 3 // @remove later
 
 // ***** Global Variables ******************************************************
 
@@ -67,6 +54,7 @@ typedef struct I2CTargetInterfaceTag
     void (*I2CTarget_WriteToDataTransferBuffer)(void *instance, bool, uint8_t *, uint16_t);
     void (*I2CTarget_DataTransferStartedEvent)(void *instance);
     bool (*I2CTarget_IsDataTransferStarted)(void *instance);
+    void (*I2CTarget_ClearDataTransferStartedFlag)(void *instance);
     void (*I2CTarget_ReadFromDataTransferBuffer)(void *instance, bool *, uint8_t **, uint16_t *);
     uint8_t (*I2CTarget_GetDataTransferBufferCount)(void *instance);
     bool (*I2CTarget_IsDataTransferBufferFull)(void *instance);
@@ -106,6 +94,8 @@ typedef struct I2CTargetInitTypeTage
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+// @todo doxygen
+
 void I2CTarget_Create(I2CTarget *self, void *instanceOfSubclass, I2CTargetInterface *interface);
 
 void I2CTarget_CreateInitType(I2CTargetInitType *params, void *instanceOfSubClass);
@@ -126,6 +116,8 @@ void I2CTarget_DataTransferFinishedEvent(I2CTarget *self, bool readTypeTransfer,
 
 bool I2CTarget_IsDataTransferFinished(I2CTarget *self);
 
+/* @note As of right now, I've decided that this function should clear the 
+transfer finished flag. May change my mind, don't know. - MS */
 void I2CTarget_GetFinishedDataTransfer(I2CTarget *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength);
 
@@ -135,6 +127,10 @@ void I2CTarget_WriteToDataTransferBuffer(I2CTarget *self, bool readTypeTransfer,
 void I2CTarget_DataTransferStartedEvent(I2CTarget *self);
 
 bool I2CTarget_IsDataTransferStarted(I2CTarget *self);
+
+/* @follow-up Adding for completeness. I wasn't sure if I wanted read from 
+buffer to clear the transfer started flag or not, so I added this for now. - MS */
+void I2CTarget_ClearDataTransferStartedFlag(I2CTarget *self);
 
 // Set return length to 0 if no data available
 void I2CTarget_ReadFromDataTransferBuffer(I2CTarget *self, bool *retIsReadType, 
@@ -155,6 +151,9 @@ I2CTargetState I2CTarget_GetState(I2CTarget *self);
 /* @todo Should I include error as a state or just have a flag? It isn't really 
 used right now. Make a function to get error (implementation based) and clear 
 state? - MS */
+
+// @todo add function to set state? 
+// @todo add separate function to reset started/finished flags?
 
 // @todo possible callback functions
 // I2CTarget_SetTransferFinishedCallbackFunc

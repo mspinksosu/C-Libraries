@@ -152,6 +152,16 @@ bool I2CTarget_IsDataTransferStarted(I2CTarget *self)
 
 // *****************************************************************************
 
+void I2CTarget_ClearDataTransferStartedFlag(I2CTarget *self)
+{
+    if(self->interface->I2CTarget_ClearDataTransferStartedFlag != NULL && self->instance != NULL)
+    {
+        (self->interface->I2CTarget_ClearDataTransferStartedFlag)(self->instance);
+    }
+}
+
+// *****************************************************************************
+
 void I2CTarget_ReadFromDataTransferBuffer(I2CTarget *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength)
 {

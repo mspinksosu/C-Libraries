@@ -67,15 +67,13 @@ typedef struct DTBufferTag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/* @todo Do I want to add functions similar to my buffer library to handle 
-managing an array of data transfer objects? */
-
+/* @note the size of your array you use to make the buffer should be one more than the amount you need */
 void DTBuffer_Init(DTBuffer *self, DataTransfer *arrayIn, uint8_t arrayInSize);
 
 void DTBuffer_WriteDataTransfer(DTBuffer *self, DataTransferType writeOrRead, uint8_t *dataArray, uint16_t length);
 
-// returns error 1 if no data found // @todo could just have it set length to 0 instead
-uint8_t DTBuffer_ReadDataTransfer(DTBuffer *self, DataTransfer *returnDataTransfer);
+// Set return length to 0 if no data available
+void DTBuffer_ReadDataTransfer(DTBuffer *self, DataTransfer *returnDataTransfer);
 
 uint8_t DTBuffer_GetCount(DTBuffer *self);
 
