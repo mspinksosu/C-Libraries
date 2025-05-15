@@ -324,9 +324,10 @@ void UART1_TransmitByte(uint8_t data)
     {
         return; // CTS was high
     }
-    
-    /* Clear the transmission complete flag if needed */
 
+    /* Clear the transmission complete flag for your processor if needed */
+
+    /* Write the data */
     TXxREG = data;
 
     /* Enable transmit interrupt here if needed */
