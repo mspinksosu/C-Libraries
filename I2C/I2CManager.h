@@ -159,7 +159,8 @@ struct I2CManagerTag
     I2CTimer fsmTimer;
     uint8_t fsmRepeatCount;
     uint8_t fsmRepeatLimit;
-    I2CFSMState fsmTimerStateEnterCallback;
+    I2CFSMState fsmTimerStateCallback;
+    I2CSignal fmsTimerActionCallback;
     uint32_t fsmLongTimeoutPeriod;
     uint32_t fsmShortTimeoutPeriod; // @todo add short timer for start and stop?
 

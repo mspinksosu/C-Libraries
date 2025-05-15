@@ -83,7 +83,7 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
         self->fsmShortTimeoutPeriod = 1;
 
     self->fsmState = I2CManager_FsmIdle;
-    self->fsmTimerStateEnterCallback = I2CManager_FsmIdle;
+    self->fsmTimerStateCallback = I2CManager_FsmIdle;
 }
 
 // *****************************************************************************
@@ -212,7 +212,7 @@ void I2CManager_Process(I2CManager *self)
             want to always call the enter signal by default, or have the ability 
             to set a specific action. */
             // event.sig = I2C_MANAGER_SIG_ENTER;
-            // self->fsmTimerStateEnterCallback(self, &event); // @debug testing timeout
+            // self->fsmTimerStateCallback(self, &event); // @debug testing timeout
         }
         else
         {
@@ -221,7 +221,7 @@ void I2CManager_Process(I2CManager *self)
             self->fsmTimer.flags.active = 0;
             self->fsmTimer.flags.expired = 0;
             // event.sig = I2C_MANAGER_SIG_TIMEOUT;
-            // self->fsmTimerStateEnterCallback(self, &event); // @debug testing timeout
+            // self->fsmTimerStateCallback(self, &event); // @debug testing timeout
         }
     }
     self->peripheralState = currentPeripheralState;
@@ -505,7 +505,7 @@ static void I2CManager_FsmStart(I2CManager *self, I2CEvent *e)
             I2C_Start(self->peripheral);
             self->fsmTimer.period = self->fsmShortTimeoutPeriod;
             self->fsmTimer.flags.start = 1;
-            self->fsmTimerStateEnterCallback = I2CManager_FsmStart;
+            self->fsmTimerStateCallback = I2CManager_FsmStart;
             self->statusBits.sendingStart = 1;
             break;
         case I2C_MANAGER_SIG_EXIT:
@@ -565,7 +565,7 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
                 self->readCount = 0;
             }
             I2C_TransmitByte(self->peripheral, targetAddressPlusRW);
-            self->fsmTimerStateEnterCallback = I2CManager_FsmWriteAddress;
+            self->fsmTimerStateCallback = I2CManager_FsmWriteAddress;
             self->fsmTimer.period = self->fsmLongTimeoutPeriod;
             self->fsmTimer.flags.start = 1;
             self->statusBits.transmitInProgress = 1;
@@ -604,7 +604,7 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, I2CEvent *e)
             else
             {
                 /* Force timer to callback immediately instead of waiting */
-                self->fsmTimerStateEnterCallback = I2CManager_FsmWriteAddress;
+                self->fsmTimerStateCallback = I2CManager_FsmWriteAddress;
                 self->fsmTimer.flags.active = 0;
                 self->fsmTimer.flags.expired = 1;
             }
@@ -638,7 +638,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
     {
         case I2C_MANAGER_SIG_ENTER:
             I2C_TransmitByte(self->peripheral, self->currentDataTransfer.ptrDataArray[self->writeCount]);
-            self->fsmTimerStateEnterCallback = I2CManager_FsmWriteData;
+            self->fsmTimerStateCallback = I2CManager_FsmWriteData;
             self->fsmTimer.period = self->fsmLongTimeoutPeriod;
             self->fsmTimer.flags.start = 1;
             self->statusBits.transmitInProgress = 1;
@@ -675,7 +675,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
                         as a failsafe. */
                         e->sig = I2C_MANAGER_SIG_EXIT;
                         self->fsmState(self, e);
-                        self->fsmTimerStateEnterCallback = I2CManager_FsmStop;
+                        self->fsmTimerStateCallback = I2CManager_FsmStop;
                         self->fsmTimer.period = self->fsmLongTimeoutPeriod;
                         self->fsmTimer.flags.start = 1;
                     }
@@ -683,7 +683,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, I2CEvent *e)
                 else
                 {
                     /* Force timer to callback immediately instead of waiting */
-                    self->fsmTimerStateEnterCallback = I2CManager_FsmWriteData;
+                    self->fsmTimerStateCallback = I2CManager_FsmWriteData;
                     self->fsmTimer.flags.active = 0;
                     self->fsmTimer.flags.expired = 1;
                 }
@@ -725,7 +725,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
     {
         case I2C_MANAGER_SIG_ENTER:
             I2C_ReceiveByte(self->peripheral);
-            self->fsmTimerStateEnterCallback = I2CManager_FsmReadData;
+            self->fsmTimerStateCallback = I2CManager_FsmReadData;
             self->fsmTimer.period = self->fsmLongTimeoutPeriod;
             self->fsmTimer.flags.start = 1;
             self->statusBits.receiveInProgress = 1;
@@ -770,7 +770,7 @@ static void I2CManager_FsmReadData(I2CManager *self, I2CEvent *e)
                 as a failsafe. */
                 e->sig = I2C_MANAGER_SIG_EXIT;
                 self->fsmState(self, e);
-                self->fsmTimerStateEnterCallback = I2CManager_FsmStop;
+                self->fsmTimerStateCallback = I2CManager_FsmStop;
                 self->fsmTimer.period = self->fsmLongTimeoutPeriod;
                 self->fsmTimer.flags.start = 1;
             }
