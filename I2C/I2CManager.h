@@ -92,7 +92,8 @@ typedef enum I2CSignalTag
     I2C_MANAGER_SIG_DATA_RECEIVED,
     I2C_MANAGER_SIG_SEND_STOP,
     I2C_MANAGER_SIG_SEND_RESTART,
-    I2C_MANAGER_SIG_TIMEOUT,
+    I2C_MANAGER_SIG_RETRY_TIMER_EXPIRED,
+    I2C_MANAGER_SIG_RETRY_LIMIT_REACHED,
 } I2CSignal;
 
 typedef struct I2CTimerTag
@@ -130,7 +131,7 @@ typedef struct I2CManagerStatusBitsTag
 typedef struct I2CEventTag
 {
     I2CSignal sig;
-
+    I2CFSMState callingState;
 } I2CEvent;
 
 typedef struct I2CManagerTag I2CManager; // forward declaration
@@ -159,8 +160,6 @@ struct I2CManagerTag
     I2CTimer fsmTimer;
     uint8_t fsmRepeatCount;
     uint8_t fsmRepeatLimit;
-    I2CFSMState fsmTimerStateCallback;
-    I2CSignal fmsTimerActionCallback;
     uint32_t fsmLongTimeoutPeriod;
     uint32_t fsmShortTimeoutPeriod; // @todo add short timer for start and stop?
 
