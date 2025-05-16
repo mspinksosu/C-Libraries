@@ -56,7 +56,7 @@ static void I2CManager_PushNode(I2CManager_Node *self, I2CManager_Node *endOfLis
 static void I2CManager_DeleteNode(I2CManager_Node *key, I2CManager_Node *endOfList);
 static void I2CManager_BeginDataTransfer(I2CManager *self, DataTransfer *dtObject);
 static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CManagerTransferStatus *retReport);
-static void I2CManager_SetRepeatFSMTimer(I2CManager *self, uint8_t numRetry);
+static void I2CManager_SetFSMTimerRepeat(I2CManager *self, uint8_t numRetry);
 static void I2CManager_StartFSMTimer(I2CManager *self, uint32_t period);
 static void I2CManager_ClearFSMTimer(I2CManager *self);
 
@@ -137,7 +137,6 @@ void I2CManager_Process(I2CManager *self)
     {
         self->fsmTimer.flags.start = 0;
         self->fsmTimer.count = self->fsmTimer.period;
-        self->fsmRepeatCount = 0;
         self->fsmTimer.flags.active = 1;
     }
 
@@ -466,10 +465,13 @@ static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CManag
 
 // *****************************************************************************
 
-static void I2CManager_SetRepeatFSMTimer(I2CManager *self, uint8_t numRetry)
+static void I2CManager_SetFSMTimerRepeat(I2CManager *self, uint8_t numRetry)
 {
     if(self->fsmTimer.flags.active == 0)
+    {
         self->fsmRepeatLimit = numRetry;
+        self->fsmRepeatCount = 0;
+    }
 }
 
 // *****************************************************************************
@@ -532,7 +534,7 @@ static void I2CManager_FsmStart(I2CManager *self, const I2CEvent *e)
         case I2CMANAGER_SIG_ENTER:
             I2C_Start(self->peripheral);
             if(e->callingState != NULL && e->callingState != I2CManager_FsmStart)
-                I2CManager_SetRepeatFSMTimer(self, DEFAULT_REPEAT_LIMIT);
+                I2CManager_SetFSMTimerRepeat(self, DEFAULT_REPEAT_LIMIT);
             I2CManager_StartFSMTimer(self, self->fsmShortTimeoutPeriod);
             self->statusBits.sendingStart = 1;
             break;
@@ -600,7 +602,7 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, const I2CEvent *e)
             I2C_TransmitByte(self->peripheral, targetAddressPlusRW);
             /* Check if we re-entered this state or not */
             if(e->callingState != NULL && e->callingState != I2CManager_FsmWriteAddress)
-                I2CManager_SetRepeatFSMTimer(self, DEFAULT_REPEAT_LIMIT);
+                I2CManager_SetFSMTimerRepeat(self, DEFAULT_REPEAT_LIMIT);
             I2CManager_StartFSMTimer(self, self->fsmLongTimeoutPeriod);
             self->statusBits.transmitInProgress = 1;
             break;
@@ -679,7 +681,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, const I2CEvent *e)
             I2C_TransmitByte(self->peripheral, self->currentDataTransfer.ptrDataArray[self->writeCount]);
             /* Check if we re-entered this state or not */
             if(e->callingState != NULL && e->callingState != I2CManager_FsmWriteAddress)
-                I2CManager_SetRepeatFSMTimer(self, DEFAULT_REPEAT_LIMIT);
+                I2CManager_SetFSMTimerRepeat(self, DEFAULT_REPEAT_LIMIT);
             I2CManager_StartFSMTimer(self, self->fsmLongTimeoutPeriod);
             self->statusBits.transmitInProgress = 1;
             break;
@@ -713,7 +715,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, const I2CEvent *e)
                         event as a failsafe. */
                         action.sig = I2CMANAGER_SIG_EXIT;
                         self->fsmState(self, &action);
-                        I2CManager_SetRepeatFSMTimer(self, 1);
+                        I2CManager_SetFSMTimerRepeat(self, 1);
                         I2CManager_StartFSMTimer(self, self->fsmLongTimeoutPeriod);
                     }
                 }
@@ -784,7 +786,7 @@ static void I2CManager_FsmReadData(I2CManager *self, const I2CEvent *e)
             I2C_ReceiveByte(self->peripheral);
             /* Check if we re-entered this state or not */
             if(e->callingState != NULL && e->callingState != I2CManager_FsmReadData)
-                I2CManager_SetRepeatFSMTimer(self, DEFAULT_REPEAT_LIMIT);
+                I2CManager_SetFSMTimerRepeat(self, DEFAULT_REPEAT_LIMIT);
             I2CManager_StartFSMTimer(self, self->fsmLongTimeoutPeriod);
             self->statusBits.receiveInProgress = 1;
             break;
@@ -826,7 +828,7 @@ static void I2CManager_FsmReadData(I2CManager *self, const I2CEvent *e)
                 event as a failsafe. */
                 action.sig = I2CMANAGER_SIG_EXIT;
                 self->fsmState(self, &action);
-                I2CManager_SetRepeatFSMTimer(self, 1);
+                I2CManager_SetFSMTimerRepeat(self, 1);
                 I2CManager_StartFSMTimer(self, self->fsmLongTimeoutPeriod);
             }
             break;
@@ -888,7 +890,7 @@ static void I2CManager_FsmStop(I2CManager *self, const I2CEvent *e)
             I2C_Stop(self->peripheral);
             /* Check if we re-entered this state or not */
             if(e->callingState != NULL && e->callingState != I2CManager_FsmStop)
-                I2CManager_SetRepeatFSMTimer(self, 1);
+                I2CManager_SetFSMTimerRepeat(self, 1);
             I2CManager_StartFSMTimer(self, self->fsmShortTimeoutPeriod);
             self->statusBits.repeatedStartSent = 0;
             self->statusBits.sendingStop = 1;
@@ -942,7 +944,7 @@ static void I2CManager_FsmRestart(I2CManager *self, const I2CEvent *e)
             I2C_Restart(self->peripheral);
             /* Check if we re-entered this state or not */
             if(e->callingState != NULL && e->callingState != I2CManager_FsmRestart)
-                I2CManager_SetRepeatFSMTimer(self, DEFAULT_REPEAT_LIMIT);
+                I2CManager_SetFSMTimerRepeat(self, DEFAULT_REPEAT_LIMIT);
             I2CManager_StartFSMTimer(self, self->fsmShortTimeoutPeriod);
             self->statusBits.repeatedStartSent = 0;
             self->statusBits.sendingRestart = 1;
