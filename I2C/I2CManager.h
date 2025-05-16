@@ -24,8 +24,8 @@
  * 
  ******************************************************************************/
 
-#ifndef I2C_MANAGER_H
-#define I2C_MANAGER_H
+#ifndef I2CMANAGER_H
+#define I2CMANAGER_H
 
 #include "II2CTarget.h"
 #include "II2C.h"
@@ -37,19 +37,19 @@
 
 typedef enum I2CManagerTransferStateTag // @todo transfer state. Haven't decided if I want this or not yet
 {
-    I2C_MANAGER_TRANSFER_STATE_UNKNOWN = 0,
-    I2C_MANAGER_TRANSFER_STATE_READY,
-    I2C_MANAGER_TRANSFER_STATE_IN_PROGRESS,
-    I2C_MANAGER_TRANSFER_STATE_FINISHED,
-    I2C_MANAGER_TRANSFER_STATE_ERROR,
+    I2CMANAGER_TRANSFER_STATE_UNKNOWN = 0,
+    I2CMANAGER_TRANSFER_STATE_READY,
+    I2CMANAGER_TRANSFER_STATE_IN_PROGRESS,
+    I2CMANAGER_TRANSFER_STATE_FINISHED,
+    I2CMANAGER_TRANSFER_STATE_ERROR,
 } I2CManagerTransferState;
 
 typedef enum I2CManagerTransferErrorTag
 {
-    I2C_MANAGER_TRANSFER_ERROR_NONE = 0,
-    I2C_MANAGER_TRANSFER_ERROR_UNKOWN,
-    I2C_MANAGER_TRANSFER_ERROR_TX,
-    I2C_MANAGER_TRANSFER_ERROR_RX,
+    I2CMANAGER_TRANSFER_ERROR_NONE = 0,
+    I2CMANAGER_TRANSFER_ERROR_UNKOWN,
+    I2CMANAGER_TRANSFER_ERROR_TX,
+    I2CMANAGER_TRANSFER_ERROR_RX,
     // add more as needed
 } I2CManagerTransferError;
 
@@ -76,24 +76,24 @@ struct I2CManager_NodeTag
 or just make it an event a go back to idle - MS */
 typedef enum I2CManagerStateTag
 {
-    I2C_MANAGER_STATE_IDLE = 0,
-    I2C_MANAGER_STATE_TRANSFER_IN_PROGRESS,
-    I2C_MANAGER_STATE_ERROR, // @todo I2C manager errors
+    I2CMANAGER_STATE_IDLE = 0,
+    I2CMANAGER_STATE_TRANSFER_IN_PROGRESS,
+    I2CMANAGER_STATE_ERROR, // @todo I2C manager errors
 } I2CManagerState;
 
 typedef enum I2CSignalTag
 {
-    I2C_MANAGER_SIG_ENTER = 1,
-    I2C_MANAGER_SIG_EXIT,
-    I2C_MANAGER_SIG_BEGIN_TRANSFER,
-    I2C_MANAGER_SIG_BUS_IDLE_EVENT,
-    I2C_MANAGER_SIG_ACK_RECEIVED,
-    I2C_MANAGER_SIG_NACK_RECEIVED,
-    I2C_MANAGER_SIG_DATA_RECEIVED,
-    I2C_MANAGER_SIG_SEND_STOP,
-    I2C_MANAGER_SIG_SEND_RESTART,
-    I2C_MANAGER_SIG_RETRY_TIMER_EXPIRED,
-    I2C_MANAGER_SIG_RETRY_LIMIT_REACHED,
+    I2CMANAGER_SIG_ENTER = 1,
+    I2CMANAGER_SIG_EXIT,
+    I2CMANAGER_SIG_BEGIN_TRANSFER,
+    I2CMANAGER_SIG_BUS_IDLE_EVENT,
+    I2CMANAGER_SIG_ACK_RECEIVED,
+    I2CMANAGER_SIG_NACK_RECEIVED,
+    I2CMANAGER_SIG_DATA_RECEIVED,
+    I2CMANAGER_SIG_SEND_STOP,
+    I2CMANAGER_SIG_SEND_RESTART,
+    I2CMANAGER_SIG_RETRY_TIMER_EXPIRED,
+    I2CMANAGER_SIG_RETRY_LIMIT_REACHED,
 } I2CSignal;
 
 typedef struct I2CTimerTag
@@ -203,4 +203,4 @@ void I2CManager_GetCurrentDevice(I2CManager *self, I2CTarget *retDevice);
 /* @todo decide how I want to implement I2C manager transfer status - MS */
 void I2CManager_GetDataTransferStatus(I2CManager *self, I2CManagerTransferStatus *retTransferStatus);
 
-#endif /* I2C_MANAGER_H */
+#endif /* I2CMANAGER_H */

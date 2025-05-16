@@ -28,8 +28,8 @@ suggest a minimum size of 3. That is enough to hold one write data request,
 followed by one read data request. So that you could perform a repeated start 
 if needed. - MS */
 
-#ifndef I2CTARGET_H
-#define I2CTARGET_H
+#ifndef I2CTARGET_DT_H
+#define I2CTARGET_DT_H
 
 #include "II2CTarget.h"
 #include "DataTransfer.h"
@@ -149,4 +149,4 @@ void I2CTarget_DT_ClearDataTransferBuffer(I2CTarget_DT *self);
 
 I2CTargetState I2CTarget_DT_GetState(I2CTarget_DT *self);
 
-#endif /* I2CTARGET_H */
+#endif /* I2CTARGET_DT_H */

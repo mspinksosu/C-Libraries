@@ -27,8 +27,8 @@
  * 
  ******************************************************************************/
 
-#ifndef II2C_TARGET_H
-#define II2C_TARGET_H
+#ifndef II2CTARGET_H
+#define II2CTARGET_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -40,9 +40,9 @@
 
 typedef enum I2CTargetStateTag
 {
-    I2C_TARGET_STATE_IDLE = 0,
-    I2C_TARGET_STATE_TRANSFER_IN_PROGRESS,
-    I2C_TARGET_STATE_ERROR,
+    I2CTARGET_STATE_IDLE = 0,
+    I2CTARGET_STATE_TRANSFER_IN_PROGRESS,
+    I2CTARGET_STATE_ERROR,
 } I2CTargetState;
 
 typedef struct I2CTargetInterfaceTag
@@ -158,4 +158,4 @@ state? - MS */
 // @todo possible callback functions
 // I2CTarget_SetTransferFinishedCallbackFunc
 
-#endif /* II2C_TARGET_H */
+#endif /* II2CTARGET_H */

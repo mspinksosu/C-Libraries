@@ -105,7 +105,7 @@ void I2CTarget_DT_Init(I2CTarget_DT *self, I2CTargetInitType_DT *params)
     // Call the base initialization
     I2CTarget_BaseInit(self->super, params->targetAddress7Bit);
     // Now finish setting up the buffer
-    self->private.state = I2C_TARGET_STATE_IDLE;
+    self->private.state = I2CTARGET_STATE_IDLE;
     self->private.flags.all = 0;
     DTBuffer_Init(&(self->private.dtBuffer), params->ptrToDTArray, params->dtArraySize);
 }
@@ -124,7 +124,7 @@ void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self, bool readTypeTra
     self->finishedTransfer.length = length;
 
     self->private.flags.transferFinished = 1;
-    self->private.state = I2C_TARGET_STATE_IDLE;
+    self->private.state = I2CTARGET_STATE_IDLE;
 }
 
 // *****************************************************************************
@@ -178,7 +178,7 @@ void I2CTarget_DT_WriteToDataTransferBuffer(I2CTarget_DT *self, bool readTypeTra
 void I2CTarget_DT_DataTransferStartedEvent(I2CTarget_DT *self)
 {
     self->private.flags.transferStarted = 1;
-    self->private.state = I2C_TARGET_STATE_TRANSFER_IN_PROGRESS;
+    self->private.state = I2CTARGET_STATE_TRANSFER_IN_PROGRESS;
 }
 
 // *****************************************************************************
