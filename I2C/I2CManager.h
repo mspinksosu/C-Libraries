@@ -128,16 +128,18 @@ typedef struct I2CManagerStatusBitsTag
     };
 } I2CManagerStatusBits;
 
-typedef struct I2CEventTag
-{
-    I2CSignal sig;
-    I2CFSMState callingState;
-} I2CEvent;
+typedef struct I2CEventTag I2CEvent; // forward declaration
 
 typedef struct I2CManagerTag I2CManager; // forward declaration
 
 // This is the function pointer type for the state machine functions
-typedef void (*I2CFSMState)(I2CManager *self, I2CEvent *e);
+typedef void (*I2CFSMState)(I2CManager *self, const I2CEvent *e);
+
+struct I2CEventTag
+{
+    I2CSignal sig;
+    I2CFSMState callingState;
+};
 
 struct I2CManagerTag
 {
