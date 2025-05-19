@@ -37,10 +37,6 @@
 
 static bool I2CManagerEnabled; // @todo enable/disable
 
-// @todo function pointers
-// void (*I2C_TransmitFinishedCallback)(void);
-// void (*I2C_ReceiveInterruptCallback)(void);
-
 // states
 static void I2CManager_FsmIdle(I2CManager *self, const I2CEvent *e);
 static void I2CManager_FsmStart(I2CManager *self, const I2CEvent *e);
@@ -324,12 +320,6 @@ void I2CManager_Process(I2CManager *self)
                     self->managerState = I2CMANAGER_STATE_IDLE;
                 }
                 break;
-            case I2CMANAGER_STATE_ERROR:
-                /* @todo decide if I actually want this to be a state or not */
-                event.sig = I2CMANAGER_SIG_SEND_STOP;
-                self->fsmState(self, &event);
-                self->managerState = I2CMANAGER_STATE_IDLE;
-                break;
         }
     }
     else
@@ -386,11 +376,25 @@ on going changes during the data transfer, such as the current number of bytes
 transferred? Or should I just use it as a end of data transfer report? - MS */
 void I2CManager_GetDataTransferStatus(I2CManager *self, I2CManagerTransferStatus *retTransferStatus)
 {
-    retTransferStatus->error = I2CMANAGER_TRANSFER_ERROR_NONE; // @todo I2C error codes
+    retTransferStatus->error = self->finishedTransferReport.error;
     retTransferStatus->isReadType = self->finishedTransferReport.isReadType;
     retTransferStatus->ptrArray = self->finishedTransferReport.ptrArray;
     retTransferStatus->sizeOfArray = self->finishedTransferReport.sizeOfArray;
     retTransferStatus->numOfBytesTransferred = self->finishedTransferReport.numOfBytesTransferred;
+}
+
+// *****************************************************************************
+
+I2CManagerTransferError I2CManager_GetTransferError(I2CManager *self)
+{
+    return self->currentDataTransferError;
+}
+
+// *****************************************************************************
+
+void I2CManager_SetTransferErrorCallback(I2CManager *self, I2CManagerCallbackFunc Function)
+{
+    self->transferErrorCallbackFunc = Function;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -575,10 +579,17 @@ static void I2CManager_FsmStart(I2CManager *self, const I2CEvent *e)
             self->fsmState(self, &action);
             break;
         case I2CMANAGER_SIG_RETRY_LIMIT_REACHED:
-            /* @todo set a error flag of some kind, then transition to 
-            stop state */
+            /* Set a error flag then transition to stop state */
+            self->currentDataTransferFinished = true;
+            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_START;
             action.sig = I2CMANAGER_SIG_EXIT;
             self->fsmState(self, &action);
+            /* Error event callback */
+            if(self->transferErrorCallbackFunc != NULL)
+            {
+                self->transferErrorCallbackFunc(self->currentDataTransferError, 
+                    self->currentNode->i2cDevice);
+            }
             action.sig = I2CMANAGER_SIG_ENTER;
             self->fsmState = I2CManager_FsmStop;
             self->fsmState(self, &action);
@@ -673,6 +684,12 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, const I2CEvent *e)
             self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_ADDRESS;
             action.sig = I2CMANAGER_SIG_EXIT;
             self->fsmState(self, &action);
+            /* Error event callback */
+            if(self->transferErrorCallbackFunc != NULL)
+            {
+                self->transferErrorCallbackFunc(self->currentDataTransferError, 
+                    self->currentNode->i2cDevice);
+            }
             break;
         default:
             break;
@@ -761,6 +778,12 @@ static void I2CManager_FsmWriteData(I2CManager *self, const I2CEvent *e)
             self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_WRITE;
             action.sig = I2CMANAGER_SIG_EXIT;
             self->fsmState(self, &action);
+            /* Error event callback */
+            if(self->transferErrorCallbackFunc != NULL)
+            {
+                self->transferErrorCallbackFunc(self->currentDataTransferError, 
+                    self->currentNode->i2cDevice);
+            }
             break;
         default:
             break;
@@ -848,6 +871,12 @@ static void I2CManager_FsmReadData(I2CManager *self, const I2CEvent *e)
             self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_READ;
             action.sig = I2CMANAGER_SIG_EXIT;
             self->fsmState(self, &action);
+            /* Error event callback */
+            if(self->transferErrorCallbackFunc != NULL)
+            {
+                self->transferErrorCallbackFunc(self->currentDataTransferError, 
+                    self->currentNode->i2cDevice);
+            }
             break;
         default:
             break;
@@ -888,11 +917,19 @@ static void I2CManager_FsmStop(I2CManager *self, const I2CEvent *e)
             self->fsmState(self, &action);
             break;
         case I2CMANAGER_SIG_RETRY_LIMIT_REACHED:
-            /* @todo Sending a stop failed somehow. Set a error flag of some 
-            kind then transition to idle state */
-            action.sig = I2CMANAGER_SIG_ENTER;
-            self->fsmState = I2CManager_FsmIdle;
+            /* Sending a stop failed somehow. Set an error flag then transition 
+            to idle state. Perform exit action. No entry action.*/
+            self->currentDataTransferFinished = true;
+            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
+            action.sig = I2CMANAGER_SIG_EXIT;
             self->fsmState(self, &action);
+            /* Error event callback */
+            if(self->transferErrorCallbackFunc != NULL)
+            {
+                self->transferErrorCallbackFunc(self->currentDataTransferError, 
+                    self->currentNode->i2cDevice);
+            }
+            self->fsmState = I2CManager_FsmIdle;
             break;
         case I2CMANAGER_SIG_SEND_STOP:
             /* Something went wrong and the manager requested a stop. We are 
@@ -942,10 +979,17 @@ static void I2CManager_FsmRestart(I2CManager *self, const I2CEvent *e)
             self->fsmState(self, &action);
             break;
         case I2CMANAGER_SIG_RETRY_LIMIT_REACHED:
-            /* @todo set a error flag of some kind, then transition to 
-            stop state */
+            /* Set a error flag then transition to stop state */
+            self->currentDataTransferFinished = true;
+            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_START;
             action.sig = I2CMANAGER_SIG_EXIT;
             self->fsmState(self, &action);
+            /* Error event callback */
+            if(self->transferErrorCallbackFunc != NULL)
+            {
+                self->transferErrorCallbackFunc(self->currentDataTransferError, 
+                    self->currentNode->i2cDevice);
+            }
             action.sig = I2CMANAGER_SIG_ENTER;
             self->fsmState = I2CManager_FsmStop;
             self->fsmState(self, &action);

@@ -35,31 +35,20 @@
 
 // ***** Global Variables ******************************************************
 
-// @todo transfer state. Haven't decided if I want this or not yet
-typedef enum I2CManagerTransferStateTag
-{
-    I2CMANAGER_TRANSFER_STATE_UNKNOWN = 0,
-    I2CMANAGER_TRANSFER_STATE_READY,
-    I2CMANAGER_TRANSFER_STATE_IN_PROGRESS,
-    I2CMANAGER_TRANSFER_STATE_FINISHED,
-    I2CMANAGER_TRANSFER_STATE_ERROR,
-} I2CManagerTransferState;
-
 typedef enum I2CManagerTransferErrorTag
 {
     I2CMANAGER_TRANSFER_ERROR_NONE = 0,
     I2CMANAGER_TRANSFER_ERROR_UNKOWN,
+    I2CMANAGER_TRANSFER_ERROR_START,
     I2CMANAGER_TRANSFER_ERROR_ADDRESS,
     I2CMANAGER_TRANSFER_ERROR_WRITE,
     I2CMANAGER_TRANSFER_ERROR_READ,
     // add more as needed
 } I2CManagerTransferError;
 
-/* @todo not sure if I want to include state in status report */
 typedef struct I2CManagerTransferStatusTag
 {
     I2CManagerTransferError error;
-    // I2CTransferState state;
     bool isReadType;
     uint8_t *ptrArray;
     uint16_t sizeOfArray;
@@ -74,13 +63,10 @@ struct I2CManager_NodeTag
     I2CTarget *i2cDevice;
 };
 
-/* @todo decide if I actually want an I2C manager error state
-or just make it an event a go back to idle - MS */
 typedef enum I2CManagerStateTag
 {
     I2CMANAGER_STATE_IDLE = 0,
     I2CMANAGER_STATE_TRANSFER_IN_PROGRESS,
-    I2CMANAGER_STATE_ERROR, // @todo I2C manager errors
 } I2CManagerState;
 
 typedef enum I2CSignalTag
@@ -134,8 +120,12 @@ typedef struct I2CEventTag I2CEvent; // forward declaration
 
 typedef struct I2CManagerTag I2CManager; // forward declaration
 
-// This is the function pointer type for the state machine functions
+/* function pointer type for the state machine functions */
 typedef void (*I2CFSMState)(I2CManager *self, const I2CEvent *e);
+
+/* callback function pointer. The context pointer will point to the device that 
+was being processed at the time. */
+typedef void (*I2CManagerCallbackFunc)(I2CManagerTransferError error, I2CTarget *context);
 
 struct I2CEventTag
 {
@@ -160,17 +150,20 @@ struct I2CManagerTag
     uint16_t writeCount;
     uint16_t readCount;
     I2CManagerTransferStatus finishedTransferReport;
+    // @todo add flags for transfer finished event and error event?
 
     I2CFSMState fsmState;
     I2CTimer fsmTimer;
     uint8_t fsmRepeatCount;
     uint8_t fsmRepeatLimit;
     uint32_t fsmLongTimeoutPeriod;
-    uint32_t fsmShortTimeoutPeriod; // @todo add short timer for start and stop?
+    uint32_t fsmShortTimeoutPeriod;
 
     I2CManagerStatusBits statusBits;
     I2CManagerState managerState;
     I2CState peripheralState;
+
+    I2CManagerCallbackFunc transferErrorCallbackFunc;
 };
 
 /**
@@ -206,6 +199,12 @@ I2CManagerState I2CManager_GetState(I2CManager *self);
 void I2CManager_GetCurrentDevice(I2CManager *self, I2CTarget *retDevice);
 
 /* @todo decide how I want to implement I2C manager transfer status - MS */
+/* @todo should I add a get transfer finished function, or use status? - MS */
 void I2CManager_GetDataTransferStatus(I2CManager *self, I2CManagerTransferStatus *retTransferStatus);
+
+I2CManagerTransferError I2CManager_GetTransferError(I2CManager *self);
+
+/* @todo add more callbacks for transfer finished etc. */
+void I2CManager_SetTransferErrorCallback(I2CManager *self, I2CManagerCallbackFunc Function);
 
 #endif /* I2CMANAGER_H */
