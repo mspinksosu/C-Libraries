@@ -35,7 +35,8 @@
 
 // ***** Global Variables ******************************************************
 
-typedef enum I2CManagerTransferStateTag // @todo transfer state. Haven't decided if I want this or not yet
+// @todo transfer state. Haven't decided if I want this or not yet
+typedef enum I2CManagerTransferStateTag
 {
     I2CMANAGER_TRANSFER_STATE_UNKNOWN = 0,
     I2CMANAGER_TRANSFER_STATE_READY,
@@ -48,8 +49,9 @@ typedef enum I2CManagerTransferErrorTag
 {
     I2CMANAGER_TRANSFER_ERROR_NONE = 0,
     I2CMANAGER_TRANSFER_ERROR_UNKOWN,
-    I2CMANAGER_TRANSFER_ERROR_TX,
-    I2CMANAGER_TRANSFER_ERROR_RX,
+    I2CMANAGER_TRANSFER_ERROR_ADDRESS,
+    I2CMANAGER_TRANSFER_ERROR_WRITE,
+    I2CMANAGER_TRANSFER_ERROR_READ,
     // add more as needed
 } I2CManagerTransferError;
 
@@ -154,6 +156,7 @@ struct I2CManagerTag
     } currentDataTransfer;
 
     bool currentDataTransferFinished;
+    I2CManagerTransferError currentDataTransferError;
     uint16_t writeCount;
     uint16_t readCount;
     I2CManagerTransferStatus finishedTransferReport;

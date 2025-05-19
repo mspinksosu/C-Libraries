@@ -31,7 +31,7 @@
 #define SHORT_TIMEOUT_PERIOD_NS (100000UL) // 100 us
 #define DEFAULT_TICK_RATE_NS    50
 /* how many times to retry an I2C command */
-#define DEFAULT_REPEAT_LIMIT    5
+#define DEFAULT_REPEAT_LIMIT    3
 
 // ***** Global Variables ******************************************************
 
@@ -211,7 +211,7 @@ void I2CManager_Process(I2CManager *self)
         if(self->fsmRepeatCount <= self->fsmRepeatLimit)
         {
             event.sig = I2CMANAGER_SIG_RETRY_TIMER_EXPIRED;
-            self->fsmState(self, &event); // @debug testing timeout
+            self->fsmState(self, &event);
         }
         else
         {
@@ -220,7 +220,7 @@ void I2CManager_Process(I2CManager *self)
             self->fsmTimer.flags.active = 0;
             self->fsmTimer.flags.expired = 0;
             event.sig = I2CMANAGER_SIG_RETRY_LIMIT_REACHED;
-            self->fsmState(self, &event); // @debug testing timeout
+            self->fsmState(self, &event);
         }
     }
     self->peripheralState = currentPeripheralState;
@@ -294,9 +294,21 @@ void I2CManager_Process(I2CManager *self)
                                                         tempStatusReport.isReadType, 
                                                         tempStatusReport.ptrArray, 
                                                         tempStatusReport.sizeOfArray);
-                    /* Check if there is more data to transfer. If there is, 
-                    send a repeated start event to the state machine. */
-                    if(I2CTarget_GetDataTransferBufferCount(self->currentNode->i2cDevice) > 0)
+                    /* Check if there was an error. Then check if there is 
+                    more data to transfer. If there is, send a repeated start 
+                    event to the state machine. */
+                    if(self->currentDataTransferError != I2CMANAGER_TRANSFER_ERROR_NONE)
+                    {
+                        /* @follow-up decide if I want to keep trying to write more bytes if there 
+                        is a read or write data error, or just give up. For now, just give up. The 
+                        only time I've had an error was if the device was not present on the bus. - MS */
+
+                        /* Go to the next device. */
+                        event.sig = I2CMANAGER_SIG_SEND_STOP;
+                        self->fsmState(self, &event);
+                        self->currentNode = self->currentNode->next;
+                    }
+                    else if(I2CTarget_GetDataTransferBufferCount(self->currentNode->i2cDevice) > 0)
                     {
                         I2CTarget_DataTransferStartedEvent(self->currentNode->i2cDevice);
                         event.sig = I2CMANAGER_SIG_SEND_RESTART;
@@ -304,8 +316,7 @@ void I2CManager_Process(I2CManager *self)
                     }
                     else
                     {
-                        /* Finished. Set the state of the current device, then 
-                        go to the next device. */
+                        /* Finished. Go to the next device. */
                         event.sig = I2CMANAGER_SIG_SEND_STOP;
                         self->fsmState(self, &event);
                         self->currentNode = self->currentNode->next;
@@ -443,6 +454,7 @@ static void I2CManager_BeginDataTransfer(I2CManager *self, DataTransfer *dtObjec
     self->currentDataTransfer.length = dtObject->length;
     /* Begin data transfer */
     self->currentDataTransferFinished = false;
+    self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_NONE;
     I2CEvent event = {0}; // create an event to give to the state machine
     event.sig = I2CMANAGER_SIG_BEGIN_TRANSFER;
     self->fsmState(self, &event); // call the current state and pass the event
@@ -452,8 +464,7 @@ static void I2CManager_BeginDataTransfer(I2CManager *self, DataTransfer *dtObjec
 
 static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CManagerTransferStatus *retReport)
 {
-    retReport->error = I2CMANAGER_TRANSFER_ERROR_NONE; // @todo I2C error codes
-
+    retReport->error = self->currentDataTransferError;
     retReport->isReadType = self->currentDataTransfer.isReadType;
     retReport->ptrArray = self->currentDataTransfer.ptrDataArray;
     retReport->sizeOfArray = self->currentDataTransfer.length;
@@ -656,12 +667,11 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, const I2CEvent *e)
             self->fsmState(self, &action);
             break;
         case I2CMANAGER_SIG_RETRY_LIMIT_REACHED:
-            /* @todo set a error flag of some kind, then transition to 
-            stop state */
+            /* Set the flag to tell the manager that we are done and set the 
+            error flag. */
+            self->currentDataTransferFinished = true;
+            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_ADDRESS;
             action.sig = I2CMANAGER_SIG_EXIT;
-            self->fsmState(self, &action);
-            action.sig = I2CMANAGER_SIG_ENTER;
-            self->fsmState = I2CManager_FsmStop;
             self->fsmState(self, &action);
             break;
         default:
@@ -706,17 +716,13 @@ static void I2CManager_FsmWriteData(I2CManager *self, const I2CEvent *e)
                     }
                     else
                     {
-                        /* We are finished with the transfer. Set a flag to 
+                        /* We are finished with the transfer. Set the flag to 
                         tell the manager that we are done. The manager will 
                         tell us if we need to send a stop or a restart. */
                         self->currentDataTransferFinished = true;
-                        /* If for some reason the manager doesn't respond in 
-                        time, we'll use the timer to catch it and send a stop 
-                        event as a failsafe. */
+                        self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_NONE;
                         action.sig = I2CMANAGER_SIG_EXIT;
                         self->fsmState(self, &action);
-                        I2CManager_SetFSMTimerRepeat(self, 1);
-                        I2CManager_StartFSMTimer(self, self->fsmLongTimeoutPeriod);
                     }
                 }
                 else
@@ -743,30 +749,17 @@ static void I2CManager_FsmWriteData(I2CManager *self, const I2CEvent *e)
             self->fsmState(self, &action);
             break;
         case I2CMANAGER_SIG_RETRY_TIMER_EXPIRED:
-            if(self->currentDataTransferFinished)
-            {
-                /* For some reason the I2C manager process missed 
-                the data transfer finished event. */
-                action.sig = I2CMANAGER_SIG_ENTER;
-                self->fsmState = I2CManager_FsmStop;
-                self->fsmState(self, &action);
-            }
-            else
-            {
-                /* Else, perform our entry action again. The event's state 
-                member will indicate that this is a re-entry. */
-                action.sig = I2CMANAGER_SIG_ENTER;
-                self->fsmState(self, &action);
-            }
+            /* Perform our entry action again. The event's state 
+            member will indicate that this is a re-entry. */
+            action.sig = I2CMANAGER_SIG_ENTER;
+            self->fsmState(self, &action);
             break;
         case I2CMANAGER_SIG_RETRY_LIMIT_REACHED:
-            /* @todo set a error flag of some kind, then @todo transition 
-            to either the stop state or try and continue writing more bytes.
-            Haven't decided yet. - MS */
+            /* Set the flag to tell the manager that we are done and set the 
+            error flag. */
+            self->currentDataTransferFinished = true;
+            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_WRITE;
             action.sig = I2CMANAGER_SIG_EXIT;
-            self->fsmState(self, &action);
-            action.sig = I2CMANAGER_SIG_ENTER;
-            self->fsmState = I2CManager_FsmStop;
             self->fsmState(self, &action);
             break;
         default:
@@ -819,17 +812,13 @@ static void I2CManager_FsmReadData(I2CManager *self, const I2CEvent *e)
             }
             else
             {
-                /* We are finished with the transfer. Set a flag to tell the 
+                /* We are finished with the transfer. Set the flag to tell the 
                 manager process that we are done. The manager process will 
                 tell us if we need to send a stop or a restart. */
                 self->currentDataTransferFinished = true;
-                /* If for some reason the manager doesn't respond in 
-                time, we'll use the timer to catch it and send a stop 
-                event as a failsafe. */
+                self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_NONE;
                 action.sig = I2CMANAGER_SIG_EXIT;
                 self->fsmState(self, &action);
-                I2CManager_SetFSMTimerRepeat(self, 1);
-                I2CManager_StartFSMTimer(self, self->fsmLongTimeoutPeriod);
             }
             break;
         case I2CMANAGER_SIG_SEND_STOP:
@@ -847,30 +836,17 @@ static void I2CManager_FsmReadData(I2CManager *self, const I2CEvent *e)
             self->fsmState(self, &action);
             break;
         case I2CMANAGER_SIG_RETRY_TIMER_EXPIRED:
-            if(self->currentDataTransferFinished)
-            {
-                /* For some reason the I2C manager process missed 
-                the data transfer finished event. */
-                action.sig = I2CMANAGER_SIG_ENTER;
-                self->fsmState = I2CManager_FsmStop;
-                self->fsmState(self, &action);
-            }
-            else
-            {
-                /* Else, perform our entry action again. The event's state 
-                member will indicate that this is a re-entry. */
-                action.sig = I2CMANAGER_SIG_ENTER;
-                self->fsmState(self, &action);
-            }
+            /* Perform our entry action again. The event's state 
+            member will indicate that this is a re-entry. */
+            action.sig = I2CMANAGER_SIG_ENTER;
+            self->fsmState(self, &action);
             break;
         case I2CMANAGER_SIG_RETRY_LIMIT_REACHED:
-            /* @todo set a error flag of some kind, then @todo transition 
-            to either the stop state or try and continue reading more bytes.
-            Haven't decided yet. - MS */
+            /* Set the flag to tell the manager that we are done and set the 
+            error flag. */
+            self->currentDataTransferFinished = true;
+            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_READ;
             action.sig = I2CMANAGER_SIG_EXIT;
-            self->fsmState(self, &action);
-            action.sig = I2CMANAGER_SIG_ENTER;
-            self->fsmState = I2CManager_FsmStop;
             self->fsmState(self, &action);
             break;
         default:
@@ -906,8 +882,8 @@ static void I2CManager_FsmStop(I2CManager *self, const I2CEvent *e)
             self->fsmState = I2CManager_FsmIdle;
             break;
         case I2CMANAGER_SIG_RETRY_TIMER_EXPIRED:
-            /* Perform our entry action again. The signal state will indicate 
-            that this is a re-entry. */
+            /* Perform our entry action again. The event's state 
+            member will indicate that this is a re-entry. */
             action.sig = I2CMANAGER_SIG_ENTER;
             self->fsmState(self, &action);
             break;
@@ -960,8 +936,8 @@ static void I2CManager_FsmRestart(I2CManager *self, const I2CEvent *e)
             self->fsmState = I2CManager_FsmIdle;
             break;
         case I2CMANAGER_SIG_RETRY_TIMER_EXPIRED:
-            /* Perform our entry action again. The signal state will indicate 
-            that this is a re-entry. */
+            /* Perform our entry action again. The event's state 
+            member will indicate that this is a re-entry. */
             action.sig = I2CMANAGER_SIG_ENTER;
             self->fsmState(self, &action);
             break;
