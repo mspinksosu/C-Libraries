@@ -43,6 +43,7 @@ typedef enum I2CManagerTransferErrorTag
     I2CMANAGER_TRANSFER_ERROR_ADDRESS,
     I2CMANAGER_TRANSFER_ERROR_WRITE,
     I2CMANAGER_TRANSFER_ERROR_READ,
+    // @todo add bus collision
     // add more as needed
 } I2CManagerTransferError;
 
