@@ -125,7 +125,7 @@ typedef void (*I2CFSMState)(I2CManager *self, const I2CEvent *e);
 
 /* callback function pointer. The context pointer will point to the device that 
 was being processed at the time. */
-typedef void (*I2CManagerCallbackFunc)(I2CManagerTransferError error, I2CTarget *context);
+typedef void (*I2CManagerCallbackFunc)(I2CManagerTransferError error, I2CTarget *context); // @todo maybe add I2CManager pointer too?
 
 struct I2CEventTag
 {
