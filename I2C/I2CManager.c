@@ -26,7 +26,7 @@
 
 // ***** Defines ***************************************************************
 
-/* desired timeout in ns */ // @todo decide if I want a shortened timer for start stop?
+/* desired timeout in ns */
 #define LONG_TIMEOUT_PERIOD_NS  (500000UL) // 500 us
 #define SHORT_TIMEOUT_PERIOD_NS (100000UL) // 100 us
 #define DEFAULT_TICK_RATE_NS    50
@@ -177,12 +177,6 @@ void I2CManager_Process(I2CManager *self)
 
     if(self->statusBits.transmitInProgress && currentPeripheralState != I2C_STATE_CONTROLLER_TRANSMITTING)
     {
-        /* @follow-up In my previous PIC32 library, I had a note to check that 
-        the transmit register was completely empty before sending the bus idle 
-        event. That was because that PIC would set the flag before the data had 
-        finished shifting out. It's possible I was accidentally using the TBF 
-        flag instead of the TRSTAT in the original code. It looks like checking 
-        the TRSTAT bit should work fine. Need to check on a logic analyzer*/
         if(I2C_IsTransmitRegisterEmpty(self->peripheral))
         {
             self->statusBits.transmitInProgress = 0;
@@ -221,33 +215,35 @@ void I2CManager_Process(I2CManager *self)
     }
     self->peripheralState = currentPeripheralState;
 
-    // @debug testing recover from bus collision
+    /* Check for bus collision and try and recover. Usually when the BCL bit is 
+    set, the SDA line stuck low. And the SDA line is usually stuck low because 
+    a target device still has a hold of the SDA line when it's not supposed to. 
+    Call the bus clear function to try and make the target device let go. Set 
+    an error flag to notify the user. */
     if(I2C_GetBusError(self->peripheral))
     {
+        /* Stop the transfer and set the transfer error flag */
+        self->currentDataTransferFinished = true;
+        self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_BUS_COLLISION;
         event.sig = I2CMANAGER_SIG_SEND_STOP;
         self->fsmState(self, &event);
         self->managerState = I2CMANAGER_STATE_IDLE;
-        /* @todo Should I make some sort of function to reset the target device's flags?
-        Or maybe I could just do an empty read - MS */
-        // self->currentNode->i2cDevice->state = I2CTARGET_STATE_IDLE;
-        // self->currentNode->i2cDevice->private.transferStartedEventFlag = false;
-        // self->currentNode->i2cDevice->private.transferFinishedEventFlag = false;
-        // @todo I2CManager. Send some sort of error to notify user
-        /* @todo Tested purposely breaking the I2C bus then recovering it. 
-        Take this code and turn it into a function and remove dependencies 
-        on GPIO. - MS */
-        I2C_Disable(self->peripheral);
-        TRISDbits.TRISD10 = 0; // I2C1 SCL
-        for(uint8_t i = 0; i < 10; i++)
+        /* Clear the target device's receive finished and transmit finished 
+        flags. The receive finished flag is cleared by reading out the finished 
+        data transfer. */
+        bool tempBool;
+        uint8_t *tempPtr;
+        uint16_t tempLength;
+        I2CTarget_GetFinishedDataTransfer(self->currentNode->i2cDevice, &tempBool, &tempPtr, &tempLength);
+        I2CTarget_ClearDataTransferStartedFlag(self->currentNode->i2cDevice);
+        /* Try to reset the target devices */
+        I2CManager_BusClear(self);
+        /* Send the transfer error flag to notify the user */
+        if(self->transferErrorCallback != NULL)
         {
-            uint16_t count = 1000;
-            LATDbits.LATD10 = 0;
-            while(count--);
-            LATDbits.LATD10 = 1;
-            count = 1000;
-            while(count--);
+            self->transferErrorCallback(self->currentDataTransferError, 
+                self, self->currentNode->i2cDevice);
         }
-        I2C_Enable(self->peripheral);
     }
 
     /* Go through list and process each targets data requests. */
@@ -290,14 +286,15 @@ void I2CManager_Process(I2CManager *self)
                                                         tempStatusReport.isReadType, 
                                                         tempStatusReport.ptrArray, 
                                                         tempStatusReport.sizeOfArray);
-                    /* Check if there was an error. Then check if there is 
-                    more data to transfer. If there is, send a repeated start 
-                    event to the state machine. */
+                    /* Check if there was an error. Then check if there is more 
+                    data to transfer. If there is more data to transfer, send a 
+                    repeated start event to the state machine. */
                     if(self->currentDataTransferError != I2CMANAGER_TRANSFER_ERROR_NONE)
                     {
                         /* @follow-up decide if I want to keep trying to write more bytes if there 
-                        is a read or write data error, or just give up. For now, just give up. The 
-                        only time I've had an error was if the device was not present on the bus. - MS */
+                        is a read or write data error, or just give up. I think the best option is 
+                        to go on the to the next device. If the user has the error callback 
+                        implemented, they can decided how they want to handle it. - MS */
 
                         /* Go to the next device. */
                         event.sig = I2CMANAGER_SIG_SEND_STOP;
@@ -392,9 +389,58 @@ I2CManagerTransferError I2CManager_GetTransferError(I2CManager *self)
 
 // *****************************************************************************
 
-void I2CManager_SetTransferErrorCallback(I2CManager *self, I2CManagerCallbackFunc Function)
+void I2CManager_SetTransferErrorCallback(I2CManager *self, I2CManagerCallback Function)
 {
-    self->transferErrorCallbackFunc = Function;
+    self->transferErrorCallback = Function;
+}
+
+// *****************************************************************************
+
+void I2CManager_BusClear(I2CManager *self)
+{
+    /* @note If the SDA gets stuck low this usually means that a target device 
+    still has ahold of the bus. This can happen if a transfer gets interrupted 
+    during a read, or sometimes even by sending the wrong command to a target 
+    device. Like a read instead of write. When this happens, toggling the SCL 
+    line nine times will cause the device holding the SDA line to release. In 
+    my experience, it doesn't really matter how fast you toggle the SCL line. 
+    I've done it at MHz speed and the target device still reset. I've gone 
+    ahead and added a simple delay to slow it down a little bit, since 
+    technically the SCL line isn't supposed to go that fast even though the 
+    target device had no problems with it.
+    
+    If the SCL line gets stuck low though, you will have to use a hardware 
+    reset line to try and reset the target device, or cycle power to it. */
+
+    I2C_Disable(self->peripheral);
+    if(self->SetSCLPin != NULL)
+    {
+        self->SetSCLPin(true);
+        for(uint8_t i = 0; i < 10; i++)
+        {
+            uint16_t count = 1000;
+            self->SetSCLPin(false);
+            while(count--);
+            self->SetSCLPin(true);
+            count = 1000;
+            while(count--);
+        }
+    }
+    I2C_Enable(self->peripheral);
+}
+
+// *****************************************************************************
+
+void I2CManager_SetSDAPinFunc(I2CManager *self, void(*Function)(bool setHigh))
+{
+    self->SetSDAPin = Function;
+}
+
+// *****************************************************************************
+
+void I2CManager_SetSCLPinFunc(I2CManager *self, void(*Function)(bool setHigh))
+{
+    self->SetSCLPin = Function;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -421,19 +467,17 @@ static void I2CManager_DeleteNode(I2CManager_Node *node, I2CManager_Node *endOfL
     /* Store the beginning of the list in a temporary variable. Keep track of 
     previous entry in order to update nodes on either side of the key item. */
     I2CManager_Node *prev = endOfList, *temp = endOfList->next;
-
     while(temp != endOfList && temp != node)
     {
         prev = temp;
         temp = temp->next;
     }
-
-    /* Make the previous entry point to the one after the next entry. 
-    Check if the key was at the end of the list and update the endOfList 
+    /* Make the previous entry point to the one after the next entry. But 
+    first check if the key was at the end of the list and update the endOfList 
     pointer if needed. */
     if(temp == node)
     {
-        if(temp->next == prev->next) // list size 1
+        if(temp->next == prev->next) // list size = 1
             endOfList = NULL;
         else if(temp == endOfList)
             endOfList = prev;
@@ -581,14 +625,14 @@ static void I2CManager_FsmStart(I2CManager *self, const I2CEvent *e)
         case I2CMANAGER_SIG_RETRY_LIMIT_REACHED:
             /* Set a error flag then transition to stop state */
             self->currentDataTransferFinished = true;
-            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_START;
+            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_START_STOP;
             action.sig = I2CMANAGER_SIG_EXIT;
             self->fsmState(self, &action);
             /* Error event callback */
-            if(self->transferErrorCallbackFunc != NULL)
+            if(self->transferErrorCallback != NULL)
             {
-                self->transferErrorCallbackFunc(self->currentDataTransferError, 
-                    self->currentNode->i2cDevice);
+                self->transferErrorCallback(self->currentDataTransferError, 
+                    self, self->currentNode->i2cDevice);
             }
             action.sig = I2CMANAGER_SIG_ENTER;
             self->fsmState = I2CManager_FsmStop;
@@ -685,10 +729,10 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, const I2CEvent *e)
             action.sig = I2CMANAGER_SIG_EXIT;
             self->fsmState(self, &action);
             /* Error event callback */
-            if(self->transferErrorCallbackFunc != NULL)
+            if(self->transferErrorCallback != NULL)
             {
-                self->transferErrorCallbackFunc(self->currentDataTransferError, 
-                    self->currentNode->i2cDevice);
+                self->transferErrorCallback(self->currentDataTransferError, 
+                    self, self->currentNode->i2cDevice);
             }
             break;
         default:
@@ -779,10 +823,10 @@ static void I2CManager_FsmWriteData(I2CManager *self, const I2CEvent *e)
             action.sig = I2CMANAGER_SIG_EXIT;
             self->fsmState(self, &action);
             /* Error event callback */
-            if(self->transferErrorCallbackFunc != NULL)
+            if(self->transferErrorCallback != NULL)
             {
-                self->transferErrorCallbackFunc(self->currentDataTransferError, 
-                    self->currentNode->i2cDevice);
+                self->transferErrorCallback(self->currentDataTransferError, 
+                    self, self->currentNode->i2cDevice);
             }
             break;
         default:
@@ -872,10 +916,10 @@ static void I2CManager_FsmReadData(I2CManager *self, const I2CEvent *e)
             action.sig = I2CMANAGER_SIG_EXIT;
             self->fsmState(self, &action);
             /* Error event callback */
-            if(self->transferErrorCallbackFunc != NULL)
+            if(self->transferErrorCallback != NULL)
             {
-                self->transferErrorCallbackFunc(self->currentDataTransferError, 
-                    self->currentNode->i2cDevice);
+                self->transferErrorCallback(self->currentDataTransferError, 
+                    self, self->currentNode->i2cDevice);
             }
             break;
         default:
@@ -924,10 +968,10 @@ static void I2CManager_FsmStop(I2CManager *self, const I2CEvent *e)
             action.sig = I2CMANAGER_SIG_EXIT;
             self->fsmState(self, &action);
             /* Error event callback */
-            if(self->transferErrorCallbackFunc != NULL)
+            if(self->transferErrorCallback != NULL)
             {
-                self->transferErrorCallbackFunc(self->currentDataTransferError, 
-                    self->currentNode->i2cDevice);
+                self->transferErrorCallback(self->currentDataTransferError, 
+                    self, self->currentNode->i2cDevice);
             }
             self->fsmState = I2CManager_FsmIdle;
             break;
@@ -981,14 +1025,14 @@ static void I2CManager_FsmRestart(I2CManager *self, const I2CEvent *e)
         case I2CMANAGER_SIG_RETRY_LIMIT_REACHED:
             /* Set a error flag then transition to stop state */
             self->currentDataTransferFinished = true;
-            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_START;
+            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_START_STOP;
             action.sig = I2CMANAGER_SIG_EXIT;
             self->fsmState(self, &action);
             /* Error event callback */
-            if(self->transferErrorCallbackFunc != NULL)
+            if(self->transferErrorCallback != NULL)
             {
-                self->transferErrorCallbackFunc(self->currentDataTransferError, 
-                    self->currentNode->i2cDevice);
+                self->transferErrorCallback(self->currentDataTransferError, 
+                    self, self->currentNode->i2cDevice);
             }
             action.sig = I2CMANAGER_SIG_ENTER;
             self->fsmState = I2CManager_FsmStop;

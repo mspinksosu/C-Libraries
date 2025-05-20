@@ -39,12 +39,11 @@ typedef enum I2CManagerTransferErrorTag
 {
     I2CMANAGER_TRANSFER_ERROR_NONE = 0,
     I2CMANAGER_TRANSFER_ERROR_UNKOWN,
-    I2CMANAGER_TRANSFER_ERROR_START,
+    I2CMANAGER_TRANSFER_ERROR_BUS_COLLISION,
+    I2CMANAGER_TRANSFER_ERROR_START_STOP,
     I2CMANAGER_TRANSFER_ERROR_ADDRESS,
     I2CMANAGER_TRANSFER_ERROR_WRITE,
     I2CMANAGER_TRANSFER_ERROR_READ,
-    // @todo add bus collision
-    // add more as needed
 } I2CManagerTransferError;
 
 typedef struct I2CManagerTransferStatusTag
@@ -126,7 +125,7 @@ typedef void (*I2CFSMState)(I2CManager *self, const I2CEvent *e);
 
 /* callback function pointer. The context pointer will point to the device that 
 was being processed at the time. */
-typedef void (*I2CManagerCallbackFunc)(I2CManagerTransferError error, I2CTarget *context); // @todo maybe add I2CManager pointer too?
+typedef void (*I2CManagerCallback)(I2CManagerTransferError error, I2CManager *context, I2CTarget *targetContext);
 
 struct I2CEventTag
 {
@@ -164,7 +163,9 @@ struct I2CManagerTag
     I2CManagerState managerState;
     I2CState peripheralState;
 
-    I2CManagerCallbackFunc transferErrorCallbackFunc;
+    I2CManagerCallback transferErrorCallback;
+    void (*SetSDAPin)(bool setHigh);
+    void (*SetSCLPin)(bool setHigh);
 };
 
 /**
@@ -206,6 +207,12 @@ void I2CManager_GetDataTransferStatus(I2CManager *self, I2CManagerTransferStatus
 I2CManagerTransferError I2CManager_GetTransferError(I2CManager *self);
 
 /* @todo add more callbacks for transfer finished etc. */
-void I2CManager_SetTransferErrorCallback(I2CManager *self, I2CManagerCallbackFunc Function);
+void I2CManager_SetTransferErrorCallback(I2CManager *self, I2CManagerCallback Function);
+
+void I2CManager_BusClear(I2CManager *self);
+
+void I2CManager_SetSDAPinFunc(I2CManager *self, void(*Function)(bool setHigh));
+
+void I2CManager_SetSCLPinFunc(I2CManager *self, void(*Function)(bool setHigh));
 
 #endif /* I2CMANAGER_H */
