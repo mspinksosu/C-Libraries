@@ -413,34 +413,49 @@ void I2CManager_BusClear(I2CManager *self)
     reset line to try and reset the target device, or cycle power to it. */
 
     I2C_Disable(self->peripheral);
-    if(self->SetSCLPin != NULL)
+    if(self->SetSCLPinDirection != NULL && self->SetSCLPinLevel != NULL)
     {
-        self->SetSCLPin(true);
+        self->SetSCLPinDirection(true);
         for(uint8_t i = 0; i < 10; i++)
         {
             uint16_t count = 1000;
-            self->SetSCLPin(false);
+            self->SetSCLPinLevel(false);
             while(count--);
-            self->SetSCLPin(true);
+            self->SetSCLPinLevel(true);
             count = 1000;
             while(count--);
         }
+        self->SetSCLPinDirection(false);
     }
     I2C_Enable(self->peripheral);
 }
 
 // *****************************************************************************
 
-void I2CManager_SetSDAPinFunc(I2CManager *self, void(*Function)(bool setHigh))
+void I2CManager_SetSDAPinDirectionFunc(I2CManager *self, void(*Function)(bool setOutput))
 {
-    self->SetSDAPin = Function;
+    self->SetSDAPinDirection = Function;
 }
 
 // *****************************************************************************
 
-void I2CManager_SetSCLPinFunc(I2CManager *self, void(*Function)(bool setHigh))
+void I2CManager_SetSCLPinDirectionFunc(I2CManager *self, void(*Function)(bool setOutput))
 {
-    self->SetSCLPin = Function;
+    self->SetSCLPinDirection = Function;
+}
+
+// *****************************************************************************
+
+void I2CManager_SetSDAPinLevelFunc(I2CManager *self, void(*Function)(bool setHigh))
+{
+    self->SetSDAPinLevel = Function;
+}
+
+// *****************************************************************************
+
+void I2CManager_SetSCLPinLevelFunc(I2CManager *self, void(*Function)(bool setHigh))
+{
+    self->SetSCLPinLevel = Function;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

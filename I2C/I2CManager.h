@@ -164,8 +164,13 @@ struct I2CManagerTag
     I2CState peripheralState;
 
     I2CManagerCallback transferErrorCallback;
-    void (*SetSDAPin)(bool setHigh);
-    void (*SetSCLPin)(bool setHigh);
+
+    /* The SCL pin is currently used for the bus clear function. 
+    The SDA pin is for future use if needed. */
+    void (*SetSDAPinDirection)(bool setOutput);
+    void (*SetSCLPinDirection)(bool setOutput);
+    void (*SetSDAPinLevel)(bool setHigh);
+    void (*SetSCLPinLevel)(bool setHigh);
 };
 
 /**
@@ -211,8 +216,12 @@ void I2CManager_SetTransferErrorCallback(I2CManager *self, I2CManagerCallback Fu
 
 void I2CManager_BusClear(I2CManager *self);
 
-void I2CManager_SetSDAPinFunc(I2CManager *self, void(*Function)(bool setHigh));
+void I2CManager_SetSDAPinDirectionFunc(I2CManager *self, void(*Function)(bool setOutput));
 
-void I2CManager_SetSCLPinFunc(I2CManager *self, void(*Function)(bool setHigh));
+void I2CManager_SetSCLPinDirectionFunc(I2CManager *self, void(*Function)(bool setOutput));
+
+void I2CManager_SetSDAPinLevelFunc(I2CManager *self, void(*Function)(bool setHigh));
+
+void I2CManager_SetSCLPinLevelFunc(I2CManager *self, void(*Function)(bool setHigh));
 
 #endif /* I2CMANAGER_H */
