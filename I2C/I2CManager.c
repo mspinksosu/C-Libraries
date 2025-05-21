@@ -873,7 +873,7 @@ static void I2CManager_FsmReadData(I2CManager *self, const I2CEvent *e)
             {
                 self->currentDataTransfer.ptrDataArray[self->readCount++] = I2C_GetReceivedByte(self->peripheral);
                 if(self->readCount < self->currentDataTransfer.length)
-                    I2C_SendAck(self->peripheral, true); // @todo change to FSM state send ack / nack rather than call I2C directly? - MS
+                    I2C_SendAck(self->peripheral, true);
                 else
                     I2C_SendAck(self->peripheral, false); // send NACK on last byte
                 self->fsmTimer.period = self->fsmShortTimeoutPeriod;

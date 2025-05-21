@@ -120,6 +120,12 @@ void I2CTarget_DT_Init(I2CTarget_DT *self, I2CTargetInitType_DT *params);
 void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self, bool readTypeTransfer, 
     uint8_t *dataArray, uint16_t length);
 
+/* @todo IMPORTANT: Should data transfer event (and isFinished function) only happen if the 
+transfer was successful? Whereas in a UART or other serial stream, we only care when the transmit 
+is done so we can load a new byte. We don't care whether or not the UART on the other side received 
+the byte. On the I2C though, we typically have to do things in a particular order. We need to wait 
+until one transfer is done before starting the other. Do I change how the isTransferFinished flag 
+works, or do I make the target code check for errors after the data transfer? - MS */
 bool I2CTarget_DT_IsDataTransferFinished(I2CTarget_DT *self);
 
 void I2CTarget_DT_GetFinishedDataTransfer(I2CTarget_DT *self, bool *retIsReadType, 

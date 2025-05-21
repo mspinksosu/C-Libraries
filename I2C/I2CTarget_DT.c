@@ -129,6 +129,10 @@ void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self, bool readTypeTra
 
 // *****************************************************************************
 
+/* @todo IMPORTANT: There is an issue with the way the current I2C manager and target transmission 
+works. When a transfer fails, it still did technically finish, so the finish event still happens. 
+I could either change how the isDataTransferFinished function works to where it only sets the flag 
+if the transfer finishes successfully. Or add code to the target file to check for errors. - MS */
 bool I2CTarget_DT_IsDataTransferFinished(I2CTarget_DT *self)
 {
     if(self->private.flags.transferFinished)
