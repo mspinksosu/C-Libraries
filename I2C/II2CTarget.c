@@ -78,39 +78,35 @@ void I2CTarget_Init(I2CTarget *self, I2CTargetInitType *params)
 
 // *****************************************************************************
 
-void I2CTarget_DataTransferFinishedEvent(I2CTarget *self, bool readTypeTransfer, 
-    uint8_t *dataArray, uint16_t length)
+void I2CTarget_DataTransferFinishedEvent(I2CTarget *self, I2CTargetTransferFinishedStatus *finishedMessage, 
+    I2CTargetTransferStatus *transferReport)
 {
     if(self->interface->I2CTarget_DataTransferFinishedEvent != NULL && self->instance != NULL)
     {
         (self->interface->I2CTarget_DataTransferFinishedEvent)(self->instance, 
-            readTypeTransfer, dataArray, length);
+            finishedMessage, transferReport);
     }
 }
 
 // *****************************************************************************
 
-bool I2CTarget_IsDataTransferFinished(I2CTarget *self)
+void I2CTarget_IsDataTransferFinished(I2CTarget *self, I2CTargetTransferFinishedStatus *retFinishedMessage)
 {
     if(self->interface->I2CTarget_IsDataTransferFinished != NULL && self->instance != NULL)
     {
-        return (self->interface->I2CTarget_IsDataTransferFinished)(self->instance);
-    }
-    else
-    {
-        return false;
+        (self->interface->I2CTarget_IsDataTransferFinished)(self->instance, 
+            retFinishedMessage);
     }
 }
 
 // *****************************************************************************
 
-void I2CTarget_GetFinishedDataTransfer(I2CTarget *self, bool *retIsReadType, 
-    uint8_t **retPtrArray, uint16_t *retLength)
+void I2CTarget_GetFinishedDataTransfer(I2CTarget *self, I2CTargetTransferStatus *retTransferReport)
 {
     if(self->interface->I2CTarget_GetFinishedDataTransfer != NULL && self->instance != NULL)
     {
         (self->interface->I2CTarget_GetFinishedDataTransfer)(self->instance, 
-            retIsReadType, retPtrArray, retLength);
+            retTransferReport);
     }
 }
 

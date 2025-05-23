@@ -377,7 +377,7 @@ void I2CManager_GetDataTransferStatus(I2CManager *self, I2CManagerTransferStatus
     retTransferStatus->isReadType = self->finishedTransferReport.isReadType;
     retTransferStatus->ptrArray = self->finishedTransferReport.ptrArray;
     retTransferStatus->sizeOfArray = self->finishedTransferReport.sizeOfArray;
-    retTransferStatus->numOfBytesTransferred = self->finishedTransferReport.numOfBytesTransferred;
+    retTransferStatus->numBytesTransferred = self->finishedTransferReport.numBytesTransferred;
 }
 
 // *****************************************************************************
@@ -532,9 +532,9 @@ static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CManag
     retReport->ptrArray = self->currentDataTransfer.ptrDataArray;
     retReport->sizeOfArray = self->currentDataTransfer.length;
     if(retReport->isReadType == true)
-        retReport->numOfBytesTransferred = self->readCount;
+        retReport->numBytesTransferred = self->readCount;
     else
-        retReport->numOfBytesTransferred = self->writeCount;
+        retReport->numBytesTransferred = self->writeCount;
 }
 
 // *****************************************************************************

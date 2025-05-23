@@ -52,7 +52,7 @@ typedef struct I2CManagerTransferStatusTag
     bool isReadType;
     uint8_t *ptrArray;
     uint16_t sizeOfArray;
-    uint16_t numOfBytesTransferred;
+    uint16_t numBytesTransferred;
 } I2CManagerTransferStatus;
 
 typedef struct I2CManager_NodeTag I2CManager_Node;

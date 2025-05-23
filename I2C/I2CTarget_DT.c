@@ -106,63 +106,43 @@ void I2CTarget_DT_Init(I2CTarget_DT *self, I2CTargetInitType_DT *params)
     I2CTarget_BaseInit(self->super, params->targetAddress7Bit);
     // Now finish setting up the buffer
     self->private.state = I2CTARGET_STATE_IDLE;
-    self->private.flags.all = 0;
+    self->private.transferFinishedStatus = I2CTARGET_TRANSFER_NOT_FINISHED;
+    self->private.transferStartedFlag = false;
     DTBuffer_Init(&(self->private.dtBuffer), params->ptrToDTArray, params->dtArraySize);
 }
 
 // *****************************************************************************
 
-void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self, bool readTypeTransfer, 
-    uint8_t *dataArray, uint16_t length)
+void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self, I2CTargetTransferFinishedStatus *finishedMessage, 
+    I2CTargetTransferStatus *transferReport)
 {
-    DataTransferType type = DATA_TRANSFER_TYPE_WRITE;
-    if(readTypeTransfer)
-        type = DATA_TRANSFER_TYPE_READ;
+    self->private.transferFinishedStatus = *finishedMessage;
+    self->finishedTransfer = *transferReport;
 
-    self->finishedTransfer.transferType = type;
-    self->finishedTransfer.ptrDataArray = dataArray;
-    self->finishedTransfer.length = length;
-
-    self->private.flags.transferFinished = 1;
-    self->private.state = I2CTARGET_STATE_IDLE;
+    if(*finishedMessage == I2CTARGET_TRANSFER_FINISHED_SUCCESS)
+        self->private.state = I2CTARGET_STATE_IDLE;
+    else
+        self->private.state = I2CTARGET_STATE_ERROR;
 }
 
 // *****************************************************************************
 
-/* @todo IMPORTANT: There is an issue with the way the current I2C manager and target transmission 
-works. When a transfer fails, it still did technically finish, so the finish event still happens. 
-I could either change how the isDataTransferFinished function works to where it only sets the flag 
-if the transfer finishes successfully. Or add code to the target file to check for errors. - MS */
-bool I2CTarget_DT_IsDataTransferFinished(I2CTarget_DT *self)
+void I2CTarget_DT_IsDataTransferFinished(I2CTarget_DT *self, I2CTargetTransferFinishedStatus *retFinishedMessage)
 {
-    if(self->private.flags.transferFinished)
-        return true;
-    else
-        return false;
+    *retFinishedMessage = self->private.transferFinishedStatus;
 }
 
 // *****************************************************************************
 
-/* @todo Call the get finished function to clear the flags? It is kind of 
-similar to how other modules like a UART work, where you have to read the 
-receive register in order to clear the rx flag. - MS */
-
-void I2CTarget_DT_GetFinishedDataTransfer(I2CTarget_DT *self, bool *retIsReadType, 
-    uint8_t **retPtrArray, uint16_t *retLength)
+void I2CTarget_DT_GetFinishedDataTransfer(I2CTarget_DT *self, I2CTargetTransferStatus *retTransferReport)
 {
-    if(self->finishedTransfer.transferType == DATA_TRANSFER_TYPE_READ)
-        *retIsReadType = true;
-    else
-        *retIsReadType = false;
-    /* Change the value of the pointer to point to the new address */
-    (*retPtrArray) = self->finishedTransfer.ptrDataArray;
-    *retLength = self->finishedTransfer.length;
+    *retTransferReport = self->finishedTransfer;
 
-    self->private.flags.transferFinished = 0;
-
+    /* Clear the finished status flag */
+    self->private.transferFinishedStatus = I2CTARGET_TRANSFER_NOT_FINISHED;
     /* @todo Should I also clear the transfer started flag here as well? 
     Or let the user handle it with the separate function? */
-    self->private.flags.transferStarted = 0;
+    self->private.transferStartedFlag = false;
 }
 
 // *****************************************************************************
@@ -175,13 +155,18 @@ void I2CTarget_DT_WriteToDataTransferBuffer(I2CTarget_DT *self, bool readTypeTra
         type = DATA_TRANSFER_TYPE_READ;
 
     DTBuffer_WriteDataTransfer(&(self->private.dtBuffer), type, dataArray, length);
+
+    /* @todo Update transfer finished status automatically and change state to 
+    idle automatically if it was in error state before? */
+    self->private.state = I2CTARGET_STATE_IDLE;
+    self->private.transferFinishedStatus = I2CTARGET_TRANSFER_NOT_FINISHED;
 }
 
 // *****************************************************************************
 
 void I2CTarget_DT_DataTransferStartedEvent(I2CTarget_DT *self)
 {
-    self->private.flags.transferStarted = 1;
+    self->private.transferStartedFlag = true;
     self->private.state = I2CTARGET_STATE_TRANSFER_IN_PROGRESS;
 }
 
@@ -189,7 +174,7 @@ void I2CTarget_DT_DataTransferStartedEvent(I2CTarget_DT *self)
 
 bool I2CTarget_DT_IsDataTransferStarted(I2CTarget_DT *self)
 {
-    if(self->private.flags.transferStarted)
+    if(self->private.transferStartedFlag)
         return true;
     else
         return false;
@@ -199,7 +184,7 @@ bool I2CTarget_DT_IsDataTransferStarted(I2CTarget_DT *self)
 
 void I2CTarget_DT_ClearDataTransferStartedFlag(I2CTarget_DT *self)
 {
-    self->private.flags.transferStarted = 0;
+    self->private.transferStartedFlag = false;
 }
 
 // *****************************************************************************
