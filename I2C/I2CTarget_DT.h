@@ -22,9 +22,8 @@
  * 
  ******************************************************************************/
 
-/* @note The size of the data transfer buffer should be one more than the 
-amount that you would like the target to be able to hold at once. I would 
-suggest a minimum size of 3. That is enough to hold one write data request, 
+/* @note The size of the data transfer buffer can be a minimum of 1. I would 
+suggest a minimum size of 2. That is enough to hold one write data request, 
 followed by one read data request. So that you could perform a repeated start 
 if needed. - MS */
 
@@ -110,14 +109,6 @@ void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, uint8_t target
 ////////////////////////////////////////////////////////////////////////////////
 
 void I2CTarget_DT_Init(I2CTarget_DT *self, I2CTargetInitType_DT *params);
-
-// void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self, bool readTypeTransfer, 
-//     uint8_t *dataArray, uint16_t length);
-
-// bool I2CTarget_DT_IsDataTransferFinished(I2CTarget_DT *self);
-
-// void I2CTarget_DT_GetFinishedDataTransfer(I2CTarget_DT *self, bool *retIsReadType, 
-//     uint8_t **retPtrArray, uint16_t *retLength);
 
 void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self, I2CTargetTransferFinishedStatus *finishedMessage, 
     I2CTargetTransferStatus *transferReport);

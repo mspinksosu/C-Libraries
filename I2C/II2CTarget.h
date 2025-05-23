@@ -68,10 +68,6 @@ typedef struct I2CTargetTransferStatus
 typedef struct I2CTargetInterfaceTag
 {
     void (*I2CTarget_Init)(void *instance, void *params);
-    // @todo refactoring data transfer finished event, is finished, and get finished
-    // void (*I2CTarget_DataTransferFinishedEvent)(void *instance, bool, uint8_t *, uint16_t);
-    // bool (*I2CTarget_IsDataTransferFinished)(void *instance);
-    // void (*I2CTarget_GetFinishedDataTransfer)(void *instance, bool *, uint8_t **, uint16_t *);
     void (*I2CTarget_DataTransferFinishedEvent)(void *instance, I2CTargetTransferFinishedStatus *, I2CTargetTransferStatus *);
     void (*I2CTarget_IsDataTransferFinished)(void *instance, I2CTargetTransferFinishedStatus *);
     void (*I2CTarget_GetFinishedDataTransfer)(void *instance, I2CTargetTransferStatus *);
@@ -134,15 +130,6 @@ void I2CTarget_BaseInit(I2CTarget *self, uint8_t targetAddress7Bit);
 
 // @note make sure this function initializes the base class
 void I2CTarget_Init(I2CTarget *self, I2CTargetInitType *params);
-
-// @todo refactoring data transfer finished event, is finished, and get finished
-// void I2CTarget_DataTransferFinishedEvent(I2CTarget *self, bool readTypeTransfer, 
-//     uint8_t *dataArray, uint16_t length);
-
-// bool I2CTarget_IsDataTransferFinished(I2CTarget *self);
-
-// void I2CTarget_GetFinishedDataTransfer(I2CTarget *self, bool *retIsReadType, 
-//     uint8_t **retPtrArray, uint16_t *retLength);
 
 void I2CTarget_DataTransferFinishedEvent(I2CTarget *self, I2CTargetTransferFinishedStatus *finishedMessage, 
     I2CTargetTransferStatus *transferReport);

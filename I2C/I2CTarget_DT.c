@@ -35,10 +35,10 @@
     necessary. When a new sub class object is created, we will set its interface
     member equal to this table. */
 I2CTargetInterface I2CTargetFunctionTable = {
-    .I2CTarget_Init = (void (*)(void *))I2CTarget_DT_Init,
-    .I2CTarget_DataTransferFinishedEvent = (void (*)(void *, bool, uint8_t *, uint16_t))I2CTarget_DT_DataTransferFinishedEvent,
-    .I2CTarget_IsDataTransferFinished = (bool (*)(void *))I2CTarget_DT_IsDataTransferFinished,
-    .I2CTarget_GetFinishedDataTransfer = (void (*)(void *, bool *, uint8_t **, uint16_t *))I2CTarget_DT_GetFinishedDataTransfer,
+    .I2CTarget_Init = (void (*)(void *, void *))I2CTarget_DT_Init,
+    .I2CTarget_DataTransferFinishedEvent = (void (*)(void *, I2CTargetTransferFinishedStatus *, I2CTargetTransferStatus *))I2CTarget_DT_DataTransferFinishedEvent,
+    .I2CTarget_IsDataTransferFinished = (void (*)(void *, I2CTargetTransferFinishedStatus *))I2CTarget_DT_IsDataTransferFinished,
+    .I2CTarget_GetFinishedDataTransfer = (void (*)(void *, I2CTargetTransferStatus *))I2CTarget_DT_GetFinishedDataTransfer,
     .I2CTarget_WriteToDataTransferBuffer = (void (*)(void *, bool, uint8_t *, uint16_t))I2CTarget_DT_WriteToDataTransferBuffer,
     .I2CTarget_DataTransferStartedEvent = (void (*)(void *))I2CTarget_DT_DataTransferStartedEvent,
     .I2CTarget_IsDataTransferStarted = (bool (*)(void *))I2CTarget_DT_IsDataTransferStarted,
