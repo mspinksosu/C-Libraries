@@ -9,10 +9,10 @@
  * 
  * @details
  *      @todo a generic data transfer object. I originally made this for I2C 
- * slave devices, but then I realized it could also apply to SPI or any serial 
+ * target devices, but then I realized it could also apply to SPI or any serial 
  * communication where a separate read and write are performed. For now, I will 
- * just make this a generic object. I might expand this be a generic slave 
- * (or target device) and change the file to TargetDevice.h. - MS
+ * just make this a generic object. I might expand this be a generic target 
+ * device and move my other I2CTarget code here. - MS
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2025 Matthew Spinks
@@ -67,7 +67,6 @@ typedef struct DTBufferTag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/* @note the size of your array you use to make the buffer should be one more than the amount you need */
 void DTBuffer_Init(DTBuffer *self, DataTransfer *arrayIn, uint8_t arrayInSize);
 
 void DTBuffer_WriteDataTransfer(DTBuffer *self, DataTransferType writeOrRead, uint8_t *dataArray, uint16_t length);
@@ -88,7 +87,7 @@ void DTBuffer_Flush(DTBuffer *self);
 uint8_t DTBuffer_GetSize(DTBuffer *self);
 
 /* @follow-up I could change the name to TargetDevice and make the I2C temperature 
-sensor and I2C accelerometer a subclass of that.
+sensor and I2C accelerometer use that instead of restricting them to just I2C.
 TargetDevice_WriteToBuffer(TargetDevice *self, DataTransferType writeOrRead, ... ) - MS */
 
 #endif /* DATA_TRANSFER_H */

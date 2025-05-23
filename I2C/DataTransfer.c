@@ -45,11 +45,10 @@ void DTBuffer_Init(DTBuffer *self, DataTransfer *arrayIn, uint8_t arrayInSize)
 
 void DTBuffer_WriteDataTransfer(DTBuffer *self, DataTransferType writeOrRead, uint8_t *dataArray, uint16_t length)
 {
-    uint8_t tempHead = CircularIncrement(self->private.head, self->private.size);
-
-    if(tempHead != self->private.tail)
+    if(self->count < self->private.size)
     {
         // There is space in the buffer
+        uint8_t tempHead = CircularIncrement(self->private.head, self->private.size);
         self->private.buffer[self->private.head].transferType = writeOrRead;
         self->private.buffer[self->private.head].ptrDataArray = dataArray;
         self->private.buffer[self->private.head].length = length;
@@ -62,7 +61,7 @@ void DTBuffer_WriteDataTransfer(DTBuffer *self, DataTransferType writeOrRead, ui
 
 void DTBuffer_ReadDataTransfer(DTBuffer *self, DataTransfer *returnDataTransfer)
 {
-    if(self->private.head != self->private.tail)
+    if(self->count > 0)
     {
         /* The buffer is not empty. Get the data from the buffer to be 
         processed and clear the transfer finished flag */
@@ -88,9 +87,7 @@ uint8_t DTBuffer_GetCount(DTBuffer *self)
 
 bool DTBuffer_IsFull(DTBuffer *self)
 {
-    uint8_t tempHead = CircularIncrement(self->private.head, self->private.size);
-
-    if(tempHead == self->private.tail)
+    if(self->count >= self->private.size)
         return true;
     else
         return false;
@@ -110,7 +107,7 @@ bool DTBuffer_IsNotEmpty(DTBuffer *self)
 
 void DTBuffer_Peek(DTBuffer *self, DataTransfer *returnDataTransfer)
 {
-    if(self->private.head != self->private.tail)
+    if(self->count > 0)
     {
         *returnDataTransfer = self->private.buffer[self->private.tail];
     }
