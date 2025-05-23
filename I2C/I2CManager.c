@@ -52,6 +52,7 @@ static void I2CManager_PushNode(I2CManager_Node *self, I2CManager_Node *endOfLis
 static void I2CManager_DeleteNode(I2CManager_Node *key, I2CManager_Node *endOfList);
 static void I2CManager_BeginDataTransfer(I2CManager *self, DataTransfer *dtObject);
 static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CManagerTransferStatus *retReport);
+static void I2CManager_GenerateTargetReport(I2CManager *self, I2CTargetTransferStatus *retReport);
 static void I2CManager_SetFSMTimerRepeat(I2CManager *self, uint8_t numRetry);
 static void I2CManager_StartFSMTimer(I2CManager *self, uint32_t period);
 static void I2CManager_ClearFSMTimer(I2CManager *self);
@@ -126,7 +127,9 @@ void I2CManager_Process(I2CManager *self)
 {
     I2CEvent event = {0};
     DataTransfer tempDataTransfer = {0};
-    I2CManagerTransferStatus tempStatusReport = {0};
+    I2CManagerTransferStatus tempManagerReport = {0};
+    I2CTargetTransferStatus tempTargetReport = {0};
+    I2CTargetTransferFinishedStatus tempFinishedMessage = I2CTARGET_TRANSFER_NOT_FINISHED;
 
     /* Check if we need to start a timer */
     if(self->fsmTimer.flags.start)
@@ -231,14 +234,12 @@ void I2CManager_Process(I2CManager *self)
         /* Clear the target device's receive finished and transmit finished 
         flags. The receive finished flag is cleared by reading out the finished 
         data transfer. */
-        bool tempBool;
-        uint8_t *tempPtr;
-        uint16_t tempLength;
-        I2CTarget_GetFinishedDataTransfer(self->currentNode->i2cDevice, &tempBool, &tempPtr, &tempLength);
+        I2CTargetTransferStatus tempStatus;
+        I2CTarget_GetFinishedDataTransfer(self->currentNode->i2cDevice, &tempStatus);
         I2CTarget_ClearDataTransferStartedFlag(self->currentNode->i2cDevice);
         /* Try to reset the target devices */
         I2CManager_BusClear(self);
-        /* Send the transfer error flag to notify the user */
+        /* Send a transfer error event to notify the user */
         if(self->transferErrorCallback != NULL)
         {
             self->transferErrorCallback(self->currentDataTransferError, 
@@ -277,24 +278,32 @@ void I2CManager_Process(I2CManager *self)
                 if(self->currentDataTransferFinished)
                 {
                     /* Get the report of the current transfer and write the 
-                    report to the manager. Then call the target device's 
+                    report to the manager. */
+                    I2CManager_GenerateFinishedTransferReport(self, &tempManagerReport);
+                    self->finishedTransferReport = tempManagerReport;
+
+                    /* Create a target report, then call the target device's 
                     finished transfer event function to finish the transfer. */
-                    I2CManager_GenerateFinishedTransferReport(self, &tempStatusReport);
-                    self->finishedTransferReport = tempStatusReport;
-                    
+                    I2CManager_GenerateTargetReport(self, &tempTargetReport);
+                    if(self->currentDataTransferError == I2CMANAGER_TRANSFER_ERROR_NONE)
+                        tempFinishedMessage = I2CTARGET_TRANSFER_FINISHED_SUCCESS;
+                    else
+                        tempFinishedMessage = I2CTARGET_TRANSFER_FINISHED_FAIL;
                     I2CTarget_DataTransferFinishedEvent(self->currentNode->i2cDevice, 
-                                                        tempStatusReport.isReadType, 
-                                                        tempStatusReport.ptrArray, 
-                                                        tempStatusReport.sizeOfArray);
+                                                        &(tempFinishedMessage), 
+                                                        &(tempTargetReport));
+
                     /* Check if there was an error. Then check if there is more 
                     data to transfer. If there is more data to transfer, send a 
                     repeated start event to the state machine. */
                     if(self->currentDataTransferError != I2CMANAGER_TRANSFER_ERROR_NONE)
                     {
-                        /* @follow-up decide if I want to keep trying to write more bytes if there 
-                        is a read or write data error, or just give up. I think the best option is 
-                        to go on the to the next device. If the user has the error callback 
-                        implemented, they can decided how they want to handle it. - MS */
+                        /* @todo decide if I want to keep trying to write more bytes if there is a 
+                        read or write data error, or just give up. I think the best option might be 
+                        to just go on the to the next device. If the user has the error callback 
+                        implemented, they can decided how they want to handle it. If I decide to 
+                        stop and go to the next device on error, then this if-statement is the same 
+                        as finish with no error. @remove it. - MS */
 
                         /* Go to the next device. */
                         event.sig = I2CMANAGER_SIG_SEND_STOP;
@@ -528,6 +537,19 @@ static void I2CManager_BeginDataTransfer(I2CManager *self, DataTransfer *dtObjec
 static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CManagerTransferStatus *retReport)
 {
     retReport->error = self->currentDataTransferError;
+    retReport->isReadType = self->currentDataTransfer.isReadType;
+    retReport->ptrArray = self->currentDataTransfer.ptrDataArray;
+    retReport->sizeOfArray = self->currentDataTransfer.length;
+    if(retReport->isReadType == true)
+        retReport->numBytesTransferred = self->readCount;
+    else
+        retReport->numBytesTransferred = self->writeCount;
+}
+
+// *****************************************************************************
+
+static void I2CManager_GenerateTargetReport(I2CManager *self, I2CTargetTransferStatus *retReport)
+{
     retReport->isReadType = self->currentDataTransfer.isReadType;
     retReport->ptrArray = self->currentDataTransfer.ptrDataArray;
     retReport->sizeOfArray = self->currentDataTransfer.length;

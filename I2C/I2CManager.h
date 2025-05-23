@@ -46,6 +46,8 @@ typedef enum I2CManagerTransferErrorTag
     I2CMANAGER_TRANSFER_ERROR_READ,
 } I2CManagerTransferError;
 
+/* @todo My updated I2CTarget transfer status now covers most of this type. 
+I may remove this entirely, or break it into parts. */
 typedef struct I2CManagerTransferStatusTag
 {
     I2CManagerTransferError error;
