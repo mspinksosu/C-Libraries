@@ -788,7 +788,7 @@ static void I2CManager_FsmWriteData(I2CManager *self, const I2CEvent *e)
         case I2CMANAGER_SIG_ENTER:
             I2C_TransmitByte(self->peripheral, self->currentDataTransfer.ptrDataArray[self->writeCount]);
             /* Check if we re-entered this state or not */
-            if(e->callingState != NULL && e->callingState != I2CManager_FsmWriteAddress)
+            if(e->callingState != NULL && e->callingState != I2CManager_FsmWriteData)
                 I2CManager_SetFSMTimerRepeat(self, DEFAULT_REPEAT_LIMIT);
             I2CManager_StartFSMTimer(self, self->fsmLongTimeoutPeriod);
             self->statusBits.transmitInProgress = 1;
