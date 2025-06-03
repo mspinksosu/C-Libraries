@@ -46,6 +46,8 @@ static void I2CManager_FsmStop(I2CManager *self, const I2CEvent *e);
 static void I2CManager_FsmRestart(I2CManager *self, const I2CEvent *e);
 static void I2CManager_FsmReadData(I2CManager *self, const I2CEvent *e);
 
+static volatile uint8_t debugSendStop = 0, debugReset = 0; // @remove later
+
 // ***** Static Function Prototypes ********************************************
 
 static void I2CManager_PushNode(I2CManager_Node *self, I2CManager_Node *endOfList);
@@ -246,6 +248,61 @@ void I2CManager_Process(I2CManager *self)
                 self, self->currentNode->i2cDevice);
         }
     }
+
+// -----------------------------------------------------------------------------
+    /* @debug Experiment. Sometimes the PIC SCL line just keeps going all the 
+    time after a master read. It should stop automatically after 8-bits... */
+    #include "xc.h"
+
+    // stop debugger here and check ACKEN bit
+    if(currentPeripheralState == I2C_STATE_UNKNOWN)
+    {
+        if(self->transferErrorCallback != NULL)
+        {
+            self->transferErrorCallback(I2CMANAGER_TRANSFER_ERROR_UNKOWN, 
+                self, self->currentNode->i2cDevice);
+        }
+    }
+
+    if(I2C1STATbits.IWCOL == 1)
+    {
+        I2C1STATbits.IWCOL = 0;
+        self->currentDataTransferFinished = true;
+        self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
+        event.sig = I2CMANAGER_SIG_SEND_STOP;
+        self->fsmState(self, &event);
+        self->managerState = I2CMANAGER_STATE_IDLE;
+        if(self->transferErrorCallback != NULL)
+        {
+            self->transferErrorCallback(self->currentDataTransferError, 
+                self, self->currentNode->i2cDevice);
+        }
+    }
+
+    if(debugSendStop)
+    {
+        debugSendStop = 0;
+        self->currentDataTransferFinished = true;
+        self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
+        event.sig = I2CMANAGER_SIG_SEND_STOP;
+        self->fsmState(self, &event);
+        self->managerState = I2CMANAGER_STATE_IDLE;
+        if(self->transferErrorCallback != NULL)
+        {
+            self->transferErrorCallback(self->currentDataTransferError, 
+                self, self->currentNode->i2cDevice);
+        }
+    }
+    if(debugReset)
+    {
+        debugReset = 0;
+        I2C1CONbits.I2CEN = 0;
+        self->currentDataTransferFinished = true;
+        self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
+        self->managerState = I2CMANAGER_STATE_IDLE;
+        I2C1CONbits.I2CEN = 1;
+    }
+// -----------------------------------------------------------------------------
 
     /* Go through list and process each targets data requests. */
     if(self->currentNode != NULL)
@@ -612,6 +669,11 @@ static void I2CManager_FsmIdle(I2CManager *self, const I2CEvent *e)
                 self->fsmState = I2CManager_FsmStart;
             }
             action.sig = I2CMANAGER_SIG_ENTER;
+            self->fsmState(self, &action);
+            break;
+        case I2CMANAGER_SIG_SEND_STOP:
+            action.sig = I2CMANAGER_SIG_ENTER;
+            self->fsmState = I2CManager_FsmStop;
             self->fsmState(self, &action);
             break;
         default:
@@ -1010,6 +1072,8 @@ static void I2CManager_FsmStop(I2CManager *self, const I2CEvent *e)
                 self->transferErrorCallback(self->currentDataTransferError, 
                     self, self->currentNode->i2cDevice);
             }
+            // @debug testing reset if I2C clock gets stuck in receive
+            debugReset = 1;
             self->fsmState = I2CManager_FsmIdle;
             break;
         case I2CMANAGER_SIG_SEND_STOP:
