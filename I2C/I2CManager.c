@@ -254,14 +254,10 @@ void I2CManager_Process(I2CManager *self)
     time after a master read. It should stop automatically after 8-bits... */
     #include "xc.h"
 
-    // stop debugger here and check ACKEN bit
+    // stop the debugger here and check ACKEN bit
     if(currentPeripheralState == I2C_STATE_UNKNOWN)
     {
-        if(self->transferErrorCallback != NULL)
-        {
-            self->transferErrorCallback(I2CMANAGER_TRANSFER_ERROR_UNKOWN, 
-                self, self->currentNode->i2cDevice);
-        }
+        self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
     }
 
     if(I2C1STATbits.IWCOL == 1)
@@ -292,15 +288,6 @@ void I2CManager_Process(I2CManager *self)
             self->transferErrorCallback(self->currentDataTransferError, 
                 self, self->currentNode->i2cDevice);
         }
-    }
-    if(debugReset)
-    {
-        debugReset = 0;
-        I2C1CONbits.I2CEN = 0;
-        self->currentDataTransferFinished = true;
-        self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
-        self->managerState = I2CMANAGER_STATE_IDLE;
-        I2C1CONbits.I2CEN = 1;
     }
 // -----------------------------------------------------------------------------
 
@@ -1072,9 +1059,16 @@ static void I2CManager_FsmStop(I2CManager *self, const I2CEvent *e)
                 self->transferErrorCallback(self->currentDataTransferError, 
                     self, self->currentNode->i2cDevice);
             }
-            // @debug testing reset if I2C clock gets stuck in receive
-            debugReset = 1;
+            /* @note Something went really wrong. Reset the peripheral and the 
+            I2C manager. The only time I've had this happen is when the I2C 
+            peripheral got stuck in a receive state somehow and the SCL line 
+            wouldn't stop toggling. Then only way to to recover was to disable 
+            and enable the peripheral. - MS */
+            I2C_Disable(self->peripheral);
+            self->currentDataTransferFinished = true;
+            self->managerState = I2CMANAGER_STATE_IDLE;
             self->fsmState = I2CManager_FsmIdle;
+            I2C_Enable(self->peripheral);
             break;
         case I2CMANAGER_SIG_SEND_STOP:
             /* Something went wrong and the manager requested a stop. We are 
