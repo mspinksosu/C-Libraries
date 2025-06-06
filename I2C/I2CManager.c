@@ -258,6 +258,11 @@ void I2CManager_Process(I2CManager *self)
     if(currentPeripheralState == I2C_STATE_UNKNOWN)
     {
         self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
+        if(self->transferErrorCallback != NULL)
+        {
+            self->transferErrorCallback(self->currentDataTransferError, 
+                self, self->currentNode->i2cDevice);
+        }
     }
 
     if(I2C1STATbits.IWCOL == 1)
@@ -711,7 +716,7 @@ static void I2CManager_FsmStart(I2CManager *self, const I2CEvent *e)
         case I2CMANAGER_SIG_RETRY_LIMIT_REACHED:
             /* Set a error flag then transition to stop state */
             self->currentDataTransferFinished = true;
-            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_START_STOP;
+            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_START;
             action.sig = I2CMANAGER_SIG_EXIT;
             self->fsmState(self, &action);
             /* Error event callback */
@@ -1050,7 +1055,7 @@ static void I2CManager_FsmStop(I2CManager *self, const I2CEvent *e)
             /* Sending a stop failed somehow. Set an error flag then transition 
             to idle state. Perform exit action. No entry action.*/
             self->currentDataTransferFinished = true;
-            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
+            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_FLAGRANT;
             action.sig = I2CMANAGER_SIG_EXIT;
             self->fsmState(self, &action);
             /* Error event callback */
@@ -1120,7 +1125,7 @@ static void I2CManager_FsmRestart(I2CManager *self, const I2CEvent *e)
         case I2CMANAGER_SIG_RETRY_LIMIT_REACHED:
             /* Set a error flag then transition to stop state */
             self->currentDataTransferFinished = true;
-            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_START_STOP;
+            self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_START;
             action.sig = I2CMANAGER_SIG_EXIT;
             self->fsmState(self, &action);
             /* Error event callback */
