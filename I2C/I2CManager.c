@@ -270,9 +270,6 @@ void I2CManager_Process(I2CManager *self)
         I2C1STATbits.IWCOL = 0;
         self->currentDataTransferFinished = true;
         self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
-        event.sig = I2CMANAGER_SIG_SEND_STOP;
-        self->fsmState(self, &event);
-        self->managerState = I2CMANAGER_STATE_IDLE;
         if(self->transferErrorCallback != NULL)
         {
             self->transferErrorCallback(self->currentDataTransferError, 
@@ -284,10 +281,10 @@ void I2CManager_Process(I2CManager *self)
     {
         debugSendStop = 0;
         self->currentDataTransferFinished = true;
-        self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
         event.sig = I2CMANAGER_SIG_SEND_STOP;
         self->fsmState(self, &event);
         self->managerState = I2CMANAGER_STATE_IDLE;
+        self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
         if(self->transferErrorCallback != NULL)
         {
             self->transferErrorCallback(self->currentDataTransferError, 
