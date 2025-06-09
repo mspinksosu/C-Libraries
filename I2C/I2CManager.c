@@ -268,13 +268,13 @@ void I2CManager_Process(I2CManager *self)
     if(I2C1STATbits.IWCOL == 1)
     {
         I2C1STATbits.IWCOL = 0;
-        self->currentDataTransferFinished = true;
-        self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
-        if(self->transferErrorCallback != NULL)
-        {
-            self->transferErrorCallback(self->currentDataTransferError, 
-                self, self->currentNode->i2cDevice);
-        }
+        // self->currentDataTransferFinished = true;
+        // self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
+        // if(self->transferErrorCallback != NULL)
+        // {
+        //     self->transferErrorCallback(self->currentDataTransferError, 
+        //         self, self->currentNode->i2cDevice);
+        // }
     }
 
     if(debugSendStop)
