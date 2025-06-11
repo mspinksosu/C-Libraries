@@ -232,7 +232,7 @@ void I2CManager_Process(I2CManager *self)
         self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_BUS_COLLISION;
         event.sig = I2CMANAGER_SIG_SEND_STOP;
         self->fsmState(self, &event);
-        self->managerState = I2CMANAGER_STATE_IDLE;
+        self->managerState = I2CMANAGER_STATE_IDLE; // @todo update this function to work like the other debug code. Set finished true, don't change state
         /* Clear the target device's receive finished and transmit finished 
         flags. The receive finished flag is cleared by reading out the finished 
         data transfer. */
