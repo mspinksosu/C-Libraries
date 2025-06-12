@@ -46,8 +46,6 @@ static void I2CManager_FsmStop(I2CManager *self, const I2CEvent *e);
 static void I2CManager_FsmRestart(I2CManager *self, const I2CEvent *e);
 static void I2CManager_FsmReadData(I2CManager *self, const I2CEvent *e);
 
-static volatile uint8_t debugSendStop = 0, debugReset = 0; // @remove later
-
 // ***** Static Function Prototypes ********************************************
 
 static void I2CManager_PushNode(I2CManager_Node *self, I2CManager_Node *endOfList);
@@ -220,39 +218,20 @@ void I2CManager_Process(I2CManager *self)
     }
     self->peripheralState = currentPeripheralState;
 
-    /* Check for bus collision and try and recover. Usually when the BCL bit is 
-    set, the SDA line stuck low. And the SDA line is usually stuck low because 
-    a target device still has a hold of the SDA line when it's not supposed to. 
-    Call the bus clear function to try and make the target device let go. Set 
-    an error flag to notify the user. */
+    /* Check for bus collision. Set the transfer finished flag and an error 
+    flag to notify the user. Further down, we will perform a bus clear to try 
+    and recover. */
     if(I2C_GetBusError(self->peripheral))
     {
-        /* Stop the transfer and set the transfer error flag */
         self->currentDataTransferFinished = true;
         self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_BUS_COLLISION;
         event.sig = I2CMANAGER_SIG_SEND_STOP;
         self->fsmState(self, &event);
-        self->managerState = I2CMANAGER_STATE_IDLE; // @todo update this function to work like the other debug code. Set finished true, don't change state
-        /* Clear the target device's receive finished and transmit finished 
-        flags. The receive finished flag is cleared by reading out the finished 
-        data transfer. */
-        I2CTargetTransferStatus tempStatus;
-        I2CTarget_GetFinishedDataTransfer(self->currentNode->i2cDevice, &tempStatus);
-        I2CTarget_ClearDataTransferStartedFlag(self->currentNode->i2cDevice);
-        /* Try to reset the target devices */
-        I2CManager_BusClear(self);
-        /* Send a transfer error event to notify the user */
-        if(self->transferErrorCallback != NULL)
-        {
-            self->transferErrorCallback(self->currentDataTransferError, 
-                self, self->currentNode->i2cDevice);
-        }
     }
 
 // -----------------------------------------------------------------------------
-    /* @debug Experiment. Sometimes the PIC SCL line just keeps going all the 
+    /* @debug Experiments. Sometimes the PIC SCL line just keeps going all the 
     time after a master read. It should stop automatically after 8-bits... */
-    #include "xc.h"
 
     // stop the debugger here and check ACKEN bit
     if(currentPeripheralState == I2C_STATE_UNKNOWN)
@@ -265,31 +244,10 @@ void I2CManager_Process(I2CManager *self)
         }
     }
 
+    // stop the debugger here if we need to check a re-transmit
     if(I2C1STATbits.IWCOL == 1)
     {
         I2C1STATbits.IWCOL = 0;
-        // self->currentDataTransferFinished = true;
-        // self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
-        // if(self->transferErrorCallback != NULL)
-        // {
-        //     self->transferErrorCallback(self->currentDataTransferError, 
-        //         self, self->currentNode->i2cDevice);
-        // }
-    }
-
-    if(debugSendStop)
-    {
-        debugSendStop = 0;
-        self->currentDataTransferFinished = true;
-        event.sig = I2CMANAGER_SIG_SEND_STOP;
-        self->fsmState(self, &event);
-        self->managerState = I2CMANAGER_STATE_IDLE;
-        self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
-        if(self->transferErrorCallback != NULL)
-        {
-            self->transferErrorCallback(self->currentDataTransferError, 
-                self, self->currentNode->i2cDevice);
-        }
     }
 // -----------------------------------------------------------------------------
 
@@ -350,6 +308,24 @@ void I2CManager_Process(I2CManager *self)
                         implemented, they can decided how they want to handle it. If I decide to 
                         stop and go to the next device on error, then this if-statement is the same 
                         as finish with no error. @remove it. - MS */
+
+                         /* If there was a bus collision try and recover. @note Usually when the 
+                         BCL bit is set, the SDA line stuck low. And the SDA line is usually stuck 
+                         low because a target device still has a hold of the SDA line when it's not 
+                         supposed to. Call the bus clear function to try and make the target device 
+                         let go. */
+                        if(self->currentDataTransferError == I2CMANAGER_TRANSFER_ERROR_BUS_COLLISION)
+                        {
+                            I2CTarget_ClearDataTransferStartedFlag(self->currentNode->i2cDevice);
+                            /* Try to reset the target devices */
+                            I2CManager_BusClear(self);
+                            /* Send a transfer error event to notify the user */
+                            if(self->transferErrorCallback != NULL)
+                            {
+                                self->transferErrorCallback(self->currentDataTransferError, 
+                                    self, self->currentNode->i2cDevice);
+                            }
+                        }
 
                         /* Go to the next device. */
                         event.sig = I2CMANAGER_SIG_SEND_STOP;
