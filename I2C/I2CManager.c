@@ -233,7 +233,7 @@ void I2CManager_Process(I2CManager *self)
     /* @debug Experiments. Sometimes the PIC SCL line just keeps going all the 
     time after a master read. It should stop automatically after 8-bits... */
 
-    // stop the debugger here and check ACKEN bit
+    // stop the debugger here and check ACKEN bit @remove debug code later
     if(currentPeripheralState == I2C_STATE_UNKNOWN)
     {
         self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
@@ -245,10 +245,10 @@ void I2CManager_Process(I2CManager *self)
     }
 
     // stop the debugger here if we need to check a re-transmit
-    if(I2C1STATbits.IWCOL == 1)
-    {
-        I2C1STATbits.IWCOL = 0;
-    }
+    // if(I2C1STATbits.IWCOL == 1) // @remove
+    // {
+    //     I2C1STATbits.IWCOL = 0;
+    // }
 // -----------------------------------------------------------------------------
 
     /* Go through list and process each targets data requests. */
