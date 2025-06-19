@@ -305,9 +305,7 @@ void I2CManager_Process(I2CManager *self)
                         /* @todo decide if I want to keep trying to write more bytes if there is a 
                         read or write data error, or just give up. I think the best option might be 
                         to just go on the to the next device. If the user has the error callback 
-                        implemented, they can decided how they want to handle it. If I decide to 
-                        stop and go to the next device on error, then this if-statement is the same 
-                        as finish with no error. @remove it. - MS */
+                        implemented, they can decided how they want to handle it. - MS */
 
                          /* If there was a bus collision try and recover. @note Usually when the 
                          BCL bit is set, the SDA line stuck low. And the SDA line is usually stuck 
@@ -440,8 +438,8 @@ void I2CManager_BusClear(I2CManager *self)
     technically the SCL line isn't supposed to go that fast even though the 
     target device had no problems with it.
     
-    If the SCL line gets stuck low though, you will have to use a hardware 
-    reset line to try and reset the target device, or cycle power to it. */
+    If the SCL line gets stuck low though, you'll have to use a hardware reset 
+    line to try and reset the target device, or cycle power to it. - MS */
 
     I2C_Disable(self->peripheral);
     if(self->SetSCLPinDirection != NULL && self->SetSCLPinLevel != NULL)

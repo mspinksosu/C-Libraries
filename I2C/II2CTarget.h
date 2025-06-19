@@ -42,13 +42,8 @@ typedef enum I2CTargetStateTag
 {
     I2CTARGET_STATE_IDLE = 0,
     I2CTARGET_STATE_TRANSFER_IN_PROGRESS,
-    I2CTARGET_STATE_ERROR,
 } I2CTargetState;
-/* @todo Should I include error as a state or just have a flag? It isn't really 
-used right now. Could just make a function to get error (implementation based) 
-and clear state function. - MS */
 
-// @todo new code experiment. Updating transfer finished
 typedef enum I2CTargetTransferFinishedStatusTag
 {
     I2CTARGET_TRANSFER_NOT_FINISHED = 0,
@@ -169,8 +164,6 @@ I2CTargetState I2CTarget_GetState(I2CTarget *self);
 
 // @todo add function to set state?
 // @todo add separate function to reset started/finished flags?
-// @todo add finished transfer report
-
 // @todo possible callback functions
 // I2CTarget_SetTransferFinishedCallbackFunc
 

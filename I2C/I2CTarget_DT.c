@@ -118,11 +118,7 @@ void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self, I2CTargetTransfe
 {
     self->private.transferFinishedStatus = *finishedMessage;
     self->finishedTransfer = *transferReport;
-
-    if(*finishedMessage == I2CTARGET_TRANSFER_FINISHED_SUCCESS)
-        self->private.state = I2CTARGET_STATE_IDLE;
-    else
-        self->private.state = I2CTARGET_STATE_ERROR;
+    self->private.state = I2CTARGET_STATE_IDLE;
 }
 
 // *****************************************************************************
@@ -155,9 +151,6 @@ void I2CTarget_DT_WriteToDataTransferBuffer(I2CTarget_DT *self, bool readTypeTra
         type = DATA_TRANSFER_TYPE_READ;
 
     DTBuffer_WriteDataTransfer(&(self->private.dtBuffer), type, dataArray, length);
-
-    /* @todo Update transfer finished status automatically and change state to 
-    idle automatically if it was in error state before? */
     self->private.state = I2CTARGET_STATE_IDLE;
     self->private.transferFinishedStatus = I2CTARGET_TRANSFER_NOT_FINISHED;
 }
