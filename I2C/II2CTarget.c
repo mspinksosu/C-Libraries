@@ -238,7 +238,7 @@ void I2CTarget_ClearDataTransferBuffer(I2CTarget *self)
 
 I2CTargetState I2CTarget_GetState(I2CTarget *self)
 {
-    I2CTargetState retVal = I2CTARGET_STATE_ERROR;
+    I2CTargetState retVal = I2CTARGET_STATE_IDLE;
 
     if(self->interface->I2CTarget_GetState != NULL && self->instance != NULL)
     {
