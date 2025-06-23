@@ -12,6 +12,11 @@
  * data transfer as this implementation will include my data transfer buffer 
  * library that I made. - MS
  * 
+ * @note The size of the data transfer buffer can be a minimum of 1. I would 
+ * suggest a minimum size of 2. That is enough to hold one write data request, 
+ * followed by one read data request. So that you could perform a repeated start 
+ * if needed. - MS 
+ * 
  * @section license License
  * SPDX-FileCopyrightText: © 2025 Matthew Spinks
  * SPDX-License-Identifier: Zlib
@@ -21,11 +26,6 @@
  * This notice may not be removed. <http://www.zlib.net/zlib_license.html>
  * 
  ******************************************************************************/
-
-/* @note The size of the data transfer buffer can be a minimum of 1. I would 
-suggest a minimum size of 2. That is enough to hold one write data request, 
-followed by one read data request. So that you could perform a repeated start 
-if needed. - MS */
 
 #ifndef I2CTARGET_DT_H
 #define I2CTARGET_DT_H
