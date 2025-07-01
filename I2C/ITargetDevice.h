@@ -52,7 +52,6 @@ typedef enum TargetDeviceTransferFinishedStatusTag
     TARGETDEVICE_TRANSFER_FINISHED_FAIL
 } TargetDeviceTransferFinishedStatus;
 
-// @todo I'm considering making the data transfer type part of this file. Or at least making its own version
 typedef struct TargetDeviceTransferStatus
 {
     bool isReadType;
