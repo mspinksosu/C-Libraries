@@ -27,7 +27,7 @@
 #ifndef I2CMANAGER_H
 #define I2CMANAGER_H
 
-#include "II2CTarget.h"
+#include "TargetDevice.h"
 #include "II2C.h"
 
 // ***** Defines ***************************************************************
@@ -47,7 +47,7 @@ typedef enum I2CManagerTransferErrorTag
     I2CMANAGER_TRANSFER_ERROR_FLAGRANT,
 } I2CManagerTransferError;
 
-/* @todo My updated I2CTarget transfer status now covers most of this type. 
+/* @todo My updated TargetDevice transfer status now covers most of this type. 
 I may remove this entirely, or break it into parts. */
 typedef struct I2CManagerTransferStatusTag
 {
@@ -63,7 +63,8 @@ typedef struct I2CManager_NodeTag I2CManager_Node;
 struct I2CManager_NodeTag
 {
     I2CManager_Node *next;
-    I2CTarget *i2cDevice;
+    TargetDevice *i2cDevice;
+    uint8_t targetAddress7Bit; // 7-bit address, right justified 
 };
 
 typedef enum I2CManagerStateTag
@@ -128,7 +129,7 @@ typedef void (*I2CFSMState)(I2CManager *self, const I2CEvent *e);
 
 /* callback function pointer. The context pointer will point to the device that 
 was being processed at the time. */
-typedef void (*I2CManagerCallback)(I2CManagerTransferError error, I2CManager *context, I2CTarget *targetContext);
+typedef void (*I2CManagerCallback)(I2CManagerTransferError error, I2CManager *context, TargetDevice *targetContext);
 
 struct I2CEventTag
 {
@@ -192,7 +193,7 @@ struct I2CManagerTag
 
 void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs);
 
-void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device, I2CTarget *target);
+void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device, TargetDevice *target, uint8_t targetAddress7Bit);
 
 void I2CManager_RemoveDevice(I2CManager *self, I2CManager_Node *device);
 
@@ -206,7 +207,9 @@ bool I2CManager_IsBusy(I2CManager *self);
 
 I2CManagerState I2CManager_GetState(I2CManager *self);
 
-void I2CManager_GetCurrentDevice(I2CManager *self, I2CTarget *retDevice);
+void I2CManager_GetCurrentDevice(I2CManager *self, TargetDevice *retDevice);
+
+// @todo add GetCurrentDeviceAddress
 
 /* @todo decide how I want to implement I2C manager transfer status - MS */
 /* @todo should I add a get transfer finished function, or use status? - MS */

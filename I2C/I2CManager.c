@@ -88,7 +88,7 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
 
 // *****************************************************************************
 
-void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device, I2CTarget *target)
+void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device, TargetDevice *target, uint8_t targetAddress7Bits)
 {
     /* Combine the I2C target with the node */
     device->i2cDevice = target;
@@ -128,8 +128,8 @@ void I2CManager_Process(I2CManager *self)
     I2CEvent event = {0};
     DataTransfer tempDataTransfer = {0};
     I2CManagerTransferStatus tempManagerReport = {0};
-    I2CTargetTransferStatus tempTargetReport = {0};
-    I2CTargetTransferFinishedStatus tempFinishedMessage = TARGETDEVICE_TRANSFER_NOT_FINISHED;
+    DataTransfer tempTargetReport = {0};
+    TargetDeviceTransferFinishedStatus tempFinishedMessage = TARGETDEVICE_TRANSFER_NOT_FINISHED;
 
     /* Check if we need to start a timer */
     if(self->fsmTimer.flags.start)
@@ -390,7 +390,7 @@ I2CManagerState I2CManager_GetState(I2CManager *self)
 
 // *****************************************************************************
 
-void I2CManager_GetCurrentDevice(I2CManager *self, I2CTarget *retDevice)
+void I2CManager_GetCurrentDevice(I2CManager *self, TargetDevice *retDevice)
 {
     *retDevice = *(self->currentNode->i2cDevice);
 }
@@ -719,12 +719,12 @@ static void I2CManager_FsmWriteAddress(I2CManager *self, const I2CEvent *e)
             uint8_t targetAddressPlusRW = 0;
             if(self->currentDataTransfer.isReadType == false)
             {
-                targetAddressPlusRW = (self->currentNode->i2cDevice->targetAddress7Bit) << 1;
+                targetAddressPlusRW = (self->currentNode->targetAddress7Bit) << 1;
                 self->writeCount = 0;
             }
             else
             {
-                targetAddressPlusRW = ((self->currentNode->i2cDevice->targetAddress7Bit << 1) | 1);
+                targetAddressPlusRW = ((self->currentNode->targetAddress7Bit << 1) | 1);
                 self->readCount = 0;
             }
             I2C_TransmitByte(self->peripheral, targetAddressPlusRW);
