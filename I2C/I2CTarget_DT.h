@@ -1,7 +1,7 @@
 /***************************************************************************//**
- * @brief I2C Target Implementation Header
+ * @brief I2C Target Device Implementation Header
  * 
- * @file I2CTarget_DT.h
+ * @file TargetDevice_I2C.h
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
@@ -30,7 +30,7 @@
 #ifndef I2CTARGET_DT_H
 #define I2CTARGET_DT_H
 
-#include "II2CTarget.h"
+#include "ITargetDevice.h"
 #include "DataTransfer.h"
 
 // ***** Defines ***************************************************************
@@ -41,26 +41,26 @@
 /* If you need to extend the base class, then declare your processor specific
 class here. Your processor specific functions should all use this type in place 
 of the base class type. */
-typedef struct I2CTarget_DTTag
+typedef struct TargetDevice_DTTag
 {
-    I2CTarget *super; // include the base class first
-    I2CTargetTransferStatus finishedTransfer;
+    TargetDevice *super; // include the base class first
+    TargetDeviceTransferStatus finishedTransfer;
     struct
     {
-        I2CTargetState state;
+        TargetDeviceState state;
         DTBuffer dtBuffer;
         bool transferStartedFlag;
-        I2CTargetTransferFinishedStatus transferFinishedStatus;
+        TargetDeviceTransferFinishedStatus transferFinishedStatus;
     } private;
-} I2CTarget_DT;
+} TargetDevice_DT;
 
-typedef struct I2CTargetInitType_DTTag
+typedef struct TargetDeviceInitType_DTTag
 {
-    I2CTargetInitType *super; // include the base class first
+    TargetDeviceInitType *super; // include the base class first
     uint8_t targetAddress7Bit; // 7-bit address, right justified
     DataTransfer *ptrToDTArray;
     uint8_t dtArraySize;
-} I2CTargetInitType_DT;
+} TargetDeviceInitType_DT;
 
 /** 
  * Description of struct
@@ -81,7 +81,7 @@ typedef struct I2CTargetInitType_DTTag
  * @param self
  * @param base
  */
-void I2CTarget_DT_Create(I2CTarget_DT *self, I2CTarget *base);
+void TargetDevice_DT_Create(TargetDevice_DT *self, TargetDevice *base);
 
 /***************************************************************************//**
  * @brief 
@@ -89,7 +89,7 @@ void I2CTarget_DT_Create(I2CTarget_DT *self, I2CTarget *base);
  * @param self 
  * @param base 
  */
-void I2CTarget_DT_CreateInitType(I2CTargetInitType_DT *self, I2CTargetInitType *base);
+void TargetDevice_DT_CreateInitType(TargetDeviceInitType_DT *self, TargetDeviceInitType *base);
 
 /***************************************************************************//**
  * @brief 
@@ -99,7 +99,7 @@ void I2CTarget_DT_CreateInitType(I2CTargetInitType_DT *self, I2CTargetInitType *
  * @param dtArray 
  * @param arraySize 
  */
-void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, uint8_t targetAddress7Bit, 
+void TargetDevice_DT_SetInitTypeParams(TargetDeviceInitType_DT *params, uint8_t targetAddress7Bit, 
     DataTransfer *dtArray, uint8_t dtArraySize);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -108,37 +108,37 @@ void I2CTarget_DT_SetInitTypeParams(I2CTargetInitType_DT *params, uint8_t target
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void I2CTarget_DT_Init(I2CTarget_DT *self, I2CTargetInitType_DT *params);
+void TargetDevice_DT_Init(TargetDevice_DT *self, TargetDeviceInitType_DT *params);
 
-void I2CTarget_DT_DataTransferFinishedEvent(I2CTarget_DT *self, I2CTargetTransferFinishedStatus *finishedMessage, 
-    I2CTargetTransferStatus *transferReport);
+void TargetDevice_DT_DataTransferFinishedEvent(TargetDevice_DT *self, TargetDeviceTransferFinishedStatus *finishedMessage, 
+    TargetDeviceTransferStatus *transferReport);
 
-void I2CTarget_DT_IsDataTransferFinished(I2CTarget_DT *self, I2CTargetTransferFinishedStatus *retFinishedMessage);
+void TargetDevice_DT_IsDataTransferFinished(TargetDevice_DT *self, TargetDeviceTransferFinishedStatus *retFinishedMessage);
 
-void I2CTarget_DT_GetFinishedDataTransfer(I2CTarget_DT *self, I2CTargetTransferStatus *retTransferReport);
+void TargetDevice_DT_GetFinishedDataTransfer(TargetDevice_DT *self, TargetDeviceTransferStatus *retTransferReport);
 
-void I2CTarget_DT_WriteToDataTransferBuffer(I2CTarget_DT *self, bool readTypeTransfer, 
+void TargetDevice_DT_WriteToDataTransferBuffer(TargetDevice_DT *self, bool readTypeTransfer, 
     uint8_t *dataArray, uint16_t length);
 
-void I2CTarget_DT_DataTransferStartedEvent(I2CTarget_DT *self);
+void TargetDevice_DT_DataTransferStartedEvent(TargetDevice_DT *self);
 
-bool I2CTarget_DT_IsDataTransferStarted(I2CTarget_DT *self);
+bool TargetDevice_DT_IsDataTransferStarted(TargetDevice_DT *self);
 
-void I2CTarget_DT_ClearDataTransferStartedFlag(I2CTarget_DT *self);
+void TargetDevice_DT_ClearDataTransferStartedFlag(TargetDevice_DT *self);
 
-void I2CTarget_DT_ReadFromDataTransferBuffer(I2CTarget_DT *self, bool *retIsReadType, 
+void TargetDevice_DT_ReadFromDataTransferBuffer(TargetDevice_DT *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength);
 
-uint8_t I2CTarget_DT_GetDataTransferBufferCount(I2CTarget_DT *self);
+uint8_t TargetDevice_DT_GetDataTransferBufferCount(TargetDevice_DT *self);
 
-bool I2CTarget_DT_IsDataTransferBufferFull(I2CTarget_DT *self);
+bool TargetDevice_DT_IsDataTransferBufferFull(TargetDevice_DT *self);
 
-bool I2CTarget_DT_IsDataTransferBufferNotEmpty(I2CTarget_DT *self);
+bool TargetDevice_DT_IsDataTransferBufferNotEmpty(TargetDevice_DT *self);
 
-uint8_t I2CTarget_DT_GetDataTransferBufferSize(I2CTarget_DT *self);
+uint8_t TargetDevice_DT_GetDataTransferBufferSize(TargetDevice_DT *self);
 
-void I2CTarget_DT_ClearDataTransferBuffer(I2CTarget_DT *self);
+void TargetDevice_DT_ClearDataTransferBuffer(TargetDevice_DT *self);
 
-I2CTargetState I2CTarget_DT_GetState(I2CTarget_DT *self);
+TargetDeviceState TargetDevice_DT_GetState(TargetDevice_DT *self);
 
 #endif /* I2CTARGET_DT_H */
