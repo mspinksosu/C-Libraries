@@ -105,6 +105,9 @@ typedef struct TargetDeviceTag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+/* @follow-up Should I change the write and read buffer functions to use the 
+DataTransfer type? Or keep it like it is currently? - MS */
+
 void TargetDevice_Init(TargetDevice *self, DataTransfer *arrayIn, uint8_t arrayInSize);
 
 void TargetDevice_DataTransferFinishedEvent(TargetDevice *self, TargetDeviceTransferFinishedStatus *finishedMessage, 
@@ -112,6 +115,8 @@ void TargetDevice_DataTransferFinishedEvent(TargetDevice *self, TargetDeviceTran
 
 void TargetDevice_IsDataTransferFinished(TargetDevice *self, TargetDeviceTransferFinishedStatus *retFinishedMessage);
 
+/* @note As of right now, I've decided that getting the received data using 
+this function should clear the transfer finished flag. - MS */
 void TargetDevice_GetFinishedDataTransfer(TargetDevice *self, TargetDeviceTransferStatus *retTransferReport);
 
 
@@ -123,6 +128,8 @@ void TargetDevice_DataTransferStartedEvent(TargetDevice *self);
 
 bool TargetDevice_IsDataTransferStarted(TargetDevice *self);
 
+/* @note Adding for completeness. I wasn't sure if I wanted read from 
+buffer to clear the transfer started flag or not, so I added this for now. - MS */
 void TargetDevice_ClearDataTransferStartedFlag(TargetDevice *self);
 
 

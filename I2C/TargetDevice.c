@@ -22,10 +22,11 @@
  ******************************************************************************/
 
 #include "TargetDevice.h"
+#include <stddef.h> // needed for NULL
 
 // ***** Defines ***************************************************************
 
-#define CircularIncrement(i, size) i == (size - 1) ? 0 : i + 1
+#define CircularIncrement(i, size) (i == (size - 1) ? 0 : i + 1)
 
 // ***** Global Variables ******************************************************
 
@@ -84,11 +85,16 @@ void TargetDevice_WriteToDataTransferBuffer(TargetDevice *self, bool readTypeTra
     if(readTypeTransfer)
         type = DATA_TRANSFER_TYPE_READ;
 
-    // @todo replace DTBuffer function
-    // DTBuffer_WriteDataTransfer(&(self->private.dtBuffer), type, dataArray, length);
-
-    self->private.state = TARGETDEVICE_STATE_IDLE;
-    self->private.transferFinishedStatus = TARGETDEVICE_TRANSFER_NOT_FINISHED;
+    if(self->private.count < self->private.size)
+    {
+        // There is space in the buffer
+        uint8_t tempHead = CircularIncrement(self->private.head, self->private.size);
+        self->private.buffer[self->private.head].transferType = type;
+        self->private.buffer[self->private.head].ptrDataArray = dataArray;
+        self->private.buffer[self->private.head].length = length;
+        self->private.head = tempHead;
+        self->private.count++;
+    }
 }
 
 // *****************************************************************************
@@ -121,15 +127,21 @@ void TargetDevice_ClearDataTransferStartedFlag(TargetDevice *self)
 void TargetDevice_ReadFromDataTransferBuffer(TargetDevice *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength)
 {
-    DataTransfer retDataTransfer;
-    // @todo replace DTBuffer function
-    // DTBuffer_ReadDataTransfer(&(self->private.dtBuffer), &retDataTransfer);
-    if(retDataTransfer.length > 0)
+    DataTransfer retDataTransfer = {.length = 0, .ptrDataArray = NULL};
+
+    if(self->private.count > 0)
     {
+        /* The buffer is not empty. Get the data from the buffer to be 
+        processed */
+        retDataTransfer = self->private.buffer[self->private.tail];
+        self->private.tail = CircularIncrement(self->private.tail, self->private.size);
+        self->private.count--;
+
         if(retDataTransfer.transferType == DATA_TRANSFER_TYPE_READ)
             *retIsReadType = true;
         else
             *retIsReadType = false;
+
         /* Change the value of the pointer to point to the new address */
         (*retPtrArray) = retDataTransfer.ptrDataArray;
         *retLength = retDataTransfer.length;

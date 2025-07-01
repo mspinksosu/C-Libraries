@@ -64,7 +64,7 @@ void DTBuffer_ReadDataTransfer(DTBuffer *self, DataTransfer *returnDataTransfer)
     if(self->count > 0)
     {
         /* The buffer is not empty. Get the data from the buffer to be 
-        processed and clear the transfer finished flag */
+        processed */
         *returnDataTransfer = self->private.buffer[self->private.tail];
         self->private.tail = CircularIncrement(self->private.tail, self->private.size);
         self->count--;
