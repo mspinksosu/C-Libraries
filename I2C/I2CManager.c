@@ -88,10 +88,11 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
 
 // *****************************************************************************
 
-void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device, TargetDevice *target, uint8_t targetAddress7Bits)
+void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device, TargetDevice *target, uint8_t targetAddress7Bit)
 {
-    /* Combine the I2C target with the node */
+    /* Combine the I2C target with the node and set address */
     device->i2cDevice = target;
+    device->targetAddress7Bit = targetAddress7Bit;
 
     /* Now add the node to the list */
     if(self->endOfList == NULL)
@@ -392,6 +393,13 @@ I2CManagerState I2CManager_GetState(I2CManager *self)
 void I2CManager_GetCurrentDevice(I2CManager *self, TargetDevice *retDevice)
 {
     *retDevice = *(self->currentNode->i2cDevice);
+}
+
+// *****************************************************************************
+
+uint8_t I2CManager_GetCurrentDeviceAddress(I2CManager *self)
+{
+    return self->currentNode->targetAddress7Bit;
 }
 
 // *****************************************************************************

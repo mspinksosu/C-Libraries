@@ -204,7 +204,7 @@ I2CManagerState I2CManager_GetState(I2CManager *self);
 
 void I2CManager_GetCurrentDevice(I2CManager *self, TargetDevice *retDevice);
 
-// @todo add GetCurrentDeviceAddress
+uint8_t I2CManager_GetCurrentDeviceAddress(I2CManager *self);
 
 /* @todo decide how I want to implement I2C manager transfer status - MS */
 /* @todo should I add a get transfer finished function, or use status? - MS */
