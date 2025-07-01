@@ -21,7 +21,7 @@
  ******************************************************************************/
 
 #include "I2CManager.h"
-#include "DataTransfer.h"
+#include "TargetDevice.h"
 #include <stddef.h> // needed for NULL
 
 // ***** Defines ***************************************************************

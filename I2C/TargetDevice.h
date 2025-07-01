@@ -33,8 +33,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "DataTransfer.h" // @remove later
-
 // ***** Defines ***************************************************************
 
 
@@ -53,9 +51,24 @@ typedef enum TargetDeviceTransferFinishedStatusTag
     TARGETDEVICE_TRANSFER_FINISHED_FAIL
 } TargetDeviceTransferFinishedStatus;
 
+// ---- @todo adding data transfer type variables -----
+typedef enum DataTransferTypeTag
+{
+    DATA_TRANSFER_TYPE_WRITE = 0,
+    DATA_TRANSFER_TYPE_READ
+} DataTransferType;
+
+typedef struct DataTransferTag
+{
+    DataTransferType transferType;
+    uint8_t *ptrDataArray;
+    uint16_t length;
+} DataTransfer;
+// ----------------------------------------------------
+
 typedef struct TargetDeviceTransferStatus
 {
-    bool isReadType;
+    bool isReadType; // @todo change to DataTransferType?
     uint8_t *ptrArray;
     uint16_t sizeOfArray;
     uint16_t numBytesTransferred;
@@ -63,26 +76,21 @@ typedef struct TargetDeviceTransferStatus
 
 typedef struct TargetDeviceTag
 {
-    // TargetDevice *super; // include the base class first @remove later
     TargetDeviceTransferStatus finishedTransfer;
     struct
     {
         TargetDeviceState state;
-        DTBuffer dtBuffer;
         bool transferStartedFlag;
         TargetDeviceTransferFinishedStatus transferFinishedStatus;
 
-        // @todo add DTBuffer variables
+        // DataTransfer buffer variables
+        DataTransfer *buffer;
+        uint8_t count;
+        uint8_t head;
+        uint8_t tail;
+        uint8_t size;
     } private;
 } TargetDevice;
-
-// typedef struct TargetDeviceInitTypeTag
-// {
-//     // TargetDeviceInitType *super; // include the base class first @remove later
-//     // uint8_t targetAddress7Bit; // 7-bit address, right justified
-//     DataTransfer *ptrToDTArray;
-//     uint8_t dtArraySize;
-// } TargetDeviceInitType;
 
 /** 
  * Description of struct
@@ -97,12 +105,7 @@ typedef struct TargetDeviceTag
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-
-// void TargetDevice_SetInitTypeParams(TargetDeviceInitType *params, uint8_t targetAddress7Bit, 
-//     DataTransfer *dtArray, uint8_t dtArraySize);
-
-// @todo change to include variables from DataTransfer.h
-// void TargetDevice_Init(TargetDevice *self, TargetDeviceInitType *params);
+void TargetDevice_Init(TargetDevice *self, DataTransfer *arrayIn, uint8_t arrayInSize);
 
 void TargetDevice_DataTransferFinishedEvent(TargetDevice *self, TargetDeviceTransferFinishedStatus *finishedMessage, 
     TargetDeviceTransferStatus *transferReport);
@@ -111,8 +114,10 @@ void TargetDevice_IsDataTransferFinished(TargetDevice *self, TargetDeviceTransfe
 
 void TargetDevice_GetFinishedDataTransfer(TargetDevice *self, TargetDeviceTransferStatus *retTransferReport);
 
+
 void TargetDevice_WriteToDataTransferBuffer(TargetDevice *self, bool readTypeTransfer, 
     uint8_t *dataArray, uint16_t length);
+
 
 void TargetDevice_DataTransferStartedEvent(TargetDevice *self);
 
@@ -120,6 +125,8 @@ bool TargetDevice_IsDataTransferStarted(TargetDevice *self);
 
 void TargetDevice_ClearDataTransferStartedFlag(TargetDevice *self);
 
+
+// @note set return length to 0 if no data available
 void TargetDevice_ReadFromDataTransferBuffer(TargetDevice *self, bool *retIsReadType, 
     uint8_t **retPtrArray, uint16_t *retLength);
 
@@ -132,6 +139,7 @@ bool TargetDevice_IsDataTransferBufferNotEmpty(TargetDevice *self);
 uint8_t TargetDevice_GetDataTransferBufferSize(TargetDevice *self);
 
 void TargetDevice_ClearDataTransferBuffer(TargetDevice *self);
+
 
 TargetDeviceState TargetDevice_GetState(TargetDevice *self);
 

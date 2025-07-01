@@ -22,93 +22,27 @@
  ******************************************************************************/
 
 #include "TargetDevice.h"
-#include <stddef.h>
 
 // ***** Defines ***************************************************************
 
+#define CircularIncrement(i, size) i == (size - 1) ? 0 : i + 1
 
 // ***** Global Variables ******************************************************
 
-/*  The sub class must implement the functions provided in the interface. In 
-    this case we are declaring an interface struct and initializing its members 
-    (which are function pointers) the our local functions. Typecasting is 
-    necessary. When a new sub class object is created, we will set its interface
-    member equal to this table. */
-// TargetDeviceInterface TargetDeviceFunctionTable = { // @remove later
-//     .TargetDevice_Init = (void (*)(void *, void *))TargetDevice_I2C_Init,
-//     .TargetDevice_DataTransferFinishedEvent = (void (*)(void *, TargetDeviceTransferFinishedStatus *, TargetDeviceTransferStatus *))TargetDevice_I2C_DataTransferFinishedEvent,
-//     .TargetDevice_IsDataTransferFinished = (void (*)(void *, TargetDeviceTransferFinishedStatus *))TargetDevice_I2C_IsDataTransferFinished,
-//     .TargetDevice_GetFinishedDataTransfer = (void (*)(void *, TargetDeviceTransferStatus *))TargetDevice_I2C_GetFinishedDataTransfer,
-//     .TargetDevice_WriteToDataTransferBuffer = (void (*)(void *, bool, uint8_t *, uint16_t))TargetDevice_I2C_WriteToDataTransferBuffer,
-//     .TargetDevice_DataTransferStartedEvent = (void (*)(void *))TargetDevice_I2C_DataTransferStartedEvent,
-//     .TargetDevice_IsDataTransferStarted = (bool (*)(void *))TargetDevice_I2C_IsDataTransferStarted,
-//     .TargetDevice_ClearDataTransferStartedFlag = (void (*)(void *))TargetDevice_I2C_ClearDataTransferStartedFlag,
-//     .TargetDevice_ReadFromDataTransferBuffer = (void (*)(void *, bool *, uint8_t **, uint16_t *))TargetDevice_I2C_ReadFromDataTransferBuffer,
-//     .TargetDevice_GetDataTransferBufferCount = (uint8_t (*)(void *))TargetDevice_I2C_GetDataTransferBufferCount,
-//     .TargetDevice_IsDataTransferBufferFull = (bool (*)(void *))TargetDevice_I2C_IsDataTransferBufferFull,
-//     .TargetDevice_IsDataTransferBufferNotEmpty = (bool (*)(void *))TargetDevice_I2C_IsDataTransferBufferNotEmpty,
-//     .TargetDevice_GetDataTransferBufferSize = (uint8_t (*)(void *))TargetDevice_I2C_GetDataTransferBufferSize,
-//     .TargetDevice_ClearDataTransferBuffer = (void (*)(void *))TargetDevice_I2C_ClearDataTransferBuffer,
-//     .TargetDevice_GetState = (TargetDeviceState (*)(void *))TargetDevice_I2C_GetState,
-// };
 
 // ***** Static Function Prototypes ********************************************
 
-/* Put static function prototypes here */
-
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// ***** Non-Interface Functions *********************************************//
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-// void TargetDevice_Create(TargetDevice *self, TargetDevice *base)
-// {
-//     self->super = base;
-
-//     /* Do the rest of the initialization for struct members etc. */
-
-//     /*  Call the base class constructor. What you are doing is connecting the 
-//     base class's instance member to the instance of the sub class that you just 
-//     created, along with the list of functions that will be used. From now on,
-//     you'll be able to use the base class for function calls */
-//     TargetDevice_Create(base, self, &TargetDeviceFunctionTable);
-// }
 
 // *****************************************************************************
 
-// void TargetDevice_CreateInitType(TargetDeviceInitType *params, TargetDeviceInitType *base)
-// {
-//     params->super = base;
-//     TargetDevice_CreateInitType(base, params);
-// }
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// ***** Interface Functions *************************************************//
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-void TargetDevice_SetInitTypeParams(TargetDeviceInitType *params, uint8_t targetAddress7Bit, 
-    DataTransfer *dtArray, uint8_t dtArraySize)
+void TargetDevice_Init(TargetDevice *self, DataTransfer *arrayIn, uint8_t arrayInSize)
 {
-    params->targetAddress7Bit = targetAddress7Bit;
-    params->ptrToDTArray = dtArray;
-    params->dtArraySize = dtArraySize;
-}
-
-// *****************************************************************************
-
-void TargetDevice_Init(TargetDevice *self, TargetDeviceInitType *params)
-{
-    // // Call the base initialization
-    // TargetDevice_BaseInit(self->super, params->targetAddress7Bit);
-    // // Now finish setting up the buffer
+    self->private.buffer = arrayIn;
+    self->private.size = arrayInSize;
+    self->private.count = 0;
     self->private.state = TARGETDEVICE_STATE_IDLE;
     self->private.transferFinishedStatus = TARGETDEVICE_TRANSFER_NOT_FINISHED;
     self->private.transferStartedFlag = false;
-    DTBuffer_Init(&(self->private.dtBuffer), params->ptrToDTArray, params->dtArraySize);
 }
 
 // *****************************************************************************
@@ -150,7 +84,9 @@ void TargetDevice_WriteToDataTransferBuffer(TargetDevice *self, bool readTypeTra
     if(readTypeTransfer)
         type = DATA_TRANSFER_TYPE_READ;
 
-    DTBuffer_WriteDataTransfer(&(self->private.dtBuffer), type, dataArray, length);
+    // @todo replace DTBuffer function
+    // DTBuffer_WriteDataTransfer(&(self->private.dtBuffer), type, dataArray, length);
+
     self->private.state = TARGETDEVICE_STATE_IDLE;
     self->private.transferFinishedStatus = TARGETDEVICE_TRANSFER_NOT_FINISHED;
 }
@@ -186,7 +122,8 @@ void TargetDevice_ReadFromDataTransferBuffer(TargetDevice *self, bool *retIsRead
     uint8_t **retPtrArray, uint16_t *retLength)
 {
     DataTransfer retDataTransfer;
-    DTBuffer_ReadDataTransfer(&(self->private.dtBuffer), &retDataTransfer);
+    // @todo replace DTBuffer function
+    // DTBuffer_ReadDataTransfer(&(self->private.dtBuffer), &retDataTransfer);
     if(retDataTransfer.length > 0)
     {
         if(retDataTransfer.transferType == DATA_TRANSFER_TYPE_READ)
@@ -203,35 +140,42 @@ void TargetDevice_ReadFromDataTransferBuffer(TargetDevice *self, bool *retIsRead
 
 uint8_t TargetDevice_GetDataTransferBufferCount(TargetDevice *self)
 {
-    return DTBuffer_GetCount(&(self->private.dtBuffer));
+    return self->private.count;
 }
 
 // *****************************************************************************
 
 bool TargetDevice_IsDataTransferBufferFull(TargetDevice *self)
 {
-    return DTBuffer_IsFull(&(self->private.dtBuffer));
+    if(self->private.count >= self->private.size)
+        return true;
+    else
+        return false;
 }
 
 // *****************************************************************************
 
 bool TargetDevice_IsDataTransferBufferNotEmpty(TargetDevice *self)
 {
-    return DTBuffer_IsNotEmpty(&(self->private.dtBuffer));
+    if(self->private.count != 0)
+        return true;
+    else
+        return false;
 }
 
 // *****************************************************************************
 
 uint8_t TargetDevice_GetDataTransferBufferSize(TargetDevice *self)
 {
-    return DTBuffer_GetSize(&(self->private.dtBuffer));
+    return self->private.size;
 }
 
 // *****************************************************************************
 
 void TargetDevice_ClearDataTransferBuffer(TargetDevice *self)
 {
-    DTBuffer_Flush(&(self->private.dtBuffer));
+    self->private.tail = self->private.head;
+    self->private.count = 0;
 }
 
 // *****************************************************************************
