@@ -49,10 +49,11 @@ void TargetDevice_Init(TargetDevice *self, DataTransfer *arrayIn, uint8_t arrayI
 // *****************************************************************************
 
 void TargetDevice_DataTransferFinishedEvent(TargetDevice *self, TargetDeviceTransferFinishedStatus *finishedMessage, 
-    TargetDeviceTransferStatus *transferReport)
+    DataTransfer *transferReport, uint16_t numBytesTransferred)
 {
     self->private.transferFinishedStatus = *finishedMessage;
     self->finishedTransfer = *transferReport;
+    self->numBytesTransferred = numBytesTransferred;
     self->private.state = TARGETDEVICE_STATE_IDLE;
 }
 
@@ -65,7 +66,7 @@ void TargetDevice_IsDataTransferFinished(TargetDevice *self, TargetDeviceTransfe
 
 // *****************************************************************************
 
-void TargetDevice_GetFinishedDataTransfer(TargetDevice *self, TargetDeviceTransferStatus *retTransferReport)
+uint16_t TargetDevice_GetFinishedDataTransfer(TargetDevice *self, DataTransfer *retTransferReport)
 {
     *retTransferReport = self->finishedTransfer;
 
@@ -74,24 +75,19 @@ void TargetDevice_GetFinishedDataTransfer(TargetDevice *self, TargetDeviceTransf
     /* @todo Should I also clear the transfer started flag here as well? 
     Or let the user handle it with the separate function? */
     self->private.transferStartedFlag = false;
+
+    return self->numBytesTransferred;
 }
 
 // *****************************************************************************
 
-void TargetDevice_WriteToDataTransferBuffer(TargetDevice *self, bool readTypeTransfer, 
-    uint8_t *dataArray, uint16_t length)
+void TargetDevice_WriteToDataTransferBuffer(TargetDevice *self, DataTransfer *dataTransferObj)
 {
-    DataTransferType type = DATA_TRANSFER_TYPE_WRITE;
-    if(readTypeTransfer)
-        type = DATA_TRANSFER_TYPE_READ;
-
     if(self->private.count < self->private.size)
     {
         // There is space in the buffer
         uint8_t tempHead = CircularIncrement(self->private.head, self->private.size);
-        self->private.buffer[self->private.head].transferType = type;
-        self->private.buffer[self->private.head].ptrDataArray = dataArray;
-        self->private.buffer[self->private.head].length = length;
+        self->private.buffer[self->private.head] = *dataTransferObj;
         self->private.head = tempHead;
         self->private.count++;
     }
@@ -124,8 +120,7 @@ void TargetDevice_ClearDataTransferStartedFlag(TargetDevice *self)
 
 // *****************************************************************************
 
-void TargetDevice_ReadFromDataTransferBuffer(TargetDevice *self, bool *retIsReadType, 
-    uint8_t **retPtrArray, uint16_t *retLength)
+void TargetDevice_ReadFromDataTransferBuffer(TargetDevice *self, DataTransfer *retDataTransferObj)
 {
     DataTransfer retDataTransfer = {.length = 0, .ptrDataArray = NULL};
 
@@ -133,18 +128,9 @@ void TargetDevice_ReadFromDataTransferBuffer(TargetDevice *self, bool *retIsRead
     {
         /* The buffer is not empty. Get the data from the buffer to be 
         processed */
-        retDataTransfer = self->private.buffer[self->private.tail];
+        *retDataTransferObj = self->private.buffer[self->private.tail];
         self->private.tail = CircularIncrement(self->private.tail, self->private.size);
         self->private.count--;
-
-        if(retDataTransfer.transferType == DATA_TRANSFER_TYPE_READ)
-            *retIsReadType = true;
-        else
-            *retIsReadType = false;
-
-        /* Change the value of the pointer to point to the new address */
-        (*retPtrArray) = retDataTransfer.ptrDataArray;
-        *retLength = retDataTransfer.length;
     }
 }
 

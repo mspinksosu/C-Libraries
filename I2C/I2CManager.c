@@ -538,7 +538,7 @@ static void I2CManager_BeginDataTransfer(I2CManager *self, DataTransfer *dtObjec
         return;
 
     /* Copy the data over to our temporary transfer buffer */
-    if(dtObject->transferType == DATA_TRANSFER_TYPE_READ)
+    if(dtObject->transferType == DATATRANSFER_TYPE_READ)
         self->currentDataTransfer.isReadType = true;
     else
         self->currentDataTransfer.isReadType = false;

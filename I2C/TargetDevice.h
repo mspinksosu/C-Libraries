@@ -51,11 +51,10 @@ typedef enum TargetDeviceTransferFinishedStatusTag
     TARGETDEVICE_TRANSFER_FINISHED_FAIL
 } TargetDeviceTransferFinishedStatus;
 
-// ---- @todo adding data transfer type variables -----
 typedef enum DataTransferTypeTag
 {
-    DATA_TRANSFER_TYPE_WRITE = 0,
-    DATA_TRANSFER_TYPE_READ
+    DATATRANSFER_TYPE_WRITE = 0,
+    DATATRANSFER_TYPE_READ
 } DataTransferType;
 
 typedef struct DataTransferTag
@@ -64,19 +63,11 @@ typedef struct DataTransferTag
     uint8_t *ptrDataArray;
     uint16_t length;
 } DataTransfer;
-// ----------------------------------------------------
-
-typedef struct TargetDeviceTransferStatus
-{
-    bool isReadType; // @todo change to DataTransferType?
-    uint8_t *ptrArray;
-    uint16_t sizeOfArray;
-    uint16_t numBytesTransferred;
-} TargetDeviceTransferStatus;
 
 typedef struct TargetDeviceTag
 {
-    TargetDeviceTransferStatus finishedTransfer;
+    DataTransfer finishedTransfer;
+    uint16_t numBytesTransferred;
     struct
     {
         TargetDeviceState state;
@@ -111,18 +102,15 @@ DataTransfer type? Or keep it like it is currently? - MS */
 void TargetDevice_Init(TargetDevice *self, DataTransfer *arrayIn, uint8_t arrayInSize);
 
 void TargetDevice_DataTransferFinishedEvent(TargetDevice *self, TargetDeviceTransferFinishedStatus *finishedMessage, 
-    TargetDeviceTransferStatus *transferReport);
+    DataTransfer *transferReport, uint16_t numBytesTransferred);
 
 void TargetDevice_IsDataTransferFinished(TargetDevice *self, TargetDeviceTransferFinishedStatus *retFinishedMessage);
 
-/* @note As of right now, I've decided that getting the received data using 
+/* Returns number of bytes transferred. @note As of right now, I've decided that getting the received data using 
 this function should clear the transfer finished flag. - MS */
-void TargetDevice_GetFinishedDataTransfer(TargetDevice *self, TargetDeviceTransferStatus *retTransferReport);
+uint16_t TargetDevice_GetFinishedDataTransfer(TargetDevice *self, DataTransfer *retTransferReport);
 
-
-void TargetDevice_WriteToDataTransferBuffer(TargetDevice *self, bool readTypeTransfer, 
-    uint8_t *dataArray, uint16_t length);
-
+void TargetDevice_WriteToDataTransferBuffer(TargetDevice *self, DataTransfer *dataTransferObj);
 
 void TargetDevice_DataTransferStartedEvent(TargetDevice *self);
 
@@ -132,10 +120,8 @@ bool TargetDevice_IsDataTransferStarted(TargetDevice *self);
 buffer to clear the transfer started flag or not, so I added this for now. - MS */
 void TargetDevice_ClearDataTransferStartedFlag(TargetDevice *self);
 
-
 // @note set return length to 0 if no data available
-void TargetDevice_ReadFromDataTransferBuffer(TargetDevice *self, bool *retIsReadType, 
-    uint8_t **retPtrArray, uint16_t *retLength);
+void TargetDevice_ReadFromDataTransferBuffer(TargetDevice *self, DataTransfer *retDataTransferObj);
 
 uint8_t TargetDevice_GetDataTransferBufferCount(TargetDevice *self);
 

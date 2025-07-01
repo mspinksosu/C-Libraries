@@ -37,8 +37,8 @@
 
 typedef enum DataTransferTypeTag
 {
-    DATA_TRANSFER_TYPE_WRITE = 0,
-    DATA_TRANSFER_TYPE_READ
+    DATATRANSFER_TYPE_WRITE = 0,
+    DATATRANSFER_TYPE_READ
 } DataTransferType;
 
 typedef struct DataTransferTag
