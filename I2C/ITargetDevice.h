@@ -41,15 +41,15 @@
 
 typedef enum TargetDeviceStateTag
 {
-    I2CTARGET_STATE_IDLE = 0,
-    I2CTARGET_STATE_TRANSFER_IN_PROGRESS,
+    TARGETDEVICE_STATE_IDLE = 0,
+    TARGETDEVICE_STATE_TRANSFER_IN_PROGRESS,
 } TargetDeviceState;
 
 typedef enum TargetDeviceTransferFinishedStatusTag
 {
-    I2CTARGET_TRANSFER_NOT_FINISHED = 0,
-    I2CTARGET_TRANSFER_FINISHED_SUCCESS,
-    I2CTARGET_TRANSFER_FINISHED_FAIL
+    TARGETDEVICE_TRANSFER_NOT_FINISHED = 0,
+    TARGETDEVICE_TRANSFER_FINISHED_SUCCESS,
+    TARGETDEVICE_TRANSFER_FINISHED_FAIL
 } TargetDeviceTransferFinishedStatus;
 
 // @todo I'm considering making the data transfer type part of this file. Or at least making its own version

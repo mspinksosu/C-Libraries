@@ -21,7 +21,7 @@
  * 
  ******************************************************************************/
 
-#include "I2CTarget_DT.h"
+#include "TargetDevice_I2C.h"
 #include <stddef.h>
 
 // ***** Defines ***************************************************************
@@ -105,8 +105,8 @@ void TargetDevice_I2C_Init(TargetDevice_I2C *self, TargetDeviceInitType_I2C *par
     // Call the base initialization
     TargetDevice_BaseInit(self->super, params->targetAddress7Bit);
     // Now finish setting up the buffer
-    self->private.state = I2CTARGET_STATE_IDLE;
-    self->private.transferFinishedStatus = I2CTARGET_TRANSFER_NOT_FINISHED;
+    self->private.state = TARGETDEVICE_STATE_IDLE;
+    self->private.transferFinishedStatus = TARGETDEVICE_TRANSFER_NOT_FINISHED;
     self->private.transferStartedFlag = false;
     DTBuffer_Init(&(self->private.dtBuffer), params->ptrToDTArray, params->dtArraySize);
 }
@@ -118,7 +118,7 @@ void TargetDevice_I2C_DataTransferFinishedEvent(TargetDevice_I2C *self, TargetDe
 {
     self->private.transferFinishedStatus = *finishedMessage;
     self->finishedTransfer = *transferReport;
-    self->private.state = I2CTARGET_STATE_IDLE;
+    self->private.state = TARGETDEVICE_STATE_IDLE;
 }
 
 // *****************************************************************************
@@ -135,7 +135,7 @@ void TargetDevice_I2C_GetFinishedDataTransfer(TargetDevice_I2C *self, TargetDevi
     *retTransferReport = self->finishedTransfer;
 
     /* Clear the finished status flag */
-    self->private.transferFinishedStatus = I2CTARGET_TRANSFER_NOT_FINISHED;
+    self->private.transferFinishedStatus = TARGETDEVICE_TRANSFER_NOT_FINISHED;
     /* @todo Should I also clear the transfer started flag here as well? 
     Or let the user handle it with the separate function? */
     self->private.transferStartedFlag = false;
@@ -151,8 +151,8 @@ void TargetDevice_I2C_WriteToDataTransferBuffer(TargetDevice_I2C *self, bool rea
         type = DATA_TRANSFER_TYPE_READ;
 
     DTBuffer_WriteDataTransfer(&(self->private.dtBuffer), type, dataArray, length);
-    self->private.state = I2CTARGET_STATE_IDLE;
-    self->private.transferFinishedStatus = I2CTARGET_TRANSFER_NOT_FINISHED;
+    self->private.state = TARGETDEVICE_STATE_IDLE;
+    self->private.transferFinishedStatus = TARGETDEVICE_TRANSFER_NOT_FINISHED;
 }
 
 // *****************************************************************************
@@ -160,7 +160,7 @@ void TargetDevice_I2C_WriteToDataTransferBuffer(TargetDevice_I2C *self, bool rea
 void TargetDevice_I2C_DataTransferStartedEvent(TargetDevice_I2C *self)
 {
     self->private.transferStartedFlag = true;
-    self->private.state = I2CTARGET_STATE_TRANSFER_IN_PROGRESS;
+    self->private.state = TARGETDEVICE_STATE_TRANSFER_IN_PROGRESS;
 }
 
 // *****************************************************************************

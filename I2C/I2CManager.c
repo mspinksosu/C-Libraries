@@ -129,7 +129,7 @@ void I2CManager_Process(I2CManager *self)
     DataTransfer tempDataTransfer = {0};
     I2CManagerTransferStatus tempManagerReport = {0};
     I2CTargetTransferStatus tempTargetReport = {0};
-    I2CTargetTransferFinishedStatus tempFinishedMessage = I2CTARGET_TRANSFER_NOT_FINISHED;
+    I2CTargetTransferFinishedStatus tempFinishedMessage = TARGETDEVICE_TRANSFER_NOT_FINISHED;
 
     /* Check if we need to start a timer */
     if(self->fsmTimer.flags.start)
@@ -290,9 +290,9 @@ void I2CManager_Process(I2CManager *self)
                     finished transfer event function to finish the transfer. */
                     I2CManager_GenerateTargetReport(self, &tempTargetReport);
                     if(self->currentDataTransferError == I2CMANAGER_TRANSFER_ERROR_NONE)
-                        tempFinishedMessage = I2CTARGET_TRANSFER_FINISHED_SUCCESS;
+                        tempFinishedMessage = TARGETDEVICE_TRANSFER_FINISHED_SUCCESS;
                     else
-                        tempFinishedMessage = I2CTARGET_TRANSFER_FINISHED_FAIL;
+                        tempFinishedMessage = TARGETDEVICE_TRANSFER_FINISHED_FAIL;
                     I2CTarget_DataTransferFinishedEvent(self->currentNode->i2cDevice, 
                                                         &(tempFinishedMessage), 
                                                         &(tempTargetReport));
