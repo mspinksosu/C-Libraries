@@ -143,18 +143,13 @@ struct I2CManagerTag
     I2CManager_Node *endOfList; // circular linked list
     I2CManager_Node *currentNode;
 
-    struct {
-        bool isReadType;
-        uint8_t *ptrDataArray;
-        uint16_t length;
-    } currentDataTransfer;
+    DataTransfer currentDataTransfer;
 
     bool currentDataTransferFinished;
     I2CManagerTransferError currentDataTransferError;
     uint16_t writeCount;
     uint16_t readCount;
     I2CManagerTransferStatus finishedTransferReport;
-    // @todo add flags for transfer finished event and error event?
 
     I2CFSMState fsmState;
     I2CTimer fsmTimer;
