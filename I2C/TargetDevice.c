@@ -5,10 +5,11 @@
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
- * @date 5/1/25    Original creation
+ * @date 5/1/25    Original creation (I2C)
+ * @date 7/1/25    Re-factored into generic target device
  * 
  * @details
- *      @todo add more details. Generic I2C target object. - MS
+ *      @todo add more details. Generic target object. - MS
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2025 Matthew Spinks
