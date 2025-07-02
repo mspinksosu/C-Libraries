@@ -206,8 +206,8 @@ void I2CManager_GetCurrentDevice(I2CManager *self, TargetDevice *retDevice);
 
 uint8_t I2CManager_GetCurrentDeviceAddress(I2CManager *self);
 
-/* @todo decide how I want to implement I2C manager transfer status - MS */
-/* @todo should I add a get transfer finished function, or use status? - MS */
+/* @todo Decide how I want to implement I2C manager transfer status. Should I 
+add a get transfer finished function, or use status? - MS */
 void I2CManager_GetDataTransferStatus(I2CManager *self, I2CManagerTransferStatus *retTransferStatus);
 
 I2CManagerTransferError I2CManager_GetTransferError(I2CManager *self);

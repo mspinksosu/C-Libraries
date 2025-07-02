@@ -8,8 +8,7 @@
  * @date 5/1/25    Original creation
  * 
  * @details
- *      @todo add more details. Generic I2C target object. Will use my data 
- * transfer buffer. - MS
+ *      @todo add more details. Generic I2C target object. - MS
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2025 Matthew Spinks
