@@ -110,7 +110,8 @@ void TargetDevice_IsDataTransferFinished(TargetDevice *self, TargetDeviceTransfe
 this function should clear the transfer finished flag. - MS */
 uint16_t TargetDevice_GetFinishedDataTransfer(TargetDevice *self, DataTransfer *retTransferReport);
 
-void TargetDevice_WriteToDataTransferBuffer(TargetDevice *self, DataTransfer *dataTransferObj);
+void TargetDevice_WriteToDataTransferBuffer(TargetDevice *self, DataTransferType transferType, 
+    uint8_t *dataArray, uint16_t length);
 
 void TargetDevice_DataTransferStartedEvent(TargetDevice *self);
 

@@ -80,13 +80,16 @@ uint16_t TargetDevice_GetFinishedDataTransfer(TargetDevice *self, DataTransfer *
 
 // *****************************************************************************
 
-void TargetDevice_WriteToDataTransferBuffer(TargetDevice *self, DataTransfer *dataTransferObj)
+void TargetDevice_WriteToDataTransferBuffer(TargetDevice *self, DataTransferType transferType, 
+    uint8_t *dataArray, uint16_t length)
 {
     if(self->private.count < self->private.size)
     {
         // There is space in the buffer
         uint8_t tempHead = CircularIncrement(self->private.head, self->private.size);
-        self->private.buffer[self->private.head] = *dataTransferObj;
+        self->private.buffer[self->private.head].transferType = transferType;
+        self->private.buffer[self->private.head].ptrDataArray = dataArray;
+        self->private.buffer[self->private.head].length = length;
         self->private.head = tempHead;
         self->private.count++;
     }
