@@ -124,8 +124,6 @@ void TargetDevice_ClearDataTransferStartedFlag(TargetDevice *self)
 
 void TargetDevice_ReadFromDataTransferBuffer(TargetDevice *self, DataTransfer *retDataTransferObj)
 {
-    DataTransfer retDataTransfer = {.length = 0, .ptrDataArray = NULL};
-
     if(self->private.count > 0)
     {
         /* The buffer is not empty. Get the data from the buffer to be 
@@ -133,6 +131,11 @@ void TargetDevice_ReadFromDataTransferBuffer(TargetDevice *self, DataTransfer *r
         *retDataTransferObj = self->private.buffer[self->private.tail];
         self->private.tail = CircularIncrement(self->private.tail, self->private.size);
         self->private.count--;
+    }
+    else
+    {
+        /* The buffer is empty. Set the returned data length to 0 */
+        retDataTransferObj->length = 0;
     }
 }
 
