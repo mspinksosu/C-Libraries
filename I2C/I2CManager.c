@@ -232,8 +232,7 @@ void I2CManager_Process(I2CManager *self)
     }
 
 // -----------------------------------------------------------------------------
-    /* @debug Experiments. Sometimes the PIC SCL line just keeps going all the 
-    time after a master read. It should stop automatically after 8-bits... */
+    /* @debug Experiments. */
 
     // stop the debugger here and check ACKEN bit @remove debug code later
     if(currentPeripheralState == I2C_STATE_UNKNOWN)
@@ -245,12 +244,6 @@ void I2CManager_Process(I2CManager *self)
                 self, self->currentNode->i2cDevice);
         }
     }
-
-    // stop the debugger here if we need to check a re-transmit
-    // if(I2C1STATbits.IWCOL == 1) // @remove
-    // {
-    //     I2C1STATbits.IWCOL = 0;
-    // }
 // -----------------------------------------------------------------------------
 
     /* Go through list and process each targets data requests. */
@@ -309,10 +302,10 @@ void I2CManager_Process(I2CManager *self)
                         implemented, they can decided how they want to handle it. - MS */
 
                          /* If there was a bus collision try and recover. @note Usually when the 
-                         BCL bit is set, the SDA line stuck low. And the SDA line is usually stuck 
+                         BCL bit is set, the SDA line is stuck low. The SDA line is usually stuck 
                          low because a target device still has a hold of the SDA line when it's not 
                          supposed to. Call the bus clear function to try and make the target device 
-                         let go. */
+                         let go of the bus. */
                         if(self->currentDataTransferError == I2CMANAGER_TRANSFER_ERROR_BUS_COLLISION)
                         {
                             TargetDevice_ClearDataTransferStartedFlag(self->currentNode->i2cDevice);
@@ -529,7 +522,7 @@ static void I2CManager_DeleteNode(I2CManager_Node *node, I2CManager_Node *endOfL
     pointer if needed. */
     if(temp == node)
     {
-        if(temp->next == prev->next) // list size = 1
+        if(temp->next == prev->next) // list size == 1
             endOfList = NULL;
         else if(temp == endOfList)
             endOfList = prev;
