@@ -57,13 +57,12 @@ I2CInterface I2C1_FunctionTable = {
     .I2C_IsReceiveUsingInterrupts = I2C1_IsReceiveUsingInterrupts,
     .I2C_ReceiveByte = I2C1_ReceiveByte,
     .I2C_ReceiveByteCancel = I2C1_ReceiveByteCancel,
-    .I2C_TransmitRegisterEmptyEvent = I2C1_TransmitRegisterEmptyEvent,
+    .I2CTransmitFinishedEvent = I2C1TransmitFinishedEvent,
     .I2C_TransmitByte = I2C1_TransmitByte,
-    .I2C_IsTransmitRegisterEmpty = I2C1_IsTransmitRegisterEmpty,
     .I2C_IsTransmitFinished = I2C1_IsTransmitFinished,
     .I2C_IsTransmitUsingInterrupts = I2C1_IsTransmitUsingInterrupts,
     .I2C_PendingEventHandler = I2C1_PendingEventHandler,
-    .I2C_SetTransmitRegisterEmptyCallback = I2C1_SetTransmitRegisterEmptyCallback,
+    .I2C_SetTransmitFinishedCallback = I2C1_SetTransmitFinishedCallback,
     .I2C_SetReceivedDataCallback = I2C1_SetReceivedDataCallback,
     .I2C_Start = I2C1_Start,
     .I2C_Stop = I2C1_Stop,
@@ -214,7 +213,7 @@ void I2C1_ReceiveByteCancel(void)
 
 // *****************************************************************************
 
-void I2C1_TransmitRegisterEmptyEvent(void)
+void I2C1TransmitFinishedEvent(void)
 {
     // @todo transmit interrupt
 }
@@ -224,17 +223,6 @@ void I2C1_TransmitRegisterEmptyEvent(void)
 void I2C1_TransmitByte(uint8_t dataToSend)
 {
     I2CxTRN = dataToSend;
-}
-
-// *****************************************************************************
-
-bool I2C1_IsTransmitRegisterEmpty(void)
-{
-    // transmit buffer full status bit is cleared after 8 bits are shifted out
-    if(I2CxSTATbits.TBF)
-        return false;
-    else
-        return true;
 }
 
 // *****************************************************************************
@@ -260,7 +248,7 @@ void I2C1_PendingEventHandler(void)
 {
 
 }
-void I2C1_SetTransmitRegisterEmptyCallback(void (*Function)(void))
+void I2C1_SetTransmitFinishedCallback(void (*Function)(void))
 {
 
 }

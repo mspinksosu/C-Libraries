@@ -132,7 +132,6 @@ uint8_t TargetDevice_GetDataTransferBufferSize(TargetDevice *self);
 
 void TargetDevice_ClearDataTransferBuffer(TargetDevice *self);
 
-
 TargetDeviceState TargetDevice_GetState(TargetDevice *self);
 
 #endif /* TARGETDEVICE_H */

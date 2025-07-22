@@ -68,7 +68,7 @@ void I2C1_ReceiveByte(void);
 
 void I2C1_ReceiveByteCancel(void);
 
-void I2C1_TransmitRegisterEmptyEvent(void);
+void I2C1TransmitFinishedEvent(void);
 
 void I2C1_TransmitByte(uint8_t dataToSend);
 
@@ -79,7 +79,7 @@ bool I2C1_IsTransmitFinished(void);
 bool I2C1_IsTransmitUsingInterrupts(void);
 
 void I2C1_PendingEventHandler(void);
-void I2C1_SetTransmitRegisterEmptyCallback(void (*Function)(void));
+void I2C1_SetTransmitFinishedCallback(void (*Function)(void));
 void I2C1_SetReceivedDataCallback(void (*Function)(uint8_t (*CallToGetData)(void)));
 
 void I2C1_Start(void);

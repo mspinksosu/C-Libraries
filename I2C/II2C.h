@@ -59,25 +59,6 @@ typedef enum I2CStateTag
     I2C_STATE_CONTROLLER_SENDING_ACK,
 } I2CState;
 
-// @todo make error codes enum?
-
-// @todo keep status bits?
-typedef struct I2CStatusBitsTag
-{
-    union {
-        struct {
-            unsigned busy             :1;
-            unsigned txEmpty          :1; // tx register empty
-            unsigned rxNotEmpty       :1; // rx register not empty
-            unsigned transmitFinished :1;
-            unsigned fault            :1; // mode fault or frame error
-            unsigned overflow         :1;
-            unsigned                  :2;
-        };
-        uint8_t all;
-    };
-} I2CStatusBits;
-
 typedef struct I2CInitTypeTag
 {
     I2CRole role;
@@ -102,15 +83,14 @@ typedef struct I2CInterfaceTag
     bool (*I2C_IsReceiveUsingInterrupts)(void);
     void (*I2C_ReceiveByte)(void);
     void (*I2C_ReceiveByteCancel)(void);
-    void (*I2C_TransmitRegisterEmptyEvent)(void);
+    void (*I2CTransmitFinishedEvent)(void);
     void (*I2C_TransmitByte)(uint8_t);
-    bool (*I2C_IsTransmitRegisterEmpty)(void);
     bool (*I2C_IsTransmitFinished)(void);
     bool (*I2C_IsTransmitUsingInterrupts)(void); // @todo transmit using interrupts
 
     // @todo pending event handler, and function setters
     void (*I2C_PendingEventHandler)(void);
-    void (*I2C_SetTransmitRegisterEmptyCallback)(void (*Function)(void));
+    void (*I2C_SetTransmitFinishedCallback)(void (*Function)(void));
     void (*I2C_SetReceivedDataCallback)(void (*Function)(uint8_t (*CallToGetData)(void)));
 
     void (*I2C_Start)(void);
@@ -178,12 +158,9 @@ void I2C_ReceiveByte(I2C *self);
 
 void I2C_ReceiveByteCancel(I2C *self);
 
-void I2C_TransmitRegisterEmptyEvent(I2C *self);
+void I2CTransmitFinishedEvent(I2C *self);
 
 void I2C_TransmitByte(I2C *self, uint8_t dataToSend);
-
-// @todo may just remove this and use TransmitFinished only, since we must wait for the 9th bit anyways - MS
-bool I2C_IsTransmitRegisterEmpty(I2C *self);
 
 bool I2C_IsTransmitFinished(I2C *self);
 
@@ -202,20 +179,12 @@ void I2C_Restart(I2C *self);
 
 void I2C_SendAck(I2C *self, bool ackOrNack);
 
-/* @todo I will probably replace these specific getters with a get state 
-function later. Other processors may not have specific bits like these. For 
-now, go ahead and use it like it was for the original PIC32 library so that 
-I can test the library. - MS */
-
 bool I2C_IsBusy(I2C *self);
 
 I2CState I2C_GetState(I2C *self);
 
 bool I2C_GetAckTargetStatus(I2C *self);
 
-/* @todo should I make the bus collision a state, or just an event? The bus 
-collision bit is set when a collision is detected, but has to be cleared by 
-software. So it's not really a state. */
 bool I2C_GetBusError(I2C *self);
 
 #endif /* I2C_H */

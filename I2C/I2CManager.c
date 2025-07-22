@@ -180,9 +180,11 @@ void I2CManager_Process(I2CManager *self)
         self->fsmState(self, &event);
     }
 
+    /* @todo replace IsTransmitRegisterEmpty with IsTransmitFinished and re-test again to make sure 
+    everything still works. */
     if(self->statusBits.transmitInProgress && currentPeripheralState != I2C_STATE_CONTROLLER_TRANSMITTING)
     {
-        if(I2C_IsTransmitRegisterEmpty(self->peripheral))
+        if(I2C_IsTransmitFinished(self->peripheral))
         {
             self->statusBits.transmitInProgress = 0;
             event.sig = I2CMANAGER_SIG_BUS_IDLE_EVENT;

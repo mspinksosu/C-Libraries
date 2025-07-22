@@ -205,11 +205,11 @@ void I2C_ReceiveByteCancel(I2C *self)
 
 // *****************************************************************************
 
-void I2C_TransmitRegisterEmptyEvent(I2C *self)
+void I2CTransmitFinishedEvent(I2C *self)
 {
-    if(self->interface->I2C_TransmitRegisterEmptyEvent != NULL)
+    if(self->interface->I2CTransmitFinishedEvent != NULL)
     {
-        (self->interface->I2C_TransmitRegisterEmptyEvent)();
+        (self->interface->I2CTransmitFinishedEvent)();
     }
 }
 
@@ -220,20 +220,6 @@ void I2C_TransmitByte(I2C *self, uint8_t dataToSend)
     if(self->interface->I2C_TransmitByte != NULL)
     {
         (self->interface->I2C_TransmitByte)(dataToSend);
-    }
-}
-
-// *****************************************************************************
-
-bool I2C_IsTransmitRegisterEmpty(I2C *self)
-{
-    if(self->interface->I2C_IsTransmitRegisterEmpty != NULL)
-    {
-        return (self->interface->I2C_IsTransmitRegisterEmpty)();
-    }
-    else
-    {
-        return false;
     }
 }
 
@@ -277,11 +263,11 @@ void I2C_PendingEventHandler(I2C *self)
 
 // *****************************************************************************
 
-void I2C_SetTransmitRegisterEmptyCallback(I2C *self, void (*Function)(void))
+void I2C_SetTransmitFinishedCallback(I2C *self, void (*Function)(void))
 {
-    if(self->interface->I2C_SetTransmitRegisterEmptyCallback != NULL)
+    if(self->interface->I2C_SetTransmitFinishedCallback != NULL)
     {
-        (self->interface->I2C_SetTransmitRegisterEmptyCallback)(Function);
+        (self->interface->I2C_SetTransmitFinishedCallback)(Function);
     }
 }
 
