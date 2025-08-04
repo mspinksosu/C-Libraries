@@ -17,7 +17,8 @@
  * automatically whenever they are called.
  * 
  * This library uses a table to determine what state the rotary encoder is in. 
- * This is based on the value given by the update phases function.
+ * This is based on the value given by the update phases function. See header 
+ * file for more information.
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2016 Matthew Spinks
