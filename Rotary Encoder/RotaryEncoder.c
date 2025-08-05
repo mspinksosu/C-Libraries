@@ -176,23 +176,29 @@ void RE_Tick(RotaryEncoder *self, bool AisHigh, bool BisHigh)
     if(newOutput > 1)
     {
         /* Invalid state change */
-        self->output = 0;
+        self->output = 0; // @todo Should I ignore this instead of setting back to zero?
     }
     else if((newOutput == 1 && self->output < 0) || 
             (newOutput == -1 && self->output >= 0))
     {
         /* Detect direction reversal. A negative to positive or a positive to 
-        negative changes the sign and resets the count */
-        self->output = newOutput;
+        negative changes the sign and adjusts the count to the next phase in 
+        the other direction. */
+        int16_t tempInt16 = self->output * -1;
+        if(newOutput == 1)
+            tempInt16 = tempInt16 - 1;
+        else if(newOutput == -1)
+            tempInt16 = tempInt16 + 1;
+
+        self->output = (int8_t)tempInt16;
     }
     else
     {
         self->output += newOutput;
-
-        /* Prevent overflow and underflow. If the output was at 127 and going 
-        in the postive direction, it will be at -128. Roll it to 0. If the 
-        output was at -128 and going in the negative direction, it will be at 
-        127. Roll it to -1. */
+        /* Otherwise continue in the same direction. If the output was at 127 
+        and going in the positive direction, it will be at -128. Roll it to 0. 
+        If the output was at -128 and going in the negative direction, it will 
+        be at 127. Roll it to -1. */
         if(newOutput == 1)
             self->output &= 0x7F;
         
@@ -201,8 +207,7 @@ void RE_Tick(RotaryEncoder *self, bool AisHigh, bool BisHigh)
     }
     
     /* The typemask will cause an event to occur every quarter, half, or full
-    cycle depending on the type of rotary encoder. It is based on modulo
-    division. */
+    cycle depending on the type of rotary encoder. */
     if((self->output & self->typeMask) == 0)
     {
         if(newOutput == 1)
