@@ -213,14 +213,14 @@ void RE_Tick(RotaryEncoder *self, bool AisHigh, bool BisHigh)
         if(newOutput == 1)
         {
             self->flags.clockwise = 1;
-            if(self->clockwiseEventCallback)
-                self->clockwiseEventCallback(self);
+            if(self->eventCallback)
+                self->eventCallback(true, self);
         }
         else if(newOutput == -1)
         {
             self->flags.counterClockwise = 1;
-            if(self->counterClockwiseEventCallback)
-                self->counterClockwiseEventCallback(self);
+            if(self->eventCallback)
+                self->eventCallback(false, self);
         }
     }
 }
@@ -253,16 +253,9 @@ bool RE_GetCounterClockwise(RotaryEncoder *self)
 
 // *****************************************************************************
 
-void RE_SetClockwiseEventCallback(RotaryEncoder *self, RECallbackFunc Function)
+void RE_SetEventCallback(RotaryEncoder *self, RECallbackFunc Function)
 {
-    self->clockwiseEventCallback = Function;
-}
-
-// *****************************************************************************
-
-void RE_SetCounterClockwiseEventCallback(RotaryEncoder *self, RECallbackFunc Function)
-{
-    self->counterClockwiseEventCallback = Function;
+    self->eventCallback = Function;
 }
 
 /*
