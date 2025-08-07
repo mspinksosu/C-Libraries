@@ -204,9 +204,9 @@ void RE_Tick(RotaryEncoder *self, bool AisHigh, bool BisHigh)
     {
         self->output += newOutput;
         /* Otherwise continue in the same direction. If the output was at 127 
-        and going in the positive direction, it will be at -128. Roll it to 0. 
-        If the output was at -128 and going in the negative direction, it will 
-        be at 127. Roll it to -1. */
+        and going in the positive direction, it will get rolled to 0. If the 
+        output was at -128 and going in the negative direction, it will get 
+        rolled to -1. */
         if(newOutput == 1)
             self->output &= 0x7F;
         
