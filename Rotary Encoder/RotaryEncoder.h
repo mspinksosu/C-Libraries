@@ -158,26 +158,43 @@ typedef struct RotaryEncoderTag
 /***************************************************************************//**
  * @brief Initialize a Rotary Encoder object (half cycle type)
  * 
- * Initializes a rotary encoder of the most common type
+ * Initializes a rotary encoder of the most common type. Entering the initial 
+ * states of phase A and B will prevent the rotary encoder from creating a 
+ * false event on startup.
  * 
  * @param self  pointer to the Rotary Encoder that you are using
  * 
  * @param debounceMs  the debounce time in milliseconds
  * 
  * @param tickMs  how often you plan to call the RE Tick function
+ * 
+ * @param AinitState  phase A of the rotary encoder, true = high
+ * 
+ * @param BinitState  phase B of the rotary encoder, true = high
  */
-void RE_Init(RotaryEncoder *self, uint16_t debounceMs, uint16_t tickMs);
+void RE_Init(RotaryEncoder *self, uint16_t debounceMs, uint16_t tickMs, bool AinitState, bool BinitState);
 
 /***************************************************************************//**
  * @brief Initialize a Rotary Encoder object
  * 
+ * Entering the initial states of phase A and B will prevent the rotary encoder 
+ * from creating a false event on startup.
+ * 
  * @param self  pointer to the Rotary Encoder that you are using
+ * 
+ * @param type  RE_HALF_CYCLE_PER_DETENT, RE_FULL_CYCLE_PER_DETENT, 
+ *              RE_QUARTER_CYCLE_PER_DETENT
  * 
  * @param debounceMs  the debounce time in milliseconds
  * 
  * @param tickMs  how often you plan to call the RE Tick function
+ * 
+ * @param AinitState  phase A of the rotary encoder, true = high
+ * 
+ * @param BinitState  phase B of the rotary encoder, true = high
  */
-void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debounceMs, uint16_t tickMs);
+void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debounceMs, 
+    uint16_t tickMs, bool AinitState, bool BinitState);
 
 /***************************************************************************//**
  * @brief Update the value of phases of the Rotary Encoder

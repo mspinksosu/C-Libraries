@@ -51,14 +51,15 @@ static int8_t rotaryLookupTable[] = { 0, 1, -1, 2, -1, 0, 2, 1,
 
 // *****************************************************************************
 
-void RE_Init(RotaryEncoder *self, uint16_t debounceMs, uint16_t tickMs)
+void RE_Init(RotaryEncoder *self, uint16_t debounceMs, uint16_t tickMs, bool AinitState, bool BinitState)
 {
-    RE_InitWithType(self, RE_HALF_CYCLE_PER_DETENT, debounceMs, tickMs);
+    RE_InitWithType(self, RE_HALF_CYCLE_PER_DETENT, debounceMs, tickMs, AinitState, BinitState);
 }
 
 // *****************************************************************************
 
-void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debounceMs, uint16_t tickMs)
+void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debounceMs, 
+    uint16_t tickMs, bool AinitState, bool BinitState)
 {
     uint16_t debouncePeriod;
     
@@ -87,8 +88,9 @@ void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debou
     /* If you are using an RC filter to debounce, the debounce period should be
     zero. However, this type of debouncing algorithm requires a non-zero number 
     for its minimum. Using 1 will simply toggle the output every time the input 
-    changes. For the maximum, I limit it to 8-bits. If you need more than 
-    255 ms to debounce your rotary encoder, you've got some serious issues. */
+    changes. For the maximum, I limit it to 8-bits (255 ms). If you need more 
+    than 255 ms to debounce your rotary encoder, you might want to consider a 
+    different approach. */
     if(debouncePeriod == 0)
         self->debouncePeriod = 1;
     else if(debouncePeriod > 255)
@@ -98,6 +100,12 @@ void RE_InitWithType(RotaryEncoder *self, RotaryEncoderType type, uint16_t debou
     self->phaseAIntegrator = 0;
     self->phaseBIntegrator = 0;
     self->state = 0;
+
+    if(AinitState == true)
+        self->state |= 0x01; // set phase A (bit 0)
+    if(BinitState == true)
+        self->state |= 0x02; // set phase B (bit 1)
+
     self->output = 0;
     self->flags.all = 0;
 }
