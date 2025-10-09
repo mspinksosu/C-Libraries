@@ -15,8 +15,8 @@
  * 
  * @note The size of the data transfer buffer can be a minimum of 1. I would 
  * suggest a minimum size of 2. That is enough to hold one write data request, 
- * followed by one read data request. So that you could perform a repeated start 
- * if needed. - MS 
+ * followed by one read data request. So that you could perform a repeated 
+ * start if needed. - MS 
  * 
  * @section license License
  * SPDX-FileCopyrightText: © 2025 Matthew Spinks
