@@ -40,6 +40,8 @@ void TargetDevice_Init(TargetDevice *self, DataTransfer *arrayIn, uint8_t arrayI
 {
     self->private.buffer = arrayIn;
     self->private.size = arrayInSize;
+    self->private.head = 0;
+    self->private.tail = 0;
     self->private.count = 0;
     self->private.state = TARGETDEVICE_STATE_IDLE;
     self->private.transferFinishedStatus = TARGETDEVICE_TRANSFER_NOT_FINISHED;
