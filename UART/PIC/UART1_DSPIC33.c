@@ -131,16 +131,16 @@ uint32_t UART1_ComputeBRGValue(uint32_t desiredBaudRate, uint32_t pclkInHz)
     /* BRG = Clk / (Prescale * Baud) - 1 */
     uint32_t tmp = 0;
 
-    /* Convert pclk to a 26.6 fixed point number */
-    pclkInHz <<= 6;
+    /* Convert pclk to a 26.5 fixed point number */
+    pclkInHz <<= 5;
     /* Divide by (Prescale * Baud) */
     tmp = pclkInHz / (UART_BRG_DIV * desiredBaudRate);
-    /* Subtract 1 (1 is converted to a 26.6 fixed point number) */
-    tmp -= (1 << 6);
-    /* Add 0.5 to round up (0.5 converted to 26.6 fixed point number is 2^5) */
-    tmp += (1 << 5);
+    /* Subtract 1 (1 is converted to a 26.5 fixed point number) */
+    tmp -= (1 << 5);
+    /* Add 0.5 to round up (0.5 converted to 26.5 fixed point number is 2^4) */
+    tmp += (1 << 4);
     /* Shift back right to get the final result */
-    return (tmp >> 6);
+    return (tmp >> 5);
 }
 
 // *****************************************************************************
@@ -330,7 +330,7 @@ void UART1_TransmitByte(uint8_t data)
     {
         return; // CTS was high
     }
-
+    
     /* Clear the transmission complete flag if needed */
 
     UxTXREG = data;

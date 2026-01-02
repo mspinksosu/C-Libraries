@@ -69,9 +69,9 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
     // self->endOfList = NULL;
     // self->currentNode->i2cDevice = NULL;
     self->currentDataTransfer.length = 0;
+    self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_NONE;
     self->writeCount = 0;
     self->readCount = 0;
-    // @todo init state and error variables
 
     if(tickRateNs == 0)
         tickRateNs = DEFAULT_TICK_RATE_NS;
@@ -84,6 +84,10 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
     if(self->fsmShortTimeoutPeriod == 0)
         self->fsmShortTimeoutPeriod = 1;
 
+    self->fsmTimer.flags.all = 0;
+    self->statusBits.all = 0;
+    self->managerState = I2CMANAGER_STATE_IDLE;
+    self->peripheralState = 0;
     self->fsmState = I2CManager_FsmIdle;
 }
 
@@ -180,8 +184,6 @@ void I2CManager_Process(I2CManager *self)
         self->fsmState(self, &event);
     }
 
-    /* @todo replace IsTransmitRegisterEmpty with IsTransmitFinished and re-test again to make sure 
-    everything still works. */
     if(self->statusBits.transmitInProgress && currentPeripheralState != I2C_STATE_CONTROLLER_TRANSMITTING)
     {
         if(I2C_IsTransmitFinished(self->peripheral))
@@ -232,21 +234,6 @@ void I2CManager_Process(I2CManager *self)
         event.sig = I2CMANAGER_SIG_SEND_STOP;
         self->fsmState(self, &event);
     }
-
-// -----------------------------------------------------------------------------
-    /* @debug Experiments. */
-
-    // stop the debugger here and check ACKEN bit @remove debug code later
-    if(currentPeripheralState == I2C_STATE_UNKNOWN)
-    {
-        self->currentDataTransferError = I2CMANAGER_TRANSFER_ERROR_UNKOWN;
-        if(self->transferErrorCallback != NULL)
-        {
-            self->transferErrorCallback(self->currentDataTransferError, 
-                self, self->currentNode->i2cDevice);
-        }
-    }
-// -----------------------------------------------------------------------------
 
     /* Go through list and process each targets data requests. */
     if(self->currentNode != NULL)
