@@ -70,13 +70,24 @@ void Foo_CreateInitType(FooInitType *params, void *instanceOfSubClass)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-void Foo_Func(Foo *self)
+void Foo_Init(Foo *self, FooInitType *params)
 {
     /* Check the function table is set up properly before calling the processor
     specific function */
-    if(self->interface->Foo_Func != NULL && self->instance != NULL)
+    if(self->interface->Foo_Init != NULL && self->instance != NULL 
+            && params->instance != NULL)
     {
         /* Dispatch the function using indirection */
+        (self->interface->Foo_Init)(self->instance, params->instance);
+    }
+}
+
+// *****************************************************************************
+
+void Foo_Func(Foo *self)
+{
+    if(self->interface->Foo_Func != NULL && self->instance != NULL)
+    {
         (self->interface->Foo_Func)(self->instance);
     }
 }

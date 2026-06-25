@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @brief Foo Library Implementation Header (MCU1)
  * 
- * @file blank.c
+ * @file Foo_MCU1.h
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
@@ -33,6 +33,9 @@
 
 
 // ***** Global Variables ******************************************************
+
+/* Declare and define this variable in your implementation's .c file */
+extern FooInterface MCU1_FunctionTable;
 
 /* If you need to extend the base class, then declare your processor specific
 class here. Your processor specific functions should all use this type in place 
@@ -94,6 +97,14 @@ void Foo_MCU1_ProcessorSpecificNonInterfaceFunc(Foo_MCU1 *self, uint16_t data);
 // ***** Interface Functions *************************************************//
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
+
+/***************************************************************************//**
+ * @brief 
+ * 
+ * @param self 
+ * @param params 
+ */
+void Foo_MCU1_Init(Foo_MCU1 *self, FooInitType_MCU1 *params);
 
 /***************************************************************************//**
  * @brief 

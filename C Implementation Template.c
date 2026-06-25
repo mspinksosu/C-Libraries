@@ -34,7 +34,8 @@
     (which are function pointers) the our local functions. Typecasting is 
     necessary. When a new sub class object is created, we will set its interface
     member equal to this table. */
-FooInterface FooFunctionTable = {
+FooInterface MCU1_FunctionTable = {
+    .Foo_Init = (void (*)(void *, void *))Foo_MCU1_Init,
     .Foo_Func = (void (*)(void *))Foo_MCU1_Func,
     .Foo_GetValue = (uint16_t (*)(void *))Foo_MCU1_GetValue,
     .Foo_SetValue = (void (*)(void *, uint16_t))Foo_MCU1_SetValue,
@@ -89,21 +90,28 @@ void Foo_MCU1_ProcessorSpecificNonInterfaceFunc(Foo_MCU1 *self, uint16_t data)
 
 /* Don't forget to add these functions to the function table */
 
-void Foo_MCU1_Func(Foo *self)
+void Foo_MCU1_Init(Foo_MCU1 *self, FooInitType_MCU1 *params)
 {
 
 }
 
 // *****************************************************************************
 
-uint16_t Foo_MCU1_GetValue(Foo *self)
+void Foo_MCU1_Func(Foo_MCU1 *self)
 {
 
 }
 
 // *****************************************************************************
 
-void Foo_MCU1_SetValue(Foo *self, uint16_t data)
+uint16_t Foo_MCU1_GetValue(Foo_MCU1 *self)
+{
+
+}
+
+// *****************************************************************************
+
+void Foo_MCU1_SetValue(Foo_MCU1 *self, uint16_t data)
 {
 
 }
