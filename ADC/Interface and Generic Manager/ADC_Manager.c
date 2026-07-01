@@ -120,9 +120,10 @@ void ADC_Manager_Tick(void)
     ADC_Tick();
 
     /* Go round-robin through the list */
-    if(adcManagerEnabled && !ADC_IsBusy() && currentEntry != NULL)
+    if(adcManagerEnabled && !ADC_IsBusy())
     {
-        ADC_TakeSample(currentEntry->channel);
+        if(currentEntry != NULL)
+            ADC_TakeSample(currentEntry->channel);
         currentEntry = currentEntry->next;
     }
 }

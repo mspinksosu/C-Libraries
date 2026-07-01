@@ -58,11 +58,11 @@ typedef struct I2CManagerTransferStatusTag
     uint16_t numBytesTransferred;
 } I2CManagerTransferStatus;
 
-typedef struct I2CManager_NodeTag I2CManager_Node;
+typedef struct I2CManagerNodeTag I2CManagerNode; // forward declaration
 
-struct I2CManager_NodeTag
+struct I2CManagerNodeTag
 {
-    I2CManager_Node *next;
+    I2CManagerNode *next;
     TargetDevice *i2cDevice;
     uint8_t targetAddress7Bit; // 7-bit address, right justified 
 };
@@ -140,8 +140,8 @@ struct I2CEventTag
 struct I2CManagerTag
 {
     I2C *peripheral;
-    I2CManager_Node *endOfList; // circular linked list
-    I2CManager_Node *currentNode;
+    I2CManagerNode *endOfList; // circular linked list
+    I2CManagerNode *currentNode;
 
     DataTransfer currentDataTransfer;
 
@@ -188,9 +188,9 @@ struct I2CManagerTag
 
 void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs);
 
-void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device, TargetDevice *target, uint8_t targetAddress7Bit);
+void I2CManager_AddDevice(I2CManager *self, I2CManagerNode *device, TargetDevice *target, uint8_t targetAddress7Bit);
 
-void I2CManager_RemoveDevice(I2CManager *self, I2CManager_Node *device);
+void I2CManager_RemoveDevice(I2CManager *self, I2CManagerNode *device);
 
 void I2CManager_Process(I2CManager *self);
 

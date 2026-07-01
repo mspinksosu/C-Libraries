@@ -57,7 +57,7 @@ void MCU_AddTask(MCUTask *self, uint16_t period, uint8_t priority, void (*Functi
 
     if(priority > 127)
         priority = 127;
-    
+
     self->period = period;
     self->count = period;
     self->priority = priority;
