@@ -205,11 +205,11 @@ void I2C_ReceiveByteCancel(I2C *self)
 
 // *****************************************************************************
 
-void I2CTransmitFinishedEvent(I2C *self)
+void I2C_TransmitFinishedEvent(I2C *self)
 {
-    if(self->interface->I2CTransmitFinishedEvent != NULL)
+    if(self->interface->I2C_TransmitFinishedEvent != NULL)
     {
-        (self->interface->I2CTransmitFinishedEvent)();
+        (self->interface->I2C_TransmitFinishedEvent)();
     }
 }
 

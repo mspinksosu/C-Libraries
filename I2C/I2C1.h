@@ -68,7 +68,7 @@ void I2C1_ReceiveByte(void);
 
 void I2C1_ReceiveByteCancel(void);
 
-void I2C1TransmitFinishedEvent(void);
+void I2C1_TransmitFinishedEvent(void);
 
 void I2C1_TransmitByte(uint8_t dataToSend);
 

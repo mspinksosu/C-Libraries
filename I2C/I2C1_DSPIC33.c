@@ -57,7 +57,7 @@ I2CInterface I2C1_FunctionTable = {
     .I2C_IsReceiveUsingInterrupts = I2C1_IsReceiveUsingInterrupts,
     .I2C_ReceiveByte = I2C1_ReceiveByte,
     .I2C_ReceiveByteCancel = I2C1_ReceiveByteCancel,
-    .I2CTransmitFinishedEvent = I2C1TransmitFinishedEvent,
+    .I2C_TransmitFinishedEvent = I2C1_TransmitFinishedEvent,
     .I2C_TransmitByte = I2C1_TransmitByte,
     .I2C_IsTransmitFinished = I2C1_IsTransmitFinished,
     .I2C_IsTransmitUsingInterrupts = I2C1_IsTransmitUsingInterrupts,
@@ -213,7 +213,7 @@ void I2C1_ReceiveByteCancel(void)
 
 // *****************************************************************************
 
-void I2C1TransmitFinishedEvent(void)
+void I2C1_TransmitFinishedEvent(void)
 {
     // @todo transmit interrupt
 }

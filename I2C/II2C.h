@@ -83,7 +83,7 @@ typedef struct I2CInterfaceTag
     bool (*I2C_IsReceiveUsingInterrupts)(void);
     void (*I2C_ReceiveByte)(void);
     void (*I2C_ReceiveByteCancel)(void);
-    void (*I2CTransmitFinishedEvent)(void);
+    void (*I2C_TransmitFinishedEvent)(void);
     void (*I2C_TransmitByte)(uint8_t);
     bool (*I2C_IsTransmitFinished)(void);
     bool (*I2C_IsTransmitUsingInterrupts)(void); // @todo transmit using interrupts
@@ -158,7 +158,7 @@ void I2C_ReceiveByte(I2C *self);
 
 void I2C_ReceiveByteCancel(I2C *self);
 
-void I2CTransmitFinishedEvent(I2C *self);
+void I2C_TransmitFinishedEvent(I2C *self);
 
 void I2C_TransmitByte(I2C *self, uint8_t dataToSend);
 
