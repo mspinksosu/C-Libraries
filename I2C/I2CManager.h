@@ -217,12 +217,12 @@ void I2CManager_SetTransferErrorCallback(I2CManager *self, I2CManagerCallback Fu
 
 void I2CManager_BusClear(I2CManager *self);
 
-void I2CManager_SetSDAPinDirectionFunc(I2CManager *self, void(*Function)(bool setOutput));
+void I2CManager_SetSDAPinDirectionFunc(I2CManager *self, void (*Function)(bool setOutput));
 
-void I2CManager_SetSCLPinDirectionFunc(I2CManager *self, void(*Function)(bool setOutput));
+void I2CManager_SetSCLPinDirectionFunc(I2CManager *self, void (*Function)(bool setOutput));
 
-void I2CManager_SetSDAPinLevelFunc(I2CManager *self, void(*Function)(bool setHigh));
+void I2CManager_SetSDAPinLevelFunc(I2CManager *self, void (*Function)(bool setHigh));
 
-void I2CManager_SetSCLPinLevelFunc(I2CManager *self, void(*Function)(bool setHigh));
+void I2CManager_SetSCLPinLevelFunc(I2CManager *self, void (*Function)(bool setHigh));
 
 #endif /* I2CMANAGER_H */

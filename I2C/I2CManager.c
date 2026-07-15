@@ -451,28 +451,28 @@ void I2CManager_BusClear(I2CManager *self)
 
 // *****************************************************************************
 
-void I2CManager_SetSDAPinDirectionFunc(I2CManager *self, void(*Function)(bool setOutput))
+void I2CManager_SetSDAPinDirectionFunc(I2CManager *self, void (*Function)(bool setOutput))
 {
     self->SetSDAPinDirection = Function;
 }
 
 // *****************************************************************************
 
-void I2CManager_SetSCLPinDirectionFunc(I2CManager *self, void(*Function)(bool setOutput))
+void I2CManager_SetSCLPinDirectionFunc(I2CManager *self, void (*Function)(bool setOutput))
 {
     self->SetSCLPinDirection = Function;
 }
 
 // *****************************************************************************
 
-void I2CManager_SetSDAPinLevelFunc(I2CManager *self, void(*Function)(bool setHigh))
+void I2CManager_SetSDAPinLevelFunc(I2CManager *self, void (*Function)(bool setHigh))
 {
     self->SetSDAPinLevel = Function;
 }
 
 // *****************************************************************************
 
-void I2CManager_SetSCLPinLevelFunc(I2CManager *self, void(*Function)(bool setHigh))
+void I2CManager_SetSCLPinLevelFunc(I2CManager *self, void (*Function)(bool setHigh))
 {
     self->SetSCLPinLevel = Function;
 }

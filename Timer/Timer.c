@@ -85,9 +85,9 @@ void Timer_Tick(Timer *self)
             self->flags.active = 0;
             self->flags.expired = 1;
             
-            if(self->timerCallbackFunc)
+            if(self->TimerCallbackFunc)
             {
-                self->timerCallbackFunc(self);
+                self->TimerCallbackFunc(self);
             }
         }
     }
@@ -136,9 +136,9 @@ void Timer_ClearFlag(Timer *self)
 
 // *****************************************************************************
 
-void Timer_SetFinishedCallback(Timer *self, TimerCallbackFunc Function)
+void Timer_SetFinishedCallback(Timer *self, void (*Function)(void *timerContext))
 {
-    self->timerCallbackFunc = Function;
+    self->TimerCallbackFunc = Function;
 }
 
 /*

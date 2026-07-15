@@ -71,14 +71,9 @@
 
 // ***** Global Variables ******************************************************
 
-/* callback function pointer. The context pointer will point to the Timer that 
-initiated the callback. This is so that you can service multiple Timer 
-callbacks with the same function if you desire. */
-typedef void (*TimerCallbackFunc)(void *timerContext); 
-
 typedef struct TimerTag
 {
-    TimerCallbackFunc timerCallbackFunc;
+    void (*TimerCallbackFunc)(void *timerContext);
     uint16_t period;
     uint16_t count;
     
@@ -95,6 +90,9 @@ typedef struct TimerTag
 
 /** These variable should be treated as private. You should only access them   
  *  with the use of a function.
+ * 
+ * TimerCallbackFunc callback function pointer. The context pointer will point 
+ *                   to the Timer that initiated the callback.
  * 
  * period   The period of the timer. When the count reaches this number, a flag
  *          will be set
@@ -217,6 +215,6 @@ void Timer_ClearFlag(Timer *self);
  * 
  * @param Function  format: void SomeFunction(void *timerContext)
  */
-void Timer_SetFinishedCallback(Timer *self, TimerCallbackFunc Function);
+void Timer_SetFinishedCallback(Timer *self, void (*Function)(void *timerContext));
 
 #endif /* TIMER_H */
