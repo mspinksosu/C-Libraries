@@ -49,8 +49,8 @@ static void I2CManager_FsmReadData(I2CManager *self, const I2CEvent *e);
 
 // ***** Static Function Prototypes ********************************************
 
-static void I2CManager_PushNode(I2CManager_Node *self, I2CManager_Node *endOfList);
-static void I2CManager_DeleteNode(I2CManager_Node *key, I2CManager_Node *endOfList);
+static void I2CManager_PushNode(I2CManagerNode *self, I2CManagerNode *endOfList);
+static void I2CManager_DeleteNode(I2CManagerNode *key, I2CManagerNode *endOfList);
 static void I2CManager_BeginDataTransfer(I2CManager *self, DataTransfer *dtObject);
 static void I2CManager_GenerateFinishedTransferReport(I2CManager *self, I2CManagerTransferStatus *retReport);
 static uint16_t I2CManager_GenerateTargetReport(I2CManager *self, DataTransfer *retReport);
@@ -93,7 +93,7 @@ void I2CManager_Init(I2CManager *self, I2C *peripheral, uint32_t tickRateNs)
 
 // *****************************************************************************
 
-void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device, TargetDevice *target, uint8_t targetAddress7Bit)
+void I2CManager_AddDevice(I2CManager *self, I2CManagerNode *device, TargetDevice *target, uint8_t targetAddress7Bit)
 {
     /* Combine the I2C target with the node and set address */
     device->i2cDevice = target;
@@ -118,7 +118,7 @@ void I2CManager_AddDevice(I2CManager *self, I2CManager_Node *device, TargetDevic
 
 // *****************************************************************************
 
-void I2CManager_RemoveDevice(I2CManager *self, I2CManager_Node *device)
+void I2CManager_RemoveDevice(I2CManager *self, I2CManagerNode *device)
 {
     if(device != NULL)
     {
@@ -483,7 +483,7 @@ void I2CManager_SetSCLPinLevelFunc(I2CManager *self, void (*Function)(bool setHi
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-static void I2CManager_PushNode(I2CManager_Node *self, I2CManager_Node *endOfList)
+static void I2CManager_PushNode(I2CManagerNode *self, I2CManagerNode *endOfList)
 {
     /* Add the new entry to the beginning of the list. Make the "next" pointer
     point to the head */
@@ -493,14 +493,14 @@ static void I2CManager_PushNode(I2CManager_Node *self, I2CManager_Node *endOfLis
 }
 // *****************************************************************************
 
-static void I2CManager_DeleteNode(I2CManager_Node *node, I2CManager_Node *endOfList)
+static void I2CManager_DeleteNode(I2CManagerNode *node, I2CManagerNode *endOfList)
 {
     if(endOfList == NULL)
         return;
 
     /* Store the beginning of the list in a temporary variable. Keep track of 
     previous entry in order to update nodes on either side of the key item. */
-    I2CManager_Node *prev = endOfList, *temp = endOfList->next;
+    I2CManagerNode *prev = endOfList, *temp = endOfList->next;
     while(temp != endOfList && temp != node)
     {
         prev = temp;
