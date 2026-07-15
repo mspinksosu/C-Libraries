@@ -1,5 +1,5 @@
 /***************************************************************************//**
- * @brief Basic I2C Peripheral for DSPIC33
+ * @brief I2C Library Implementation (DSPIC33)
  * 
  * @file I2C1_DSPIC33.c
  * 
@@ -7,6 +7,7 @@
  * 
  * @date 10/2/16   Original Creation (PIC32)
  * @date 2/21/22   Added Doxygen
+ * @date 4/8/25    Ported to DSPIC33
  * 
  * @details
  *      @todo documentation

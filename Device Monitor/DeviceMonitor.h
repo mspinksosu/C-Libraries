@@ -63,7 +63,15 @@ typedef struct DeviceMonitorTag
     uint16_t initRetryCount;
     uint16_t initRetryLimit; // how many times to try before giving up
 
-    // @todo add callback function pointers
+    // @todo I probably have enough flags to make a bitfield now
+    bool initTimerExpiredEvent;
+    bool initTimerCleared;
+    bool initSuccess;
+
+
+    void (*InitTimerFinishedCallback)(void *context);
+    void (*InitRetryLimitReachedCallback)(void *context);
+    void (*WatchdogTimeoutCallback)(void *context);
 } DeviceMonitor;
 
 typedef struct DeviceMonitorInitTypeTag
@@ -93,9 +101,9 @@ void DeviceMonitor_Reset(DeviceMonitor *self);
 
 bool DeviceMonitor_IsInitTimerFinished(DeviceMonitor *self);
 
-void DeviceMonitor_ClearInitTimer(DeviceMonitor *self, bool initSuccess);
+void DeviceMonitor_InitTimerFinishedEvent(DeviceMonitor *self, bool initSuccess);
 
-bool DeviceMonitor_InitRetryLimitReached(DeviceMonitor *self);
+bool DeviceMonitor_IsInitRetryLimitReached(DeviceMonitor *self);
 
 bool DeviceMonitor_IsWatchdogTimerFinished(DeviceMonitor *self);
 
@@ -103,15 +111,16 @@ void DeviceMonitor_ResetWatchdogTimer(DeviceMonitor *self);
 
 DeviceMonitorState DeviceMonitor_GetState(DeviceMonitor *self);
 
-// @todo more features:
+void DeviceMonitor_SetInitTimerFinishedCallback(DeviceMonitor *self, void(*Function)(void *context));
+
+void DeviceMonitor_SetInitRetryLimitReachedCallback(DeviceMonitor *self, void(*Function)(void *context));
+
+void DeviceMonitor_SetWatchdogTimeoutCallback(DeviceMonitor *self, void(*Function)(void *context));
+
+// @todo more features?
 // add enable, disable initTimer
 // add enable, disable watchdog timer
 // add setters for watchdog, retry limit etc. ?
 // add error codes?
-
-// init timer finished callback
-// init failed callback
-// init retry limit callback
-// watchdog timeout callback
 
 #endif /* DEVICEMONITOR_H */

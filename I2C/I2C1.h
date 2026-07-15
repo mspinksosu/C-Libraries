@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @brief I2C Implementation Header (Non-Processor Specific)
  * 
- * @file IC21.h
+ * @file I2C1.h
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 

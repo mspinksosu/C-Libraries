@@ -48,6 +48,9 @@ void DeviceMonitor_Init(DeviceMonitor *self, DeviceMonitorInitType *params)
 
     self->timer.flags.all = 0;
     self->initRetryCount = 0;
+    self->initTimerExpiredEvent = false;
+    self->initTimerCleared = false;
+    self->initSuccess = false;
     self->initWaitEnabled = params->initWaitEnabled;
     self->initRetryEnabled = params->initRetryEnabled;
     self->watchdogTimerEnabled = params->watchdogTimerEnabled;
@@ -59,8 +62,6 @@ void DeviceMonitor_Init(DeviceMonitor *self, DeviceMonitorInitType *params)
 
 void DeviceMonitor_Tick(DeviceMonitor *self)
 {
-    bool enterRunState = false;
-
     switch(self->state)
     {
         case DEVICE_MONITOR_STATE_POR:
@@ -73,64 +74,84 @@ void DeviceMonitor_Tick(DeviceMonitor *self)
             }
             else
             {
-                enterRunState = true;
+                self->state = DEVICE_MONITOR_STATE_RUN;
+                if(self->watchdogTimerEnabled)
+                {
+                    self->timer.period = self->watchdogPeriod;
+                    self->timer.flags.expired = 0;
+                    self->timer.flags.start = 1;
+                }
             }
             break;
         case DEVICE_MONITOR_STATE_INIT_WAIT:
-            /* Restart the pressure sensor if it fails on startup. */
             if(self->timer.flags.expired)
             {
                 self->timer.flags.expired = 0;
+                self->initTimerExpiredEvent = true;
+                self->initTimerCleared = false;
 
-                // @todo timer finished callback
-                // @todo if successful init, go to run state
-
+                /* Notify the user that the init timer is finished and the 
+                retry limit has been reached. Or just notify the user that the 
+                init timer is done. The two function pointers can point to the 
+                same function, or different functions, depending on what the 
+                user wants. - MS  */
                 if(self->initRetryEnabled && self->initRetryLimit > 0)
                 {
                     self->initRetryCount++;
                     if(self->initRetryCount <= self->initRetryLimit)
                     {
-                        // @todo retry timer expired callback
-                        // @todo if successful init, don't restart timer, go to run state
-                        self->timer.flags.start = 1;
+                        if(self->InitTimerFinishedCallback != NULL)
+                            self->InitTimerFinishedCallback(self);
                     }
                     else
                     {
-                        // @todo retry limit reached callback
-                        enterRunState = true;
+                        if(self->InitRetryLimitReachedCallback != NULL)
+                            self->InitRetryLimitReachedCallback(self);
                     }
                 }
                 else
                 {
-                    enterRunState = true;
+                    if(self->InitTimerFinishedCallback != NULL)
+                        self->InitTimerFinishedCallback(self);
                 }
             }
-            break;
-        case DEVICE_MONITOR_STATE_RUN:
-            /* Reset the sensor if it times out */
-            if(self->timer.flags.expired)
+            /* Wait for the user to clear the init timer finished flag before 
+            deciding to go to the next state or not. */
+            if(self->initTimerCleared)
             {
-                self->timer.flags.expired = 0;
-                if(self->watchdogTimerEnabled)
+                self->initTimerCleared = false;
+                if(self->initSuccess)
                 {
-                    // @todo timeout callback
+                    /* Init finished. Go to next state. The timer will be used 
+                    as the watchdog timer from now on. */
+                    self->state = DEVICE_MONITOR_STATE_RUN;
+                    if(self->watchdogTimerEnabled)
+                    {
+                        self->timer.period = self->watchdogPeriod;
+                        self->timer.flags.start = 1;
+                    }
+                }
+                else
+                {
+                    /* Else stay here and retry. */
                     self->timer.flags.start = 1;
                 }
             }
             break;
-    }
-
-    /* I put this down here rather than copying 
-    and pasting it in multiple places - MS */
-    if(enterRunState)
-    {
-        self->state = DEVICE_MONITOR_STATE_RUN;
-        if(self->watchdogTimerEnabled)
-        {
-            self->timer.period = self->watchdogPeriod;
-            self->timer.flags.expired = 0;
-            self->timer.flags.start = 1;
-        }
+        case DEVICE_MONITOR_STATE_RUN:
+            if(self->timer.flags.expired)
+            {
+                /* The watchdog timer will restart automatically. Notify the 
+                user anytime there is a timeout. */
+                self->timer.flags.expired = 0;
+                if(self->watchdogTimerEnabled)
+                {
+                    if(self->WatchdogTimeoutCallback != NULL)
+                        self->WatchdogTimeoutCallback(self);
+                    self->timer.flags.start = 1;
+                }
+            }
+            break;
     }
 
     /* Putting the timer last allows the main code a chance to check the timer 
@@ -159,14 +180,19 @@ void DeviceMonitor_Tick(DeviceMonitor *self)
 
 void DeviceMonitor_Reset(DeviceMonitor *self)
 {
-
+    self->timer.flags.all = 0;
+    self->initRetryCount = 0;
+    self->initTimerExpiredEvent = false;
+    self->initTimerCleared = false;
+    self->initSuccess = false;
+    self->state = DEVICE_MONITOR_STATE_POR;
 }
 
 // *****************************************************************************
 
 bool DeviceMonitor_IsInitTimerFinished(DeviceMonitor *self)
 {
-    if(self->state == DEVICE_MONITOR_STATE_INIT_WAIT && self->timer.flags.expired)
+    if(self->state == DEVICE_MONITOR_STATE_INIT_WAIT && self->initTimerExpiredEvent)
         return true;
     else
         return false;
@@ -174,30 +200,42 @@ bool DeviceMonitor_IsInitTimerFinished(DeviceMonitor *self)
 
 // *****************************************************************************
 
-void DeviceMonitor_ClearInitTimer(DeviceMonitor *self, bool initSuccess)
+void DeviceMonitor_InitTimerFinishedEvent(DeviceMonitor *self, bool initSuccess)
 {
-
+    self->initTimerExpiredEvent = false;
+    self->initTimerCleared = true;
+    self->initSuccess = initSuccess;
 }
 
 // *****************************************************************************
 
-bool DeviceMonitor_InitRetryLimitReached(DeviceMonitor *self)
+bool DeviceMonitor_IsInitRetryLimitReached(DeviceMonitor *self)
 {
-
+    return (self->initRetryEnabled && self->initRetryLimit > 0 && 
+            self->initRetryCount >= self->initRetryLimit);
 }
 
 // *****************************************************************************
 
 bool DeviceMonitor_IsWatchdogTimerFinished(DeviceMonitor *self)
 {
-
+    if(self->timer.flags.expired && self->state == DEVICE_MONITOR_STATE_RUN)
+        return true;
+    else
+        return false;
 }
 
 // *****************************************************************************
 
 void DeviceMonitor_ResetWatchdogTimer(DeviceMonitor *self)
 {
-
+    /* Check if we've made it out of the init state yet. */
+    if(self->state == DEVICE_MONITOR_STATE_RUN)
+    {
+        self->timer.flags.active = 0;
+        self->timer.flags.expired = 0;
+        self->timer.flags.start = 1;
+    }
 }
 
 // *****************************************************************************
@@ -205,6 +243,27 @@ void DeviceMonitor_ResetWatchdogTimer(DeviceMonitor *self)
 DeviceMonitorState DeviceMonitor_GetState(DeviceMonitor *self)
 {
     return self->state;
+}
+
+// *****************************************************************************
+
+void DeviceMonitor_SetInitTimerFinishedCallback(DeviceMonitor *self, void(*Function)(void *context))
+{
+    self->InitTimerFinishedCallback = Function;
+}
+
+// *****************************************************************************
+
+void DeviceMonitor_SetInitRetryLimitReachedCallback(DeviceMonitor *self, void(*Function)(void *context))
+{
+    self->InitRetryLimitReachedCallback = Function;
+}
+
+// *****************************************************************************
+
+void DeviceMonitor_SetWatchdogTimeoutCallback(DeviceMonitor *self, void(*Function)(void *context))
+{
+    self->WatchdogTimeoutCallback = Function;
 }
 
 /*

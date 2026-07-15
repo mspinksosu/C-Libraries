@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @brief UART Library Implementation (DSPIC33)
  * 
- * @file UART1_PIC16.c
+ * @file UART1_DSPIC33.c
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 

@@ -1,7 +1,7 @@
 /***************************************************************************//**
- * @brief Basic I2C Interface Header
+ * @brief I2C Interface Header
  * 
- * @file IC21.h 
+ * @file II2C.h 
  * 
  * @author Matthew Spinks <https://github.com/mspinksosu>
  * 
