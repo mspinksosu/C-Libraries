@@ -16,10 +16,10 @@
  * 
  * The external interface variable, GPIO_FunctionTable is declared and defined
  * in the .c file. This header file needs to be included wherever the 
- * initialization takes place. However, it is only needed for this intial step. 
+ * initialization takes place. However, it is only needed for the initial step. 
  * It is not needed to perform operations on the pins. Any file needing access 
  * to pins can include the IGPIO and use the interface. This removes the need
- * to have processor specific dependancies anywhere else. The GPIO objects will
+ * to have processor specific dependencies anywhere else. The GPIO objects will
  * need to be made extern for any other file to use them.
  * 
  * There are two sub class create functions which are not included as part of
