@@ -119,8 +119,8 @@ void I2C1_Init(I2CInitType *params)
     // disable interrupts
 
     /* @note Right now, I'm only implementing master I2C. - MS */
-    I2CxCONbits.IPMIEN = 0; // do not ACK automatically (must be off if master)
-    I2CxCONbits.STREN = 1; // clock stretch off (when operating as slave only)
+    I2CxCONbits.IPMIEN = 0; // IPMI mode, ACK every address (must be off if master)
+    I2CxCONbits.STREN = 0; // clock stretch off (when operating as slave only)
     I2CxCONbits.ACKEN = 0;
     I2CxCONbits.RCEN = 0;
     I2CxCONbits.PEN = 0;
