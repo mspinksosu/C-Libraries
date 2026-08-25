@@ -302,7 +302,7 @@ bool I2C1_IsBusy(void)
      3, RCEN:  0 = receive sequence not in progress
      4, ACKEN: 0 = acknowledge sequence idle
      TRSTAT: 0 = master transmit not in progress  */
-    if((I2CxCON & 0x001F) || I2C1STATbits.TRSTAT)
+    if((I2CxCON & 0x001F) || I2CxSTATbits.TRSTAT)
         return true;
     else
         return false;
